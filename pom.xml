@@ -27,6 +27,7 @@
         <profile>
             <id>acceptanceTests</id>
             <dependencies>
+                <!-- https://cucumber.io/ -->
                 <dependency>
                     <groupId>io.cucumber</groupId>
                     <artifactId>cucumber-java</artifactId>
@@ -70,11 +71,13 @@
             <build>
                 <plugins>
                     <plugin>
+                        <!-- https://pitest.org/ -->
                         <groupId>org.pitest</groupId>
                         <artifactId>pitest-maven</artifactId>
                         <version>${pitest.version}</version>
                         <dependencies>
                             <dependency>
+                                <!-- https://github.com/pitest/pitest-junit5-plugin -->
                                 <groupId>org.pitest</groupId>
                                 <artifactId>pitest-junit5-plugin</artifactId>
                                 <version>${pitest.junit5.version}</version>
@@ -89,24 +92,26 @@
     <dependencies>
         <!-- testing -->
         <dependency>
+            <!-- https://junit.org/junit5/ -->
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
+            <!-- https://assertj.github.io/doc/ -->
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <version>${assertj.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
+            <!-- https://site.mockito.org/ -->
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
             <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
 </project>
