@@ -10,6 +10,14 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
+    <repositories>
+        <repository>
+            <id>repsy</id>
+            <name>My Private Maven Repository on Repsy</name>
+            <url>https://repo.repsy.io/mvn/collector/klausps_examples</url>
+        </repository>
+    </repositories>
+
     <artifactId>controller2</artifactId>
     <version>1.0-SNAPSHOT</version>
 
