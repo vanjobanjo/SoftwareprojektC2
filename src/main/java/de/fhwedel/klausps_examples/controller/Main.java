@@ -9,4 +9,16 @@ public class Main {
         System.out.println("this is the project!");
     }
 
+    public int doStuff(ABC abc) {
+        return abc.getStuff("lol");
+    }
+
+    public class ABC {
+
+        public int getStuff(String s) {
+            return 0;
+        }
+
+    }
+
 }
