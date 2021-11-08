@@ -13,3 +13,4 @@ class MainTest {
         assertEquals(0, new Main().doStuff(abc));
     }
 }
+        
