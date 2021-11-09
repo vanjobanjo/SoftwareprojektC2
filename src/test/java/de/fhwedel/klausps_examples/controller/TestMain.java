@@ -1,12 +1,14 @@
 package de.fhwedel.klausps_examples.controller;
 
+import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class MainTest {
+class TestMain {
 
-    @org.junit.jupiter.api.Test
+    @Test
     void TestdoStuff() {
         Main.ABC abc = mock(Main.ABC.class);
         when(abc.getStuff("Miwo")).thenReturn(5);
