@@ -13,6 +13,7 @@ class TestMain {
         Main.ABC abc = mock(Main.ABC.class);
         when(abc.getStuff("Miwo")).thenReturn(5);
         assertEquals(0, new Main().doStuff(abc));
+        //assertTrue(false);
     }
 }
         
