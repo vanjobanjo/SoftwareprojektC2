@@ -3,10 +3,9 @@ import io.cucumber.junit.CucumberOptions;
 import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
-@CucumberOptions(plugin = { "pretty"},
+@CucumberOptions(plugin = {"pretty", "html:target/CucumberReport.html"} ,
         features = "src/test/resources/features",
-        glue = {"steps"},
-        publish = false)
+        glue = {"steps"})
 public class CucumberRunner {
 
 
