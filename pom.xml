@@ -21,80 +21,48 @@
     <artifactId>controller2</artifactId>
 
     <properties>
-        <junit.version>5.8.1</junit.version>
+        <junit.version>5.8.0</junit.version>
         <assertj.version>3.21.0</assertj.version>
         <mockito.version>4.0.0</mockito.version>
         <cucumber.version>6.6.1</cucumber.version>
         <surefire.version>3.0.0-M5</surefire.version>
-        <pitest.version>1.4.9</pitest.version>
-        <pitest.junit5.version>0.15</pitest.junit5.version>
     </properties>
 
     <profiles>
         <profile>
             <id>acceptanceTests</id>
-            <dependencies>
-                <!-- https://cucumber.io/ -->
-                <dependency>
-                    <groupId>io.cucumber</groupId>
-                    <artifactId>cucumber-java</artifactId>
-                    <version>${cucumber.version}</version>
-                    <scope>test</scope>
-                </dependency>
-                <dependency>
-                    <groupId>io.cucumber</groupId>
-                    <artifactId>cucumber-junit</artifactId>
-                    <version>${cucumber.version}</version>
-                    <scope>test</scope>
-                </dependency>
-                <dependency>
-                    <groupId>io.cucumber</groupId>
-                    <artifactId>cucumber-junit-platform-engine</artifactId>
-                    <version>${cucumber.version}</version>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
             <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-failsafe-plugin</artifactId>
+                            <version>${surefire.version}</version>
+                            <configuration>
+                                <includes>
+                                    <include>**/CucumberRunner.java</include>
+                                </includes>
+                            </configuration>
+                            <executions>
+                                <execution>
+                                    <goals>
+                                        <goal>integration-test</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <version>${surefire.version}</version>
-                        <configuration>
-                            <properties>
-                                <configurationParameters>
-                                    cucumber.plugin=pretty,html:target/site/cucumber-pretty.html
-                                    cucumber.publish.quiet=true
-                                    cucumber.publish.enabled=false
-                                </configurationParameters>
-                            </properties>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>mutationTests</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <!-- https://pitest.org/ -->
-                        <groupId>org.pitest</groupId>
-                        <artifactId>pitest-maven</artifactId>
-                        <version>${pitest.version}</version>
-                        <dependencies>
-                            <dependency>
-                                <!-- https://github.com/pitest/pitest-junit5-plugin -->
-                                <groupId>org.pitest</groupId>
-                                <artifactId>pitest-junit5-plugin</artifactId>
-                                <version>${pitest.junit5.version}</version>
-                            </dependency>
-                        </dependencies>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                     </plugin>
                 </plugins>
             </build>
         </profile>
     </profiles>
+
 
     <dependencies>
         <dependency>
@@ -102,6 +70,29 @@
             <artifactId>controller-api</artifactId>
         </dependency>
         <!-- testing -->
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-java</artifactId>
+            <version>${cucumber.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-junit</artifactId>
+            <version>${cucumber.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <version>5.7.0</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <!-- https://junit.org/junit5/ -->
             <groupId>org.junit.jupiter</groupId>
