@@ -6,7 +6,7 @@ import io.cucumber.java.de.Dann;
 import io.cucumber.java.de.Wenn;
 import org.junit.AssumptionViolatedException;
 
-public class getUngeplanteKlausurenSteps {
+public class getUngeplanteKlausurenSteps extends BaseSteps {
 
     @Angenommen("es existieren die folgenden Klausuren:")
     public void esExistierenDieFolgendenKlausuren(DataTable dataTable) {
@@ -18,8 +18,8 @@ public class getUngeplanteKlausurenSteps {
         throw new AssumptionViolatedException("Not implemented yet!");
     }
 
-    @Dann("bekomme ich die Klausuren:")
-    public void bekommeIchDieKlausuren(DataTable dataTable) {
+    @Dann("bekomme ich die Klausuren {string}")
+    public void bekommeIchDieKlausuren(String klausuren) {
         throw new AssumptionViolatedException("Not implemented yet!");
     }
 
