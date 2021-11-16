@@ -5,13 +5,20 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>de.fhwedel.klausps_examples</groupId>
-        <artifactId>klausps_examples_parent</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <groupId>de.fhwedel.klausps</groupId>
+        <artifactId>klausps-parent</artifactId>
+        <version>1.0.2-SNAPSHOT</version>
     </parent>
 
+    <repositories>
+        <repository>
+            <id>repsy</id>
+            <name>My Private Maven Repository on Repsy</name>
+            <url>https://repo.repsy.io/mvn/collector/klausps</url>
+        </repository>
+    </repositories>
+
     <artifactId>controller2</artifactId>
-    <version>1.0-SNAPSHOT</version>
 
     <properties>
         <junit.version>5.8.0</junit.version>
@@ -58,6 +65,10 @@
 
 
     <dependencies>
+        <dependency>
+            <groupId>de.fhwedel.klausps</groupId>
+            <artifactId>controller-api</artifactId>
+        </dependency>
         <!-- testing -->
         <dependency>
             <groupId>io.cucumber</groupId>

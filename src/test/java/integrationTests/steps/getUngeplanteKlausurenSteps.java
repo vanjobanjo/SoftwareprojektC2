@@ -3,6 +3,7 @@ package integrationTests.steps;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.de.Angenommen;
 import io.cucumber.java.de.Dann;
+import io.cucumber.java.de.Und;
 import io.cucumber.java.de.Wenn;
 import org.junit.AssumptionViolatedException;
 
