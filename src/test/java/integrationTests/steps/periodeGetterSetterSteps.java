@@ -58,4 +58,15 @@ public class periodeGetterSetterSteps {
         throw new AssumptionViolatedException("Not implemented yet!");
     }
     
+    @Angenommen("es existieren folgende Teilnehmerkreise:")
+    public void esExistierenFolgendeTeilnehmerkreise() {
+    }
+    
+    @Wenn("ich alle Teilnehmerkreise anfrage")
+    public void ichAlleTeilnehmerkreiseAnfrage() {
+    }
+    
+    @Dann("bekomme ich die Teilnehmerkreise {string}")
+    public void bekommeIchDieTeilnehmerkreise(String arg0) {
+    }
 }

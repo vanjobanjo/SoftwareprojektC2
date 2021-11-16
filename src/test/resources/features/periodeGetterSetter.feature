@@ -14,7 +14,7 @@ Funktionalität: Als Planer möchte ich Informationen der Prüfungsperiode abfra
     Dann erhalte ich das Startdatum
 
 
-  Szenariogrundriss: : Es gibt ein geplantes Semester
+  Szenariogrundriss: Es gibt ein geplantes Semester
     Angenommen Es ist ein Semester geplant
     Wenn ich das <Startdatum> und das <Enddatum> der Periode aendere
     Dann werden die Daten entsprechend geaendert
@@ -24,3 +24,15 @@ Funktionalität: Als Planer möchte ich Informationen der Prüfungsperiode abfra
       | "12.3."    | "12.4."  |
       | "1.12."    | "20.1."  |
 
+
+# debug nicht überdacht, nur für merge show Zwecke
+  Szenario: Es gibt ein geplantes Semester
+    Angenommen es existieren folgende Teilnehmerkreise:
+      | Name        |
+      | b_inf20.0_1 |
+      | b_inf20.0_2 |
+      | b_inf20.0_3 |
+      | b_inf20.0_4 |
+
+    Wenn ich alle Teilnehmerkreise anfrage
+    Dann bekomme ich die Teilnehmerkreise "b_inf20.0_1, b_inf20.0_2 ,b_inf20.0_3, b_inf20.0_4"
