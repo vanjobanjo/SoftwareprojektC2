@@ -1,7 +1,28 @@
 # language: de
-Funktionalität: Als Planender möchte ich die Schätzung von Studierenden einer Prüfung ändern können.
+Funktionalität: Als Planender möchte ich die Schätzung von Studierenden, die an einer Prüfung teilnehmen, ändern können.
 
   Szenario: Die Schätzung der Studierenden, die an einer Prüfung teilnehmen werden, erfolgreich geändert
-    Angenommen die Prüfung "Analysis" hat die Nummer "b001"
-    Wenn ich die Nummer von "Analysis" zu "b123" ändere
-    Dann ist die Nummer von "Analysis" "b123"
+    Angenommen die Prüfung "Analysis" hat die Schätzung 100
+    Wenn ich die Schätzung von "Analysis" zu 200 ändere
+    Dann ist die Schätzung von "Analysis" 200
+
+  Szenario: Die Schätzung der Studierenden, die an einer Prüfung teilnehmen werden, erfolgreich geändert
+    Angenommen die Prüfung "Analysis" hat die Schätzung 100
+    Wenn ich die Schätzung von "Analysis" zu -1 ändere
+    Dann ist die Schätzung von "Analysis" 100
+
+  Szenario: Die Schätzung der Studierenden, die an einer Prüfung teilnehmen werden, erfolgreich geändert
+    Angenommen die Prüfung "Analysis" hat die Schätzung 100
+    Wenn ich die Schätzung von "Analysis" zu 0 ändere
+    Dann ist die Schätzung von "Analysis" 0
+
+  Szenario: Die Schätzung der Studierenden, die an einer Prüfung teilnehmen werden, erfolgreich geändert
+    Angenommen die Prüfung "Analysis" hat die Schätzung 100
+    Wenn ich die Schätzung von "Analysis" zu 1 ändere
+    Dann ist die Schätzung von "Analysis" 1
+
+  Szenario: Die Schätzung der Studierenden, die an einer Prüfung teilnehmen werden, erfolgreich geändert
+    Angenommen die Prüfung "Analysis" hat die Schätzung 100
+    Wenn ich die Schätzung von "Analysis" zu 1000 ändere
+    Dann ist die Schätzung von "Analysis" 1000
+
