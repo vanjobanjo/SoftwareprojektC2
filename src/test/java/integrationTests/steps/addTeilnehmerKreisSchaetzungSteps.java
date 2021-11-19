@@ -20,4 +20,7 @@ public class addTeilnehmerKreisSchaetzungSteps {
     public void hatDiePruefungDieTeilnehmerkreischaetzungen(String pruefung, String teilnehmerKreisSchaetzung) {
     }
 
+    @Dann("werfe IllegalArgumentException")
+    public void werfeIllegalArgumentException() {
+    }
 }

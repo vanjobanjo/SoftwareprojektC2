@@ -21,3 +21,21 @@ Funktionalität: Als Planender moechter ich zu einer Klausur einen Teilnehmerkre
     Angenommen die Pruefung "Analysis" hat als Teilnehmerkreisschaetzung: "B_BWL 1 10.0 50, B_WING 1 11.0 100"
     Wenn ich den Studiengang "B_WING" Fachsemester 2 mit Ordnung "11.0" und 10 schaetze und hinzufuege
     Dann hat die Pruefung "Analysis" die Teilnehmerkreischaetzungen: "B_BWL 1 10.0 50, B_WING 1 11.0 120, B_WING 2 11.0 10"
+
+  Szenario: Die Klausur hat bereits einen Teilnehmerkreis + Schaetzung, fuege negative Schaetzzahl hinzu. Invalider TK
+    Angenommen die Pruefung "Analysis" hat als Teilnehmerkreisschaetzung: "B_BWL 1 10.0 50, B_WING 1 11.0 100"
+    Wenn ich den Studiengang "B_WING" Fachsemester 2 mit Ordnung "11.0" und -1 schaetze und hinzufuege
+    Dann werfe IllegalArgumentException
+
+  Szenario: Die Klausur hat zugewiesene Teilnehmerkreise + Schaetzung, aendere Schaetzung nach oben hin
+            das Scoring wird veraendert und eine Liste von Klausuren werden zurueckgegeben
+    #TODO: das Scoring muss veraendert werden, wie genau wird noch später definiert
+    #TODO: wenn das Scoring definiert ist, werden neue Testfaelle definiert.
+
+  Szenario: Die Klausur hat zugewiesene Teilnehmerkreise + Schaetzung, entferne einen Teilnehmerkreis
+    #TODO: das Scoring muss veraendert werden, wie genau wird noch später definiert
+    #TODO: wenn das Scoring definiert ist, werden neue Testfaelle definiert.
+
+  Szenario: Der Klausur werden Teilnehmerkreise hinzugefuegt, die eigentlich nicht vom TK geschrieben wird
+    #TODO: Was soll hier geschehen? Ist es moeglich, dass der Kunde beliebige TK hinzufuegen kann?
+
