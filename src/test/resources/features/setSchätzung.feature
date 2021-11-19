@@ -31,4 +31,3 @@ Funktionalität: Als Planender möchte ich die Schätzung von Studierenden, die 
     Angenommen die Prüfung "Analysis" noch keine Schätzung
     Wenn ich die Schätzung von "Analysis" zu 200 ändere
     Dann ist die Schätzung von "Analysis" den Wert 200
-
