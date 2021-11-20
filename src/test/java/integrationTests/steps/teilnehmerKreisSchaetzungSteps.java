@@ -4,7 +4,7 @@ import io.cucumber.java.de.Angenommen;
 import io.cucumber.java.de.Dann;
 import io.cucumber.java.de.Wenn;
 
-public class addTeilnehmerKreisSchaetzungSteps {
+public class teilnehmerKreisSchaetzungSteps {
 
     @Angenommen("die Pruefung {string} hat als Teilnehmerkreisschaetzung: {string}")
     public void diePruefungHatAlsTeilnehmerkreisschaetzung(String pruefung, String teilnehmerKreisSchatzung) {
