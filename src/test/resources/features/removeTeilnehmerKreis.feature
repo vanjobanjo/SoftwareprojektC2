@@ -20,7 +20,7 @@ Funktionalität: Als Planender moechte ich zu einer Klausur einen Teilnehmerkrei
   Szenario: Die Klausur hat zugewiesene Teilnehmerkreise + Schaetzung, entferne eine Schaetzung
   das Scoring wird veraendert und eine Liste von Klausuren werden zurueckgegeben
     #TODO: das Scoring muss veraendert werden, wie genau wird noch später definiert
-    #TODO: wenn das Scoring definiert ist, werden neue Testfaelle definiert.
+    #TODO: wenn das Scoring definiert ist, werden neue Testfaelle definiert?
 
   Szenario: Die Klausur hat zugewiesene Teilnehmerkreise + Schaetzung, entferne einen Teilnehmerkreis
     #TODO: das Scoring muss veraendert werden, wie genau wird noch später definiert
