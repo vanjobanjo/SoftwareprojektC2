@@ -23,4 +23,8 @@ public class teilnehmerKreisSchaetzungSteps {
     @Dann("werfe IllegalArgumentException")
     public void werfeIllegalArgumentException() {
     }
+
+    @Wenn("ich den Studiengang {string} Fachsemester {int} mit Ordnung {string} und {int} schaetze und entferne")
+    public void ichDenStudiengangFachsemesterMitOrdnungUndSchaetzeUndEntferne(String pruefung, int semester, String ordnung, int schaetzung) {
+    }
 }
