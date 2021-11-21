@@ -88,4 +88,25 @@ public class removePruefungVonBlockSteps {
     public void sindTeilDesUngeplantenBlock(List<String> klausuren, String blockName) {
         throw new AssumptionViolatedException("Not implemented yet!");
     }
+
+    @Wenn("alle der {stringList} aus dem Block {string} entfernt wird")
+    public void alleDerKlausurenAusDemBlockEntferntWird(List<String> klausuren, String block) {
+        throw new AssumptionViolatedException("Not implemented yet!");
+    }
+
+    @Dann("sind alle {stringList} ungeplant")
+    public void sindAlleKlausurenUngeplant(List<String> klausuren) {
+        throw new AssumptionViolatedException("Not implemented yet!");
+    }
+
+    @Und("sind alle {stringList} ist nicht mehr im Block {string}")
+    public void sindAlleKlausurenIstNichtMehrImBlock(List<String> klausuren, String block) {
+        throw new AssumptionViolatedException("Not implemented yet!");
+    }
+
+    @Und("das Entfernen hat keine Auswirkungen auf das Scoring")
+    public void dasEntfernenKeineAuswirkungenAufDasScoring() {
+        throw new AssumptionViolatedException("Not implemented yet!");
+    }
 }
+
