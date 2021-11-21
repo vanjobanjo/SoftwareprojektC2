@@ -81,11 +81,11 @@ public class teilnehmerKreisSchaetzungSteps {
       String pruefung, int semester, String ordnung, int schaetzung) {
     throw new AssumptionViolatedException("Not implemented yet!");
   }
-  
+
   @Angenommen("die Pruefung {string} hat als Teilnehmerkreisschaetzung: {string}")
   public void diePruefungHatAlsTeilnehmerkreisschaetzung(String pruefung, String teilnehmerKreisSchatzung) {
     throw new AssumptionViolatedException("Not implemented yet!");
-
-
   }
+
+
 }
