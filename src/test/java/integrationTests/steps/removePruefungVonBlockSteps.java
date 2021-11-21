@@ -24,11 +24,6 @@ public class removePruefungVonBlockSteps {
         throw new AssumptionViolatedException("Not implemented yet!");
     }
 
-    @Angenommen("die {stringList} sind Teil des geplanten Block {string}")
-    public void dieKlausurenSindTeilDesGeplantenBlock(List<String> klausuren, String blockName) {
-        throw new AssumptionViolatedException("Not implemented yet!");
-    }
-
     @Wenn("die erste der {stringList} aus dem Block {string} entfernt wird")
     public void dieErsteDerKlausurenAusDemBlockEntferntWird(List<String> klausuren, String block) {
         throw new AssumptionViolatedException("Not implemented yet!");
@@ -66,12 +61,6 @@ public class removePruefungVonBlockSteps {
 
     @Und("der Block {string} ist noch geplant")
     public void derBlockIstNochGeplant(String blockName) {
-        throw new AssumptionViolatedException("Not implemented yet!");
-    }
-
-
-    @Angenommen("die {stringList} sind Teil des ungeplanten Block {string}")
-    public void dieKlausurenSindTeilDesUngeplantenBlock(List<String> klausuren, String blockName) {
         throw new AssumptionViolatedException("Not implemented yet!");
     }
 
