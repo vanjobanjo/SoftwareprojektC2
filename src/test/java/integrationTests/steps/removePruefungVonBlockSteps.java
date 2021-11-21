@@ -29,8 +29,8 @@ public class removePruefungVonBlockSteps {
         throw new AssumptionViolatedException("Not implemented yet!");
     }
 
-    @Wenn("die erste der {stringList} aus dem Block entfernt wird")
-    public void dieErsteDerKlausurenAusDemBlockEntferntWird(List<String> klausuren) {
+    @Wenn("die erste der {stringList} aus dem Block {string} entfernt wird")
+    public void dieErsteDerKlausurenAusDemBlockEntferntWird(List<String> klausuren, String block) {
         throw new AssumptionViolatedException("Not implemented yet!");
     }
 
@@ -44,11 +44,6 @@ public class removePruefungVonBlockSteps {
         throw new AssumptionViolatedException("Not implemented yet!");
     }
 
-    @Und("der Block {string} ist immernoch geplant")
-    public void derBlockIstImmernochGeplant(String blockName) {
-        throw new AssumptionViolatedException("Not implemented yet!");
-    }
-
     @Und("es sind {int} Klausuren im Block {string}")
     public void esSindKlausurenImBlock(int amountKlausuren, String blockName) {
         throw new AssumptionViolatedException("Not implemented yet!");
@@ -59,8 +54,8 @@ public class removePruefungVonBlockSteps {
         throw new AssumptionViolatedException("Not implemented yet!");
     }
 
-    @Wenn("{string} aus dem Block entfernt wird")
-    public void ausDemBlockEntferntWird(String klausurName) {
+    @Wenn("{string} aus dem Block {string} entfernt wird")
+    public void ausDemBlockEntferntWird(String klausurName, String block) {
         throw new AssumptionViolatedException("Not implemented yet!");
     }
 
@@ -74,10 +69,6 @@ public class removePruefungVonBlockSteps {
         throw new AssumptionViolatedException("Not implemented yet!");
     }
 
-    @Und("der Block {string} hat keine Pruefungen mehr")
-    public void derBlockHatKeinePruefungenMehr(String blockName) {
-        throw new AssumptionViolatedException("Not implemented yet!");
-    }
 
     @Angenommen("die {stringList} sind Teil des ungeplanten Block {string}")
     public void dieKlausurenSindTeilDesUngeplantenBlock(List<String> klausuren, String blockName) {
