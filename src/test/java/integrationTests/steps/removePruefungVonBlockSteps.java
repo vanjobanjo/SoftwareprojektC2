@@ -84,4 +84,9 @@ public class removePruefungVonBlockSteps {
     public void sindTeilDesUngeplantenBlock(List<String> klausuren, String blockName) {
         throw new AssumptionViolatedException("Not implemented yet!");
     }
+
+    @Und("das Entfernen keine Auswirkungen auf das Scoring")
+    public void dasEntfernenKeineAuswirkungenAufDasScoring() {
+        throw new AssumptionViolatedException("Not implemented yet!");
+    }
 }
