@@ -32,7 +32,7 @@ Funktionalität: Als Planender moechte ich gerne Pruefungen von einem Block entf
     Und die erste der <Klausuren> ist nicht mehr im Block "ABC"
     Und der Block "ABC" ist immer noch ungeplant
     Und es sind 1 Klausuren im Block "ABC"
-    Und das Entfernen keine Auswirkungen auf das Scoring
+    Und das Entfernen hat keine Auswirkungen auf das Scoring
     Beispiele:
       | Klausuren                           |
       | Analysis, Diskrete Mathematik       |
