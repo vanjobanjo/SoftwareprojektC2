@@ -85,8 +85,8 @@ public class removePruefungVonBlockSteps {
         throw new AssumptionViolatedException("Not implemented yet!");
     }
 
-    @Und("das Entfernen keine Auswirkungen auf das Scoring")
-    public void dasEntfernenKeineAuswirkungenAufDasScoring() {
-        throw new AssumptionViolatedException("Not implemented yet!");
+    @Und("das Entfernen hat keine Auswirkungen auf das Scoring")
+    public void dasEntfernenHatKeineAuswirkungenAufDasScoring() {
+
     }
 }
