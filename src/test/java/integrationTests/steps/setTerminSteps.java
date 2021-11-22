@@ -6,23 +6,21 @@ import io.cucumber.java.de.Wenn;
 
 public class setTerminSteps {
 
-  @Angenommen("die Prüfung {string} hat den Termin <aktueller Termin> und die Prüfungsperiode von <Pruefungsperiodenstart> - <Pruefungsperiodenende> und es gibt noch keine Prüfungen")
-  public void diePruefungPruefungHatDenTerminAktuellerTerminUndDiePruefungsperiodeVonPruefungsperiodenstartPruefungsperiodenendeUndEsGibtNochKeinePruefungen() {
+  @Angenommen("die Prüfung <Pruefung> hat den Termin <aktueller Termin> und die Prüfungsperiode von <Pruefungsperiodenstart> - <Pruefungsperiodenende> und es gibt noch keine Prüfungen")
+  public void pruefungHatTerminAberKeineAnderePruefungVorhanden() {
   }
 
-  @Wenn("ich den Termin von {string} auf den <neuer Termin> ändere")
-  public void ichDenTerminVonPruefungAufDenNeuerTerminAEndere() {
+  @Wenn("ich den Termin von <Pruefung> auf den <neuer Termin> ändere")
+  public void pruefungsTerminAEndern() {
   }
 
-  @Dann("ist der Termin von {string} am <dann Termin>")
+  @Dann("ist der Termin von <Pruefung> am <dann Termin>")
   public void istDerTerminVonPruefungAmDannTermin() {
   }
 
-  @Dann("ist der Termin von {string} <dann Termin> und bekommt eine Fehlermeldung")
-  public void istDerTerminVonPruefungDannTerminUndBekommtEineFehlermeldung() {
+  @Dann("ist der Termin von <Pruefung> <dann Termin> und bekommt eine Fehlermeldung")
+  public void terminAenderungMitFehlermeldung() {
   }
 
-  @Angenommen("die Prüfung {string} hat den Termin <aktueller Termin> und die Prüfungsperiode von <Pruefungsperiodenstart> - <Pruefungsperiodenende> und es gibt schon Prüfungen")
-  public void diePruefungPruefungHatDenTerminAktuellerTerminUndDiePruefungsperiodeVonPruefungsperiodenstartPruefungsperiodenendeUndEsGibtSchonPruefungen() {
-  }
+
 }
