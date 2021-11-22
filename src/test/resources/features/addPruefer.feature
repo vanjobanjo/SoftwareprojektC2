@@ -12,7 +12,7 @@ Funktionalität: Als Planender muechte ich bei einer Pruefung einen Pruefer hinz
     Wenn ich der Pruefung "Informationstechnik" den Pruefer "Birger Wolter" hinzufuege
     Dann hat die Pruefung "Informationstechnik" den Pruefer "Prof. Dr. Dennis Saering" und "Birger Wolter" eingetragen
 
-  Szenario: Eine Pruefung hat schon einen Pruefer und ich fuege erfolgreich einen Pruefer hinzu.
+  Szenario: Eine Pruefung hat schon einen Pruefer und ich probiere den gleichen Pruefer hinzu zufuegen.
     Angenommen die Pruefung "Informationstechnik" hat "Prof. Dr. Dennis Saering" als Pruefer
     Wenn ich der Pruefung "Informationstechnik" den Pruefer "Prof. Dr. Dennis Saering" hinzufuege
     Dann hat die Pruefung "Informationstechnik" den Pruefer "Prof. Dr. Dennis Saering" eingetragen
