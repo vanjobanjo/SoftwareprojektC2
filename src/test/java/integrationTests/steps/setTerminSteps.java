@@ -48,7 +48,6 @@ public class setTerminSteps {
     throw new AssumptionViolatedException("Not implemented yet!");
   }
 
-
   @Angenommen("die Pruefung {string} hat den Termin {localDateTime} und die Pruefungsperiode von {localDateTime} - {localDateTime} und es gibt schon Pruefungen")
   public void pruefungHatTerminAberAnderePruefungVorhanden(String pruefung, LocalDateTime termin, LocalDateTime pruefStart, LocalDateTime pruefEnd, DataTable pruefungMitTerminen) {
   }
