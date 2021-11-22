@@ -86,6 +86,4 @@ public class teilnehmerKreisSchaetzungSteps {
   public void diePruefungHatAlsTeilnehmerkreisschaetzung(String pruefung, String teilnehmerKreisSchatzung) {
     throw new AssumptionViolatedException("Not implemented yet!");
   }
-
-
 }
