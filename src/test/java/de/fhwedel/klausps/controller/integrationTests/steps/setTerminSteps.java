@@ -1,4 +1,4 @@
-package integrationTests.steps;
+package de.fhwedel.klausps.controller.integrationTests.steps;
 
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.ParameterType;

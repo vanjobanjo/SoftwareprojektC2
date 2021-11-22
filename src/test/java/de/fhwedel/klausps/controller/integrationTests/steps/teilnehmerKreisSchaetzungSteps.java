@@ -1,4 +1,4 @@
-package integrationTests.steps;
+package de.fhwedel.klausps.controller.integrationTests.steps;
 
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import io.cucumber.java.ParameterType;

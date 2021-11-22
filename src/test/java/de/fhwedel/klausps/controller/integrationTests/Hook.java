@@ -1,7 +1,7 @@
-package integrationTests;
+package de.fhwedel.klausps.controller.integrationTests;
 
-import integrationTests.state.State;
-import integrationTests.steps.BaseSteps;
+import de.fhwedel.klausps.controller.integrationTests.state.State;
+import de.fhwedel.klausps.controller.integrationTests.steps.BaseSteps;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
