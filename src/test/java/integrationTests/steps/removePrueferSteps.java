@@ -6,15 +6,27 @@ import io.cucumber.java.de.Wenn;
 
 public class removePrueferSteps {
 
-  @Angenommen("die Prüfung <Prüfung> hat den Prüfer <PrüferEins> und <PrüferZwei>")
-  public void diePruefungHatdiesePruefer() {
+  @Angenommen("die Pruefung <Pruefung> hat den Pruefer <PrueferEins>")
+  public void diePruefungPruefungHatDenPrueferPrueferEins() {
   }
 
-  @Wenn("ich den Prüfer <Prüferentfernen> entferne")
-  public void ichDenPrueferentferne() {
+  @Wenn("ich den Pruefer <Prueferentfernen> entferne")
+  public void ichDenPrueferPrueferentfernenEntferne() {
   }
 
-  @Dann("hat die Prüfung <Prüfung> <result> und <resultTwo>")
-  public void hatDiePruefungResultUndResultTwo() {
+  @Dann("hat die Pruefung <Pruefung> <result>")
+  public void hatDiePruefungPruefungResult() {
+  }
+
+  @Angenommen("die Pruefung <Pruefung> hat den Pruefer <PrueferEins> und <PrueferZwei>")
+  public void diePruefungPruefungHatDenPrueferPrueferEinsUndPrueferZwei() {
+  }
+
+  @Dann("hat die Pruefung <Pruefung> <result> und <resultTwo>")
+  public void hatDiePruefungPruefungResultUndResultTwo() {
+  }
+
+  @Angenommen("die Pruefung <Pruefung> hat keinen Pruefer eingetragen")
+  public void diePruefungPruefungHatKeinenPrueferEingetragen() {
   }
 }
