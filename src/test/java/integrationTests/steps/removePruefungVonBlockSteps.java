@@ -99,8 +99,8 @@ public class removePruefungVonBlockSteps {
         throw new AssumptionViolatedException("Not implemented yet!");
     }
 
-    @Und("sind alle {stringList} ist nicht mehr im Block {string}")
-    public void sindAlleKlausurenIstNichtMehrImBlock(List<String> klausuren, String block) {
+    @Und("sind alle {stringList} nicht mehr im Block {string}")
+    public void sindAlleKlausurenNichtMehrImBlock(List<String> klausuren, String block) {
         throw new AssumptionViolatedException("Not implemented yet!");
     }
 

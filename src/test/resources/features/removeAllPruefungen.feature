@@ -5,7 +5,7 @@ Funktionalität: Als Planender moechte ich gerne alle Pruefungen von einem Block
     Angenommen die <Klausuren> sind Teil des geplanten Block "ABC"
     Wenn alle der <Klausuren> aus dem Block "ABC" entfernt wird
     Dann sind alle <Klausuren> ungeplant
-    Und sind alle <Klausuren> ist nicht mehr im Block "ABC"
+    Und sind alle <Klausuren> nicht mehr im Block "ABC"
     Und der Block "ABC" ist noch geplant
     Und es sind 0 Klausuren im Block "ABC"
     Und das Entfernen hat Auswirkungen auf das Scoring
@@ -20,7 +20,7 @@ Funktionalität: Als Planender moechte ich gerne alle Pruefungen von einem Block
     Angenommen die <Klausuren> sind Teil des ungeplanten Block "ABC"
     Wenn alle der <Klausuren> aus dem Block "ABC" entfernt wird
     Dann sind alle <Klausuren> ungeplant
-    Und sind alle <Klausuren> ist nicht mehr im Block "ABC"
+    Und sind alle <Klausuren> nicht mehr im Block "ABC"
     Und der Block "ABC" ist immer noch ungeplant
     Und es sind 0 Klausuren im Block "ABC"
     Und das Entfernen hat keine Auswirkungen auf das Scoring
