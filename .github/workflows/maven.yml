@@ -21,11 +21,11 @@ jobs:
         with:
           java-version: '17'
           distribution: 'adopt'
-
+          cache: maven
       - name: maven-settings-xml-action
         uses: whelk-io/maven-settings-xml-action@v20
         with:
           repositories: '[{ "id": "repsy", "name": "My Private Maven Repository on Repsy", "url": "https://repo.repsy.io/mvn/collector/klausps" }]'
           servers: '[{ "id": "repsy", "username": "${{ secrets.REPSY_USER }}", "password": "${{ secrets.REPSY_PASSWORD }}" }]'
       - name: Build and test with Maven
-        run: mvn -B package --file pom.xml
+        run: mvn --update-snapshots -B package --file pom.xml
