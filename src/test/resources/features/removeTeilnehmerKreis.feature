@@ -3,7 +3,7 @@ Funktionalität: Als Planender moechte ich zu einer Klausur einen Teilnehmerkrei
   geschaetze Anzahl an Teilnehmer entfernen
 
   Szenario: Die Klausur hat keinen TeilnehmerKreis + Schaetzung und entferne einen Teilnehmerkreis
-    Angenommen die Pruefung "Analysis" hat keinen Teilnehmerkreis
+    Angenommen die Pruefung "Analysis" hat als Teilnehmerkreisschaetzung: ""
     Wenn ich den Studiengang "B_BWL" Fachsemester 1 mit Ordnung "10.0" und 60 schaetze und entferne
     Dann werfe IllegalArgumentException
 
