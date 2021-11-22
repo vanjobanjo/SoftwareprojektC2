@@ -7,33 +7,33 @@ import org.junit.AssumptionViolatedException;
 
 public class removePrueferSteps {
 
-  @Angenommen("die Pruefung <Pruefung> hat den Pruefer <PrueferEins>")
-  public void diePruefungPruefungHatDenPrueferPrueferEins() {
+  @Angenommen("die Pruefung {string} hat den Pruefer {string}")
+  public void diePruefungPruefungHatDenPrueferPrueferEins(String pruefung, String pruefer) {
     throw new AssumptionViolatedException("Not implemented yet!");
   }
 
-  @Wenn("ich den Pruefer <Prueferentfernen> entferne")
-  public void ichDenPrueferPrueferentfernenEntferne() {
+  @Wenn("ich den Pruefer {string} entferne")
+  public void ichDenPrueferPrueferentfernenEntferne(String pruefer) {
     throw new AssumptionViolatedException("Not implemented yet!");
   }
 
-  @Dann("hat die Pruefung <Pruefung> <result>")
-  public void hatDiePruefungPruefungResult() {
+  @Dann("hat die Pruefung {string} {string}")
+  public void hatDiePruefungPruefungResult(String pruefung, String pruefer) {
     throw new AssumptionViolatedException("Not implemented yet!");
   }
 
-  @Angenommen("die Pruefung <Pruefung> hat den Pruefer <PrueferEins> und <PrueferZwei>")
-  public void diePruefungPruefungHatDenPrueferPrueferEinsUndPrueferZwei() {
+  @Angenommen("die Pruefung {string} hat den Pruefer {string} und {string}")
+  public void diePruefungPruefungHatDenPrueferPrueferEinsUndPrueferZwei(String pruefung, String prueferOne, String prueferTwo) {
     throw new AssumptionViolatedException("Not implemented yet!");
   }
 
-  @Dann("hat die Pruefung <Pruefung> <result> und <resultTwo>")
-  public void hatDiePruefungPruefungResultUndResultTwo() {
+  @Dann("hat die Pruefung {string} {string} und {string}")
+  public void hatDiePruefungPruefungResultUndResultTwo(String pruefung, String resultOne, String resultTwo) {
     throw new AssumptionViolatedException("Not implemented yet!");
   }
 
-  @Angenommen("die Pruefung <Pruefung> hat keinen Pruefer eingetragen")
-  public void diePruefungPruefungHatKeinenPrueferEingetragen() {
+  @Angenommen("die Pruefung {string} hat keinen Pruefer eingetragen")
+  public void diePruefungPruefungHatKeinenPrueferEingetragen(String pruefung) {
     throw new AssumptionViolatedException("Not implemented yet!");
   }
 }
