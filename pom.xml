@@ -15,6 +15,9 @@
             <id>repsy</id>
             <name>My Private Maven Repository on Repsy</name>
             <url>https://repo.repsy.io/mvn/collector/klausps</url>
+            <snapshots>
+               <updatePolicy>always</updatePolicy>
+            </snapshots>
         </repository>
     </repositories>
 
