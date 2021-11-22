@@ -12,6 +12,11 @@ Funktionalität: Als Planender möchte ich bei einer Prüfung einen Prüfer hinz
     Wenn ich der Prüfung "Informationstechnik" den Prüfer "Birger Wolter" hinzufüge
     Dann hat die Prüfung "Informationstechnik" den Prüfer "Prof. Dr. Dennis Saering" und "Birger Wolter" eingetragen
 
+  Szenario: Eine Prüfung hat schon einen Prüfer und ich füge erfolgreich einen Prüfer hinzu.
+    Angenommen die Prüfung "Informationstechnik" hat "Prof. Dr. Dennis Saering" als Prüfer
+    Wenn ich der Prüfung "Informationstechnik" den Prüfer "Prof. Dr. Dennis Saering" hinzufüge
+    Dann hat die Prüfung "Informationstechnik" den Prüfer "Prof. Dr. Dennis Saering" eingetragen
+
 
   Szenario: Eine Prüfung hat schon zwei Prüfer und ich füge erfolgreich einen Prüfer hinzu.
     Angenommen die Prüfung "Informationstechnik" hat "Prof. Dr. Dennis Saering" und "Birger Wolter" als Prüfer
