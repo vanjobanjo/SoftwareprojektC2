@@ -13,7 +13,7 @@ import org.junit.AssumptionViolatedException;
 
 public class removePruefungVonBlockSteps {
 
-    @ParameterType("(.*(, .*)*)")
+    @ParameterType("(\".*\"(, \".*\")*)")
     public List<String> stringList(String strings) {
         return Arrays.stream(strings.split(", ")).collect(Collectors.toList());
     }
@@ -84,6 +84,11 @@ public class removePruefungVonBlockSteps {
         throw new AssumptionViolatedException("Not implemented yet!");
     }
 
+    @Angenommen("{stringList} sind Teil des ungeplanten Block {string}")
+    public void klausurenSindTeilDesUngeplantenBlock(List<String> klausuren, String blockName) {
+        throw new AssumptionViolatedException("Not implemented yet!");
+    }
+
     @Und("der Block {string} ist immer noch ungeplant")
     public void derBlockIstImmerNochUngeplant(String blockName) {
         throw new AssumptionViolatedException("Not implemented yet!");
@@ -96,16 +101,6 @@ public class removePruefungVonBlockSteps {
 
     @Wenn("die Pruefung {string} aus dem Block {string} entfernt wird")
     public void diePruefungAusDemBlockEntferntWird(String klausurName, String blockName) {
-        throw new AssumptionViolatedException("Not implemented yet!");
-    }
-
-    @Dann("werfe IllegalArgumentException")
-    public void werfeIllegalArgumentException() {
-        throw new AssumptionViolatedException("Not implemented yet!");
-    }
-
-    @Angenommen("{stringList} sind Teil des ungeplanten Block {string}")
-    public void sindTeilDesUngeplantenBlock(List<String> klausuren, String blockName) {
         throw new AssumptionViolatedException("Not implemented yet!");
     }
 }

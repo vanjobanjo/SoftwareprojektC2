@@ -11,10 +11,10 @@ Funktionalität: Als Planender moechte ich gerne Pruefungen von einem Block entf
     Und das Entfernen hat Auswirkungen auf das Scoring
     #TODO bitte hier eine vernuenftige dann Bedingung
     Beispiele:
-      | Klausuren                           |
-      | Analysis, Diskrete Mathematik       |
-      | Medienrecht, Wirtschaftsprivatrecht |
-      | Deutsch 1, Englisch 2               |
+      | Klausuren                               |
+      | "Analysis", "Diskrete Mathematik"       |
+      | "Medienrecht", "Wirtschaftsprivatrecht" |
+      | "Deutsch 1", "Englisch 2"               |
 
   Szenario: Aus einem geplanten Block wird die einzige Klausur entfernt
     Angenommen der geplante Block "ABC" hat die Pruefung "Analysis"
@@ -34,10 +34,10 @@ Funktionalität: Als Planender moechte ich gerne Pruefungen von einem Block entf
     Und es sind 2 Klausuren im Block "ABC"
     Und das Entfernen hat Auswirkungen auf das Scoring
     Beispiele:
-      | Klausuren                           |
-      | Analysis, Diskrete Mathematik       |
-      | Medienrecht, Wirtschaftsprivatrecht |
-      | Deutsch 1, Englisch 2               |
+      | Klausuren                               |
+      | "Analysis", "Diskrete Mathematik"       |
+      | "Medienrecht", "Wirtschaftsprivatrecht" |
+      | "Deutsch 1", "Englisch 2"               |
 
   Szenario: Es wird eine Klausur aus einem ungeplanten Block entfernt obwohl sie nicht im Block ist
     Angenommen "Analysis", "Diskrete Mathematik" sind Teil des geplanten Block "ABC"

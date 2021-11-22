@@ -3,8 +3,8 @@ Funktionalität: Als Planender moechte ich zu einer Klausur einen Teilnehmerkrei
   geschaetze Anzahl an Teilnehmer definieren bzw. hinzufügen oder sogar aendern.
 
   Szenario: Die Klausur hat keinen TeilnehmerKreis + Schaetzung und fuegen neuen hinzu
-    Angenommen die Pruefung "Analysis" hat als Teilnehmerkreisschaetzung: ""
-    Wenn ich den Studiengang "B_BWL" Fachsemester 1 mit Ordnung "10.0" und 60 schaetze und in "Analysis" hinzufuege
+    Angenommen die Pruefung "Analysis" hat keinen Teilnehmerkreis
+    Wenn ich den Studiengang "B_BWL" Fachsemester 1 mit Ordnung "10.0" und 60 schaetze und hinzufuege
     Dann hat die Pruefung "Analysis" die Teilnehmerkreischaetzungen: "B_BWL 1 10.0 50"
     Und es hat Auswirkungen auf das Scoring von "Analysis"
 
@@ -49,4 +49,3 @@ Funktionalität: Als Planender moechte ich zu einer Klausur einen Teilnehmerkrei
 
   Szenario: Der Klausur werden Teilnehmerkreise hinzugefuegt, die eigentlich nicht vom TK geschrieben wird
     #TODO: Was soll hier geschehen? Ist es moeglich, dass der Kunde beliebige TK hinzufuegen kann?
-

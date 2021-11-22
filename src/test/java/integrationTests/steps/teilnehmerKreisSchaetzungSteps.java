@@ -1,8 +1,13 @@
 package integrationTests.steps;
 
+import de.fhwedel.klausps.model.api.Teilnehmerkreis;
+import io.cucumber.java.ParameterType;
 import io.cucumber.java.de.Angenommen;
 import io.cucumber.java.de.Dann;
 import io.cucumber.java.de.Wenn;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.junit.AssumptionViolatedException;
 
 public class teilnehmerKreisSchaetzungSteps {
