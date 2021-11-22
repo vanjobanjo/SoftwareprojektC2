@@ -70,10 +70,7 @@ public class teilnehmerKreisSchaetzungSteps {
     throw new AssumptionViolatedException("Not implemented yet!");
   }
 
-  @Dann("werfe IllegalArgumentException")
-  public void werfeIllegalArgumentException() {
-    throw new AssumptionViolatedException("Not implemented yet!");
-  }
+
 
   @Wenn(
       "ich den Studiengang {string} Fachsemester {int} mit Ordnung {string} und {int} schaetze und entferne")
