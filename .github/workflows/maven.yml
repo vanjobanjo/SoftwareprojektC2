@@ -21,7 +21,7 @@ jobs:
         with:
           java-version: '17'
           distribution: 'adopt'
-          cache: maven
+
       - name: maven-settings-xml-action
         uses: whelk-io/maven-settings-xml-action@v20
         with:

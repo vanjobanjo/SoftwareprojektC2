@@ -184,7 +184,7 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public List<ReadOnlyPlanungseinheit> schedulePruefung(ReadOnlyPlanungseinheit pruefung,
+  public List<ReadOnlyPruefung> schedulePruefung(ReadOnlyPruefung pruefung,
       LocalDateTime startTermin)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     return null;
