@@ -19,10 +19,6 @@ public class setSchaetzungSteps {
            throw new AssumptionViolatedException("Not implemented yet!");
     }
 
-    @Wenn("ich die Schätzung von {string} zu {int} ändere")
-    public void ichDieSchaetzungVonZuAendere_minusWert(String arg0, int arg1) {
-        throw new AssumptionViolatedException("Not implemented yet!");
-    }
 
     @Dann("ist die Schätzung von {string} den Wert {int}")
     public void istDieSchaetzungVonDenWert(String arg0, int arg1) {
