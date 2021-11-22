@@ -82,8 +82,8 @@ public class teilnehmerKreisSchaetzungSteps {
     throw new AssumptionViolatedException("Not implemented yet!");
   }
 
-  @Angenommen("die Pruefung {string} hat keinen Teilnehmerkreis")
-  public void diePruefungHatKeinenTeilnehmerkreis(String pruefungsName) {
+  @Angenommen("die Pruefung {string} hat als Teilnehmerkreisschaetzung: {string}")
+  public void diePruefungHatAlsTeilnehmerkreisschaetzung(String pruefung, String teilnehmerKreisSchatzung) {
     throw new AssumptionViolatedException("Not implemented yet!");
   }
 }

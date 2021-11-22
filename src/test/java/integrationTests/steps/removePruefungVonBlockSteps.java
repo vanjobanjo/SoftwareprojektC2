@@ -99,10 +99,6 @@ public class removePruefungVonBlockSteps {
         throw new AssumptionViolatedException("Not implemented yet!");
     }
 
-    @Dann("werfe IllegalArgumentException")
-    public void werfeIllegalArgumentException() {
-        throw new AssumptionViolatedException("Not implemented yet!");
-    }
 
     @Angenommen("{stringList} sind Teil des ungeplanten Block {string}")
     public void sindTeilDesUngeplantenBlock(List<String> klausuren, String blockName) {
