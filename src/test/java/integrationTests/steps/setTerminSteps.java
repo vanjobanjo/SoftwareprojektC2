@@ -1,5 +1,6 @@
 package integrationTests.steps;
 
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.ParameterType;
 import io.cucumber.java.de.Angenommen;
 import io.cucumber.java.de.Dann;
@@ -14,14 +15,17 @@ public class setTerminSteps {
    * @param datum das Datum fuer die neue LocalDateTime
    * @return den String als LocalDateTime
    */
-  @ParameterType("\\d\\d\\.\\d\\d\\.\\d\\d\\d\\d")
+  @ParameterType("(\\d\\d\\.\\d\\d\\.\\d\\d\\d\\d)?")
   public LocalDateTime localDateTime(String datum){
 
-    String[] split = datum.split("\\.");
+    if(datum != null) {
+      String[] split = datum.split("\\.");
 
-    String str = split[2]+"-"+split[1]+"-"+split[0]+"T9:00:00";
-
-    return LocalDateTime.parse(str);
+      String str = split[2] + "-" + split[1] + "-" + split[0] + "T09:00:00";
+      return LocalDateTime.parse(str);
+    }else{
+      return null;
+    }
   }
 
   @Angenommen("die Pruefung {string} hat den Termin {localDateTime} und die Pruefungsperiode von {localDateTime} - {localDateTime} und es gibt noch keine Pruefungen")
@@ -46,6 +50,6 @@ public class setTerminSteps {
 
 
   @Angenommen("die Pruefung {string} hat den Termin {localDateTime} und die Pruefungsperiode von {localDateTime} - {localDateTime} und es gibt schon Pruefungen")
-  public void pruefungHatTerminAberAnderePruefungVorhanden(String pruefung, LocalDateTime termin, LocalDateTime pruefStart, LocalDateTime pruefEnd) {
+  public void pruefungHatTerminAberAnderePruefungVorhanden(String pruefung, LocalDateTime termin, LocalDateTime pruefStart, LocalDateTime pruefEnd, DataTable pruefungMitTerminen) {
   }
 }
