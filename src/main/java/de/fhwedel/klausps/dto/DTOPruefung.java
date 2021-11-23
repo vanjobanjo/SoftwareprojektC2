@@ -10,7 +10,7 @@ import java.util.*;
 
 /**
  * Readonly DTO Pruefungen, die der View zur Verfügung gestellt werden.
- * TODO: Ist diese Klasse veraenderbar? Immutable?
+ *
  * @author NoNameNeeded
  */
 public class DTOPruefung implements ReadOnlyPruefung {
@@ -133,7 +133,9 @@ public class DTOPruefung implements ReadOnlyPruefung {
         return false;
     }
 
-
+    /**
+     * Builder Klasse, weil es zuviele unterschiedliche Varianten vom Konstruktor gibt.
+     */
     public static class DTOPruefungBuilder {
         private String pruefungsNummer;
         private String pruefungsName;
@@ -143,7 +145,9 @@ public class DTOPruefung implements ReadOnlyPruefung {
         private int scoring;
         private Set<String> pruefer;
 
-
+        /**
+         * Builder Konstruktor
+         */
         public DTOPruefungBuilder() {
             pruefungsNummer = "";
             pruefungsName = "";
@@ -188,7 +192,8 @@ public class DTOPruefung implements ReadOnlyPruefung {
             this.pruefer = pruefer;
             return this;
         }
-        public DTOPruefung build(){
+
+        public DTOPruefung build() {
             return new DTOPruefung(this);
         }
     }
