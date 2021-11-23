@@ -10,12 +10,10 @@ import java.util.*;
 
 /**
  * Readonly DTO Pruefungen, die der View zur Verfügung gestellt werden.
- *
  * @author NoNameNeeded
  */
 public class DTOPruefung implements ReadOnlyPruefung {
-
-    //TODO falls Immutable dann final.
+    //TODO: Immutable derzeit.
     private final String pruefungsNummer;
     private final String pruefungsName;
     private final Map<Teilnehmerkreis, Integer> teilnehmerKreisSchaetzung;
