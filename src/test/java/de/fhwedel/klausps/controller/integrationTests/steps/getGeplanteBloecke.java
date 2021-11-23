@@ -11,7 +11,7 @@ public class getGeplanteBloecke {
 
   // -------------------------------------------------------
   // --------- methoden wie in pruefungsperiode ------------
-  // ----------- nach merge auf main entfernen -------------
+  // todo ------- nach merge auf main entfernen ------------
   // -------------------------------------------------------
 
   @Angenommen("es ist eine Pruefungsperiode geplant")
