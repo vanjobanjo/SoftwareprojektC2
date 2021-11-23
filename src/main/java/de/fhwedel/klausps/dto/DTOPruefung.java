@@ -6,73 +6,32 @@ import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Readonly DTO Pruefungen, die der View zur Verfügung gestellt werden.
  * TODO: Ist diese Klasse veraenderbar? Immutable?
  * @author NoNameNeeded
  */
-public class DTOPruefung implements ReadOnlyPruefung{
+public class DTOPruefung implements ReadOnlyPruefung {
 
     //TODO falls Immutable dann final.
     private final String pruefungsNummer;
     private final String pruefungsName;
     private final Map<Teilnehmerkreis, Integer> teilnehmerKreisSchaetzung;
     private final Duration dauer;
-    private final LocalDateTime startZeitpunkt;
+    private final Optional<LocalDateTime> startZeitpunkt;
     private final int scoring;
     private final Set<String> pruefer;
 
-
-    /**
-     * Konstruktor fuer bereits geplante Pruefungen.
-     * @param pruefungsNummer - Nummer der Pruefungen
-     * @param pruefungsName - Name der Pruefungen
-     * @param teilnehmerKreisSchaetzung - Teilnehmerkreis Schaetzungen
-     * @param dauer - Dauer
-     * @param startZeitpunkt - Zeitpunkt des Startes
-     * @param scoring - Scoring
-     * @param pruefer - Die Pruefer
-     */
-     public DTOPruefung(String pruefungsNummer,
-                        String pruefungsName,
-                        Map<Teilnehmerkreis, Integer> teilnehmerKreisSchaetzung,
-                        Duration dauer,
-                        LocalDateTime startZeitpunkt,
-                        int scoring,
-                        Set<String> pruefer) {
-        this.pruefungsNummer = pruefungsNummer;
-        this.pruefungsName = pruefungsName;
-        this.teilnehmerKreisSchaetzung = teilnehmerKreisSchaetzung;
-        this.dauer = dauer;
-        this.startZeitpunkt = startZeitpunkt;
-        this.scoring = scoring;
-        this.pruefer = pruefer;
-     }
-
-    /**
-     * Konstruktor fuer neue ungeplante Pruefungen.
-     * Ohne Startzeitpunkt.
-     * @param pruefungsNummer - Nummer der Pruefung
-     * @param pruefungsName - Name der Pruefung
-     * @param teilnehmerKreisSchaetzung - Teilnehmerkreis Schaetzungen
-     * @param dauer - Dauer default ist Mindestdauer der Pruefung
-     * @param pruefer - Pruefer evt. leer
-     */
-    public DTOPruefung(String pruefungsNummer,
-                       String pruefungsName,
-                       Map<Teilnehmerkreis, Integer> teilnehmerKreisSchaetzung,
-                       Duration dauer, Set<String> pruefer) {
-        this.pruefungsNummer = pruefungsNummer;
-        this.pruefungsName = pruefungsName;
-        this.teilnehmerKreisSchaetzung = teilnehmerKreisSchaetzung;
-        this.dauer = dauer;
-        this.startZeitpunkt = null;
-        this.scoring = 0; // zu Beginn ist das Scoring 0
-        this.pruefer = pruefer;
+    private DTOPruefung(DTOPruefungBuilder dtoPruefungBuilder) {
+        this.pruefungsNummer = dtoPruefungBuilder.pruefungsNummer;
+        this.pruefungsName = dtoPruefungBuilder.pruefungsName;
+        this.teilnehmerKreisSchaetzung = dtoPruefungBuilder.teilnehmerKreisSchaetzung;
+        this.dauer = dtoPruefungBuilder.dauer;
+        this.startZeitpunkt = dtoPruefungBuilder.startZeitpunkt;
+        this.scoring = dtoPruefungBuilder.scoring;
+        this.pruefer = dtoPruefungBuilder.pruefer;
     }
 
     /**
@@ -96,7 +55,7 @@ public class DTOPruefung implements ReadOnlyPruefung{
      */
     @Override
     public boolean geplant() {
-        return startZeitpunkt != null;
+        return startZeitpunkt.isPresent();
     }
 
     /**
@@ -104,7 +63,7 @@ public class DTOPruefung implements ReadOnlyPruefung{
      */
     @Override
     public boolean ungeplant() {
-        return startZeitpunkt == null;
+        return startZeitpunkt.isEmpty();
     }
 
     /**
@@ -121,7 +80,7 @@ public class DTOPruefung implements ReadOnlyPruefung{
      */
     @Override
     public Optional<LocalDateTime> getTermin() {
-        return Optional.ofNullable(startZeitpunkt);
+        return startZeitpunkt;
     }
 
     /**
@@ -139,7 +98,7 @@ public class DTOPruefung implements ReadOnlyPruefung{
     public int getGesamtSchaetzung() {
         return teilnehmerKreisSchaetzung.values()
                 .stream().mapToInt(value -> value)
-                .reduce(0, Integer :: sum);
+                .reduce(0, Integer::sum);
     }
 
     /**
@@ -172,5 +131,65 @@ public class DTOPruefung implements ReadOnlyPruefung{
     @Override
     public boolean isBlock() {
         return false;
+    }
+
+
+    public static class DTOPruefungBuilder {
+        private String pruefungsNummer;
+        private String pruefungsName;
+        private Map<Teilnehmerkreis, Integer> teilnehmerKreisSchaetzung;
+        private Duration dauer;
+        private Optional<LocalDateTime> startZeitpunkt;
+        private int scoring;
+        private Set<String> pruefer;
+
+
+        public DTOPruefungBuilder() {
+            pruefungsNummer = "";
+            pruefungsName = "";
+            teilnehmerKreisSchaetzung = new HashMap<>();
+            dauer = Duration.ofMinutes(60); //TODO
+            startZeitpunkt = Optional.empty();
+            scoring = 0;
+            pruefer = new HashSet<>();
+        }
+
+        public DTOPruefungBuilder setPruefungsNummer(String pruefungsNummer) {
+            this.pruefungsNummer = pruefungsNummer;
+            return this;
+        }
+
+        public DTOPruefungBuilder setPruefungsName(String pruefungsName) {
+            this.pruefungsName = pruefungsName;
+            return this;
+        }
+
+        public DTOPruefungBuilder setTeilnehmerKreisSchaetzung(Map<Teilnehmerkreis, Integer> teilnehmerKreisSchaetzung) {
+            this.teilnehmerKreisSchaetzung = teilnehmerKreisSchaetzung;
+            return this;
+        }
+
+        public DTOPruefungBuilder setDauer(Duration dauer) {
+            this.dauer = dauer;
+            return this;
+        }
+
+        public DTOPruefungBuilder setStartZeitpunkt(LocalDateTime startZeitpunkt) {
+            this.startZeitpunkt = Optional.of(startZeitpunkt);
+            return this;
+        }
+
+        public DTOPruefungBuilder setScoring(int scoring) {
+            this.scoring = scoring;
+            return this;
+        }
+
+        public DTOPruefungBuilder setPruefer(Set<String> pruefer) {
+            this.pruefer = pruefer;
+            return this;
+        }
+        public DTOPruefung build(){
+            return new DTOPruefung(this);
+        }
     }
 }
