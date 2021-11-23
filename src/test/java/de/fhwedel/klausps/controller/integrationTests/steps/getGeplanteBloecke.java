@@ -29,4 +29,8 @@ public class getGeplanteBloecke {
   public void esGibtKeineGeplantenBloecke() {
 
   }
+
+  @Und("es gibt die folgenden geplanten und ungeplanten Bloecke:")
+  public void esGibtDieFolgendenGeplantenUndUngeplantenBloecke(DataTable table) {
+  }
 }
