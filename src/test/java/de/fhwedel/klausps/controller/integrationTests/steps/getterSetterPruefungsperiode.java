@@ -81,7 +81,7 @@ public class getterSetterPruefungsperiode {
   }
 
 
-  @Wenn("ich die {double} aendere")
+  @Wenn("ich die {int} aendere")
   public void ichDieKapazitaetAendere(int kapazitaet) {
     throw new AssumptionViolatedException("Not implemented yet!");
   }
@@ -123,7 +123,8 @@ public class getterSetterPruefungsperiode {
   }
 
   @Wenn("ich das Semester von {int} {string} auf {int} {string} aendere")
-  public void ichDasSemesterVonAltAufNeuAendere() {
+  public void ichDasSemesterVonAltAufNeuAendere(int oldYear, String oldSemester,
+      int newYear, String newSemester) {
   }
 
   @Wenn("ich das Semester auf {int} {string} aendere")
@@ -137,7 +138,7 @@ public class getterSetterPruefungsperiode {
   }
 
   @Dann("ist am Ende das Semester {int} {string} eingetragen")
-  public void istAmEndeDasNeueSemesterEingetragen() {
+  public void istAmEndeDasNeueSemesterEingetragen(int year, String semester) {
     throw new AssumptionViolatedException("Not implemented yet!");
   }
 
