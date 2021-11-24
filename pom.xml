@@ -67,6 +67,10 @@
 
 
   <dependencies>
+    <dependency>
+      <groupId>de.fhwedel.klausps</groupId>
+      <artifactId>controller-api</artifactId>
+    </dependency>
     <!-- testing -->
     <dependency>
       <groupId>io.cucumber</groupId>
@@ -114,11 +118,8 @@
     </dependency>
     <dependency>
       <groupId>de.fhwedel.klausps</groupId>
-      <artifactId>controller-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>de.fhwedel.klausps</groupId>
-      <artifactId>model2</artifactId>
+      <artifactId>model-api</artifactId>
+      <version>1.0.2-SNAPSHOT</version>
     </dependency>
   </dependencies>
   <build>
