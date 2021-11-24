@@ -10,6 +10,7 @@ import java.util.*;
 
 /**
  * Readonly DTO Pruefungen, die der View zur Verfügung gestellt werden.
+ *
  * @author NoNameNeeded
  */
 public class DTOPruefung implements ReadOnlyPruefung {
@@ -120,7 +121,7 @@ public class DTOPruefung implements ReadOnlyPruefung {
      */
     @Override
     public Set<Teilnehmerkreis> getTeilnehmerkreise() {
-        return teilnehmerKreisSchaetzung.keySet();
+        return new HashSet<>(teilnehmerKreisSchaetzung.keySet());
     }
 
     /**
@@ -154,6 +155,20 @@ public class DTOPruefung implements ReadOnlyPruefung {
             startZeitpunkt = Optional.empty();
             scoring = 0;
             pruefer = new HashSet<>();
+        }
+
+        /**
+         * Copy Konstruktor, setze bei bei Bedarf, dann die Werte.
+         * @param pruefung - Zu kopierende DTOPruefung
+         */
+        public DTOPruefungBuilder(DTOPruefung pruefung) {
+            pruefungsNummer = pruefung.pruefungsNummer;
+            pruefungsName = pruefung.pruefungsName;
+            teilnehmerKreisSchaetzung = pruefung.teilnehmerKreisSchaetzung;
+            dauer = pruefung.dauer;
+            startZeitpunkt = pruefung.startZeitpunkt;
+            scoring = pruefung.scoring;
+            pruefer = pruefung.pruefer;
         }
 
         public DTOPruefungBuilder setPruefungsNummer(String pruefungsNummer) {
