@@ -10,7 +10,6 @@ import java.util.*;
 
 /**
  * Readonly DTOPrüfungen, die der View zur Verfügung gestellt werden.
- *
  * @author NoNameNeeded
  */
 public class DTOPruefung implements ReadOnlyPruefung {
