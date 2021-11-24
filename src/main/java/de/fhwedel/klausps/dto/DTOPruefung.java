@@ -24,13 +24,13 @@ public class DTOPruefung implements ReadOnlyPruefung {
     private final Set<String> pruefer;
 
     private DTOPruefung(DTOPruefungBuilder dtoPruefungBuilder) {
-        this.pruefungsNummer = dtoPruefungBuilder.pruefungsNummer;
-        this.pruefungsName = dtoPruefungBuilder.pruefungsName;
-        this.teilnehmerKreisSchaetzung = dtoPruefungBuilder.teilnehmerKreisSchaetzung;
-        this.dauer = dtoPruefungBuilder.dauer;
-        this.startZeitpunkt = dtoPruefungBuilder.startZeitpunkt;
-        this.scoring = dtoPruefungBuilder.scoring;
-        this.pruefer = dtoPruefungBuilder.pruefer;
+        pruefungsNummer = dtoPruefungBuilder.pruefungsNummer;
+        pruefungsName = dtoPruefungBuilder.pruefungsName;
+        teilnehmerKreisSchaetzung = dtoPruefungBuilder.teilnehmerKreisSchaetzung;
+        dauer = dtoPruefungBuilder.dauer;
+        startZeitpunkt = dtoPruefungBuilder.startZeitpunkt;
+        scoring = dtoPruefungBuilder.scoring;
+        pruefer = dtoPruefungBuilder.pruefer;
     }
 
     /**
@@ -133,7 +133,8 @@ public class DTOPruefung implements ReadOnlyPruefung {
     }
 
     /**
-     * Builder Klasse, weil es zuviele unterschiedliche Varianten vom Konstruktor gibt.
+     * Builder Klasse, weil es zuviele unterschiedliche Konstruktor Varianten
+     * geben würde.
      */
     public static class DTOPruefungBuilder {
         private String pruefungsNummer;
@@ -158,7 +159,7 @@ public class DTOPruefung implements ReadOnlyPruefung {
         }
 
         /**
-         * Copy Konstruktor, setze bei bei Bedarf, dann die Werte.
+         * Copy Konstruktor, bei Bedarf kann man die Werte setzen.
          * @param pruefung - Zu kopierende DTOPruefung
          */
         public DTOPruefungBuilder(DTOPruefung pruefung) {
