@@ -10,6 +10,8 @@ import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.export.ExportTyp;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
+import de.fhwedel.klausps.model.api.Pruefung;
+import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.nio.file.Path;
@@ -25,6 +27,13 @@ import java.util.Set;
 
 public class Controller implements InterfaceController {
 
+  //TODO public entfernen, grade nur für tests drin
+  public de.fhwedel.klausps.model.api.Pruefungsperiode aktuellePeriode;
+
+
+  Controller(Pruefungsperiode p) {
+    aktuellePeriode = p;
+  }
 
   @Override
   public Set<ReadOnlyPruefung> getGeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
@@ -174,6 +183,13 @@ public class Controller implements InterfaceController {
 
   @Override
   public void deletePruefung(ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException {
+    if (aktuellePeriode == null) {
+      throw new NoPruefungsPeriodeDefinedException(
+          "Es wurde noch keine PruefungsPeriode definiert.");
+    }
+
+    // Die Pruefung aus den Kalender nehmen
+    this.unschedulePruefung(pruefung);
 
   }
 
