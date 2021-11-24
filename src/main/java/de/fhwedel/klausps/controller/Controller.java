@@ -10,6 +10,9 @@ import de.fhwedel.klausps.controller.export.ExportTyp;
 import de.fhwedel.klausps.controller.helper.Pair;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.services.DataAccessService;
+import de.fhwedel.klausps.model.api.Pruefung;
+import de.fhwedel.klausps.model.api.Pruefungsperiode;
+import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.nio.file.Path;
@@ -24,14 +27,17 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import javax.xml.crypto.Data;
 
 public class Controller implements InterfaceController{
 
+  //TODO public entfernen, grade nur für tests drin
+  public de.fhwedel.klausps.model.api.Pruefungsperiode aktuellePeriode;
   private final DataAccessService dataAccessService;
 
-  public Controller(DataAccessService dataAccessService) {
+  Controller(Pruefungsperiode pruefungPeriode, DataAccessService dataAccessService) {
+    aktuellePeriode = pruefungPeriode;
     this.dataAccessService = dataAccessService;
-
   }
 
   @Override
@@ -205,7 +211,14 @@ public class Controller implements InterfaceController{
 
   @Override
   public void deletePruefung(ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException {
-    throw new IllegalStateException("Not implemented yet!");
+    if (aktuellePeriode == null) {
+      throw new NoPruefungsPeriodeDefinedException(
+          "Es wurde noch keine PruefungsPeriode definiert.");
+    }
+
+    // Die Pruefung aus den Kalender nehmen
+    this.unschedulePruefung(pruefung);
+
   }
 
   @Override
