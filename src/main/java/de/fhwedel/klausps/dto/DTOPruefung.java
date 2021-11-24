@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 /**
- * Readonly DTO Pruefungen, die der View zur Verfügung gestellt werden.
+ * Readonly DTOPrüfungen, die der View zur Verfügung gestellt werden.
  *
  * @author NoNameNeeded
  */
@@ -133,7 +133,7 @@ public class DTOPruefung implements ReadOnlyPruefung {
     }
 
     /**
-     * Builder Klasse, weil es zuviele unterschiedliche Konstruktor Varianten
+     * Builder Klasse, weil es zu viele unterschiedliche Konstruktor Varianten
      * geben würde.
      */
     public static class DTOPruefungBuilder {
