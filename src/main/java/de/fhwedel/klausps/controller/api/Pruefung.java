@@ -66,9 +66,15 @@ public class Pruefung implements ReadOnlyPruefung {
   }
 
   @Override
-  public int getSchaetzung() {
+  public int getGesamtSchaetzung() {
     return 0;
   }
+
+  @Override
+  public Map<Teilnehmerkreis, Integer> getTeilnehmerKreisSchaetzung() {
+    return null;
+  }
+
 
   @Override
   public Set<String> getPruefer() {
