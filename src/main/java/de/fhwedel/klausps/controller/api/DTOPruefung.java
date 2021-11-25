@@ -1,4 +1,4 @@
-package de.fhwedel.klausps.dto;
+package de.fhwedel.klausps.controller.api;
 
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
