@@ -1,6 +1,5 @@
 package de.fhwedel.klausps.controller;
 
-
 import de.fhwedel.klausps.controller.api.InterfaceController;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
@@ -9,6 +8,7 @@ import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.export.ExportTyp;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
+import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.nio.file.Path;
@@ -24,6 +24,11 @@ import java.util.Set;
 
 public class Controller implements InterfaceController {
 
+  private final DataAccessService dataAccessService;
+
+  public Controller(DataAccessService dataAccessService) {
+    this.dataAccessService = dataAccessService;
+  }
 
   @Override
   public Set<ReadOnlyPruefung> getGeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
@@ -66,9 +71,7 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public void setSemester(Semester semester) throws NoPruefungsPeriodeDefinedException {
-
-  }
+  public void setSemester(Semester semester) throws NoPruefungsPeriodeDefinedException {}
 
   @Override
   public Set<Teilnehmerkreis> getAllTeilnehmerKreise() throws NoPruefungsPeriodeDefinedException {
@@ -100,8 +103,8 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public Collection<ReadOnlyPruefung> getPruefungenInZeitraum(LocalDateTime start,
-      LocalDateTime end) throws NoPruefungsPeriodeDefinedException {
+  public Collection<ReadOnlyPruefung> getPruefungenInZeitraum(
+      LocalDateTime start, LocalDateTime end) throws NoPruefungsPeriodeDefinedException {
     return null;
   }
 
@@ -143,48 +146,44 @@ public class Controller implements InterfaceController {
 
   @Override
   public void setPruefungsnummer(ReadOnlyPruefung pruefung, String pruefungsnummer)
-      throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
-
-  }
+      throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {}
 
   @Override
   public void setName(ReadOnlyPruefung pruefung, String name)
-      throws NoPruefungsPeriodeDefinedException {
-
-  }
+      throws NoPruefungsPeriodeDefinedException {}
 
   @Override
-  public void setName(ReadOnlyBlock block, String name) throws NoPruefungsPeriodeDefinedException {
-
-  }
+  public void setName(ReadOnlyBlock block, String name) throws NoPruefungsPeriodeDefinedException {}
 
   @Override
-  public List<ReadOnlyPruefung> setTeilnehmerkreisSchaetzung(ReadOnlyPruefung pruefung,
-      Teilnehmerkreis teilnehmerkreis, int schaetzung) throws NoPruefungsPeriodeDefinedException {
-    return null;
-  }
-
-  @Override
-  public ReadOnlyPruefung createPruefung(String name, String pruefungsNummer, String pruefer,
-      Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreis)
+  public List<ReadOnlyPruefung> setTeilnehmerkreisSchaetzung(
+      ReadOnlyPruefung pruefung, Teilnehmerkreis teilnehmerkreis, int schaetzung)
       throws NoPruefungsPeriodeDefinedException {
     return null;
   }
 
   @Override
-  public void deletePruefung(ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException {
-
+  public ReadOnlyPruefung createPruefung(
+      String name,
+      String pruefungsNummer,
+      String pruefer,
+      Duration duration,
+      Map<Teilnehmerkreis, Integer> teilnehmerkreis)
+      throws NoPruefungsPeriodeDefinedException {
+    return dataAccessService.createPruefung(
+        name, pruefungsNummer, pruefer, duration, teilnehmerkreis);
   }
+
+  @Override
+  public void deletePruefung(ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException {}
 
   @Override
   public void unschedulePruefung(ReadOnlyPruefung pruefung)
-      throws NoPruefungsPeriodeDefinedException {
-
-  }
+      throws NoPruefungsPeriodeDefinedException {}
 
   @Override
-  public List<ReadOnlyPruefung> schedulePruefung(ReadOnlyPruefung pruefung,
-      LocalDateTime startTermin)
+  public List<ReadOnlyPruefung> schedulePruefung(
+      ReadOnlyPruefung pruefung, LocalDateTime startTermin)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     return null;
   }
@@ -197,26 +196,23 @@ public class Controller implements InterfaceController {
 
   @Override
   public void addPruefer(ReadOnlyPruefung pruefung, String kuerzel)
-      throws NoPruefungsPeriodeDefinedException {
-
-  }
+      throws NoPruefungsPeriodeDefinedException {}
 
   @Override
   public void removePruefer(ReadOnlyPruefung pruefung, String kuerzel)
-      throws NoPruefungsPeriodeDefinedException {
-
-  }
+      throws NoPruefungsPeriodeDefinedException {}
 
   @Override
-  public List<ReadOnlyPruefung> addTeilnehmerkreis(ReadOnlyPruefung pruefung,
-      Teilnehmerkreis teilnehmerkreis)
+  public List<ReadOnlyPruefung> addTeilnehmerkreis(
+      ReadOnlyPruefung pruefung, Teilnehmerkreis teilnehmerkreis)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     return null;
   }
 
   @Override
-  public List<ReadOnlyPruefung> removeTeilnehmerkreis(ReadOnlyPruefung pruefung,
-      Teilnehmerkreis teilnehmerkreis) throws NoPruefungsPeriodeDefinedException {
+  public List<ReadOnlyPruefung> removeTeilnehmerkreis(
+      ReadOnlyPruefung pruefung, Teilnehmerkreis teilnehmerkreis)
+      throws NoPruefungsPeriodeDefinedException {
     return null;
   }
 
@@ -233,14 +229,10 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public void deleteBlock(ReadOnlyBlock block) throws NoPruefungsPeriodeDefinedException {
-
-  }
+  public void deleteBlock(ReadOnlyBlock block) throws NoPruefungsPeriodeDefinedException {}
 
   @Override
-  public void unscheduleBlock(ReadOnlyBlock block) throws NoPruefungsPeriodeDefinedException {
-
-  }
+  public void unscheduleBlock(ReadOnlyBlock block) throws NoPruefungsPeriodeDefinedException {}
 
   @Override
   public List<ReadOnlyPruefung> moveBlock(ReadOnlyBlock block, LocalDateTime termin)
@@ -256,9 +248,7 @@ public class Controller implements InterfaceController {
 
   @Override
   public void removePruefungFromBlock(ReadOnlyBlock block, ReadOnlyPruefung pruefung)
-      throws NoPruefungsPeriodeDefinedException {
-
-  }
+      throws NoPruefungsPeriodeDefinedException {}
 
   @Override
   public List<KriteriumsAnalyse> analyseScoring(ReadOnlyPruefung pruefung)
@@ -267,30 +257,22 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public void importPeriode(Path path) throws NoPruefungsPeriodeDefinedException {
-
-  }
+  public void importPeriode(Path path) throws NoPruefungsPeriodeDefinedException {}
 
   @Override
-  public void exportPeriode(Path path, ExportTyp typ) throws NoPruefungsPeriodeDefinedException {
-
-  }
+  public void exportPeriode(Path path, ExportTyp typ) throws NoPruefungsPeriodeDefinedException {}
 
   @Override
   public void createEmptyPeriode(Semester semester, LocalDate start, LocalDate end, int kapazitaet)
-      throws NoPruefungsPeriodeDefinedException {
-
-  }
+      throws NoPruefungsPeriodeDefinedException {}
 
   @Override
-  public void createEmptyPeriodeWithData(Semester semester, LocalDate start, LocalDate end,
-      int kapazitaet, Path path) throws NoPruefungsPeriodeDefinedException {
-
-  }
+  public void createEmptyPeriodeWithData(
+      Semester semester, LocalDate start, LocalDate end, int kapazitaet, Path path)
+      throws NoPruefungsPeriodeDefinedException {}
 
   @Override
-  public void createEmptyAndAdoptPeriode(Semester semester, LocalDate start, LocalDate end,
-      int kapazitaet, Path path) throws NoPruefungsPeriodeDefinedException {
-
-  }
+  public void createEmptyAndAdoptPeriode(
+      Semester semester, LocalDate start, LocalDate end, int kapazitaet, Path path)
+      throws NoPruefungsPeriodeDefinedException {}
 }

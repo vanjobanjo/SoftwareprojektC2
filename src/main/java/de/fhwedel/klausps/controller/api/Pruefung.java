@@ -6,7 +6,6 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -17,17 +16,29 @@ public class Pruefung implements ReadOnlyPruefung {
   private final String pruefungsNr;
   private final Set<String> pruefer;
   private final Duration duration;
-  private final Map<Teilnehmerkreis, Integer> teilnehmerkreis;
-
+  private final Set<Teilnehmerkreis> teilnehmerkreise;
+  private final Integer teilnehmerSchatzung;
 
   public Pruefung(String name, String pruefungsNr,
-      String pruefer, Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreis) {
+      String pruefer, Duration duration, Set<Teilnehmerkreis> teilnehmerkreise, Integer teilnehmerSchatzung) {
     this.name = name;
     this.pruefungsNr = pruefungsNr;
     this.pruefer = new HashSet<>();
     this.pruefer.add(pruefer);
     this.duration = duration;
-    this.teilnehmerkreis = new HashMap<>(teilnehmerkreis);
+    this.teilnehmerkreise = new HashSet<>(teilnehmerkreise);
+    this.teilnehmerSchatzung = teilnehmerSchatzung;
+  }
+
+  public Pruefung(String name, String pruefungsNr,
+      Set<String> pruefer, Duration duration, Set<Teilnehmerkreis> teilnehmerkreise, Integer teilnehmerSchatzung) {
+    this.name = name;
+    this.pruefungsNr = pruefungsNr;
+    this.pruefer = new HashSet<>();
+    this.pruefer.addAll(pruefer);
+    this.duration = duration;
+    this.teilnehmerkreise = new HashSet<>(teilnehmerkreise);
+    this.teilnehmerSchatzung = teilnehmerSchatzung;
   }
 
   @Override
@@ -72,9 +83,8 @@ public class Pruefung implements ReadOnlyPruefung {
 
   @Override
   public Map<Teilnehmerkreis, Integer> getTeilnehmerKreisSchaetzung() {
-    return null;
+    return null;  // TODO is the interface correct in returning a map? It should only return one integer
   }
-
 
   @Override
   public Set<String> getPruefer() {
@@ -83,7 +93,7 @@ public class Pruefung implements ReadOnlyPruefung {
 
   @Override
   public Set<Teilnehmerkreis> getTeilnehmerkreise() {
-    return new HashSet<>(teilnehmerkreis.keySet());
+    return new HashSet<>(teilnehmerkreise);
   }
 
   @Override
