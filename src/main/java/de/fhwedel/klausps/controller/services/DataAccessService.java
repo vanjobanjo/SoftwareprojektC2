@@ -1,11 +1,13 @@
 package de.fhwedel.klausps.controller.services;
 
 
+import de.fhwedel.klausps.controller.api.DTOPruefung;
 import de.fhwedel.klausps.controller.api.Pruefung;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
+import de.fhwedel.klausps.model.impl.PruefungImpl;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Set;
@@ -28,10 +30,9 @@ public class DataAccessService {
             .getPruefungsnummer().equals(pruefungsNr));
 
     if (filtered.isEmpty()) {
-    // todo zu pruefung von Model
-     /* pruefungsperiode.addPlanungseinheit(new de.fhwedel.klausps.controller.model
-          .Pruefung(pruefungsNr, name, duration, ));*/
-     return new Pruefung(name, pruefungsNr, pruefer, duration, teilnehmerkreis);
+      // todo contains static values as it is unclear where to retreave the data from
+      pruefungsperiode.addPlanungseinheit(new PruefungImpl(pruefungsNr, name, "", 50, duration));
+      return new Pruefung(name, pruefungsNr, pruefer, duration, teilnehmerkreis);
     }
     return null;
   }

@@ -2,8 +2,11 @@ package de.fhwedel.klausps.controller.services;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.services.DataAccessService;
@@ -51,12 +54,12 @@ public class DataAccessServiceTest {
   @Test
   public void createPruefungSaveInModel() {
     Pruefungsperiode pruefungsperiode = mock(Pruefungsperiode.class);
-    // todo not done, because model Pruefung needs different teilnehmerkreis structure from model
     DataAccessService service = spy(new DataAccessService(pruefungsperiode));
 
     ReadOnlyPruefung pruefung = service.createPruefung("asdf", "222b", "def",
         Duration.ofMinutes(120), new HashMap<>());
-
+    // TODO test whether or not the correct data is passed
+    verify(pruefungsperiode, times(1)).addPlanungseinheit(notNull());
     assertThat(pruefung).isNotNull();
 
   }
