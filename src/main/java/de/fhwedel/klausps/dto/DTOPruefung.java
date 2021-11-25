@@ -136,6 +136,15 @@ public class DTOPruefung implements ReadOnlyPruefung {
      * geben würde.
      */
     public static class DTOPruefungBuilder {
+        private static final String PRUEUNGS_NUMMER_DEFAULT = "";
+        private static final String PRUEFUNGS_NAME_DEFAULT = "";
+        private static final Map<Teilnehmerkreis, Integer> TEILNEHMERKREIS_SCHAETZUNG_DEFAULT = new HashMap<>();
+        private static final Duration DAUER_DEFAULT = Duration.ofMinutes(60);
+        private static final Optional<LocalDateTime> START_ZEITPUNKT_DEFAULT = Optional.empty();
+        private static final int SCORING_DEFAULT = 0;
+        private static final Set<String> PRUEFER_DEFAULT = new HashSet<>();
+
+
         private String pruefungsNummer;
         private String pruefungsName;
         private Map<Teilnehmerkreis, Integer> teilnehmerKreisSchaetzung;
@@ -148,13 +157,13 @@ public class DTOPruefung implements ReadOnlyPruefung {
          * Builder Konstruktor
          */
         public DTOPruefungBuilder() {
-            pruefungsNummer = "";
-            pruefungsName = "";
-            teilnehmerKreisSchaetzung = new HashMap<>();
-            dauer = Duration.ofMinutes(60); //TODO
-            startZeitpunkt = Optional.empty();
-            scoring = 0;
-            pruefer = new HashSet<>();
+            pruefungsNummer = PRUEUNGS_NUMMER_DEFAULT;
+            pruefungsName = PRUEFUNGS_NAME_DEFAULT;
+            teilnehmerKreisSchaetzung = TEILNEHMERKREIS_SCHAETZUNG_DEFAULT;
+            dauer = DAUER_DEFAULT;
+            startZeitpunkt = START_ZEITPUNKT_DEFAULT;
+            scoring = SCORING_DEFAULT;
+            pruefer = PRUEFER_DEFAULT;
         }
 
         /**
