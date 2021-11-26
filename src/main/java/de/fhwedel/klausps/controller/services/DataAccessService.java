@@ -63,4 +63,8 @@ public class DataAccessService {
       Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
     return createPruefung(name, pruefungsNr, Set.of(pruefer), duration, teilnehmerkreise);
   }
+
+  public boolean isPruefungsperiodeSet() {
+    return false;
+  }
 }

@@ -1,6 +1,9 @@
 package de.fhwedel.klausps.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -16,6 +19,7 @@ import de.fhwedel.klausps.controller.services.DataAccessService;
 import java.time.Duration;
 import java.util.HashMap;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class ControllerTest {
@@ -26,6 +30,7 @@ class ControllerTest {
   @BeforeEach
   void setUp() {
     this.dataAccessService = mock(DataAccessService.class);
+    when(dataAccessService.isPruefungsperiodeSet()).thenReturn(true);
     this.controller = new Controller(dataAccessService);
   }
 
@@ -75,6 +80,23 @@ class ControllerTest {
                 pruefung.getDauer(),
                 new HashMap<>()))
         .isNull();
+  }
+
+  @Test
+  @DisplayName("Can not create Pruefung as no PruefungsPeriode is set")
+  void createPruefung_missingPruefungsPeriode() {
+    when(dataAccessService.isPruefungsperiodeSet()).thenReturn(false);
+    ReadOnlyPruefung expected = getReadOnlyPruefung();
+    assertThrows(
+        NoPruefungsPeriodeDefinedException.class,
+        () -> {
+          controller.createPruefung(
+              expected.getName(),
+              expected.getPruefungsnummer(),
+              "Harms",
+              expected.getDauer(),
+              expected.getTeilnehmerKreisSchaetzung());
+        });
   }
 
   private ReadOnlyPruefung getReadOnlyPruefung() {
