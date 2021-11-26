@@ -181,6 +181,9 @@ public class Controller implements InterfaceController {
       Map<Teilnehmerkreis, Integer> teilnehmerkreis)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(name, pruefungsNummer, pruefer, duration, teilnehmerkreis);
+    if (!dataAccessService.isPruefungsperiodeSet()) {
+      throw new NoPruefungsPeriodeDefinedException();
+    }
     return dataAccessService.createPruefung(
         name, pruefungsNummer, pruefer, duration, teilnehmerkreis);
   }
