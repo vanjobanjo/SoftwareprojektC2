@@ -1,6 +1,6 @@
 package de.fhwedel.klausps.controller.api.builders;
 
-import de.fhwedel.klausps.controller.api.Pruefung;
+import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -43,7 +43,7 @@ public class PruefungBuilder {
    *
    * @param pruefung - Zu kopierende DTOPruefung
    */
-  public PruefungBuilder(Pruefung pruefung) {
+  public PruefungBuilder(PruefungDTO pruefung) {
     pruefungsNummer = pruefung.getPruefungsnummer();
     pruefungsName = pruefung.getName();
     //teilnehmerSchaetzung = pruefung.; // TODO shoud be apart from the Teilnehmerkreise
@@ -102,8 +102,8 @@ public class PruefungBuilder {
     return this;
   }
 
-  public de.fhwedel.klausps.controller.api.Pruefung build() {
-    return new Pruefung(
+  public PruefungDTO build() {
+    return new PruefungDTO(
         this.pruefungsName,
         this.pruefungsNummer,
         this.pruefer,
