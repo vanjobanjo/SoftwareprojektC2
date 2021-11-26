@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-public class Pruefung implements ReadOnlyPruefung {
+public class PruefungDTO implements ReadOnlyPruefung {
   private final String name;
   private final String pruefungsNr;
   private final Set<String> pruefer;
@@ -19,8 +19,8 @@ public class Pruefung implements ReadOnlyPruefung {
   private final Set<Teilnehmerkreis> teilnehmerkreise;
   private final Integer teilnehmerSchatzung;
 
-  public Pruefung(String name, String pruefungsNr,
-      String pruefer, Duration duration, Set<Teilnehmerkreis> teilnehmerkreise, Integer teilnehmerSchatzung) {
+  public PruefungDTO(String name, String pruefungsNr,
+                     String pruefer, Duration duration, Set<Teilnehmerkreis> teilnehmerkreise, Integer teilnehmerSchatzung) {
     this.name = name;
     this.pruefungsNr = pruefungsNr;
     this.pruefer = new HashSet<>();
@@ -30,8 +30,8 @@ public class Pruefung implements ReadOnlyPruefung {
     this.teilnehmerSchatzung = teilnehmerSchatzung;
   }
 
-  public Pruefung(String name, String pruefungsNr,
-      Set<String> pruefer, Duration duration, Set<Teilnehmerkreis> teilnehmerkreise, Integer teilnehmerSchatzung) {
+  public PruefungDTO(String name, String pruefungsNr,
+                     Set<String> pruefer, Duration duration, Set<Teilnehmerkreis> teilnehmerkreise, Integer teilnehmerSchatzung) {
     this.name = name;
     this.pruefungsNr = pruefungsNr;
     this.pruefer = new HashSet<>();
