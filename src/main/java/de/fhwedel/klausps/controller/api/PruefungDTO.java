@@ -6,6 +6,7 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -83,7 +84,7 @@ public class PruefungDTO implements ReadOnlyPruefung {
 
   @Override
   public Map<Teilnehmerkreis, Integer> getTeilnehmerKreisSchaetzung() {
-    return null;  // TODO is the interface correct in returning a map? It should only return one integer
+    return new HashMap<>();  // TODO is the interface correct in returning a map? It should only return one integer
   }
 
   @Override

@@ -1,7 +1,6 @@
 package de.fhwedel.klausps.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -9,57 +8,78 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import de.fhwedel.klausps.controller.api.builders.PruefungBuilder;
+import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
+import de.fhwedel.klausps.controller.assertions.ReadOnlyPruefungAssert;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
-import de.fhwedel.klausps.model.api.Pruefung;
-import de.fhwedel.klausps.model.api.Pruefungsperiode;
-import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.Duration;
 import java.util.HashMap;
-import java.util.HashSet;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 
 class ControllerTest {
 
+  private DataAccessService dataAccessService;
+  private Controller controller;
+
   @BeforeEach
   void setUp() {
-    MockitoAnnotations.openMocks(this);
+    this.dataAccessService = mock(DataAccessService.class);
+    this.controller = new Controller(dataAccessService);
   }
 
   @Test
-  public void createPruefung_Successful() throws NoPruefungsPeriodeDefinedException {
-    Pruefungsperiode pruefungsperiode = mock(Pruefungsperiode.class);
-    DataAccessService dataAccessService = new DataAccessService(pruefungsperiode);
-    Controller controller = new Controller(dataAccessService);
+  void createPruefung_Successful() throws NoPruefungsPeriodeDefinedException {
     ReadOnlyPruefung pruefung = getReadOnlyPruefung();
-    when(pruefungsperiode.filteredPlanungseinheiten(any())).thenReturn(new HashSet<>());
+    when(dataAccessService.createPruefung(
+            pruefung.getName(),
+            pruefung.getPruefungsnummer(),
+            "Harms",
+            pruefung.getDauer(),
+            new HashMap<>()))
+        .thenReturn(pruefung);
+    ReadOnlyPruefungAssert.assertThat(
+            controller.createPruefung(
+                pruefung.getName(),
+                pruefung.getPruefungsnummer(),
+                "Harms",
+                pruefung.getDauer(),
+                new HashMap<>()))
+        .isTheSameAs(getReadOnlyPruefung());
+  }
+
+  @Test
+  void createPruefung_Successful_actualWriting() throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung pruefung = getReadOnlyPruefung();
+    controller.createPruefung(
+        pruefung.getName(),
+        pruefung.getPruefungsnummer(),
+        "Harms",
+        pruefung.getDauer(),
+        new HashMap<>());
+    verify(dataAccessService, times(1)).createPruefung(any(), any(), anyString(), any(), any());
+  }
+
+  @Test
+  void createPruefung_existsAlready() throws NoPruefungsPeriodeDefinedException {
+    // dataAccessService returns null as the Pruefung already exists
+    when(dataAccessService.createPruefung(any(), any(), anyString(), any(), any()))
+        .thenReturn(null);
+    ReadOnlyPruefung pruefung = getReadOnlyPruefung();
     assertThat(
-    controller.createPruefung(pruefung.getName(), pruefung.getPruefungsnummer(),
-        "Harms", pruefung.getDauer(), new HashMap<>()))
-        .isNotNull();
-  }
-
-  @Test
-  public void createPruefung_Successful_actualWriting() throws NoPruefungsPeriodeDefinedException {
-    DataAccessService dataAccessService = mock(DataAccessService.class);
-    Controller controller = new Controller(dataAccessService);
-    ReadOnlyPruefung pruefung = getReadOnlyPruefung();
-    controller.createPruefung(pruefung.getName(), pruefung.getPruefungsnummer(),
-        "Harms", pruefung.getDauer(), new HashMap<>());
-    verify(dataAccessService, times(1))
-        .createPruefung(any(), any(), anyString(), any(), any());
+            controller.createPruefung(
+                pruefung.getName(),
+                pruefung.getPruefungsnummer(),
+                "Harms",
+                pruefung.getDauer(),
+                new HashMap<>()))
+        .isNull();
   }
 
   private ReadOnlyPruefung getReadOnlyPruefung() {
-    //return new Pruefung()
-    return new PruefungBuilder()
+    // return new Pruefung()
+    return new PruefungDTOBuilder()
         .withPruefungsName("Analysis")
         .withPruefungsNummer("b001")
         .withAdditionalPruefer("Harms")
