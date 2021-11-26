@@ -116,6 +116,14 @@
       <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>de.fhwedel.klausps</groupId>
+      <artifactId>controller-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>de.fhwedel.klausps</groupId>
+      <artifactId>model2</artifactId>
+    </dependency>
   </dependencies>
   <build>
     <pluginManagement>
