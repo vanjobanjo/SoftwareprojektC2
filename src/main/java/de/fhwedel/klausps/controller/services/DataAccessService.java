@@ -1,6 +1,5 @@
 package de.fhwedel.klausps.controller.services;
 
-import de.fhwedel.klausps.controller.api.Pruefung;
 import de.fhwedel.klausps.controller.api.builders.PruefungBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.model.api.Planungseinheit;
