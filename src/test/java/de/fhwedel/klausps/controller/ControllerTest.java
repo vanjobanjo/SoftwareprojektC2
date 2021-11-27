@@ -16,22 +16,26 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.assertions.ReadOnlyPruefungAssert;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
+import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import java.time.Duration;
 import java.util.HashMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class ControllerTest {
 
   private DataAccessService dataAccessService;
   private Controller controller;
+  private Pruefungsperiode pruefungsperiode;
 
   @BeforeEach
   void setUp() {
     this.dataAccessService = mock(DataAccessService.class);
     when(dataAccessService.isPruefungsperiodeSet()).thenReturn(true);
-    this.controller = new Controller(dataAccessService);
+    this.pruefungsperiode = mock(Pruefungsperiode.class);
+    this.controller = new Controller(pruefungsperiode,dataAccessService);
   }
 
   @Test

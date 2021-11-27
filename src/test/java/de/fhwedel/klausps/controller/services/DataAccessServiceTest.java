@@ -13,6 +13,12 @@ import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 
 import de.fhwedel.klausps.model.impl.BlockImpl;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -89,7 +95,7 @@ class DataAccessServiceTest {
                         expected.getName(),
                         "ABCDEF",
                         expected.getDauer());
-        
+
         when(pruefungsperiode.pruefung(expected.getPruefungsnummer())).thenReturn(test);
         assertThat(
                 deviceUnderTest.createPruefung(

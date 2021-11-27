@@ -29,7 +29,7 @@ import java.util.Optional;
 import java.util.Set;
 import javax.xml.crypto.Data;
 
-public class Controller implements InterfaceController{
+public class Controller implements InterfaceController {
 
   //TODO public entfernen, grade nur für tests drin
   public de.fhwedel.klausps.model.api.Pruefungsperiode aktuellePeriode;
@@ -152,7 +152,10 @@ public class Controller implements InterfaceController{
   @Override
   public List<ReadOnlyPruefung> setDauer(ReadOnlyPruefung pruefung, Duration dauer)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
-    throw new IllegalStateException("Not implemented yet!");
+    List<ReadOnlyPruefung> listOfPruefunge = this.dataAccessService.changeDauerEinerPruefung(pruefung,dauer);
+    //TODO hier noch die ganzen Abfragen ob HartesKriterium`und NoPruefungsperiodeDefined Exception schmeißen
+
+    return listOfPruefunge;
   }
 
   @Override

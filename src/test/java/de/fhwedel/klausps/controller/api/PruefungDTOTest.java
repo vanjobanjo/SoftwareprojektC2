@@ -47,6 +47,25 @@ class PruefungDTOTest {
   }
 
   @Test
+  @DisplayName("Änderung der Duration von einer Pruefung im Builder erfolgreich")
+  void setDurationFromPruefung() {
+    TeilnehmerkreisImpl teilnehmerkreis = new TeilnehmerkreisImpl("Inf", "11", 1);
+    PruefungDTOBuilder pruefungDTOBuilder = new PruefungDTOBuilder()
+        .withPruefungsName("Test")
+        .withPruefungsNummer("1234")
+        .withDauer(Duration.ofMinutes(90))
+        .withAdditionalPruefer("Tester")
+        .withAdditionalTeilnehmerkreis(teilnehmerkreis)
+        .withStartZeitpunkt(LocalDateTime.now());
+    assertThat(pruefungDTOBuilder.build().getDauer()).hasMinutes(90);
+
+    //pruefungsDTOBuilder die Duraiton ändern
+    pruefungDTOBuilder.withDauer(Duration.ofMinutes(120));
+    assertThat(pruefungDTOBuilder.build().getDauer()).hasMinutes(120);
+
+  }
+
+  @Test
   @DisplayName("Baue DTO von Modelpruefung")
   void buildDTOFromModelPruefung() {
     PruefungImpl model = new PruefungImpl("Hallo", "Hallo", "", Duration.ofMinutes(60));
