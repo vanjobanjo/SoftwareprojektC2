@@ -19,9 +19,13 @@ public class PruefungDTO implements ReadOnlyPruefung {
   private final Duration duration;
   private final Set<Teilnehmerkreis> teilnehmerkreise;
   private final Integer teilnehmerSchatzung;
+  private final LocalDateTime startZeitpunkt;
 
   public PruefungDTO(String name, String pruefungsNr,
-                     String pruefer, Duration duration, Set<Teilnehmerkreis> teilnehmerkreise, Integer teilnehmerSchatzung) {
+                     String pruefer, Duration duration,
+                     Set<Teilnehmerkreis> teilnehmerkreise,
+                     Integer teilnehmerSchatzung,
+                     LocalDateTime startZeitpunkt) {
     this.name = name;
     this.pruefungsNr = pruefungsNr;
     this.pruefer = new HashSet<>();
@@ -29,10 +33,15 @@ public class PruefungDTO implements ReadOnlyPruefung {
     this.duration = duration;
     this.teilnehmerkreise = new HashSet<>(teilnehmerkreise);
     this.teilnehmerSchatzung = teilnehmerSchatzung;
+    this.startZeitpunkt = startZeitpunkt;
   }
 
   public PruefungDTO(String name, String pruefungsNr,
-                     Set<String> pruefer, Duration duration, Set<Teilnehmerkreis> teilnehmerkreise, Integer teilnehmerSchatzung) {
+                     Set<String> pruefer,
+                     Duration duration,
+                     Set<Teilnehmerkreis> teilnehmerkreise,
+                     Integer teilnehmerSchatzung,
+                     LocalDateTime startZeitpunkt) {
     this.name = name;
     this.pruefungsNr = pruefungsNr;
     this.pruefer = new HashSet<>();
@@ -40,6 +49,7 @@ public class PruefungDTO implements ReadOnlyPruefung {
     this.duration = duration;
     this.teilnehmerkreise = new HashSet<>(teilnehmerkreise);
     this.teilnehmerSchatzung = teilnehmerSchatzung;
+    this.startZeitpunkt = startZeitpunkt;
   }
 
   @Override
