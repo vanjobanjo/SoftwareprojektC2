@@ -38,6 +38,7 @@ public class Controller implements InterfaceController{
   Controller(Pruefungsperiode pruefungPeriode, DataAccessService dataAccessService) {
     aktuellePeriode = pruefungPeriode;
     this.dataAccessService = dataAccessService;
+
   }
 
   @Override
