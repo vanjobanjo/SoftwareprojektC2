@@ -35,6 +35,7 @@ class ControllerTest {
   }
 
   @Test
+  @DisplayName("Soll die Pruefung erfolgreich erstellen.")
   void createPruefung_Successful() throws NoPruefungsPeriodeDefinedException {
     ReadOnlyPruefung pruefung = getReadOnlyPruefung();
     when(dataAccessService.createPruefung(
@@ -99,6 +100,10 @@ class ControllerTest {
         });
   }
 
+  /**
+   * Gibt eine vorgegeben ReadOnlyPruefung zurueck
+   * @return gibt eine vorgebene ReadOnlyPruefung zurueck
+   */
   private ReadOnlyPruefung getReadOnlyPruefung() {
     // return new Pruefung()
     return new PruefungDTOBuilder()

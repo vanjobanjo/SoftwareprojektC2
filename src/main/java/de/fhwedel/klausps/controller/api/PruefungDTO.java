@@ -101,4 +101,9 @@ public class PruefungDTO implements ReadOnlyPruefung {
   public boolean isBlock() {
     return false;
   }
+
+
+
+
+
 }

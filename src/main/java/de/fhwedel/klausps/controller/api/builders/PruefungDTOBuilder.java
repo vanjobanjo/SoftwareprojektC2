@@ -8,14 +8,15 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class PruefungDTOBuilder {
+
   private static final String PRUEUNGS_NUMMER_DEFAULT = "";
   private static final String PRUEFUNGS_NAME_DEFAULT = "";
   private static final Integer TEILNEHMERKREIS_SCHAETZUNG_DEFAULT = 0;
   private static final Duration DAUER_DEFAULT = Duration.ofMinutes(60);
   private static final LocalDateTime START_ZEITPUNKT_DEFAULT = null;
   private static final int SCORING_DEFAULT = 0;
-  private static final Set<String> PRUEFER_DEFAULT = new HashSet<>();
-  private static final Set<Teilnehmerkreis> TEILNEHMERKREISE_DEFAULT = new HashSet<>();
+  private final Set<String> PRUEFER_DEFAULT = new HashSet<>();
+  private final Set<Teilnehmerkreis> TEILNEHMERKREISE_DEFAULT = new HashSet<>();
 
   private String pruefungsNummer;
   private String pruefungsName;
@@ -26,7 +27,9 @@ public class PruefungDTOBuilder {
   private int scoring;
   private Set<String> pruefer;
 
-  /** Builder Konstruktor */
+  /**
+   * Builder Konstruktor
+   */
   public PruefungDTOBuilder() {
     pruefungsNummer = PRUEUNGS_NUMMER_DEFAULT;
     pruefungsName = PRUEFUNGS_NAME_DEFAULT;

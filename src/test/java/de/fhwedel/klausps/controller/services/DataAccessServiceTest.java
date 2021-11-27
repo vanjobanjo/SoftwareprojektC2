@@ -102,6 +102,10 @@ class DataAccessServiceTest {
         .isNull();
   }
 
+  /**
+   * Gibt eine vorgegeben ReadOnlyPruefung zurueck
+   * @return gibt eine vorgebene ReadOnlyPruefung zurueck
+   */
   private ReadOnlyPruefung getReadOnlyPruefung() {
     // return new Pruefung()
     return new PruefungDTOBuilder()
