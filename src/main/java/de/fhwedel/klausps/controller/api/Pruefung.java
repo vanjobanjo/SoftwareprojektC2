@@ -96,12 +96,6 @@ public class Pruefung implements ReadOnlyPruefung {
   }
 
   /************************************************************/
-  public void addTeilnehmerkreis(Teilnehmerkreis teilnehmerkreis, Integer schaetzung){
-    //TODO 0 noch in ein richtigen Wert ändern
-    this.teilnehmerkreis.put(teilnehmerkreis,schaetzung);
-  }
-  public void removeTeilnehmerkreis(Teilnehmerkreis teilnehmerkreis){
-    this.teilnehmerkreis.remove(teilnehmerkreis);
-  }
+
 }
 
