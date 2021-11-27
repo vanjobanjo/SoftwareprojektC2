@@ -7,7 +7,7 @@ public class Teilnehmerkreis implements de.fhwedel.klausps.model.api.Teilnehmerk
   private String pruefungsordnung;
 
 
-  Teilnehmerkreis(String studiengang, String pruefungsordung, int fachsemster){
+  Teilnehmerkreis(String studiengang, String pruefungsordung, int fachsemster) {
     this.studiengang = studiengang;
     this.pruefungsordnung = pruefungsordung;
     this.fachsemster = fachsemster;
@@ -28,19 +28,20 @@ public class Teilnehmerkreis implements de.fhwedel.klausps.model.api.Teilnehmerk
     return this.fachsemster;
   }
 
-  public void setFachsemster(int newFachsemster){
+  public void setFachsemster(int newFachsemster) {
     this.fachsemster = newFachsemster;
   }
 
-  public void setStudiengang(String newStudiengang){
+  public void setStudiengang(String newStudiengang) {
     this.studiengang = newStudiengang;
   }
-  public void setPruefungsordnung(String newPruefungsOrdnung){
+
+  public void setPruefungsordnung(String newPruefungsOrdnung) {
     this.pruefungsordnung = newPruefungsOrdnung;
   }
-  public void setOrdungSemster(String newPruefungsOrdung, int newFachsemster){
+
+  public void setOrdungSemster(String newPruefungsOrdung, int newFachsemster) {
     this.pruefungsordnung = newPruefungsOrdung;
     this.fachsemster = newFachsemster;
   }
-
 }
