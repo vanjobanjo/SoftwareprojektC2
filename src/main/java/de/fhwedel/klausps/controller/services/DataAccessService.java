@@ -86,4 +86,13 @@ public class DataAccessService {
             .collect(Collectors.toSet());
   }
 
+  public Set<ReadOnlyPruefung> getUngeplanteKlausuren(){
+    return pruefungsperiode
+            .ungeplantePruefungen()
+            .stream()
+            .map(pruefung -> new PruefungDTOBuilder(pruefung, 0) //TODO pruefung.getScoring();
+                    .build())
+            .collect(Collectors.toSet());
+  }
+
 }
