@@ -12,6 +12,7 @@ import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.assertions.ReadOnlyPruefungAssert;
 import de.fhwedel.klausps.model.api.Planungseinheit;
+import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
@@ -102,6 +103,30 @@ class DataAccessServiceTest {
         .isNull();
   }
 
+  @Test
+  @DisplayName("Change name of a Pruefung")
+  void setName_successfully(){
+    ReadOnlyPruefung before = getReadOnlyPruefung();
+    Pruefung model = getPruefungOfReadOnlyPruefung(before);
+
+    when(pruefungsperiode.pruefung(before.getPruefungsnummer())).thenReturn(model);
+
+    assertThat(model.getName()).isEqualTo(before.getName());
+
+    ReadOnlyPruefung after = dataAccessService.changeNameOfPruefung(before, "NoNameNeeded");
+    assertThat(model.getPruefungsnummer()).isEqualTo(after.getPruefungsnummer());
+    assertThat(model.getName()).isEqualTo(after.getName());
+    assertThat(model.getDauer()).isEqualTo(after.getDauer());
+    assertThat(model.getName()).isNotEqualTo(before.getName());
+    assertThat(model.getDauer()).isEqualTo(before.getDauer());
+    assertThat(model.getDauer()).isEqualTo(after.getDauer());
+    assertThat(model.getPruefer()).isEqualTo(after.getPruefer());
+//TODO darf nicht fehlschlagen später assertThat(model.getPruefer()).isEqualTo(before.getPruefer());
+    assertThat(model.getTeilnehmerkreise()).isEqualTo(before.getTeilnehmerkreise());
+    assertThat(model.getTeilnehmerkreise()).isEqualTo(after.getTeilnehmerkreise());
+    assertThat(model.getDauer()).isEqualTo(after.getDauer());
+
+  }
   /**
    * Gibt eine vorgegeben ReadOnlyPruefung zurueck
    * @return gibt eine vorgebene ReadOnlyPruefung zurueck
@@ -114,5 +139,15 @@ class DataAccessServiceTest {
         .withAdditionalPruefer("Harms")
         .withDauer(Duration.ofMinutes(90))
         .build();
+  }
+
+  private Pruefung getPruefungOfReadOnlyPruefung(ReadOnlyPruefung roPruefung){
+    return new PruefungImpl(
+            roPruefung.getPruefungsnummer(),
+            roPruefung.getName(),
+            "",
+            roPruefung.getGesamtschaetzung(),
+            roPruefung.getDauer()
+    );
   }
 }

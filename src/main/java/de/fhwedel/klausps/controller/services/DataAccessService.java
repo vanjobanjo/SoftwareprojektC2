@@ -9,6 +9,7 @@ import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
 import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public class DataAccessService {
@@ -66,5 +67,12 @@ public class DataAccessService {
 
   public boolean isPruefungsperiodeSet() {
     return false;
+  }
+
+  public ReadOnlyPruefung changeNameOfPruefung(ReadOnlyPruefung toChange, String name){
+    Pruefung pruefungModel = pruefungsperiode.pruefung(toChange.getPruefungsnummer());
+    pruefungModel.setName(name);
+    int scoring = toChange.getScoring();
+    return new PruefungDTOBuilder(pruefungModel, scoring).build();
   }
 }

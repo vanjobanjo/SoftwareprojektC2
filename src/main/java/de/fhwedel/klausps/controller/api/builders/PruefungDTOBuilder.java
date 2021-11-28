@@ -1,6 +1,7 @@
 package de.fhwedel.klausps.controller.api.builders;
 
 import de.fhwedel.klausps.controller.api.PruefungDTO;
+import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 
 import java.time.Duration;
@@ -9,6 +10,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class PruefungDTOBuilder {
 
@@ -43,12 +46,7 @@ public class PruefungDTOBuilder {
         this.pruefer = PRUEFER_DEFAULT;
         this.geplant = GEPLANT_DEFAULT;
     }
-
-    /**
-     * Copy Konstruktor, bei Bedarf kann man die Werte setzen.
-     *
-     * @param pruefung - Zu kopierende DTOPruefung
-     */
+    
     public PruefungDTOBuilder(PruefungDTO pruefung) {
         this.pruefungsNummer = pruefung.getPruefungsnummer();
         this.pruefungsName = pruefung.getName();
@@ -57,6 +55,21 @@ public class PruefungDTOBuilder {
         this.startZeitpunkt = pruefung.getTermin().orElse(START_ZEITPUNKT_DEFAULT);
         this.scoring = pruefung.getScoring();
         pruefer = pruefung.getPruefer();
+    }
+
+    public PruefungDTOBuilder(Pruefung pruefungModel, int scoring){
+        this.pruefungsNummer = pruefungModel.getPruefungsnummer();
+        this.pruefungsName = pruefungModel.getName();
+
+        //TODO teilnehmerkreisschaetzung stimmen hier nicht.
+        this.teilnehmerkreisSchaetzung = pruefungModel.getTeilnehmerkreise()
+                .stream()
+                .collect(Collectors.toMap(Function.identity(), x -> pruefungModel.getSchaetzung()));
+
+        this.dauer = pruefungModel.getDauer();
+        this.startZeitpunkt = pruefungModel.getStartzeitpunkt();
+        this.scoring = scoring;
+        this.pruefer = pruefungModel.getPruefer();
     }
 
     public PruefungDTOBuilder withPruefungsNummer(String pruefungsNummer) {
