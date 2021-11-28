@@ -89,7 +89,7 @@ class DataAccessServiceTest {
             expected.getPruefungsnummer(),
             expected.getName(),
             "ABCDEF",
-            expected.getGesamtSchaetzung(),
+            expected.getGesamtschaetzung(),
             expected.getDauer()));
     when(pruefungsperiode.filteredPlanungseinheiten(any())).thenReturn(plannedPruefungen);
     assertThat(

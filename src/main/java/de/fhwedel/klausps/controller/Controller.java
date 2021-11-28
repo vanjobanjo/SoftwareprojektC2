@@ -7,6 +7,7 @@ import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.export.ExportTyp;
+import de.fhwedel.klausps.controller.helper.Pair;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Semester;
@@ -24,7 +25,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-public class Controller implements InterfaceController {
+public class Controller implements InterfaceController{
 
   private final DataAccessService dataAccessService;
 
@@ -150,19 +151,19 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public void setPruefungsnummer(ReadOnlyPruefung pruefung, String pruefungsnummer)
+  public ReadOnlyPruefung setPruefungsnummer(ReadOnlyPruefung pruefung, String pruefungsnummer)
       throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
     throw new IllegalStateException("Not implemented yet!");
   }
 
   @Override
-  public void setName(ReadOnlyPruefung pruefung, String name)
+  public ReadOnlyPruefung setName(ReadOnlyPruefung pruefung, String name)
       throws NoPruefungsPeriodeDefinedException {
     throw new IllegalStateException("Not implemented yet!");
   }
 
   @Override
-  public void setName(ReadOnlyBlock block, String name) throws NoPruefungsPeriodeDefinedException {
+  public ReadOnlyBlock setName(ReadOnlyBlock block, String name) throws NoPruefungsPeriodeDefinedException {
     throw new IllegalStateException("Not implemented yet!");
   }
 
@@ -195,7 +196,7 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public void unschedulePruefung(ReadOnlyPruefung pruefung)
+  public ReadOnlyPruefung unschedulePruefung(ReadOnlyPruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     throw new IllegalStateException("Not implemented yet!");
   }
@@ -214,13 +215,13 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public void addPruefer(ReadOnlyPruefung pruefung, String kuerzel)
+  public ReadOnlyPruefung addPruefer(ReadOnlyPruefung pruefung, String kuerzel)
       throws NoPruefungsPeriodeDefinedException {
     throw new IllegalStateException("Not implemented yet!");
   }
 
   @Override
-  public void removePruefer(ReadOnlyPruefung pruefung, String kuerzel)
+  public ReadOnlyPruefung removePruefer(ReadOnlyPruefung pruefung, String kuerzel)
       throws NoPruefungsPeriodeDefinedException {
     throw new IllegalStateException("Not implemented yet!");
   }
@@ -246,23 +247,23 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public List<ReadOnlyPruefung> scheduleBlock(ReadOnlyBlock block, LocalDateTime start)
+  public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> scheduleBlock(ReadOnlyBlock block, LocalDateTime start)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     throw new IllegalStateException("Not implemented yet!");
   }
 
   @Override
-  public void deleteBlock(ReadOnlyBlock block) throws NoPruefungsPeriodeDefinedException {
+  public ReadOnlyBlock deleteBlock(ReadOnlyBlock block) throws NoPruefungsPeriodeDefinedException {
     throw new IllegalStateException("Not implemented yet!");
   }
 
   @Override
-  public void unscheduleBlock(ReadOnlyBlock block) throws NoPruefungsPeriodeDefinedException {
+  public ReadOnlyBlock unscheduleBlock(ReadOnlyBlock block) throws NoPruefungsPeriodeDefinedException {
     throw new IllegalStateException("Not implemented yet!");
   }
 
   @Override
-  public List<ReadOnlyPruefung> moveBlock(ReadOnlyBlock block, LocalDateTime termin)
+  public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> moveBlock(ReadOnlyBlock block, LocalDateTime termin)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     throw new IllegalStateException("Not implemented yet!");
   }
@@ -274,7 +275,7 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public void removePruefungFromBlock(ReadOnlyBlock block, ReadOnlyPruefung pruefung)
+  public Pair<ReadOnlyBlock, ReadOnlyPruefung> removePruefungFromBlock(ReadOnlyBlock block, ReadOnlyPruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     throw new IllegalStateException("Not implemented yet!");
   }

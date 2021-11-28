@@ -5,41 +5,43 @@ import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class PruefungDTOBuilder {
 
     private static final String PRUEUNGS_NUMMER_DEFAULT = "";
     private static final String PRUEFUNGS_NAME_DEFAULT = "";
-    private static final Integer TEILNEHMERKREIS_SCHAETZUNG_DEFAULT = 0;
     private static final Duration DAUER_DEFAULT = Duration.ofMinutes(60);
     private static final LocalDateTime START_ZEITPUNKT_DEFAULT = null;
     private static final int SCORING_DEFAULT = 0;
     private final Set<String> PRUEFER_DEFAULT = new HashSet<>();
-    private final Set<Teilnehmerkreis> TEILNEHMERKREISE_DEFAULT = new HashSet<>();
+    private final Map<Teilnehmerkreis, Integer> TEILNEHMERKREIS_SCHAETZUNG_DEFAULT = new HashMap<>();
+    private final boolean GEPLANT_DEFAULT = false;
 
     private String pruefungsNummer;
     private String pruefungsName;
-    private Integer teilnehmerSchaetzung;
-    private Set<Teilnehmerkreis> teilnehmerKreise;
+    private Map<Teilnehmerkreis, Integer> teilnehmerkreisSchaetzung;
     private Duration dauer;
     private LocalDateTime startZeitpunkt;
     private int scoring;
     private Set<String> pruefer;
+    private boolean geplant;
 
     /**
      * Builder Konstruktor
      */
     public PruefungDTOBuilder() {
-        pruefungsNummer = PRUEUNGS_NUMMER_DEFAULT;
-        pruefungsName = PRUEFUNGS_NAME_DEFAULT;
-        teilnehmerSchaetzung = TEILNEHMERKREIS_SCHAETZUNG_DEFAULT;
-        teilnehmerKreise = TEILNEHMERKREISE_DEFAULT;
-        dauer = DAUER_DEFAULT;
-        startZeitpunkt = START_ZEITPUNKT_DEFAULT;
-        scoring = SCORING_DEFAULT;
-        pruefer = PRUEFER_DEFAULT;
+        this.pruefungsNummer = PRUEUNGS_NUMMER_DEFAULT;
+        this.pruefungsName = PRUEFUNGS_NAME_DEFAULT;
+        this.teilnehmerkreisSchaetzung = TEILNEHMERKREIS_SCHAETZUNG_DEFAULT;
+        this.dauer = DAUER_DEFAULT;
+        this.startZeitpunkt = START_ZEITPUNKT_DEFAULT;
+        this.scoring = SCORING_DEFAULT;
+        this.pruefer = PRUEFER_DEFAULT;
+        this.geplant = GEPLANT_DEFAULT;
     }
 
     /**
@@ -48,12 +50,12 @@ public class PruefungDTOBuilder {
      * @param pruefung - Zu kopierende DTOPruefung
      */
     public PruefungDTOBuilder(PruefungDTO pruefung) {
-        pruefungsNummer = pruefung.getPruefungsnummer();
-        pruefungsName = pruefung.getName();
-        // teilnehmerSchaetzung = pruefung.; // TODO shoud be apart from the Teilnehmerkreise
-        dauer = pruefung.getDauer();
-        startZeitpunkt = pruefung.getTermin().orElse(START_ZEITPUNKT_DEFAULT);
-        // scoring = pruefung.; TODO where does the scoring come from?
+        this.pruefungsNummer = pruefung.getPruefungsnummer();
+        this.pruefungsName = pruefung.getName();
+        this.teilnehmerkreisSchaetzung = pruefung.getTeilnehmerKreisSchaetzung();
+        this.dauer = pruefung.getDauer();
+        this.startZeitpunkt = pruefung.getTermin().orElse(START_ZEITPUNKT_DEFAULT);
+        this.scoring = pruefung.getScoring();
         pruefer = pruefung.getPruefer();
     }
 
@@ -67,18 +69,22 @@ public class PruefungDTOBuilder {
         return this;
     }
 
-    public PruefungDTOBuilder withTeilnehmerKreisSchaetzung(Integer teilnehmerKreisSchaetzung) {
-        this.teilnehmerSchaetzung = teilnehmerKreisSchaetzung;
+    public PruefungDTOBuilder withTeilnehmerKreisSchaetzung(Map<Teilnehmerkreis,
+            Integer> teilnehmerkreisSchaetzung) {
+        this.teilnehmerkreisSchaetzung = teilnehmerkreisSchaetzung;
         return this;
     }
 
-    public PruefungDTOBuilder withTeilnehmerKreisen(Set<Teilnehmerkreis> teilnehmerKreise) {
-        this.teilnehmerKreise = teilnehmerKreise;
+    public PruefungDTOBuilder withAdditionalTeilnehmerkreis(Teilnehmerkreis teilnehmerkreis) {
+        if(!teilnehmerkreisSchaetzung.containsKey(teilnehmerkreis)){
+            teilnehmerkreisSchaetzung.put(teilnehmerkreis, 0);
+        }
         return this;
     }
 
-    public PruefungDTOBuilder withAdditionalTeilnehmerKreis(Teilnehmerkreis teilnehmerKreis) {
-        this.teilnehmerKreise.add(teilnehmerKreis);
+    public PruefungDTOBuilder withAdditionalTeilnehmerkreisSchaetzung(Teilnehmerkreis teilnehmerkreis,
+                                                                      Integer schaetzung) {
+        teilnehmerkreisSchaetzung.put(teilnehmerkreis, schaetzung);
         return this;
     }
 
@@ -107,14 +113,19 @@ public class PruefungDTOBuilder {
         return this;
     }
 
+    public PruefungDTOBuilder withGeplant(boolean isGeplant){
+        this.geplant = isGeplant;
+        return this;
+    }
+
     public PruefungDTO build() {
-        return new PruefungDTO(
+        return new PruefungDTO(this.pruefungsNummer,
                 this.pruefungsName,
-                this.pruefungsNummer,
-                this.pruefer,
+                this.startZeitpunkt,
                 this.dauer,
-                this.teilnehmerKreise,
-                this.teilnehmerSchaetzung,
-                this.startZeitpunkt);
+                this.teilnehmerkreisSchaetzung,
+                this.pruefer,
+                this.scoring,
+                this.geplant);
     }
 }
