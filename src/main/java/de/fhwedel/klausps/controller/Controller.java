@@ -159,7 +159,10 @@ public class Controller implements InterfaceController{
   @Override
   public ReadOnlyPruefung setName(ReadOnlyPruefung pruefung, String name)
       throws NoPruefungsPeriodeDefinedException {
-    throw new IllegalStateException("Not implemented yet!");
+
+    noNullParameters(pruefung, name);
+    checkNoPruefungDefined();
+    return dataAccessService.changeNameOfPruefung(pruefung, name);
   }
 
   @Override
@@ -182,12 +185,18 @@ public class Controller implements InterfaceController{
       Duration duration,
       Map<Teilnehmerkreis, Integer> teilnehmerkreis)
       throws NoPruefungsPeriodeDefinedException {
+
     noNullParameters(name, pruefungsNummer, pruefer, duration, teilnehmerkreis);
+    checkNoPruefungDefined();
+    return dataAccessService.createPruefung(
+        name, pruefungsNummer, pruefer, duration, teilnehmerkreis);
+  }
+
+  private void checkNoPruefungDefined() throws NoPruefungsPeriodeDefinedException {
     if (!dataAccessService.isPruefungsperiodeSet()) {
       throw new NoPruefungsPeriodeDefinedException();
     }
-    return dataAccessService.createPruefung(
-        name, pruefungsNummer, pruefer, duration, teilnehmerkreis);
+
   }
 
   @Override
