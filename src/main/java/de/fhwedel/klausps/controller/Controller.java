@@ -36,7 +36,8 @@ public class Controller implements InterfaceController{
 
   @Override
   public Set<ReadOnlyPruefung> getGeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
-    throw new IllegalStateException("Not implemented yet!");
+    checkNoPruefungDefined();
+    return dataAccessService.getGeplantePruefungen();
   }
 
   @Override
