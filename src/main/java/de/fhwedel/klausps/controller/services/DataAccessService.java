@@ -11,6 +11,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DataAccessService {
 
@@ -75,4 +76,14 @@ public class DataAccessService {
     int scoring = toChange.getScoring();
     return new PruefungDTOBuilder(pruefungModel, scoring).build();
   }
+
+  public Set<ReadOnlyPruefung> getGeplantePruefungen(){
+    return pruefungsperiode
+            .geplantePruefungen()
+            .stream()
+            .map(pruefung -> new PruefungDTOBuilder(pruefung, 0) //TODO pruefung.getScoring();
+                    .build())
+            .collect(Collectors.toSet());
+  }
+
 }
