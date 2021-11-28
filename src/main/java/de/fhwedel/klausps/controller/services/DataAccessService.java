@@ -36,7 +36,7 @@ public class DataAccessService {
           .withPruefungsNummer(pruefungsNr)
           .withPruefer(pruefer)
           .withDauer(duration)
-          .withTeilnehmerKreisen(teilnehmerkreise.keySet())
+          .withTeilnehmerKreisSchaetzung(teilnehmerkreise) //TODO an Valerio: davor stand da keySet()
           .build();
     }
     return null;
