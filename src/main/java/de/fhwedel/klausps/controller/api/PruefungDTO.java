@@ -19,8 +19,4 @@ public class PruefungDTO extends ReadOnlyPruefung {
                      boolean geplant) {
     super(pruefungsnummer, name, termin, dauer, teilnehmerkreisSchaetzung, pruefer, scoring, geplant);
   }
-
-  public int getScoring() {
-    return 0;
-  }
 }
