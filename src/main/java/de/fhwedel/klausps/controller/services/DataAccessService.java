@@ -31,8 +31,10 @@ public class DataAccessService {
 
     if (filtered.isEmpty()) {
       // todo contains static values as it is unclear where to retreave the data from
-      pruefungsperiode.addPlanungseinheit(
-              new PruefungImpl(pruefungsNr, name, "", duration, null)); //TODO Valerio
+      Pruefung pruefungModel = new PruefungImpl(pruefungsNr, name, "", duration, null);
+
+      addTeilnehmerKreisSchaetzungToModelPruefung(pruefungModel, teilnehmerkreise);
+      pruefungsperiode.addPlanungseinheit(pruefungModel);
       return new PruefungDTOBuilder()
           .withPruefungsName(name)
           .withPruefungsNummer(pruefungsNr)
@@ -42,6 +44,12 @@ public class DataAccessService {
           .build();
     }
     return null;
+  }
+
+  private Pruefung addTeilnehmerKreisSchaetzungToModelPruefung(Pruefung pruefungModel,
+                                                               Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
+    teilnehmerkreise.forEach(pruefungModel::setSchaetzung);
+    return pruefungModel;
   }
 
   private boolean isPruefung(Planungseinheit planungseinheit) {
