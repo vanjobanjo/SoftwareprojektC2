@@ -4,7 +4,6 @@ import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.assertions.ReadOnlyPruefungAssert;
-import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
@@ -80,15 +79,13 @@ class DataAccessServiceTest {
     @DisplayName("A pruefung can not be created when one with the same pruefungsnummer")
     void createPruefung_existsAlready() {
         ReadOnlyPruefung expected = getReadOnlyPruefung();
-        Set<Planungseinheit> plannedPruefungen = new HashSet<>();
-        plannedPruefungen.add(
-                new PruefungImpl(
+        Pruefung test = new PruefungImpl(
                         expected.getPruefungsnummer(),
                         expected.getName(),
                         "ABCDEF",
-
-                        expected.getDauer()));
-        when(pruefungsperiode.filteredPlanungseinheiten(any())).thenReturn(plannedPruefungen);
+                        expected.getDauer());
+        
+        when(pruefungsperiode.pruefung(expected.getPruefungsnummer())).thenReturn(test);
         assertThat(
                 dataAccessService.createPruefung(
                         expected.getName(),
