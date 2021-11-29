@@ -9,7 +9,6 @@ import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
 import java.time.Duration;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -74,14 +73,14 @@ public class DataAccessService {
     Pruefung pruefungModel = pruefungsperiode.pruefung(toChange.getPruefungsnummer());
     pruefungModel.setName(name);
     int scoring = toChange.getScoring();
-    return new PruefungDTOBuilder(pruefungModel, scoring).build();
+    return new PruefungDTOBuilder(pruefungModel).withScoring(scoring).build();
   }
 
   public Set<ReadOnlyPruefung> getGeplantePruefungen(){
     return pruefungsperiode
             .geplantePruefungen()
             .stream()
-            .map(pruefung -> new PruefungDTOBuilder(pruefung, 0) //TODO pruefung.getScoring();
+            .map(pruefung -> new PruefungDTOBuilder(pruefung) //TODO pruefung.getScoring(); Scoring berechnen
                     .build())
             .collect(Collectors.toSet());
   }
@@ -90,7 +89,7 @@ public class DataAccessService {
     return pruefungsperiode
             .ungeplantePruefungen()
             .stream()
-            .map(pruefung -> new PruefungDTOBuilder(pruefung, 0) //TODO pruefung.getScoring();
+            .map(pruefung -> new PruefungDTOBuilder(pruefung) //TODO pruefung.getScoring();
                     .build())
             .collect(Collectors.toSet());
   }
