@@ -48,7 +48,8 @@ public class Controller implements InterfaceController{
 
   @Override
   public Set<ReadOnlyBlock> getGeplanteBloecke() throws NoPruefungsPeriodeDefinedException {
-    throw new IllegalStateException("Not implemented yet!");
+    checkNoPruefungDefined();
+    return dataAccessService.getGeplanteBloecke();
   }
 
   @Override

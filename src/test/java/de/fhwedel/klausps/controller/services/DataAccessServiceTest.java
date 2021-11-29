@@ -2,12 +2,11 @@ package de.fhwedel.klausps.controller.services;
 
 import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.assertions.ReadOnlyPruefungAssert;
-import de.fhwedel.klausps.model.api.Planungseinheit;
-import de.fhwedel.klausps.model.api.Pruefung;
-import de.fhwedel.klausps.model.api.Pruefungsperiode;
-import de.fhwedel.klausps.model.api.Teilnehmerkreis;
+import de.fhwedel.klausps.model.api.*;
+import de.fhwedel.klausps.model.impl.BlockImpl;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -158,6 +157,21 @@ class DataAccessServiceTest {
         ReadOnlyPruefung p2_new = it.next();
         assertThat(p1_new != p1 && p1_new != p2).isTrue();
         assertThat(p2_new != p1 && p2_new != p2).isTrue();
+    }
+
+    @Test
+    void testGeplanteBloecke(){
+        ReadOnlyPruefung ro01 =  new PruefungDTOBuilder().withPruefungsName("inBlock0").withPruefungsNummer("123").withGeplant(true).build();
+        ReadOnlyPruefung ro02 = new PruefungDTOBuilder().withPruefungsName("inBlock1").withPruefungsNummer("1235").withGeplant(true).build();
+        Pruefung inBlock0 = getPruefungOfReadOnlyPruefung(ro01);
+        Pruefung inBlock1 = getPruefungOfReadOnlyPruefung(ro02);
+        Block block = new BlockImpl(pruefungsperiode, null);
+        block.addPruefung(inBlock0);
+        block.addPruefung(inBlock1);
+
+        when(pruefungsperiode.geplanteBloecke()).thenReturn(new HashSet<>(Arrays.asList(block)));
+        Set<ReadOnlyBlock> blockController =  dataAccessService.getGeplanteBloecke();
+        assertThat(blockController.iterator().next().getROPruefungen()).containsOnly(ro01, ro02);
     }
 
     /**

@@ -1,11 +1,14 @@
 package de.fhwedel.klausps.controller.services;
 
+import de.fhwedel.klausps.controller.api.BlockDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
+import de.fhwedel.klausps.model.impl.BlockImpl;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
 import java.time.Duration;
 import java.util.Map;
@@ -95,4 +98,18 @@ public class DataAccessService {
             .collect(Collectors.toSet());
   }
 
+  public Set<ReadOnlyBlock> getGeplanteBloecke(){
+    return pruefungsperiode
+            .geplanteBloecke()
+            .stream().map(x ->
+                    new BlockDTO("TODO",
+                            x.getStartzeitpunkt(),
+                            x.getDauer(),
+                            x.isGeplant(),
+                            x.getPruefungen()
+                                    .stream()
+                                    .map(pruefung -> new PruefungDTOBuilder(pruefung).build())
+                                    .collect(Collectors.toSet())
+                    )).collect(Collectors.toSet());
+  }
 }
