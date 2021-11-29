@@ -24,7 +24,7 @@ public class DataAccessService {
     public DataAccessService(Pruefungsperiode pruefungsperiode) {
 
         this.pruefungsperiode = pruefungsperiode;
-        this.scheduleService = new ScheduleService();
+        this.scheduleService = new ScheduleService(pruefungsperiode.geplantePruefungen());
     }
 
     public ReadOnlyPruefung createPruefung(
