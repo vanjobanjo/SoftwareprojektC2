@@ -174,6 +174,21 @@ class DataAccessServiceTest {
         assertThat(blockController.iterator().next().getROPruefungen()).containsOnly(ro01, ro02);
     }
 
+    @Test
+    void testUngeplanteBloecke(){
+        ReadOnlyPruefung ro01 =  new PruefungDTOBuilder().withPruefungsName("inBlock0").withPruefungsNummer("123").withGeplant(false).build();
+        ReadOnlyPruefung ro02 = new PruefungDTOBuilder().withPruefungsName("inBlock1").withPruefungsNummer("1235").withGeplant(false).build();
+        Pruefung inBlock0 = getPruefungOfReadOnlyPruefung(ro01);
+        Pruefung inBlock1 = getPruefungOfReadOnlyPruefung(ro02);
+        Block block = new BlockImpl(pruefungsperiode, null);
+        block.addPruefung(inBlock0);
+        block.addPruefung(inBlock1);
+
+        when(pruefungsperiode.ungeplanteBloecke()).thenReturn(new HashSet<>(Arrays.asList(block)));
+        Set<ReadOnlyBlock> blockController =  dataAccessService.getUngeplanteBloecke();
+        assertThat(blockController.iterator().next().getROPruefungen()).containsOnly(ro01, ro02);
+    }
+
     /**
      * Gibt eine vorgegeben ReadOnlyPruefung zurueck
      *
