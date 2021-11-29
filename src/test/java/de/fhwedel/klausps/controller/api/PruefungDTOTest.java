@@ -6,6 +6,7 @@ import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
+import de.fhwedel.klausps.model.impl.PruefungImpl;
 import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -43,6 +44,19 @@ class PruefungDTOTest {
 
     assertThat(pruefungDTOBuilder.build().getTeilnehmerkreise()).hasSize(1);
     assertThat(pruefungDTOBuilder.build().getTeilnehmerkreise()).containsExactly(teilnehmerkreis);
+  }
+
+  @Test
+  @DisplayName("Baue DTO von Modelpruefung")
+  void buildDTOFromModelPruefung() {
+    PruefungImpl model = new PruefungImpl("Hallo", "Hallo", "", Duration.ofMinutes(60));
+    TeilnehmerkreisImpl bwl = new TeilnehmerkreisImpl("BWL", "10", 10);
+    TeilnehmerkreisImpl inf = new TeilnehmerkreisImpl("inf", "10", 10);
+    model.setSchaetzung(bwl, 10);
+    model.setSchaetzung(inf, 10);
+    PruefungDTO dtoController = new PruefungDTOBuilder(model).build();
+    assertThat(dtoController.getTeilnehmerKreisSchaetzung()).isEqualTo(model.getTeilnehmerkreise());
+    assertThat(dtoController.getGesamtschaetzung()).isEqualTo(model.schaetzung());
   }
 
 }
