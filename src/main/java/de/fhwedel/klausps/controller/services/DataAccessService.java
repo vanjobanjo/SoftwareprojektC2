@@ -102,7 +102,22 @@ public class DataAccessService {
     return pruefungsperiode
             .geplanteBloecke()
             .stream().map(x ->
-                    new BlockDTO("TODO",
+                    new BlockDTO("TODO", //TODO
+                            x.getStartzeitpunkt(),
+                            x.getDauer(),
+                            x.isGeplant(),
+                            x.getPruefungen()
+                                    .stream()
+                                    .map(pruefung -> new PruefungDTOBuilder(pruefung).build())
+                                    .collect(Collectors.toSet())
+                    )).collect(Collectors.toSet());
+  }
+
+  public Set<ReadOnlyBlock> getUngeplanteBloecke(){
+    return pruefungsperiode
+            .ungeplanteBloecke()
+            .stream().map(x ->
+                    new BlockDTO("TODO", //TODO
                             x.getStartzeitpunkt(),
                             x.getDauer(),
                             x.isGeplant(),
