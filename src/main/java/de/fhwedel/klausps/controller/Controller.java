@@ -211,7 +211,9 @@ public class Controller implements InterfaceController{
   @Override
   public List<ReadOnlyPruefung> unschedulePruefung(ReadOnlyPruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
-    throw new IllegalStateException("Not implemented yet!");
+    checkNoPruefungDefined();
+    noNullParameters(pruefung);
+    return dataAccessService.unschedulePruefung(pruefung);
   }
 
   @Override

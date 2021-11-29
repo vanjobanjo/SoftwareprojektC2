@@ -11,6 +11,7 @@ import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -18,9 +19,12 @@ import java.util.stream.Collectors;
 public class DataAccessService {
 
     private Pruefungsperiode pruefungsperiode;
+    private final ScheduleService scheduleService;
 
     public DataAccessService(Pruefungsperiode pruefungsperiode) {
+
         this.pruefungsperiode = pruefungsperiode;
+        this.scheduleService = new ScheduleService();
     }
 
     public ReadOnlyPruefung createPruefung(
@@ -135,7 +139,7 @@ public class DataAccessService {
 
 
     // PRÜFUNG darf nicht in Block sein!!!
-    public ReadOnlyPruefung unschedulePruefung(ReadOnlyPruefung pruefung) {
+    public List<ReadOnlyPruefung> unschedulePruefung(ReadOnlyPruefung pruefung) {
         whenTrueThrowIllegalArgumentExpcetion(pruefung.ungeplant(), "Pruefung ist ungeplant!");
 
         Pruefung pruefungModel = pruefungsperiode.pruefung(pruefung.getPruefungsnummer());
@@ -148,7 +152,10 @@ public class DataAccessService {
 
         pruefungModel.setStartzeitpunkt(null);
 
-        return new PruefungDTOBuilder(pruefungModel).build();
+        Set<Pruefung> geplantePruefungen = pruefungsperiode.geplantePruefungen();
+
+        //TODO scoring vernünftig implementieren!!
+        return scheduleService.reducedScoring(geplantePruefungen, pruefungModel);
     }
 
     private void whenTrueThrowIllegalArgumentExpcetion(boolean condition, String text) {
