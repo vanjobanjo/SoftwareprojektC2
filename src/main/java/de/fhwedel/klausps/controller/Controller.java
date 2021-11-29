@@ -209,7 +209,7 @@ public class Controller implements InterfaceController{
   }
 
   @Override
-  public ReadOnlyPruefung unschedulePruefung(ReadOnlyPruefung pruefung)
+  public List<ReadOnlyPruefung> unschedulePruefung(ReadOnlyPruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     throw new IllegalStateException("Not implemented yet!");
   }

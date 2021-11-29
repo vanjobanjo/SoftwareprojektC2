@@ -8,8 +8,8 @@ import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
-import de.fhwedel.klausps.model.impl.BlockImpl;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
+
 import java.time.Duration;
 import java.util.Map;
 import java.util.Set;
@@ -17,114 +17,143 @@ import java.util.stream.Collectors;
 
 public class DataAccessService {
 
-  private Pruefungsperiode pruefungsperiode;
+    private Pruefungsperiode pruefungsperiode;
 
-  public DataAccessService(Pruefungsperiode pruefungsperiode) {
-    this.pruefungsperiode = pruefungsperiode;
-  }
-
-  public ReadOnlyPruefung createPruefung(
-      String name,
-      String pruefungsNr,
-      Set<String> pruefer,
-      Duration duration,
-      Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
-
-    Set<Planungseinheit> filtered = getPlannedPlanungseinheitenWithPruefungsnummer(pruefungsNr);
-
-    if (filtered.isEmpty()) {
-      // todo contains static values as it is unclear where to retreave the data from
-      pruefungsperiode.addPlanungseinheit(
-              new PruefungImpl(pruefungsNr, name, "", duration, null)); //TODO Valerio
-      return new PruefungDTOBuilder()
-          .withPruefungsName(name)
-          .withPruefungsNummer(pruefungsNr)
-          .withPruefer(pruefer)
-          .withDauer(duration)
-          .withTeilnehmerKreisSchaetzung(teilnehmerkreise) //TODO an Valerio: davor stand da keySet()
-          .build();
+    public DataAccessService(Pruefungsperiode pruefungsperiode) {
+        this.pruefungsperiode = pruefungsperiode;
     }
-    return null;
-  }
 
-  private boolean isPruefung(Planungseinheit planungseinheit) {
-    return planungseinheit instanceof Pruefung;
-  }
+    public ReadOnlyPruefung createPruefung(
+            String name,
+            String pruefungsNr,
+            Set<String> pruefer,
+            Duration duration,
+            Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
 
-  private Set<Planungseinheit> getPlannedPlanungseinheitenWithPruefungsnummer(
-      String pruefungsnummer) {
-    // todo can we really only filter planungseinheiten?
-    return pruefungsperiode.filteredPlanungseinheiten(
-        (Planungseinheit planungseinheit) ->
-            isPruefung(planungseinheit)
-                && ((Pruefung) planungseinheit).getPruefungsnummer().equals(pruefungsnummer));
-  }
+        Set<Planungseinheit> filtered = getPlannedPlanungseinheitenWithPruefungsnummer(pruefungsNr);
 
-  public ReadOnlyPruefung createPruefung(
-      String name,
-      String pruefungsNr,
-      String pruefer,
-      Duration duration,
-      Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
-    return createPruefung(name, pruefungsNr, Set.of(pruefer), duration, teilnehmerkreise);
-  }
+        if (filtered.isEmpty()) {
+            // todo contains static values as it is unclear where to retreave the data from
+            pruefungsperiode.addPlanungseinheit(
+                    new PruefungImpl(pruefungsNr, name, "", duration, null)); //TODO Valerio
+            return new PruefungDTOBuilder()
+                    .withPruefungsName(name)
+                    .withPruefungsNummer(pruefungsNr)
+                    .withPruefer(pruefer)
+                    .withDauer(duration)
+                    .withTeilnehmerKreisSchaetzung(teilnehmerkreise) //TODO an Valerio: davor stand da keySet()
+                    .build();
+        }
+        return null;
+    }
 
-  public boolean isPruefungsperiodeSet() {
-    return false;
-  }
+    private boolean isPruefung(Planungseinheit planungseinheit) {
+        return planungseinheit instanceof Pruefung;
+    }
 
-  public ReadOnlyPruefung changeNameOfPruefung(ReadOnlyPruefung toChange, String name){
-    Pruefung pruefungModel = pruefungsperiode.pruefung(toChange.getPruefungsnummer());
-    pruefungModel.setName(name);
-    int scoring = toChange.getScoring();
-    return new PruefungDTOBuilder(pruefungModel).withScoring(scoring).build();
-  }
+    private Set<Planungseinheit> getPlannedPlanungseinheitenWithPruefungsnummer(
+            String pruefungsnummer) {
+        // todo can we really only filter planungseinheiten?
+        return pruefungsperiode.filteredPlanungseinheiten(
+                (Planungseinheit planungseinheit) ->
+                        isPruefung(planungseinheit)
+                                && ((Pruefung) planungseinheit).getPruefungsnummer().equals(pruefungsnummer));
+    }
 
-  public Set<ReadOnlyPruefung> getGeplantePruefungen(){
-    return pruefungsperiode
-            .geplantePruefungen()
-            .stream()
-            .map(pruefung -> new PruefungDTOBuilder(pruefung) //TODO pruefung.getScoring(); Scoring berechnen
-                    .build())
-            .collect(Collectors.toSet());
-  }
+    public ReadOnlyPruefung createPruefung(
+            String name,
+            String pruefungsNr,
+            String pruefer,
+            Duration duration,
+            Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
+        return createPruefung(name, pruefungsNr, Set.of(pruefer), duration, teilnehmerkreise);
+    }
 
-  public Set<ReadOnlyPruefung> getUngeplanteKlausuren(){
-    return pruefungsperiode
-            .ungeplantePruefungen()
-            .stream()
-            .map(pruefung -> new PruefungDTOBuilder(pruefung) //TODO pruefung.getScoring();
-                    .build())
-            .collect(Collectors.toSet());
-  }
+    public boolean isPruefungsperiodeSet() {
+        return false;
+    }
 
-  public Set<ReadOnlyBlock> getGeplanteBloecke(){
-    return pruefungsperiode
-            .geplanteBloecke()
-            .stream().map(x ->
-                    new BlockDTO("TODO", //TODO
-                            x.getStartzeitpunkt(),
-                            x.getDauer(),
-                            x.isGeplant(),
-                            x.getPruefungen()
-                                    .stream()
-                                    .map(pruefung -> new PruefungDTOBuilder(pruefung).build())
-                                    .collect(Collectors.toSet())
-                    )).collect(Collectors.toSet());
-  }
+    public ReadOnlyPruefung changeNameOfPruefung(ReadOnlyPruefung toChange, String name) {
+        Pruefung pruefungModel = pruefungsperiode.pruefung(toChange.getPruefungsnummer());
 
-  public Set<ReadOnlyBlock> getUngeplanteBloecke(){
-    return pruefungsperiode
-            .ungeplanteBloecke()
-            .stream().map(x ->
-                    new BlockDTO("TODO", //TODO
-                            x.getStartzeitpunkt(),
-                            x.getDauer(),
-                            x.isGeplant(),
-                            x.getPruefungen()
-                                    .stream()
-                                    .map(pruefung -> new PruefungDTOBuilder(pruefung).build())
-                                    .collect(Collectors.toSet())
-                    )).collect(Collectors.toSet());
-  }
+        if (pruefungModel == null) {
+            throw new IllegalArgumentException();
+        }
+
+        pruefungModel.setName(name);
+        int scoring = toChange.getScoring();
+        return new PruefungDTOBuilder(pruefungModel).withScoring(scoring).build();
+    }
+
+    public Set<ReadOnlyPruefung> getGeplantePruefungen() {
+        return pruefungsperiode
+                .geplantePruefungen()
+                .stream()
+                .map(pruefung -> new PruefungDTOBuilder(pruefung) //TODO pruefung.getScoring(); Scoring berechnen
+                        .build())
+                .collect(Collectors.toSet());
+    }
+
+    public Set<ReadOnlyPruefung> getUngeplanteKlausuren() {
+        return pruefungsperiode
+                .ungeplantePruefungen()
+                .stream()
+                .map(pruefung -> new PruefungDTOBuilder(pruefung) //TODO pruefung.getScoring();
+                        .build())
+                .collect(Collectors.toSet());
+    }
+
+    public Set<ReadOnlyBlock> getGeplanteBloecke() {
+        return pruefungsperiode
+                .geplanteBloecke()
+                .stream().map(x ->
+                        new BlockDTO("TODO", //TODO
+                                x.getStartzeitpunkt(),
+                                x.getDauer(),
+                                x.isGeplant(),
+                                x.getPruefungen()
+                                        .stream()
+                                        .map(pruefung -> new PruefungDTOBuilder(pruefung).build())
+                                        .collect(Collectors.toSet())
+                        )).collect(Collectors.toSet());
+    }
+
+    public Set<ReadOnlyBlock> getUngeplanteBloecke() {
+        return pruefungsperiode
+                .ungeplanteBloecke()
+                .stream().map(x ->
+                        new BlockDTO("TODO", //TODO
+                                x.getStartzeitpunkt(),
+                                x.getDauer(),
+                                x.isGeplant(),
+                                x.getPruefungen()
+                                        .stream()
+                                        .map(pruefung -> new PruefungDTOBuilder(pruefung).build())
+                                        .collect(Collectors.toSet())
+                        )).collect(Collectors.toSet());
+    }
+
+
+    // PRÜFUNG darf nicht in Block sein!!!
+    public ReadOnlyPruefung unschedulePruefung(ReadOnlyPruefung pruefung) {
+        whenTrueThrowIllegalArgumentExpcetion(pruefung.ungeplant(), "Pruefung ist ungeplant!");
+
+        Pruefung pruefungModel = pruefungsperiode.pruefung(pruefung.getPruefungsnummer());
+
+        whenTrueThrowIllegalArgumentExpcetion(pruefungModel == null,
+                pruefung.getPruefungsnummer() + " Pruefung nicht in Periode");
+
+        whenTrueThrowIllegalArgumentExpcetion(pruefungsperiode.block(pruefungModel) != null,
+                pruefung.getPruefungsnummer() + " Pruefung ist Teil eines Blockes");
+
+        pruefungModel.setStartzeitpunkt(null);
+
+        return new PruefungDTOBuilder(pruefungModel).build();
+    }
+
+    private void whenTrueThrowIllegalArgumentExpcetion(boolean condition, String text) {
+        if (condition) {
+            throw new IllegalArgumentException(text);
+        }
+    }
 }
