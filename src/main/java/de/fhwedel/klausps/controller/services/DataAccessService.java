@@ -31,7 +31,8 @@ public class DataAccessService {
 
     if (filtered.isEmpty()) {
       // todo contains static values as it is unclear where to retreave the data from
-      pruefungsperiode.addPlanungseinheit(new PruefungImpl(pruefungsNr, name, "", 50, duration));
+      pruefungsperiode.addPlanungseinheit(
+              new PruefungImpl(pruefungsNr, name, "", duration, null)); //TODO Valerio
       return new PruefungDTOBuilder()
           .withPruefungsName(name)
           .withPruefungsNummer(pruefungsNr)
