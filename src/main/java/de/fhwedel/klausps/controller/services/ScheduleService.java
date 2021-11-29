@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ScheduleService {
     private Map<Pruefung, Integer> scorings;
@@ -33,8 +34,17 @@ public class ScheduleService {
                     .collect(Collectors.groupingBy(x -> visitor.getWeichesKriterium(), Collectors.toSet()));
 
             analysen.put(toCheck, analyse);
-        }
 
+            Map<Pruefung, Integer> updatedScores = leftPruefung
+                    .stream()
+                    .filter(x -> visitor.test(x, toCheck))
+                    .collect(Collectors.toMap(x -> x, y -> 0)); //HIER SCORING VOM WEICHEN KRITERIUM HOLEN
+
+            scorings = Stream.concat(scorings.entrySet().stream(), updatedScores.entrySet()
+                    .stream())
+                    .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.summingInt(Map.Entry :: getValue)));
+
+        }
     }
 
     List<ReadOnlyPruefung> reducedScoring(Set<Pruefung> geplantePruefungen, Pruefung ungeplant) {
