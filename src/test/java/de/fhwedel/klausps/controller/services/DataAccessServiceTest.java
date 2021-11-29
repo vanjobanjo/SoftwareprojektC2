@@ -86,7 +86,7 @@ class DataAccessServiceTest {
                         expected.getPruefungsnummer(),
                         expected.getName(),
                         "ABCDEF",
-                        expected.getGesamtschaetzung(),
+
                         expected.getDauer()));
         when(pruefungsperiode.filteredPlanungseinheiten(any())).thenReturn(plannedPruefungen);
         assertThat(
@@ -118,8 +118,8 @@ class DataAccessServiceTest {
         assertThat(model.getDauer()).isEqualTo(after.getDauer());
         assertThat(model.getPruefer()).isEqualTo(after.getPruefer());
 //TODO darf nicht fehlschlagen später assertThat(model.getPruefer()).isEqualTo(before.getPruefer());
-        assertThat(model.getTeilnehmerkreise()).isEqualTo(before.getTeilnehmerkreise());
-        assertThat(model.getTeilnehmerkreise()).isEqualTo(after.getTeilnehmerkreise());
+        assertThat(model.getTeilnehmerkreise()).isEqualTo(before.getTeilnehmerKreisSchaetzung());
+        assertThat(model.getTeilnehmerkreise()).isEqualTo(after.getTeilnehmerKreisSchaetzung());
         assertThat(model.getDauer()).isEqualTo(after.getDauer());
 
     }
@@ -176,12 +176,14 @@ class DataAccessServiceTest {
     }
 
     private Pruefung getPruefungOfReadOnlyPruefung(ReadOnlyPruefung roPruefung) {
-        return new PruefungImpl(
+        PruefungImpl modelPruefung = new PruefungImpl(
                 roPruefung.getPruefungsnummer(),
                 roPruefung.getName(),
                 "",
-                roPruefung.getGesamtschaetzung(),
-                roPruefung.getDauer()
+                roPruefung.getDauer(),
+                roPruefung.getTermin().orElse(null)
         );
+        roPruefung.getTeilnehmerKreisSchaetzung().forEach(modelPruefung::setSchaetzung);
+        return modelPruefung;
     }
 }

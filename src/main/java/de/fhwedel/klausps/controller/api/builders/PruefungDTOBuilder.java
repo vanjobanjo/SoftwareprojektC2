@@ -60,15 +60,10 @@ public class PruefungDTOBuilder {
     public PruefungDTOBuilder(Pruefung pruefungModel){
         this.pruefungsNummer = pruefungModel.getPruefungsnummer();
         this.pruefungsName = pruefungModel.getName();
-
-        //TODO teilnehmerkreisschaetzung stimmen hier nicht.
-        this.teilnehmerkreisSchaetzung = pruefungModel.getTeilnehmerkreise()
-                .stream()
-                .collect(Collectors.toMap(Function.identity(), x -> pruefungModel.getSchaetzung()));
-
+        this.teilnehmerkreisSchaetzung = pruefungModel.getTeilnehmerkreise();
         this.dauer = pruefungModel.getDauer();
         this.startZeitpunkt = pruefungModel.getStartzeitpunkt();
-        this.scoring = SCORING_DEFAULT;
+        this.scoring = SCORING_DEFAULT; //TODO
         this.pruefer = pruefungModel.getPruefer();
     }
 
