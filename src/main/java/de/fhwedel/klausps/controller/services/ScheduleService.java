@@ -26,7 +26,7 @@ public class ScheduleService {
                 .entrySet()
                 .stream()
                 .collect(Collectors.groupingBy(x -> x.getKey().getWert(), Collectors.flatMapping(x -> x.getValue().stream(), Collectors.summingInt(x -> 1))))
-                .entrySet().stream().map(x-> x.getKey()* x.getValue()).mapToInt(x -> x).sum();
+                .entrySet().stream().map(x-> x.getKey() * x.getValue()).mapToInt(x -> x).sum();
     }
 
     public List<Pruefung> schedulePruefung(Pruefung pruefung, LocalDateTime termin){
