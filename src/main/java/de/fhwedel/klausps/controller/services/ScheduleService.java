@@ -15,10 +15,12 @@ public class ScheduleService {
     private final Pruefungsperiode pruefungsperiode;
     private Map<Pruefung, Map<WeichesKriterium, Set<Pruefung>>> analysen;
 
+
     public ScheduleService(Pruefungsperiode pruefungsperiode) {
         this.pruefungsperiode = pruefungsperiode;
         this.analysen = analyseAll(WeichesKriteriumVisitors.values(), pruefungsperiode.geplantePruefungen().stream().toList());
     }
+/*
 
     private Map<Pruefung, Integer> getConflictedPruefungenAndDeltaScores(List<Pruefung> scheduledPruefungen,
                                                                          Pruefung toCheck,
@@ -28,6 +30,7 @@ public class ScheduleService {
                 .filter(x -> kriterium.test(x, toCheck))
                 .collect(Collectors.toMap(x -> x, y -> kriterium.getWeichesKriterium().getWert()));
     }
+*/
 
     private Set<Pruefung> getConflictedPruefungenToKriterium(List<Pruefung> scheduledPruefungen,
                                                              Pruefung pruefung,
@@ -38,17 +41,27 @@ public class ScheduleService {
                 .collect(Collectors.toSet());
     }
 
+
+/*
     private Map<Pruefung, Integer> getConflictedUnscheduleDeltaScores(List<Pruefung> scheduledPruefungen,
                                                                       Pruefung toCheck,
                                                                       WeichesKriteriumVisitor kriterium) {
 
         return negateScoring(getConflictedPruefungenAndDeltaScores(scheduledPruefungen, toCheck, kriterium));
     }
+*/
 
+/*
     public static int scoringOfPruefung(Map<WeichesKriterium, Set<Pruefung>> analysen){
-        return analysen.entrySet().stream().collect(Collectors.groupingBy(x -> x.getKey().getWert(), Collectors.summingInt(x -> x.getValue().size()))).entrySet().stream().map((x) -> x.getKey() * x.getValue()).collect(Collectors.summingInt(x -> x));
+        return analysen.entrySet().stream()
+                .collect(Collectors.groupingBy(x -> x.getKey().getWert(), Collectors.summingInt(x -> x.getValue().size())))
+                .entrySet().stream()
+                .map((x) -> x.getKey() * x.getValue()).collect(Collectors.summingInt(x -> x));
     }
 
+ */
+
+    /*
     private Map<WeichesKriterium, Set<Pruefung>> getAnalysenMapOfPruefung(WeichesKriteriumVisitor kriterium,
                                                                           List<Pruefung> scheduledPruefungen,
                                                                           Pruefung toCheck) {
@@ -58,7 +71,11 @@ public class ScheduleService {
                 .collect(Collectors.groupingBy(x -> kriterium.getWeichesKriterium(), Collectors.toSet()));
     }
 
-    private Map<WeichesKriterium, Map<Pruefung, Integer>> getKriteriumsAnalyseOfPruefungWithDeltaScoring(WeichesKriteriumVisitors[] kriterien,
+
+     */
+
+
+/*    private Map<WeichesKriterium, Map<Pruefung, Integer>> getKriteriumsAnalyseOfPruefungWithDeltaScoring(WeichesKriteriumVisitors[] kriterien,
                                                                                                          List<Pruefung> scheduledPruefungen,
                                                                                                          Pruefung toCheck) {
         Map<WeichesKriterium, Map<Pruefung, Integer>> kriteriumsAnalyse = new HashMap<>();
@@ -70,8 +87,9 @@ public class ScheduleService {
         }
 
         return kriteriumsAnalyse;
-    }
+    }*/
 
+/*
     private Map<Pruefung, Integer> updateScoring(Map<Pruefung, Integer> oldScorings, Map<Pruefung, Integer> deltaNewScoring) {
         return Stream
                 .concat(oldScorings.entrySet().stream(), deltaNewScoring.entrySet().stream())
@@ -80,7 +98,8 @@ public class ScheduleService {
 
     private Map<Pruefung, Integer> negateScoring(Map<Pruefung, Integer> deltaScoring) {
         return deltaScoring.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, y -> -y.getValue()));
-    }
+    }*/
+
 /*
     public int getScoringofPruefung(Pruefung pruefung) {
         Map<WeichesKriterium, Map<Pruefung, Integer>> analyseOfPruefung = this.analysenScheduled.get(pruefung);
@@ -89,24 +108,24 @@ public class ScheduleService {
                 : analyseOfPruefung.values().stream().flatMap(x -> x.entrySet().stream()).mapToInt(Map.Entry::getValue).sum();
     }*/
 
-    public List<Pruefung> schedulePruefung(Pruefung pruefung, LocalDateTime time) {
+/*    public List<Pruefung> schedulePruefung(Pruefung pruefung, LocalDateTime time) {
         Map<WeichesKriterium, Map<Pruefung, Integer>> analyseOfPruefung
                 = getKriteriumsAnalyseOfPruefungWithDeltaScoring(WeichesKriteriumVisitors.values(),
                 pruefungsperiode.geplantePruefungen().stream().toList(),
                 pruefung);
         updateAnalyseScheduled(analyseOfPruefung);
         return analyseOfPruefung.values().stream().flatMap(x -> x.entrySet().stream()).map(Map.Entry::getKey).collect(Collectors.toList());
-    }
+    }*/
 
 
-    private void updateAnalyseScheduled(Map<WeichesKriterium, Map<Pruefung, Integer>> analyseOfPruefung) {
+/*    private void updateAnalyseScheduled(Map<WeichesKriterium, Map<Pruefung, Integer>> analyseOfPruefung) {
         for (WeichesKriterium w : analyseOfPruefung.keySet()) {
             int scoring = w.getWert();
             for (Pruefung p : analyseOfPruefung.get(w).keySet()) {
                 //analysenScheduled.get(p).get(w).put(p, scoring);
             }
         }
-    }
+    }*/
 
     // So okay
     public static Map<WeichesKriterium, Set<Pruefung>> analyseKriterienToPruefung(WeichesKriteriumVisitors[] kriterien,
