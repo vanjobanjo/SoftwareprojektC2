@@ -21,6 +21,14 @@ public class ScheduleService {
         this.analysen = analyseAll(WeichesKriteriumVisitors.values(), pruefungsperiode.geplantePruefungen().stream().toList());
     }
 
+    public int getScoring(Pruefung pruefung, List<Pruefung> ignore){
+        return analysen.get(pruefung)
+                .entrySet()
+                .stream()
+                .collect(Collectors.groupingBy(x -> x.getKey().getWert(), Collectors.flatMapping(x -> x.getValue().stream().filter(y -> !ignore.contains(y)), Collectors.summingInt(x -> 1))))
+                .entrySet().stream().map(x-> x.getKey() * x.getValue()).mapToInt(x -> x).sum();
+    }
+
     public int getScoring(Pruefung pruefung){
         return analysen.get(pruefung)
                 .entrySet()
