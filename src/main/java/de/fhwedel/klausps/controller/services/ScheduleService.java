@@ -13,87 +13,129 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ScheduleService {
-    private final Pruefungsperiode pruefungsperiode;
-    private Map<Pruefung, Map<WeichesKriterium, Set<Pruefung>>> analysen;
+  private final Pruefungsperiode pruefungsperiode;
+  private Map<Pruefung, Map<WeichesKriterium, Set<Pruefung>>> analysen;
 
+  public ScheduleService(Pruefungsperiode pruefungsperiode) {
+    this.pruefungsperiode = pruefungsperiode;
+    this.analysen =
+        analyseAll(
+            WeichesKriteriumVisitors.values(),
+            pruefungsperiode.geplantePruefungen().stream().toList());
+  }
 
-    public ScheduleService(Pruefungsperiode pruefungsperiode) {
-        this.pruefungsperiode = pruefungsperiode;
-        this.analysen = analyseAll(WeichesKriteriumVisitors.values(), pruefungsperiode.geplantePruefungen().stream().toList());
+  public int getScoring(Pruefung pruefung, List<Pruefung> ignore) {
+    return analysen.get(pruefung).entrySet().stream()
+        .collect(
+            Collectors.groupingBy(
+                x -> x.getKey().getWert(),
+                Collectors.flatMapping(
+                    x -> x.getValue().stream().filter(y -> !ignore.contains(y)),
+                    Collectors.summingInt(x -> 1))))
+        .entrySet()
+        .stream()
+        .map(x -> x.getKey() * x.getValue())
+        .mapToInt(x -> x)
+        .sum();
+  }
+
+  public int getScoring(Pruefung pruefung) {
+    return analysen.get(pruefung).entrySet().stream()
+        .collect(
+            Collectors.groupingBy(
+                x -> x.getKey().getWert(),
+                Collectors.flatMapping(x -> x.getValue().stream(), Collectors.summingInt(x -> 1))))
+        .entrySet()
+        .stream()
+        .map(x -> x.getKey() * x.getValue())
+        .mapToInt(x -> x)
+        .sum();
+  }
+
+  public List<Pruefung> schedulePruefung(Pruefung pruefung, LocalDateTime termin) {
+    pruefung.setStartzeitpunkt(termin);
+    Map<WeichesKriterium, Set<Pruefung>> analyseToPruefung =
+        analyseKriterienToPruefung(
+            WeichesKriteriumVisitors.values(),
+            pruefungsperiode.geplantePruefungen().stream().toList(),
+            pruefung);
+    updateAnalyseScheduled(analyseToPruefung, pruefung);
+    return getConflictedPruefungen(pruefung);
+  }
+
+  public List<Pruefung> unschedulePruefung(Pruefung pruefung) {
+    pruefung.setStartzeitpunkt(null);
+    List<Pruefung> pruefungen = getConflictedPruefungen(pruefung);
+    updateAnalyseUnscheduled(pruefung);
+    return pruefungen;
+  }
+
+  private List<Pruefung> getConflictedPruefungen(Pruefung pruefung) {
+    return analysen.get(pruefung).entrySet().stream()
+        .flatMap(x -> x.getValue().stream())
+        .distinct()
+        .collect(Collectors.toList());
+  }
+
+  private void updateAnalyseScheduled(
+      Map<WeichesKriterium, Set<Pruefung>> scheduledScores, Pruefung scheduledPruefung) {
+    for (WeichesKriterium kriterium : scheduledScores.keySet()) {
+      for (Pruefung pruefung : scheduledScores.get(kriterium)) {
+        analysen.get(pruefung).get(kriterium).add(scheduledPruefung);
+      }
     }
+    this.analysen.put(scheduledPruefung, scheduledScores);
+  }
 
-    public int getScoring(Pruefung pruefung, List<Pruefung> ignore) {
-        return analysen.get(pruefung)
-                .entrySet()
-                .stream()
-                .collect(Collectors.groupingBy(x -> x.getKey().getWert(),
-                        Collectors.flatMapping(x -> x.getValue().stream().filter(y -> !ignore.contains(y)),
-                                Collectors.summingInt(x -> 1))))
-                .entrySet().stream().map(x -> x.getKey() * x.getValue()).mapToInt(x -> x).sum();
-    }
+  private void updateAnalyseUnscheduled(Pruefung unscheduledPruefunug) {
+    this.analysen =
+        analysen.entrySet().stream()
+            .collect(
+                Collectors.groupingBy(
+                    x -> x.getKey(),
+                    Collectors.flatMapping(
+                        x -> x.getValue().entrySet().stream(),
+                        Collectors.groupingBy(
+                            x -> x.getKey(),
+                            Collectors.flatMapping(
+                                y ->
+                                    y.getValue().stream()
+                                        .filter(x -> !x.equals(unscheduledPruefunug)),
+                                Collectors.toSet())))));
+    this.analysen.remove(unscheduledPruefunug);
+  }
 
-    public int getScoring(Pruefung pruefung) {
-        return analysen.get(pruefung)
-                .entrySet()
-                .stream()
-                .collect(Collectors.groupingBy(x -> x.getKey().getWert(),
-                        Collectors.flatMapping(x -> x.getValue().stream(),
-                                Collectors.summingInt(x -> 1))))
-                .entrySet().stream().map(x -> x.getKey() * x.getValue()).mapToInt(x -> x).sum();
-    }
+  // So okay
+  public static Map<WeichesKriterium, Set<Pruefung>> analyseKriterienToPruefung(
+      WeichesKriteriumVisitors[] kriterien, List<Pruefung> scheduledPruefungen, Pruefung toCheck) {
+    return Arrays.stream(kriterien)
+        .collect(
+            Collectors.groupingBy(
+                kriterium -> kriterium.visitor.getWeichesKriterium(),
+                Collectors.flatMapping(
+                    kriterium ->
+                        scheduledPruefungen.stream()
+                            .filter(pruefung -> kriterium.visitor.test(pruefung, toCheck)),
+                    Collectors.toSet())));
+  }
 
-    public List<Pruefung> schedulePruefung(Pruefung pruefung, LocalDateTime termin) {
-        pruefung.setStartzeitpunkt(termin);
-        Map<WeichesKriterium, Set<Pruefung>> analyseToPruefung
-                = analyseKriterienToPruefung(WeichesKriteriumVisitors.values(), pruefungsperiode.geplantePruefungen().stream().toList(), pruefung);
-        updateAnalyseScheduled(analyseToPruefung, pruefung);
-        return getConflictedPruefungen(pruefung);
-    }
-
-    public List<Pruefung> unschedulePruefung(Pruefung pruefung) {
-        pruefung.setStartzeitpunkt(null);
-        List<Pruefung> pruefungen = getConflictedPruefungen(pruefung);
-        updateAnalyseUnscheduled(pruefung);
-        return pruefungen;
-    }
-
-    private List<Pruefung> getConflictedPruefungen(Pruefung pruefung) {
-        return analysen.get(pruefung).entrySet().stream().flatMap(x -> x.getValue().stream()).distinct().collect(Collectors.toList());
-    }
-
-    private void updateAnalyseScheduled(Map<WeichesKriterium, Set<Pruefung>> scheduledScores, Pruefung scheduledPruefung) {
-        for (WeichesKriterium kriterium : scheduledScores.keySet()) {
-            for (Pruefung pruefung : scheduledScores.get(kriterium)) {
-                analysen.get(pruefung).get(kriterium).add(scheduledPruefung);
-            }
-        }
-        this.analysen.put(scheduledPruefung, scheduledScores);
-    }
-
-    private void updateAnalyseUnscheduled(Pruefung unscheduledPruefunug) {
-        this.analysen = analysen.entrySet().stream().collect(Collectors.groupingBy(x -> x.getKey(),
-                Collectors.flatMapping(x -> x.getValue().entrySet().stream(),
-                        Collectors.groupingBy(x -> x.getKey(),
-                                Collectors.flatMapping(y -> y.getValue().stream().filter(x -> !x.equals(unscheduledPruefunug)), Collectors.toSet())))));
-        this.analysen.remove(unscheduledPruefunug);
-    }
-
-    // So okay
-    public static Map<WeichesKriterium, Set<Pruefung>> analyseKriterienToPruefung(WeichesKriteriumVisitors[] kriterien,
-                                                                                  List<Pruefung> scheduledPruefungen,
-                                                                                  Pruefung toCheck) {
-        return Arrays.stream(kriterien)
-                .collect(Collectors.groupingBy(kriterium -> kriterium.visitor.getWeichesKriterium(),
-                        Collectors.flatMapping(kriterium -> scheduledPruefungen.stream().filter(pruefung -> kriterium.visitor.test(pruefung, toCheck)),
-                                Collectors.toSet())));
-    }
-
-    //So okay
-    public static Map<Pruefung, Map<WeichesKriterium, Set<Pruefung>>> analyseAll(WeichesKriteriumVisitors[] kriterien,
-                                                                                 List<Pruefung> scheduledPruefungen) {
-        return scheduledPruefungen
-                .stream().collect(Collectors.groupingBy(pruefung -> pruefung,
-                        Collectors.flatMapping(pruefung -> ScheduleService.analyseKriterienToPruefung(kriterien, scheduledPruefungen.stream().filter(pruefung2 -> !pruefung2.equals(pruefung)).toList(),
-                                pruefung).entrySet().stream(), Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))));
-    }
+  // So okay
+  public static Map<Pruefung, Map<WeichesKriterium, Set<Pruefung>>> analyseAll(
+      WeichesKriteriumVisitors[] kriterien, List<Pruefung> scheduledPruefungen) {
+    return scheduledPruefungen.stream()
+        .collect(
+            Collectors.groupingBy(
+                pruefung -> pruefung,
+                Collectors.flatMapping(
+                    pruefung ->
+                        ScheduleService.analyseKriterienToPruefung(
+                            kriterien,
+                            scheduledPruefungen.stream()
+                                .filter(pruefung2 -> !pruefung2.equals(pruefung))
+                                .toList(),
+                            pruefung)
+                            .entrySet()
+                            .stream(),
+                    Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))));
+  }
 }

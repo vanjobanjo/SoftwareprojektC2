@@ -150,7 +150,7 @@ class DataAccessServiceTest {
         Set<Pruefung> pruefungen = new HashSet<>(Arrays.asList(pm1, pm2));
         when(pruefungsperiode.ungeplantePruefungen()).thenReturn(pruefungen);
 
-        Set<ReadOnlyPruefung> result = dataAccessService.getUngeplanteKlausuren();
+        Set<ReadOnlyPruefung> result = dataAccessService.getUngeplantePruefungen();
         assertThat(result).containsOnly(p1, p2);
         Iterator<ReadOnlyPruefung> it = result.iterator();
         ReadOnlyPruefung p1_new = it.next();
