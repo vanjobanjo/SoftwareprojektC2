@@ -1,15 +1,16 @@
 package de.fhwedel.klausps.controller.services;
 
-import de.fhwedel.klausps.controller.api.visitor.WeichesKriteriumVisitor;
 import de.fhwedel.klausps.controller.api.visitor.WeichesKriteriumVisitors;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ScheduleService {
     private final Pruefungsperiode pruefungsperiode;
@@ -21,30 +22,35 @@ public class ScheduleService {
         this.analysen = analyseAll(WeichesKriteriumVisitors.values(), pruefungsperiode.geplantePruefungen().stream().toList());
     }
 
-    public int getScoring(Pruefung pruefung, List<Pruefung> ignore){
+    public int getScoring(Pruefung pruefung, List<Pruefung> ignore) {
         return analysen.get(pruefung)
                 .entrySet()
                 .stream()
-                .collect(Collectors.groupingBy(x -> x.getKey().getWert(), Collectors.flatMapping(x -> x.getValue().stream().filter(y -> !ignore.contains(y)), Collectors.summingInt(x -> 1))))
-                .entrySet().stream().map(x-> x.getKey() * x.getValue()).mapToInt(x -> x).sum();
+                .collect(Collectors.groupingBy(x -> x.getKey().getWert(),
+                        Collectors.flatMapping(x -> x.getValue().stream().filter(y -> !ignore.contains(y)),
+                                Collectors.summingInt(x -> 1))))
+                .entrySet().stream().map(x -> x.getKey() * x.getValue()).mapToInt(x -> x).sum();
     }
 
-    public int getScoring(Pruefung pruefung){
+    public int getScoring(Pruefung pruefung) {
         return analysen.get(pruefung)
                 .entrySet()
                 .stream()
-                .collect(Collectors.groupingBy(x -> x.getKey().getWert(), Collectors.flatMapping(x -> x.getValue().stream(), Collectors.summingInt(x -> 1))))
-                .entrySet().stream().map(x-> x.getKey() * x.getValue()).mapToInt(x -> x).sum();
+                .collect(Collectors.groupingBy(x -> x.getKey().getWert(),
+                        Collectors.flatMapping(x -> x.getValue().stream(),
+                                Collectors.summingInt(x -> 1))))
+                .entrySet().stream().map(x -> x.getKey() * x.getValue()).mapToInt(x -> x).sum();
     }
 
-    public List<Pruefung> schedulePruefung(Pruefung pruefung, LocalDateTime termin){
+    public List<Pruefung> schedulePruefung(Pruefung pruefung, LocalDateTime termin) {
         pruefung.setStartzeitpunkt(termin);
-        Map<WeichesKriterium, Set<Pruefung>> analyseKriterienToPruefung = analyseKriterienToPruefung(WeichesKriteriumVisitors.values(), pruefungsperiode.geplantePruefungen().stream().toList(), pruefung);
-        updateAnalyseScheduled(analyseKriterienToPruefung, pruefung);
+        Map<WeichesKriterium, Set<Pruefung>> analyseToPruefung
+                = analyseKriterienToPruefung(WeichesKriteriumVisitors.values(), pruefungsperiode.geplantePruefungen().stream().toList(), pruefung);
+        updateAnalyseScheduled(analyseToPruefung, pruefung);
         return getConflictedPruefungen(pruefung);
     }
 
-    public List<Pruefung> unschedulePruefung(Pruefung pruefung){
+    public List<Pruefung> unschedulePruefung(Pruefung pruefung) {
         pruefung.setStartzeitpunkt(null);
         List<Pruefung> pruefungen = getConflictedPruefungen(pruefung);
         updateAnalyseUnscheduled(pruefung);
@@ -52,21 +58,23 @@ public class ScheduleService {
     }
 
     private List<Pruefung> getConflictedPruefungen(Pruefung pruefung) {
-        return analysen.get(pruefung).entrySet().stream().flatMap(x -> x.getValue().stream().distinct()).distinct().collect(Collectors.toList());
+        return analysen.get(pruefung).entrySet().stream().flatMap(x -> x.getValue().stream()).distinct().collect(Collectors.toList());
     }
 
-    private void updateAnalyseScheduled(Map<WeichesKriterium, Set<Pruefung>> scheduledScores, Pruefung scheduledPruefung){
-        for(WeichesKriterium kriterium : scheduledScores.keySet()){
-            for(Pruefung pruefung : scheduledScores.get(kriterium)){
+    private void updateAnalyseScheduled(Map<WeichesKriterium, Set<Pruefung>> scheduledScores, Pruefung scheduledPruefung) {
+        for (WeichesKriterium kriterium : scheduledScores.keySet()) {
+            for (Pruefung pruefung : scheduledScores.get(kriterium)) {
                 analysen.get(pruefung).get(kriterium).add(scheduledPruefung);
             }
         }
         this.analysen.put(scheduledPruefung, scheduledScores);
     }
 
-    private void updateAnalyseUnscheduled(Pruefung unscheduledPruefunug){
+    private void updateAnalyseUnscheduled(Pruefung unscheduledPruefunug) {
         this.analysen = analysen.entrySet().stream().collect(Collectors.groupingBy(x -> x.getKey(),
-                Collectors.flatMapping(x ->  x.getValue().entrySet().stream(), Collectors.groupingBy(x -> x.getKey(), Collectors.flatMapping(y -> y.getValue().stream().filter( x -> !x.equals(unscheduledPruefunug)), Collectors.toSet())))));
+                Collectors.flatMapping(x -> x.getValue().entrySet().stream(),
+                        Collectors.groupingBy(x -> x.getKey(),
+                                Collectors.flatMapping(y -> y.getValue().stream().filter(x -> !x.equals(unscheduledPruefunug)), Collectors.toSet())))));
         this.analysen.remove(unscheduledPruefunug);
     }
 
