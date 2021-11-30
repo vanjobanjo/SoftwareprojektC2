@@ -49,7 +49,7 @@ class MehrereKlausurenAmTagTest {
         Pruefung impl2 = new PruefungImpl("Bwl", "KeineAhnung", "", Duration.ZERO, date_101021_10pm);
         List<Pruefung> liste = Arrays.asList(impl1, impl2, impl3);
         System.out.println(ScheduleService.analyseAll(WeichesKriteriumVisitors.values(), liste));
-        System.out.println(ScheduleService.scoringOfPruefung(ScheduleService.analyseAll(WeichesKriteriumVisitors.values(), liste).get(impl1)));
+      //  System.out.println(ScheduleService.scoringOfPruefung(ScheduleService.analyseAll(WeichesKriteriumVisitors.values(), liste).get(impl1)));
         System.out.println(ScheduleService.analyseAll(WeichesKriteriumVisitors.values(), liste).get(impl1));
     }
 
