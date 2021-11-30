@@ -3,7 +3,7 @@ package de.fhwedel.klausps.controller.api.visitor;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.model.api.Pruefung;
 
-public class MehrereKlausurenAmTag extends  WeichesKriteriumVisitor {
+public class MehrereKlausurenAmTag extends WeichesKriteriumVisitor {
 
     public MehrereKlausurenAmTag() {
         super(WeichesKriterium.MEHRERE_PRUEFUNGEN_AM_TAG);

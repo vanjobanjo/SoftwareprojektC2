@@ -155,7 +155,7 @@ public class DataAccessService {
         Set<Pruefung> geplantePruefungen = pruefungsperiode.geplantePruefungen();
 
         //TODO scoring vernünftig implementieren!!
-        return scheduleService.reducedScoring(geplantePruefungen, pruefungModel);
+        return null;
     }
 
     private void whenTrueThrowIllegalArgumentExpcetion(boolean condition, String text) {
