@@ -131,7 +131,11 @@ public class ScheduleService {
                     Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))));
   }
 
-  private Set<Pruefung> getGeplantePruefungen(){
+   Set<Pruefung> getGeplantePruefungen(){
     return analysen.entrySet().stream().map(x -> x.getKey()).collect(Collectors.toSet());
+  }
+
+  Map<Pruefung, Map<WeichesKriterium, Set<Pruefung>>> getAnalysen(){
+    return analysen;
   }
 }

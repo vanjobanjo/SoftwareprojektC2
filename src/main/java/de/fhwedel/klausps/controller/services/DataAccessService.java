@@ -183,4 +183,8 @@ public class DataAccessService {
       throw new IllegalArgumentException(text);
     }
   }
+
+  ScheduleService getScheduleService(){
+    return scheduleService;
+  }
 }
