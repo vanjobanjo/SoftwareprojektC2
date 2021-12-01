@@ -1,6 +1,7 @@
 package de.fhwedel.klausps.controller.services;
 
 import de.fhwedel.klausps.controller.api.visitor.WeichesKriteriumVisitors;
+import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
@@ -13,42 +14,33 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ScheduleService {
-  private final Pruefungsperiode pruefungsperiode;
   private Map<Pruefung, Map<WeichesKriterium, Set<Pruefung>>> analysen;
 
-  public ScheduleService(Pruefungsperiode pruefungsperiode) {
-    this.pruefungsperiode = pruefungsperiode;
+  public ScheduleService(Set<Pruefung> geplantePruefungen) {
     this.analysen =
         analyseAll(
             WeichesKriteriumVisitors.values(),
-            pruefungsperiode.geplantePruefungen().stream().toList());
+            geplantePruefungen);
   }
 
+
+  // Für Prüfungen die sich in einem Block befinden!
   public int getScoring(Pruefung pruefung, List<Pruefung> ignore) {
     return analysen.get(pruefung).entrySet().stream()
-        .collect(
-            Collectors.groupingBy(
-                x -> x.getKey().getWert(),
-                Collectors.flatMapping(
-                    x -> x.getValue().stream().filter(y -> !ignore.contains(y)),
-                    Collectors.summingInt(x -> 1))))
-        .entrySet()
-        .stream()
-        .map(x -> x.getKey() * x.getValue())
-        .mapToInt(x -> x)
+        .mapToInt(
+            x ->
+                x.getValue().stream()
+                        .filter(y -> !ignore.contains(y))
+                        .collect(Collectors.toSet())
+                        .size()
+                    * x.getKey().getWert())
         .sum();
   }
 
   public int getScoring(Pruefung pruefung) {
+
     return analysen.get(pruefung).entrySet().stream()
-        .collect(
-            Collectors.groupingBy(
-                x -> x.getKey().getWert(),
-                Collectors.flatMapping(x -> x.getValue().stream(), Collectors.summingInt(x -> 1))))
-        .entrySet()
-        .stream()
-        .map(x -> x.getKey() * x.getValue())
-        .mapToInt(x -> x)
+        .mapToInt(x -> x.getKey().getWert() * x.getValue().size())
         .sum();
   }
 
@@ -57,7 +49,7 @@ public class ScheduleService {
     Map<WeichesKriterium, Set<Pruefung>> analyseToPruefung =
         analyseKriterienToPruefung(
             WeichesKriteriumVisitors.values(),
-            pruefungsperiode.geplantePruefungen().stream().toList(),
+            getGeplantePruefungen(),
             pruefung);
     updateAnalyseScheduled(analyseToPruefung, pruefung);
     return getConflictedPruefungen(pruefung);
@@ -107,7 +99,7 @@ public class ScheduleService {
 
   // So okay
   public static Map<WeichesKriterium, Set<Pruefung>> analyseKriterienToPruefung(
-      WeichesKriteriumVisitors[] kriterien, List<Pruefung> scheduledPruefungen, Pruefung toCheck) {
+      WeichesKriteriumVisitors[] kriterien, Set<Pruefung> scheduledPruefungen, Pruefung toCheck) {
     return Arrays.stream(kriterien)
         .collect(
             Collectors.groupingBy(
@@ -121,7 +113,7 @@ public class ScheduleService {
 
   // So okay
   public static Map<Pruefung, Map<WeichesKriterium, Set<Pruefung>>> analyseAll(
-      WeichesKriteriumVisitors[] kriterien, List<Pruefung> scheduledPruefungen) {
+      WeichesKriteriumVisitors[] kriterien, Set<Pruefung> scheduledPruefungen) {
     return scheduledPruefungen.stream()
         .collect(
             Collectors.groupingBy(
@@ -132,10 +124,14 @@ public class ScheduleService {
                             kriterien,
                             scheduledPruefungen.stream()
                                 .filter(pruefung2 -> !pruefung2.equals(pruefung))
-                                .toList(),
+                                    .collect(Collectors.toSet()),
                             pruefung)
                             .entrySet()
                             .stream(),
                     Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))));
+  }
+
+  private Set<Pruefung> getGeplantePruefungen(){
+    return analysen.entrySet().stream().map(x -> x.getKey()).collect(Collectors.toSet());
   }
 }

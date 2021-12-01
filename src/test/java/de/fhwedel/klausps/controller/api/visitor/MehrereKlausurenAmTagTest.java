@@ -12,7 +12,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -48,9 +50,9 @@ class MehrereKlausurenAmTagTest {
         Pruefung impl3 = new PruefungImpl("asd", "esel", "", Duration.ZERO, date_101021_8am);
         Pruefung impl2 = new PruefungImpl("Bwl", "KeineAhnung", "", Duration.ZERO, date_101021_10pm);
         List<Pruefung> liste = Arrays.asList(impl1, impl2, impl3);
-        System.out.println(ScheduleService.analyseAll(WeichesKriteriumVisitors.values(), liste));
+        System.out.println(ScheduleService.analyseAll(WeichesKriteriumVisitors.values(), new HashSet<>(liste)));
       //  System.out.println(ScheduleService.scoringOfPruefung(ScheduleService.analyseAll(WeichesKriteriumVisitors.values(), liste).get(impl1)));
-        System.out.println(ScheduleService.analyseAll(WeichesKriteriumVisitors.values(), liste).get(impl1));
+        System.out.println(ScheduleService.analyseAll(WeichesKriteriumVisitors.values(), new HashSet<>(liste)).get(impl1));
     }
 
 }

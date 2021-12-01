@@ -25,7 +25,7 @@ public class DataAccessService {
   public DataAccessService(Pruefungsperiode pruefungsperiode) {
 
     this.pruefungsperiode = pruefungsperiode;
-    this.scheduleService = new ScheduleService(pruefungsperiode);
+    this.scheduleService = new ScheduleService(pruefungsperiode.geplantePruefungen());
   }
 
   public ReadOnlyPruefung createPruefung(
@@ -96,13 +96,13 @@ public class DataAccessService {
         .map(
             pruefung ->
                 new PruefungDTOBuilder(pruefung)
-                    .withScoring(
-                        scheduleService.getScoring(
-                            pruefung,
-                            pruefungsperiode.block(pruefung) == null
-                                ? new LinkedList<>()
-                                : pruefungsperiode.block(pruefung).getPruefungen().stream()
-                                    .toList()))
+                    /*                    .withScoring(
+                    scheduleService.getScoring(
+                        pruefung,
+                        pruefungsperiode.block(pruefung) == null
+                            ? new LinkedList<>()
+                            : pruefungsperiode.block(pruefung).getPruefungen().stream()
+                                .toList())) */
                     .build())
         .collect(Collectors.toSet());
   }
@@ -129,9 +129,9 @@ public class DataAccessService {
                         .map(
                             pruefung ->
                                 new PruefungDTOBuilder(pruefung)
-                                    .withScoring(
-                                        scheduleService.getScoring(
-                                            pruefung, x.getPruefungen().stream().toList()))
+                                    /*                                    .withScoring(
+                                    scheduleService.getScoring(
+                                        pruefung, x.getPruefungen().stream().toList()))*/
                                     .build())
                         .collect(Collectors.toSet())))
         .collect(Collectors.toSet());
