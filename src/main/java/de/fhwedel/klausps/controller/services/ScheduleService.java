@@ -37,6 +37,7 @@ public class ScheduleService {
         .sum();
   }
 
+  //Scoring zu einer Klausur
   public int getScoring(Pruefung pruefung) {
 
     return analysen.get(pruefung).entrySet().stream()
@@ -137,5 +138,9 @@ public class ScheduleService {
 
   Map<Pruefung, Map<WeichesKriterium, Set<Pruefung>>> getAnalysen(){
     return analysen;
+  }
+
+  Map<WeichesKriterium, Set<Pruefung>> getKriteriumsAnalyise(Pruefung pruefung){
+    return analysen.get(pruefung);
   }
 }
