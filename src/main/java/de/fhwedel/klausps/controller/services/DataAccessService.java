@@ -35,10 +35,10 @@ public class DataAccessService {
       Duration duration,
       Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
 
-    Set<Planungseinheit> filtered = getPlannedPlanungseinheitenWithPruefungsnummer(pruefungsNr);
-
-    if (filtered.isEmpty()) {
+    Pruefung isAvailable = pruefungsperiode.pruefung(pruefungsNr);
+    if (isAvailable == null) {
       // todo contains static values as it is unclear where to retreave the data from
+      
       pruefungsperiode.addPlanungseinheit(
           new PruefungImpl(pruefungsNr, name, "", duration, null)); // TODO Valerio
       return new PruefungDTOBuilder()
@@ -53,17 +53,13 @@ public class DataAccessService {
     return null;
   }
 
-  private boolean isPruefung(Planungseinheit planungseinheit) {
-    return planungseinheit instanceof Pruefung;
+  private void addTeilnehmerKreisSchaetzungToModelPruefung(Pruefung pruefungModel,
+                                                           Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
+    teilnehmerkreise.forEach(pruefungModel::setSchaetzung);
   }
 
-  private Set<Planungseinheit> getPlannedPlanungseinheitenWithPruefungsnummer(
-      String pruefungsnummer) {
-    // todo can we really only filter planungseinheiten?
-    return pruefungsperiode.filteredPlanungseinheiten(
-        (Planungseinheit planungseinheit) ->
-            isPruefung(planungseinheit)
-                && ((Pruefung) planungseinheit).getPruefungsnummer().equals(pruefungsnummer));
+  private boolean isPruefung(Planungseinheit planungseinheit) {
+    return planungseinheit instanceof Pruefung;
   }
 
   public ReadOnlyPruefung createPruefung(
