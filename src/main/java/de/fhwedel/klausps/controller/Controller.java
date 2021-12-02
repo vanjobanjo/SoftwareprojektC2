@@ -246,7 +246,6 @@ public class Controller implements InterfaceController{
     throw new IllegalStateException("Not implemented yet!");
   }
 
-
   @Override
   public List<ReadOnlyPruefung> removeTeilnehmerkreis(
       ReadOnlyPruefung pruefung, Teilnehmerkreis teilnehmerkreis)
