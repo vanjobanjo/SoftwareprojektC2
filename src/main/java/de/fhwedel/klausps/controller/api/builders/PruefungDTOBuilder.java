@@ -58,7 +58,7 @@ public class PruefungDTOBuilder {
     public PruefungDTOBuilder(Pruefung pruefungModel){
         this.pruefungsNummer = pruefungModel.getPruefungsnummer();
         this.pruefungsName = pruefungModel.getName();
-        this.teilnehmerkreisSchaetzung = pruefungModel.getTeilnehmerkreise();
+        this.teilnehmerkreisSchaetzung = pruefungModel.getSchaetzungen();
         this.dauer = pruefungModel.getDauer();
         this.startZeitpunkt = pruefungModel.getStartzeitpunkt();
         this.scoring = SCORING_DEFAULT; //TODO

@@ -55,7 +55,7 @@ class PruefungDTOTest {
     model.setSchaetzung(bwl, 10);
     model.setSchaetzung(inf, 10);
     PruefungDTO dtoController = new PruefungDTOBuilder(model).build();
-    assertThat(dtoController.getTeilnehmerKreisSchaetzung()).isEqualTo(model.getTeilnehmerkreise());
+    assertThat(dtoController.getTeilnehmerKreisSchaetzung()).isEqualTo(model.getSchaetzungen());
     assertThat(dtoController.getGesamtschaetzung()).isEqualTo(model.schaetzung());
   }
 

@@ -120,8 +120,8 @@ class DataAccessServiceTest {
         assertThat(model.getDauer()).isEqualTo(after.getDauer());
         assertThat(model.getPruefer()).isEqualTo(after.getPruefer());
 //TODO darf nicht fehlschlagen später assertThat(model.getPruefer()).isEqualTo(before.getPruefer());
-        assertThat(model.getTeilnehmerkreise()).isEqualTo(before.getTeilnehmerKreisSchaetzung());
-        assertThat(model.getTeilnehmerkreise()).isEqualTo(after.getTeilnehmerKreisSchaetzung());
+        assertThat(model.getSchaetzungen()).isEqualTo(before.getTeilnehmerKreisSchaetzung());
+        assertThat(model.getSchaetzungen()).isEqualTo(after.getTeilnehmerKreisSchaetzung());
         assertThat(model.getDauer()).isEqualTo(after.getDauer());
 
     }

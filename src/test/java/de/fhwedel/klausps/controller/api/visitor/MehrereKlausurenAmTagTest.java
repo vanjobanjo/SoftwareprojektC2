@@ -1,8 +1,5 @@
 package de.fhwedel.klausps.controller.api.visitor;
 
-
-import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
-import de.fhwedel.klausps.controller.services.ScheduleService;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
 import org.junit.jupiter.api.Test;
@@ -11,11 +8,6 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -29,30 +21,17 @@ class MehrereKlausurenAmTagTest {
 
     @Test
     public void testSameDay_schouldBeTrue() {
-        Pruefung impl1 = new PruefungImpl("Hallo", "Mathe", "", Duration.ZERO, date_101021_8am);
-        Pruefung impl2 = new PruefungImpl("Bwl", "KeineAhnung", "", Duration.ZERO, date_101021_10pm);
+        Pruefung impl1 = new PruefungImpl("Hallo", "Mathe", "", Duration.ofMinutes(90), date_101021_8am);
+        Pruefung impl2 = new PruefungImpl("Bwl", "KeineAhnung", "", Duration.ofMinutes(90), date_101021_10pm);
 
         assertThat(kriterium.test(impl1, impl2)).isTrue();
     }
 
     @Test
     public void testSameDay_schouldBeFalse() {
-        Pruefung impl1 = new PruefungImpl("Hallo", "Mathe", "", Duration.ZERO, date_101021_8am);
-        Pruefung impl2 = new PruefungImpl("Bwl", "KeineAhnung", "", Duration.ZERO, date_111121_8am);
-
+        Pruefung impl1 = new PruefungImpl("Hallo", "Mathe", "", Duration.ofMinutes(90), date_101021_8am);
+        Pruefung impl2 = new PruefungImpl("Bwl", "KeineAhnung", "", Duration.ofMinutes(90), date_111121_8am);
         assertThat(kriterium.test(impl1, impl2)).isFalse();
-    }
-
-    @Test
-    public void blabla(){
-        WeichesKriteriumVisitors visitors = WeichesKriteriumVisitors.MEHRERE_PRUEFUNG_AM_TAG;
-        Pruefung impl1 = new PruefungImpl("Hallo", "Mathe", "", Duration.ZERO, date_101021_8am);
-        Pruefung impl3 = new PruefungImpl("asd", "esel", "", Duration.ZERO, date_101021_8am);
-        Pruefung impl2 = new PruefungImpl("Bwl", "KeineAhnung", "", Duration.ZERO, date_101021_10pm);
-        List<Pruefung> liste = Arrays.asList(impl1, impl2, impl3);
-        System.out.println(ScheduleService.analyseAll(WeichesKriteriumVisitors.values(), new HashSet<>(liste)));
-      //  System.out.println(ScheduleService.scoringOfPruefung(ScheduleService.analyseAll(WeichesKriteriumVisitors.values(), liste).get(impl1)));
-        System.out.println(ScheduleService.analyseAll(WeichesKriteriumVisitors.values(), new HashSet<>(liste)).get(impl1));
     }
 
 }
