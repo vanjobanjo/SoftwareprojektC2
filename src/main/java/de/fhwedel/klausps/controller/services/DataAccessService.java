@@ -70,10 +70,10 @@ public class DataAccessService {
   }
 
   public ReadOnlyPruefung changeNameOfPruefung(ReadOnlyPruefung toChange, String name){
-    Pruefung pruefungModel = pruefungsperiode.pruefung(toChange.getPruefungsnummer());
-    pruefungModel.setName(name);
+    Pruefung pruefung = pruefungsperiode.pruefung(toChange.getPruefungsnummer());
+    pruefung.setName(name);
     int scoring = toChange.getScoring();
-    return new PruefungDTOBuilder(pruefungModel).withScoring(scoring).build();
+    return new PruefungDTOBuilder(pruefung).withScoring(scoring).build();
   }
 
   public Set<ReadOnlyPruefung> getGeplantePruefungen(){

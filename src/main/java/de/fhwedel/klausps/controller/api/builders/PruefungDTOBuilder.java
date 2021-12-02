@@ -1,6 +1,7 @@
 package de.fhwedel.klausps.controller.api.builders;
 
 import de.fhwedel.klausps.controller.api.PruefungDTO;
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 
@@ -44,7 +45,7 @@ public class PruefungDTOBuilder {
         this.pruefer = PRUEFER_DEFAULT;
         this.geplant = GEPLANT_DEFAULT;
     }
-    
+
     public PruefungDTOBuilder(PruefungDTO pruefung) {
         this.pruefungsNummer = pruefung.getPruefungsnummer();
         this.pruefungsName = pruefung.getName();
@@ -58,11 +59,21 @@ public class PruefungDTOBuilder {
     public PruefungDTOBuilder(Pruefung pruefungModel){
         this.pruefungsNummer = pruefungModel.getPruefungsnummer();
         this.pruefungsName = pruefungModel.getName();
-        this.teilnehmerkreisSchaetzung = pruefungModel.getTeilnehmerkreise();
+        this.teilnehmerkreisSchaetzung = pruefungModel.getSchaetzungen();
         this.dauer = pruefungModel.getDauer();
         this.startZeitpunkt = pruefungModel.getStartzeitpunkt();
         this.scoring = SCORING_DEFAULT; //TODO
         this.pruefer = pruefungModel.getPruefer();
+    }
+
+    public PruefungDTOBuilder(ReadOnlyPruefung pruefung){
+        this.pruefungsNummer = pruefung.getPruefungsnummer();
+        this.pruefungsName = pruefung.getName();
+        this.teilnehmerkreisSchaetzung = pruefung.getTeilnehmerKreisSchaetzung();
+        this.dauer = pruefung.getDauer();
+        this.startZeitpunkt = pruefung.getTermin().orElse(START_ZEITPUNKT_DEFAULT);
+        this.scoring = pruefung.getScoring();
+        this.pruefer = pruefung.getPruefer();
     }
 
     public PruefungDTOBuilder withPruefungsNummer(String pruefungsNummer) {

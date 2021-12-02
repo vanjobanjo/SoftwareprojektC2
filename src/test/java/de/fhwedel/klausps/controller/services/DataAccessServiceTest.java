@@ -32,19 +32,19 @@ class DataAccessServiceTest {
     Duration pruefungsDauer = Duration.ofMinutes(120);
     Map<Teilnehmerkreis, Integer> teilnehmerKreise = new HashMap<>();
     private Pruefungsperiode pruefungsperiode;
-    private DataAccessService dataAccessService;
+    private DataAccessService deviceUnderTest;
 
     @BeforeEach
     void setUp() {
         this.pruefungsperiode = mock(Pruefungsperiode.class);
-        this.dataAccessService = new DataAccessService(pruefungsperiode);
+        this.deviceUnderTest = new DataAccessService(pruefungsperiode);
     }
 
     @Test
     @DisplayName("A Pruefung gets created by calling the respective method of the pruefungsPeriode")
     void createPruefungSuccessTest() {
         ReadOnlyPruefung pruefung =
-                dataAccessService.createPruefung(
+                deviceUnderTest.createPruefung(
                         "Analysis", "b123", "pruefer 1", Duration.ofMinutes(90), new HashMap<>());
         assertThat(pruefung).isNotNull();
         verify(pruefungsperiode, times(1)).addPlanungseinheit(any());
@@ -55,7 +55,7 @@ class DataAccessServiceTest {
     void createPruefungSuccessRightAttributesTest() {
         ReadOnlyPruefung expected = getReadOnlyPruefung();
         ReadOnlyPruefung actual =
-                dataAccessService.createPruefung(
+                deviceUnderTest.createPruefung(
                         expected.getName(),
                         expected.getPruefungsnummer(),
                         expected.getPruefer(),
@@ -70,7 +70,7 @@ class DataAccessServiceTest {
     void createPruefungSaveInModelTest() {
         ReadOnlyPruefung expected = getReadOnlyPruefung();
         ReadOnlyPruefung actual =
-                dataAccessService.createPruefung(
+                deviceUnderTest.createPruefung(
                         expected.getName(),
                         expected.getPruefungsnummer(),
                         expected.getPruefer(),
@@ -92,7 +92,7 @@ class DataAccessServiceTest {
         
         when(pruefungsperiode.pruefung(expected.getPruefungsnummer())).thenReturn(test);
         assertThat(
-                dataAccessService.createPruefung(
+                deviceUnderTest.createPruefung(
                         expected.getName(),
                         expected.getPruefungsnummer(),
                         expected.getPruefer(),
@@ -111,7 +111,7 @@ class DataAccessServiceTest {
 
         assertThat(model.getName()).isEqualTo(before.getName());
 
-        ReadOnlyPruefung after = dataAccessService.changeNameOfPruefung(before, "NoNameNeeded");
+        ReadOnlyPruefung after = deviceUnderTest.changeNameOfPruefung(before, "NoNameNeeded");
         assertThat(model.getPruefungsnummer()).isEqualTo(after.getPruefungsnummer());
         assertThat(model.getName()).isEqualTo(after.getName());
         assertThat(model.getDauer()).isEqualTo(after.getDauer());
@@ -119,9 +119,7 @@ class DataAccessServiceTest {
         assertThat(model.getDauer()).isEqualTo(before.getDauer());
         assertThat(model.getDauer()).isEqualTo(after.getDauer());
         assertThat(model.getPruefer()).isEqualTo(after.getPruefer());
-//TODO darf nicht fehlschlagen später assertThat(model.getPruefer()).isEqualTo(before.getPruefer());
-        assertThat(model.getTeilnehmerkreise()).isEqualTo(before.getTeilnehmerKreisSchaetzung());
-        assertThat(model.getTeilnehmerkreise()).isEqualTo(after.getTeilnehmerKreisSchaetzung());
+        assertThat(model.getTeilnehmerkreise()).hasSameElementsAs(before.getTeilnehmerkreise());
         assertThat(model.getDauer()).isEqualTo(after.getDauer());
 
     }
@@ -135,7 +133,7 @@ class DataAccessServiceTest {
         Set<Pruefung> pruefungen = new HashSet<>(Arrays.asList(pm1, pm2));
         when(pruefungsperiode.geplantePruefungen()).thenReturn(pruefungen);
 
-        Set<ReadOnlyPruefung> result = dataAccessService.getGeplantePruefungen();
+        Set<ReadOnlyPruefung> result = deviceUnderTest.getGeplantePruefungen();
         assertThat(result).containsOnly(p1, p2);
         Iterator<ReadOnlyPruefung> it = result.iterator();
         ReadOnlyPruefung p1_new = it.next();
@@ -153,7 +151,7 @@ class DataAccessServiceTest {
         Set<Pruefung> pruefungen = new HashSet<>(Arrays.asList(pm1, pm2));
         when(pruefungsperiode.ungeplantePruefungen()).thenReturn(pruefungen);
 
-        Set<ReadOnlyPruefung> result = dataAccessService.getUngeplanteKlausuren();
+        Set<ReadOnlyPruefung> result = deviceUnderTest.getUngeplanteKlausuren();
         assertThat(result).containsOnly(p1, p2);
         Iterator<ReadOnlyPruefung> it = result.iterator();
         ReadOnlyPruefung p1_new = it.next();
@@ -173,7 +171,7 @@ class DataAccessServiceTest {
         block.addPruefung(inBlock1);
 
         when(pruefungsperiode.geplanteBloecke()).thenReturn(new HashSet<>(Arrays.asList(block)));
-        Set<ReadOnlyBlock> blockController =  dataAccessService.getGeplanteBloecke();
+        Set<ReadOnlyBlock> blockController =  deviceUnderTest.getGeplanteBloecke();
         assertThat(blockController.iterator().next().getROPruefungen()).containsOnly(ro01, ro02);
     }
 
@@ -188,7 +186,7 @@ class DataAccessServiceTest {
         block.addPruefung(inBlock1);
 
         when(pruefungsperiode.ungeplanteBloecke()).thenReturn(new HashSet<>(Arrays.asList(block)));
-        Set<ReadOnlyBlock> blockController =  dataAccessService.getUngeplanteBloecke();
+        Set<ReadOnlyBlock> blockController =  deviceUnderTest.getUngeplanteBloecke();
         assertThat(blockController.iterator().next().getROPruefungen()).containsOnly(ro01, ro02);
     }
 

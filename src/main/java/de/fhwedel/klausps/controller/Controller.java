@@ -241,7 +241,7 @@ public class Controller implements InterfaceController{
 
   @Override
   public List<ReadOnlyPruefung> addTeilnehmerkreis(
-      ReadOnlyPruefung pruefung, Teilnehmerkreis teilnehmerkreis)
+      ReadOnlyPruefung pruefung, Teilnehmerkreis teilnehmerkreis, Integer schaetzung)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     throw new IllegalStateException("Not implemented yet!");
   }
