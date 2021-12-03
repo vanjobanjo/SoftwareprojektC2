@@ -1,14 +1,11 @@
 package de.fhwedel.klausps.controller.services;
 
-import de.fhwedel.klausps.controller.api.PruefungDTO;
-import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.controller.api.BlockDTO;
+import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
-import de.fhwedel.klausps.model.api.Block;
-import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
@@ -16,20 +13,13 @@ import de.fhwedel.klausps.model.impl.PruefungImpl;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import jdk.jshell.spi.ExecutionControl.NotImplementedException;
-import java.util.stream.Collectors;
 
 public class DataAccessService {
-
-  private static final int MINUTSBETWEENPRUEFUNGEN = 30;
 
   private Pruefungsperiode pruefungsperiode;
 
@@ -79,37 +69,29 @@ public class DataAccessService {
     return false;
   }
 
+  public List<ReadOnlyPruefung> changeDurationOf(ReadOnlyPruefung pruefung, Duration minutes)
+      throws HartesKriteriumException {
+    List<ReadOnlyPruefung> result = new ArrayList<>();
+    Pruefung pruefungFromModel = pruefungsperiode.pruefung(pruefung.getName());
+    pruefungFromModel.setDauer(minutes);
 
-  public List<ReadOnlyPruefung> changeDauerEinerPruefung(ReadOnlyPruefung pruefung,
-      Duration minutes) throws HartesKriteriumException {
-    Set<Planungseinheit> filtered = getPlannedPlanungseinheitenWithPruefungsnummer(
-        pruefung.getPruefungsnummer());
-    List<ReadOnlyPruefung> retList = new ArrayList<>();
-    if (filtered.size() == 1) {
-      pruefungsperiode.pruefung(pruefung.getName()).setDauer(minutes);
-      //TODO Map noch entfernen
-      Map<Teilnehmerkreis, Integer> retMap = new HashMap<>();
-      for (Teilnehmerkreis t : pruefung.getTeilnehmerkreise()) {
-        retMap.put(t, 0);
-      }
+    ReadOnlyPruefung newPruefung =
+        new PruefungDTO(
+            pruefungFromModel.getPruefungsnummer(),
+            pruefungFromModel.getName(),
+            pruefungFromModel.getStartzeitpunkt(),
+            pruefungFromModel.getDauer(),
+            pruefungFromModel.getSchaetzungen(),
+            pruefung.getPruefer(),
+            0); // TODO where do we get the scoring from?
+    // TODO HartesKriterium überprüfen
+    result.add(newPruefung);
 
-      ReadOnlyPruefung newPruefung = createPruefung(pruefung.getName(),
-          pruefung.getPruefungsnummer(), pruefung.getPruefer(),
-          minutes, retMap);
-      //TODO HartesKriterium überprüfen
-      // lookAtAllTeilnehmerkreise(newPruefung);
-      retList.add(newPruefung);
-
-      return retList;
-    }
-
-    return null;
+    return result;
   }
 
-
-  public List<ReadOnlyPruefung> schedulePruefung(ReadOnlyPruefung pruefung,
-      LocalDateTime startTermin)
-      throws HartesKriteriumException {
+  public List<ReadOnlyPruefung> schedulePruefung(
+      ReadOnlyPruefung pruefung, LocalDateTime startTermin) throws HartesKriteriumException {
 
     PruefungDTOBuilder newPruefung = new PruefungDTOBuilder();
     for (Teilnehmerkreis teilnehmerkreis : pruefung.getTeilnehmerkreise()) {
@@ -122,14 +104,13 @@ public class DataAccessService {
     newPruefung.withDauer(pruefung.getDauer());
     newPruefung.withStartZeitpunkt(startTermin);
 
-    //TODO HartesKriterium überprüfen
+    // TODO HartesKriterium überprüfen
 
-    //TODO ChangeScoring
-    //TODO return alle von Changescoring prüfungen als Liste
+    // TODO ChangeScoring
+    // TODO return alle von Changescoring prüfungen als Liste
 
     return Collections.emptyList();
   }
-
 
   public ReadOnlyPruefung changeNameOfPruefung(ReadOnlyPruefung toChange, String name) {
     Pruefung pruefung = pruefungsperiode.pruefung(toChange.getPruefungsnummer());
@@ -151,7 +132,7 @@ public class DataAccessService {
     return pruefungsperiode.ungeplantePruefungen().stream()
         .map(
             pruefung ->
-                new PruefungDTOBuilder(pruefung) // TODO pruefung.getScoring();
+                new PruefungDTOBuilder(pruefung) // TODO use scoring
                     .build())
         .collect(Collectors.toSet());
   }

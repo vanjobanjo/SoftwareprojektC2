@@ -33,9 +33,9 @@ class ControllerTest {
   @BeforeEach
   void setUp() {
     this.dataAccessService = mock(DataAccessService.class);
-    when(dataAccessService.isPruefungsperiodeSet()).thenReturn(true);
     this.pruefungsperiode = mock(Pruefungsperiode.class);
-    this.controller = new Controller(pruefungsperiode,dataAccessService);
+    this.controller = new Controller(dataAccessService);
+    when(dataAccessService.isPruefungsperiodeSet()).thenReturn(true);
   }
 
   @Test
@@ -94,18 +94,17 @@ class ControllerTest {
     ReadOnlyPruefung expected = getReadOnlyPruefung();
     assertThrows(
         NoPruefungsPeriodeDefinedException.class,
-        () -> {
-          controller.createPruefung(
-              expected.getName(),
-              expected.getPruefungsnummer(),
-              "Harms",
-              expected.getDauer(),
-              expected.getTeilnehmerKreisSchaetzung());
-        });
+        () -> controller.createPruefung(
+            expected.getName(),
+            expected.getPruefungsnummer(),
+            "Harms",
+            expected.getDauer(),
+            expected.getTeilnehmerKreisSchaetzung()));
   }
 
   /**
    * Gibt eine vorgegeben ReadOnlyPruefung zurueck
+   *
    * @return gibt eine vorgebene ReadOnlyPruefung zurueck
    */
   private ReadOnlyPruefung getReadOnlyPruefung() {

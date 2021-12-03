@@ -67,10 +67,6 @@
 
 
   <dependencies>
-    <dependency>
-      <groupId>de.fhwedel.klausps</groupId>
-      <artifactId>controller-api</artifactId>
-    </dependency>
     <!-- testing -->
     <dependency>
       <groupId>io.cucumber</groupId>

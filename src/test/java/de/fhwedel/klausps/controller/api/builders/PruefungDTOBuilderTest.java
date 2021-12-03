@@ -109,13 +109,6 @@ class PruefungDTOBuilderTest {
   }
 
   @Test
-  void withGeplant() {
-    PruefungDTO tester = BUILDER.withGeplant(true).build();
-    assertThat(tester.geplant()).isTrue();
-    assertThat(tester.ungeplant()).isFalse();
-  }
-
-  @Test
   @DisplayName(
       "Teilnehmerkreis Schaetzung wurde zur Prüfung hinzugefügt, geschaetze Zahl muss 0 sein")
   void addTeilnehmerkreisSchaetzung() {
@@ -124,7 +117,8 @@ class PruefungDTOBuilderTest {
     Integer expected_schaetzung_fuer_tester = 0;
     PruefungDTO pruefungDTO = builder.build();
     assertThat(pruefungDTO.getTeilnehmerkreise()).containsOnly(tester);
-    assertThat(pruefungDTO.getTeilnehmerKreisSchaetzung()).containsEntry(tester, expected_schaetzung_fuer_tester);
+    assertThat(pruefungDTO.getTeilnehmerKreisSchaetzung())
+        .containsEntry(tester, expected_schaetzung_fuer_tester);
   }
 
   @Test
