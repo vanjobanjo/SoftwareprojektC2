@@ -169,4 +169,8 @@ public class DataAccessService {
                         .collect(Collectors.toSet())))
         .collect(Collectors.toSet());
   }
+
+  public ReadOnlyPruefung addPruefer(String pruefungsNummer, String pruefer) {
+    return null;
+  }
 }

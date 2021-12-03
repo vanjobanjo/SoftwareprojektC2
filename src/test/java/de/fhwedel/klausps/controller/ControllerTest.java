@@ -1,8 +1,6 @@
 package de.fhwedel.klausps.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -22,19 +20,18 @@ import java.util.HashMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 class ControllerTest {
 
   private DataAccessService dataAccessService;
-  private Controller controller;
+  private Controller deviceUnderTest;
   private Pruefungsperiode pruefungsperiode;
 
   @BeforeEach
   void setUp() {
     this.dataAccessService = mock(DataAccessService.class);
     this.pruefungsperiode = mock(Pruefungsperiode.class);
-    this.controller = new Controller(dataAccessService);
+    this.deviceUnderTest = new Controller(dataAccessService);
     when(dataAccessService.isPruefungsperiodeSet()).thenReturn(true);
   }
 
@@ -50,7 +47,7 @@ class ControllerTest {
             new HashMap<>()))
         .thenReturn(pruefung);
     ReadOnlyPruefungAssert.assertThat(
-            controller.createPruefung(
+            deviceUnderTest.createPruefung(
                 pruefung.getName(),
                 pruefung.getPruefungsnummer(),
                 "Harms",
@@ -62,7 +59,7 @@ class ControllerTest {
   @Test
   void createPruefung_Successful_actualWriting() throws NoPruefungsPeriodeDefinedException {
     ReadOnlyPruefung pruefung = getReadOnlyPruefung();
-    controller.createPruefung(
+    deviceUnderTest.createPruefung(
         pruefung.getName(),
         pruefung.getPruefungsnummer(),
         "Harms",
@@ -78,7 +75,7 @@ class ControllerTest {
         .thenReturn(null);
     ReadOnlyPruefung pruefung = getReadOnlyPruefung();
     assertThat(
-            controller.createPruefung(
+            deviceUnderTest.createPruefung(
                 pruefung.getName(),
                 pruefung.getPruefungsnummer(),
                 "Harms",
@@ -94,12 +91,22 @@ class ControllerTest {
     ReadOnlyPruefung expected = getReadOnlyPruefung();
     assertThrows(
         NoPruefungsPeriodeDefinedException.class,
-        () -> controller.createPruefung(
-            expected.getName(),
-            expected.getPruefungsnummer(),
-            "Harms",
-            expected.getDauer(),
-            expected.getTeilnehmerKreisSchaetzung()));
+        () ->
+            deviceUnderTest.createPruefung(
+                expected.getName(),
+                expected.getPruefungsnummer(),
+                "Harms",
+                expected.getDauer(),
+                expected.getTeilnehmerKreisSchaetzung()));
+  }
+
+  @Test
+  void addPruefer_successs() throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung pruefungToAddTo = getPruefungWithoutPruefer();
+    String prueferToAdd = "Predeschly";
+    deviceUnderTest.addPruefer(pruefungToAddTo, prueferToAdd);
+    verify(dataAccessService, times(1))
+        .addPruefer(pruefungToAddTo.getPruefungsnummer(), prueferToAdd);
   }
 
   /**
@@ -113,6 +120,15 @@ class ControllerTest {
         .withPruefungsName("Analysis")
         .withPruefungsNummer("b001")
         .withAdditionalPruefer("Harms")
+        .withDauer(Duration.ofMinutes(90))
+        .build();
+  }
+
+  private ReadOnlyPruefung getPruefungWithoutPruefer() {
+    // return new Pruefung()
+    return new PruefungDTOBuilder()
+        .withPruefungsName("Analysis")
+        .withPruefungsNummer("b001")
         .withDauer(Duration.ofMinutes(90))
         .build();
   }
