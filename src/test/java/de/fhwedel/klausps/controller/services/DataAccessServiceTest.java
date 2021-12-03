@@ -199,8 +199,7 @@ class DataAccessServiceTest {
   @Test
   void addPruefer_successTest() {
     when(pruefungsperiode.pruefung(anyString())).thenReturn(getPruefungWithPruefer("Cohen"));
-    ReadOnlyPruefungAssert
-        .assertThat(deviceUnderTest.addPruefer("b321", "Cohen"))
+    ReadOnlyPruefungAssert.assertThat(deviceUnderTest.addPruefer("b321", "Cohen"))
         .hasPruefer("Cohen");
   }
 
@@ -208,6 +207,14 @@ class DataAccessServiceTest {
   void addPruefer_unknownPruefungTest() {
     when(pruefungsperiode.pruefung(anyString())).thenReturn(null);
     assertThrows(IllegalArgumentException.class, () -> deviceUnderTest.addPruefer("b110", "Gödel"));
+  }
+
+  @Test
+  void removePruefer_successTest() {
+    when(pruefungsperiode.pruefung(anyString()))
+        .thenReturn(getPruefungWithPruefer("Cohen"));
+    ReadOnlyPruefungAssert.assertThat(deviceUnderTest.removePruefer("b321", "Cohen"))
+        .hasNotPruefer("Cohen");
   }
 
   /**
@@ -234,5 +241,11 @@ class DataAccessServiceTest {
             roPruefung.getTermin().orElse(null));
     roPruefung.getTeilnehmerKreisSchaetzung().forEach(modelPruefung::setSchaetzung);
     return modelPruefung;
+  }
+
+  private Pruefung getPruefungWithPruefer(String pruefer) {
+    Pruefung pruefung = new PruefungImpl("b001", "Analysis", "refNbr", Duration.ofMinutes(70));
+    pruefung.addPruefer(pruefer);
+    return pruefung;
   }
 }

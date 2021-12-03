@@ -179,4 +179,14 @@ public class DataAccessService {
     }
     throw new IllegalArgumentException("Passed unknown pruefung!");
   }
+
+  public ReadOnlyPruefung removePruefer(String pruefungsNummer, String pruefer) {
+    if (existsPruefung(pruefungsNummer)) {
+      Pruefung pruefung = pruefungsperiode.pruefung(pruefungsNummer);
+      pruefung.removePruefer(pruefer);
+      return new PruefungDTOBuilder(pruefung).build();
+      // TODO add scoring to result
+    }
+    throw new IllegalArgumentException("Passed unknown pruefung!");
+  }
 }

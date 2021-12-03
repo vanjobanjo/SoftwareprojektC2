@@ -275,7 +275,7 @@ public class Controller implements InterfaceController {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, kuerzel);
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    return dataAccessService.removePruefer(pruefung.getPruefungsnummer(), kuerzel);
   }
 
   @Override

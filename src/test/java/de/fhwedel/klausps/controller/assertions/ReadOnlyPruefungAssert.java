@@ -53,4 +53,11 @@ public class ReadOnlyPruefungAssert
     }
     return this;
   }
+
+  public ReadOnlyPruefungAssert hasNotPruefer(String pruefer) {
+    if (actual.getPruefer().contains(pruefer)) {
+      failWithMessage("Expected not to have pruefer %s but did.", pruefer);
+    }
+    return this;
+  }
 }
