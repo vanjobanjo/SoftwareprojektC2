@@ -166,7 +166,7 @@ class DataAccessServiceTest {
         ReadOnlyPruefung ro02 = new PruefungDTOBuilder().withPruefungsName("inBlock1").withPruefungsNummer("1235").withGeplant(true).build();
         Pruefung inBlock0 = getPruefungOfReadOnlyPruefung(ro01);
         Pruefung inBlock1 = getPruefungOfReadOnlyPruefung(ro02);
-        Block block = new BlockImpl(pruefungsperiode, null);
+        Block block = new BlockImpl(pruefungsperiode, "name");
         block.addPruefung(inBlock0);
         block.addPruefung(inBlock1);
 
@@ -181,11 +181,11 @@ class DataAccessServiceTest {
         ReadOnlyPruefung ro02 = new PruefungDTOBuilder().withPruefungsName("inBlock1").withPruefungsNummer("1235").withGeplant(false).build();
         Pruefung inBlock0 = getPruefungOfReadOnlyPruefung(ro01);
         Pruefung inBlock1 = getPruefungOfReadOnlyPruefung(ro02);
-        Block block = new BlockImpl(pruefungsperiode, null);
+        Block block = new BlockImpl(pruefungsperiode, "name");
         block.addPruefung(inBlock0);
         block.addPruefung(inBlock1);
 
-        when(pruefungsperiode.ungeplanteBloecke()).thenReturn(new HashSet<>(Arrays.asList(block)));
+        when(pruefungsperiode.ungeplanteBloecke()).thenReturn(new HashSet<>(List.of(block)));
         Set<ReadOnlyBlock> blockController =  deviceUnderTest.getUngeplanteBloecke();
         assertThat(blockController.iterator().next().getROPruefungen()).containsOnly(ro01, ro02);
     }

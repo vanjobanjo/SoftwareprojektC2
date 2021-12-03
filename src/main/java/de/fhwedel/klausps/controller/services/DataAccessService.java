@@ -8,7 +8,6 @@ import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
-import de.fhwedel.klausps.model.impl.BlockImpl;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
 import java.time.Duration;
 import java.util.Map;
@@ -41,19 +40,15 @@ public class DataAccessService {
           .withPruefungsNummer(pruefungsNr)
           .withPruefer(pruefer)
           .withDauer(duration)
-          .withTeilnehmerKreisSchaetzung(teilnehmerkreise) //TODO an Valerio: davor stand da keySet()
+          .withTeilnehmerKreisSchaetzung(teilnehmerkreise)
           .build();
     }
     return null;
   }
 
-  private void addTeilnehmerKreisSchaetzungToModelPruefung(Pruefung pruefungModel,
-                                                           Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
+  private void addTeilnehmerKreisSchaetzungToModelPruefung(
+      Pruefung pruefungModel, Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
     teilnehmerkreise.forEach(pruefungModel::setSchaetzung);
-  }
-
-  private boolean isPruefung(Planungseinheit planungseinheit) {
-    return planungseinheit instanceof Pruefung;
   }
 
   public ReadOnlyPruefung createPruefung(
@@ -69,58 +64,58 @@ public class DataAccessService {
     return false;
   }
 
-  public ReadOnlyPruefung changeNameOfPruefung(ReadOnlyPruefung toChange, String name){
+  public ReadOnlyPruefung changeNameOfPruefung(ReadOnlyPruefung toChange, String name) {
     Pruefung pruefung = pruefungsperiode.pruefung(toChange.getPruefungsnummer());
     pruefung.setName(name);
     int scoring = toChange.getScoring();
     return new PruefungDTOBuilder(pruefung).withScoring(scoring).build();
   }
 
-  public Set<ReadOnlyPruefung> getGeplantePruefungen(){
-    return pruefungsperiode
-            .geplantePruefungen()
-            .stream()
-            .map(pruefung -> new PruefungDTOBuilder(pruefung) //TODO pruefung.getScoring(); Scoring berechnen
+  public Set<ReadOnlyPruefung> getGeplantePruefungen() {
+    return pruefungsperiode.geplantePruefungen().stream()
+        .map(
+            pruefung ->
+                new PruefungDTOBuilder(pruefung) // TODO pruefung.getScoring(); Scoring berechnen
                     .build())
-            .collect(Collectors.toSet());
+        .collect(Collectors.toSet());
   }
 
-  public Set<ReadOnlyPruefung> getUngeplanteKlausuren(){
-    return pruefungsperiode
-            .ungeplantePruefungen()
-            .stream()
-            .map(pruefung -> new PruefungDTOBuilder(pruefung) //TODO pruefung.getScoring();
+  public Set<ReadOnlyPruefung> getUngeplanteKlausuren() {
+    return pruefungsperiode.ungeplantePruefungen().stream()
+        .map(
+            pruefung ->
+                new PruefungDTOBuilder(pruefung) // TODO pruefung.getScoring();
                     .build())
-            .collect(Collectors.toSet());
+        .collect(Collectors.toSet());
   }
 
-  public Set<ReadOnlyBlock> getGeplanteBloecke(){
-    return pruefungsperiode
-            .geplanteBloecke()
-            .stream().map(x ->
-                    new BlockDTO("TODO", //TODO
-                            x.getStartzeitpunkt(),
-                            x.getDauer(),
-                            x.isGeplant(),
-                            x.getPruefungen()
-                                    .stream()
-                                    .map(pruefung -> new PruefungDTOBuilder(pruefung).build())
-                                    .collect(Collectors.toSet())
-                    )).collect(Collectors.toSet());
+  public Set<ReadOnlyBlock> getGeplanteBloecke() {
+    return pruefungsperiode.geplanteBloecke().stream()
+        .map(
+            x ->
+                new BlockDTO(
+                    "TODO", // TODO
+                    x.getStartzeitpunkt(),
+                    x.getDauer(),
+                    x.isGeplant(),
+                    x.getPruefungen().stream()
+                        .map(pruefung -> new PruefungDTOBuilder(pruefung).build())
+                        .collect(Collectors.toSet())))
+        .collect(Collectors.toSet());
   }
 
-  public Set<ReadOnlyBlock> getUngeplanteBloecke(){
-    return pruefungsperiode
-            .ungeplanteBloecke()
-            .stream().map(x ->
-                    new BlockDTO("TODO", //TODO
-                            x.getStartzeitpunkt(),
-                            x.getDauer(),
-                            x.isGeplant(),
-                            x.getPruefungen()
-                                    .stream()
-                                    .map(pruefung -> new PruefungDTOBuilder(pruefung).build())
-                                    .collect(Collectors.toSet())
-                    )).collect(Collectors.toSet());
+  public Set<ReadOnlyBlock> getUngeplanteBloecke() {
+    return pruefungsperiode.ungeplanteBloecke().stream()
+        .map(
+            x ->
+                new BlockDTO(
+                    x.getName(),
+                    x.getStartzeitpunkt(),
+                    x.getDauer(),
+                    x.isGeplant(),
+                    x.getPruefungen().stream()
+                        .map(pruefung -> new PruefungDTOBuilder(pruefung).build())
+                        .collect(Collectors.toSet())))
+        .collect(Collectors.toSet());
   }
 }

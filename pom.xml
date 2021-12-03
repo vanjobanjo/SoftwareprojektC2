@@ -103,6 +103,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-suite-engine</artifactId>
+      <version>1.8.1</version>
+    </dependency>
+    <dependency>
       <!-- https://assertj.github.io/doc/ -->
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
@@ -119,6 +124,10 @@
     <dependency>
       <groupId>de.fhwedel.klausps</groupId>
       <artifactId>controller-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>de.fhwedel.klausps</groupId>
+      <artifactId>model-impl</artifactId>
     </dependency>
     <dependency>
       <groupId>de.fhwedel.klausps</groupId>

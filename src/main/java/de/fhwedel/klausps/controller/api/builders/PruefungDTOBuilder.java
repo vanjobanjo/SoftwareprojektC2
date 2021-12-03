@@ -93,9 +93,7 @@ public class PruefungDTOBuilder {
     }
 
     public PruefungDTOBuilder withAdditionalTeilnehmerkreis(Teilnehmerkreis teilnehmerkreis) {
-        if(!teilnehmerkreisSchaetzung.containsKey(teilnehmerkreis)){
-            teilnehmerkreisSchaetzung.put(teilnehmerkreis, 0);
-        }
+            teilnehmerkreisSchaetzung.putIfAbsent(teilnehmerkreis, 0);
         return this;
     }
 
