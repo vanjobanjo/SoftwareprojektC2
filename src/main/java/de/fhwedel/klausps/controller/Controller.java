@@ -375,9 +375,10 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public void createEmptyPeriode(Semester semester, LocalDate start, LocalDate end, int kapazitaet) {
+  public void createEmptyPeriode(
+      Semester semester, LocalDate start, LocalDate end, int kapazitaet) {
     noNullParameters(semester, start, end, kapazitaet);
-    throw new IllegalStateException("Not implemented yet!");
+    dataAccessService.createEmptyPeriode(semester, start, end, kapazitaet);
   }
 
   @Override

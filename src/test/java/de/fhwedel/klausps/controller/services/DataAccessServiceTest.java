@@ -9,11 +9,16 @@ import de.fhwedel.klausps.controller.assertions.ReadOnlyPruefungAssert;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
+import de.fhwedel.klausps.model.api.Semester;
+import de.fhwedel.klausps.model.api.Semestertyp;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 
 import de.fhwedel.klausps.model.impl.BlockImpl;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
+import de.fhwedel.klausps.model.impl.SemesterImpl;
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.Year;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -224,12 +229,25 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void removePruefer_otherPrueferStay() {
+  void removePruefer_otherPrueferStayTest() {
     when(pruefungsperiode.pruefung(anyString()))
         .thenReturn(getPruefungWithPruefer("Hilbert", "Einstein"));
     ReadOnlyPruefungAssert.assertThat(deviceUnderTest.removePruefer("b321", "Hilbert"))
         .hasPruefer("Einstein")
         .hasNotPruefer("Cohen");
+  }
+
+  @Test
+  void createEmptyPeriodeTest() {
+    deviceUnderTest = new DataAccessService(null);
+    assertThat(deviceUnderTest.isPruefungsperiodeSet()).isFalse();
+    deviceUnderTest.createEmptyPeriode(
+        getSemester(), LocalDate.of(1996, 9, 1), LocalDate.of(1997, 3, 23), 300);
+    assertThat(deviceUnderTest.isPruefungsperiodeSet()).isTrue();
+  }
+
+  private Semester getSemester() {
+    return new SemesterImpl(Semestertyp.SOMMERSEMESTER, Year.of(1996));
   }
 
   /**

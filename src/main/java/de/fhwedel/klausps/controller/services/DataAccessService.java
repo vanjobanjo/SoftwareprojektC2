@@ -1,5 +1,7 @@
 package de.fhwedel.klausps.controller.services;
 
+import static java.util.Objects.nonNull;
+
 import de.fhwedel.klausps.controller.api.BlockDTO;
 import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
@@ -8,9 +10,12 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
+import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
+import de.fhwedel.klausps.model.impl.PruefungsperiodeImpl;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -69,7 +74,7 @@ public class DataAccessService {
   }
 
   public boolean isPruefungsperiodeSet() {
-    return false;
+    return nonNull(pruefungsperiode);
   }
 
   public List<ReadOnlyPruefung> changeDurationOf(ReadOnlyPruefung pruefung, Duration minutes)
@@ -188,5 +193,10 @@ public class DataAccessService {
       // TODO add scoring to result
     }
     throw new IllegalArgumentException("Passed unknown pruefung!");
+  }
+
+  public void createEmptyPeriode(
+      Semester semester, LocalDate start, LocalDate end, int kapazitaet) {
+    this.pruefungsperiode = new PruefungsperiodeImpl(semester, start, end, kapazitaet);
   }
 }
