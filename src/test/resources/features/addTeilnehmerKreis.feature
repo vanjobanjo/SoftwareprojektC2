@@ -31,7 +31,7 @@ Funktionalität: Als Planender moechter ich zu einer Klausur einen Teilnehmerkre
   Szenario: Die Klausur hat bereits einen Teilnehmerkreis + Schaetzung, fuege negative Schaetzzahl hinzu. Invalider TK
     Angenommen die Pruefung "Analysis" hat als Teilnehmerkreisschaetzung: "B_BWL 1 10.0 50, B_WING 1 11.0 100"
     Wenn ich den Studiengang "B_WING" Fachsemester 2 mit Ordnung "11.0" und -1 schaetze und hinzufuege
-    Dann werfe IllegalArgumentException
+    Dann erhalte ich eine Fehlermeldung
 
   Szenario: Die Klausur hat zugewiesene Teilnehmerkreise + Schaetzung, aendere Schaetzung nach oben hin
             das Scoring wird veraendert und eine Liste von Klausuren werden zurueckgegeben
