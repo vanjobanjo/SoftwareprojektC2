@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class BlockDTOTest {
 
   @Test
-  public void teilnehmerKreisSchaetzung() {
+  void teilnehmerKreisSchaetzung() {
     TeilnehmerkreisImpl bwl = new TeilnehmerkreisImpl("BWL", "Bla", 10);
     TeilnehmerkreisImpl inf = new TeilnehmerkreisImpl("inf", "Bla", 10);
     PruefungDTO analysis =

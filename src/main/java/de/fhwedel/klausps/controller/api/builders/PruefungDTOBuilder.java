@@ -21,7 +21,7 @@ public class PruefungDTOBuilder {
     private static final int SCORING_DEFAULT = 0;
     private final Set<String> PRUEFER_DEFAULT = new HashSet<>();
     private final Map<Teilnehmerkreis, Integer> TEILNEHMERKREIS_SCHAETZUNG_DEFAULT = new HashMap<>();
-    private final boolean GEPLANT_DEFAULT = false;
+    private static final boolean GEPLANT_DEFAULT = false;
 
     private String pruefungsNummer;
     private String pruefungsName;
@@ -62,7 +62,7 @@ public class PruefungDTOBuilder {
         this.teilnehmerkreisSchaetzung = pruefungModel.getSchaetzungen();
         this.dauer = pruefungModel.getDauer();
         this.startZeitpunkt = pruefungModel.getStartzeitpunkt();
-        this.scoring = SCORING_DEFAULT; //TODO
+        this.scoring = SCORING_DEFAULT;
         this.pruefer = pruefungModel.getPruefer();
     }
 
