@@ -22,10 +22,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.time.Duration;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.*;
@@ -87,7 +87,7 @@ class DataAccessServiceTest {
 
   @Test
   @DisplayName("A pruefung can not be created when one with the same pruefungsnummer")
-  void createPruefung_existsAlready() {
+  void createPruefung_existsAlreadyTest() {
     ReadOnlyPruefung expected = getReadOnlyPruefung();
     Pruefung test =
         new PruefungImpl(
@@ -106,7 +106,7 @@ class DataAccessServiceTest {
 
   @Test
   @DisplayName("Change name of a Pruefung")
-  void setName_successfully() {
+  void setName_successfullyTest() {
     ReadOnlyPruefung before = getReadOnlyPruefung();
     Pruefung model = getPruefungOfReadOnlyPruefung(before);
 
@@ -127,7 +127,7 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void testGetGeplantePruefungen() {
+  void getGeplantePruefungenTest() {
     PruefungDTO p1 = new PruefungDTOBuilder().withPruefungsName("Hallo").build();
     PruefungDTO p2 = new PruefungDTOBuilder().withPruefungsName("Welt").build();
     Pruefung pm1 = getPruefungOfReadOnlyPruefung(p1);
@@ -145,7 +145,7 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void testUngeplanteKlausuren() {
+  void ungeplanteKlausurenTest() {
     PruefungDTO p1 = new PruefungDTOBuilder().withPruefungsName("Hallo").build();
     PruefungDTO p2 = new PruefungDTOBuilder().withPruefungsName("Welt").build();
     Pruefung pm1 = getPruefungOfReadOnlyPruefung(p1);
@@ -163,7 +163,7 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void testGeplanteBloecke() {
+  void geplanteBloeckeTest() {
     ReadOnlyPruefung ro01 =
         new PruefungDTOBuilder().withPruefungsName("inBlock0").withPruefungsNummer("123").build();
     ReadOnlyPruefung ro02 =
@@ -180,7 +180,7 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void testUngeplanteBloecke() {
+  void ungeplanteBloeckeTest() {
     ReadOnlyPruefung ro01 =
         new PruefungDTOBuilder().withPruefungsName("inBlock0").withPruefungsNummer("123").build();
     ReadOnlyPruefung ro02 =
