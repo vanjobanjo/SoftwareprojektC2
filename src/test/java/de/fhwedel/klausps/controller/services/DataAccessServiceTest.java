@@ -197,7 +197,7 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void addPruefer_success() {
+  void addPruefer_successTest() {
     when(pruefungsperiode.pruefung(anyString())).thenReturn(getPruefungWithPruefer("Cohen"));
     ReadOnlyPruefungAssert
         .assertThat(deviceUnderTest.addPruefer("b321", "Cohen"))
