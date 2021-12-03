@@ -197,6 +197,14 @@ class DataAccessServiceTest {
   }
 
   @Test
+  void addPruefer_success() {
+    when(pruefungsperiode.pruefung(anyString())).thenReturn(getPruefungWithPruefer("Cohen"));
+    ReadOnlyPruefungAssert
+        .assertThat(deviceUnderTest.addPruefer("b321", "Cohen"))
+        .hasPruefer("Cohen");
+  }
+
+  @Test
   void addPruefer_unknownPruefungTest() {
     when(pruefungsperiode.pruefung(anyString())).thenReturn(null);
     assertThrows(IllegalArgumentException.class, () -> deviceUnderTest.addPruefer("b110", "Gödel"));
@@ -208,7 +216,6 @@ class DataAccessServiceTest {
    * @return gibt eine vorgebene ReadOnlyPruefung zurueck
    */
   private ReadOnlyPruefung getReadOnlyPruefung() {
-    // return new Pruefung()
     return new PruefungDTOBuilder()
         .withPruefungsName("Analysis")
         .withPruefungsNummer("b001")
