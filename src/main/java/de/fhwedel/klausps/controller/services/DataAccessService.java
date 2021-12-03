@@ -34,8 +34,7 @@ public class DataAccessService {
       Duration duration,
       Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
 
-    Pruefung isAvailable = pruefungsperiode.pruefung(pruefungsNr);
-    if (isAvailable == null) {
+    if (!existsPruefung(pruefungsNr)) {
       // todo contains static values as it is unclear where to retreave the data from
       Pruefung pruefungModel = new PruefungImpl(pruefungsNr, name, "", duration, null);
       addTeilnehmerKreisSchaetzungToModelPruefung(pruefungModel, teilnehmerkreise);
@@ -49,6 +48,10 @@ public class DataAccessService {
           .build();
     }
     return null;
+  }
+
+  private boolean existsPruefung(String pruefungsNummer) {
+    return pruefungsperiode.pruefung(pruefungsNummer) != null;
   }
 
   private void addTeilnehmerKreisSchaetzungToModelPruefung(
