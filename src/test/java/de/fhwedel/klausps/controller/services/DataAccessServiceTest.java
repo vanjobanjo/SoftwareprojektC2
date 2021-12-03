@@ -211,9 +211,24 @@ class DataAccessServiceTest {
 
   @Test
   void removePruefer_successTest() {
-    when(pruefungsperiode.pruefung(anyString()))
-        .thenReturn(getPruefungWithPruefer("Cohen"));
+    when(pruefungsperiode.pruefung(anyString())).thenReturn(getPruefungWithPruefer("Cohen"));
     ReadOnlyPruefungAssert.assertThat(deviceUnderTest.removePruefer("b321", "Cohen"))
+        .hasNotPruefer("Cohen");
+  }
+
+  @Test
+  void removePruefer_unknownPruefungTest() {
+    when(pruefungsperiode.pruefung(anyString())).thenReturn(null);
+    assertThrows(
+        IllegalArgumentException.class, () -> deviceUnderTest.removePruefer("b110", "Gödel"));
+  }
+
+  @Test
+  void removePruefer_otherPrueferStay() {
+    when(pruefungsperiode.pruefung(anyString()))
+        .thenReturn(getPruefungWithPruefer("Hilbert", "Einstein"));
+    ReadOnlyPruefungAssert.assertThat(deviceUnderTest.removePruefer("b321", "Hilbert"))
+        .hasPruefer("Einstein")
         .hasNotPruefer("Cohen");
   }
 
@@ -246,6 +261,14 @@ class DataAccessServiceTest {
   private Pruefung getPruefungWithPruefer(String pruefer) {
     Pruefung pruefung = new PruefungImpl("b001", "Analysis", "refNbr", Duration.ofMinutes(70));
     pruefung.addPruefer(pruefer);
+    return pruefung;
+  }
+
+  private Pruefung getPruefungWithPruefer(String... pruefer) {
+    Pruefung pruefung = new PruefungImpl("b001", "Analysis", "refNbr", Duration.ofMinutes(70));
+    for (String p : pruefer) {
+      pruefung.addPruefer(p);
+    }
     return pruefung;
   }
 }
