@@ -171,6 +171,12 @@ public class DataAccessService {
   }
 
   public ReadOnlyPruefung addPruefer(String pruefungsNummer, String pruefer) {
-    return null;
+    if (existsPruefung(pruefungsNummer)) {
+      Pruefung pruefung = pruefungsperiode.pruefung(pruefungsNummer);
+      pruefung.addPruefer(pruefer);
+      return new PruefungDTOBuilder(pruefung).build();
+      // TODO add scoring to result
+    }
+    throw new IllegalArgumentException("Passed unknown pruefung!");
   }
 }

@@ -196,6 +196,12 @@ class DataAccessServiceTest {
     assertThat(blockController.iterator().next().getROPruefungen()).containsOnly(ro01, ro02);
   }
 
+  @Test
+  void addPruefer_unknownPruefungTest() {
+    when(pruefungsperiode.pruefung(anyString())).thenReturn(null);
+    assertThrows(IllegalArgumentException.class, () -> deviceUnderTest.addPruefer("b110", "Gödel"));
+  }
+
   /**
    * Gibt eine vorgegeben ReadOnlyPruefung zurueck
    *
