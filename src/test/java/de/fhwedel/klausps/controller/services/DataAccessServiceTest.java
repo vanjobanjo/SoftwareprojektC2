@@ -48,7 +48,8 @@ class DataAccessServiceTest {
   @BeforeEach
   void setUp() {
     this.pruefungsperiode = mock(Pruefungsperiode.class);
-    this.deviceUnderTest = new DataAccessService(pruefungsperiode);
+    this.deviceUnderTest = ServiceProvider.getDataAccessService();
+    deviceUnderTest.setPruefungsperiode(pruefungsperiode);
   }
 
   @Test
@@ -243,7 +244,7 @@ class DataAccessServiceTest {
 
   @Test
   void createEmptyPeriodeTest() {
-    deviceUnderTest = new DataAccessService(null);
+    deviceUnderTest = new DataAccessService();
     assertThat(deviceUnderTest.isPruefungsperiodeSet()).isFalse();
     deviceUnderTest.createEmptyPeriode(
         getSemester(), LocalDate.of(1996, 9, 1), LocalDate.of(1997, 3, 23), 300);

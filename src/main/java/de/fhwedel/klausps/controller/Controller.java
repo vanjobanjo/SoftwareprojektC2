@@ -12,6 +12,7 @@ import de.fhwedel.klausps.controller.export.ExportTyp;
 import de.fhwedel.klausps.controller.helper.Pair;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.services.DataAccessService;
+import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.nio.file.Path;
@@ -27,11 +28,8 @@ import java.util.Set;
 
 public class Controller implements InterfaceController {
 
-  private final DataAccessService dataAccessService;
+  private final DataAccessService dataAccessService = ServiceProvider.getDataAccessService();
 
-  Controller(DataAccessService dataAccessService) {
-    this.dataAccessService = dataAccessService;
-  }
 
   @Override
   public Set<ReadOnlyPruefung> getGeplantePruefungen() throws NoPruefungsPeriodeDefinedException {

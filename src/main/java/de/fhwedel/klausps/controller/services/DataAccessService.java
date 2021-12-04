@@ -30,7 +30,8 @@ public class DataAccessService {
 
   private Pruefungsperiode pruefungsperiode;
 
-  public DataAccessService(Pruefungsperiode pruefungsperiode) {
+
+  public void setPruefungsperiode(Pruefungsperiode pruefungsperiode) {
     this.pruefungsperiode = pruefungsperiode;
   }
 
@@ -42,7 +43,7 @@ public class DataAccessService {
       Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
 
     if (!existsPruefung(pruefungsNr)) {
-      // todo contains static values as it is unclear where to retreave the data from
+      // todo contains static values as it is unclear where to retrieve the data from
       Pruefung pruefungModel = new PruefungImpl(pruefungsNr, name, "", duration, null);
       addTeilnehmerKreisSchaetzungToModelPruefung(pruefungModel, teilnehmerkreise);
       pruefungsperiode.addPlanungseinheit(pruefungModel);
