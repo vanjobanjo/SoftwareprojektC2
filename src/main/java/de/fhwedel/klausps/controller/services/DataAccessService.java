@@ -196,9 +196,8 @@ public class DataAccessService {
     throw new IllegalArgumentException("Passed unknown pruefung!");
   }
 
-  public void createEmptyPeriode(
-      Semester semester, LocalDate start, LocalDate end, int kapazitaet) {
-    this.pruefungsperiode = new PruefungsperiodeImpl(semester, start, end, kapazitaet);
+  public void setPlanungseinheit(Pruefungsperiode pruefungsperiode) {
+    this.pruefungsperiode = pruefungsperiode;
   }
 
 

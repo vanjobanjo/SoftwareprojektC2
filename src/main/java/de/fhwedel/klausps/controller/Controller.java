@@ -13,6 +13,7 @@ import de.fhwedel.klausps.controller.helper.Pair;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
+import de.fhwedel.klausps.controller.services.IOService;
 import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.nio.file.Path;
@@ -29,7 +30,7 @@ import java.util.Set;
 public class Controller implements InterfaceController {
 
   private final DataAccessService dataAccessService = ServiceProvider.getDataAccessService();
-
+  private final IOService ioService = ServiceProvider.getIOService();
 
   @Override
   public Set<ReadOnlyPruefung> getGeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
@@ -376,7 +377,7 @@ public class Controller implements InterfaceController {
   public void createEmptyPeriode(
       Semester semester, LocalDate start, LocalDate end, int kapazitaet) {
     noNullParameters(semester, start, end, kapazitaet);
-    dataAccessService.createEmptyPeriode(semester, start, end, kapazitaet);
+    ioService.createEmptyPeriode(semester, start, end, kapazitaet);
   }
 
   @Override

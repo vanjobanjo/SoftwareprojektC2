@@ -111,12 +111,12 @@ class DataAccessServiceTest {
 
     when(pruefungsperiode.pruefung(expected.getPruefungsnummer())).thenReturn(test);
     assertThat(
-        deviceUnderTest.createPruefung(
-            expected.getName(),
-            expected.getPruefungsnummer(),
-            expected.getPruefer(),
-            expected.getDauer(),
-            expected.getTeilnehmerKreisSchaetzung()))
+            deviceUnderTest.createPruefung(
+                expected.getName(),
+                expected.getPruefungsnummer(),
+                expected.getPruefer(),
+                expected.getDauer(),
+                expected.getTeilnehmerKreisSchaetzung()))
         .isNull();
   }
 
@@ -233,7 +233,6 @@ class DataAccessServiceTest {
     when(pruefungsperiode.pruefung(anyString())).thenReturn(getPruefungWithPruefer("Cohen"));
     ReadOnlyPruefungAssert.assertThat(deviceUnderTest.removePruefer("b321", "Cohen"))
         .hasNotPruefer("Cohen");
-
   }
 
   @Test
@@ -253,27 +252,14 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void createEmptyPeriodeTest() {
-    deviceUnderTest = new DataAccessService();
-    assertThat(deviceUnderTest.isPruefungsperiodeSet()).isFalse();
-    deviceUnderTest.createEmptyPeriode(
-        getSemester(), LocalDate.of(1996, 9, 1), LocalDate.of(1997, 3, 23), 300);
-    assertThat(deviceUnderTest.isPruefungsperiodeSet()).isTrue();
-  }
-
-
-  @Test
   void changeDurationOf_Successfull() {
     PruefungDTOBuilder pDTOB = new PruefungDTOBuilder();
     pDTOB.withPruefungsName("Analysi");
     pDTOB.withDauer(Duration.ofMinutes(90));
     ReadOnlyPruefung ro01 = pDTOB.build();
-    de.fhwedel.klausps.model.impl.PruefungImpl t = new PruefungImpl(
-        ro01.getPruefungsnummer(),
-        ro01.getName(),
-        "Keine Ahnnung",
-        ro01.getDauer()
-    );
+    de.fhwedel.klausps.model.impl.PruefungImpl t =
+        new PruefungImpl(
+            ro01.getPruefungsnummer(), ro01.getName(), "Keine Ahnnung", ro01.getDauer());
     pruefungsperiode.addPlanungseinheit(t);
 
     assertEquals(ro01.getDauer(), Duration.ofMinutes(90));
@@ -285,7 +271,6 @@ class DataAccessServiceTest {
     } catch (HartesKriteriumException ignored) {
     }
     assertEquals(roAcc.getDauer(), Duration.ofMinutes(120));
-
   }
 
   @Test
@@ -298,8 +283,7 @@ class DataAccessServiceTest {
     assertEquals(ro01.getDauer(), Duration.ofMinutes(90));
     Duration minusMinus = Duration.ofMinutes(-120);
     assertThrows(
-        IllegalArgumentException.class,
-        () -> deviceUnderTest.changeDurationOf(ro01, minusMinus));
+        IllegalArgumentException.class, () -> deviceUnderTest.changeDurationOf(ro01, minusMinus));
   }
 
   @Test
@@ -351,7 +335,7 @@ class DataAccessServiceTest {
     Optional<LocalDateTime> expected1 = Optional.of(change1);
     Optional<LocalDateTime> expected2 = Optional.of(change2);
 
-    //TODO falls die Liste implementiert wird Test anpassen
+    // TODO falls die Liste implementiert wird Test anpassen
     //   ReadOnlyPruefung roacc = ro01;
     try {
       assertThat(deviceUnderTest.schedulePruefung(ro01, change1)).isEmpty();
@@ -359,7 +343,7 @@ class DataAccessServiceTest {
     } catch (HartesKriteriumException ignore) {
     }
 
-    //Assertions.assertEquals(expected1,  roacc.getTermin());
+    // Assertions.assertEquals(expected1,  roacc.getTermin());
 
     try {
       assertThat(deviceUnderTest.schedulePruefung(ro01, change2)).isEmpty();
@@ -370,7 +354,6 @@ class DataAccessServiceTest {
     // Assertions.assertEquals(expected2, roacc.getTermin());
 
   }
-
 
   private Semester getSemester() {
     return new SemesterImpl(Semestertyp.SOMMERSEMESTER, Year.of(1996));
@@ -415,6 +398,4 @@ class DataAccessServiceTest {
     }
     return pruefung;
   }
-
-
 }
