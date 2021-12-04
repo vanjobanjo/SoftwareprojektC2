@@ -27,5 +27,7 @@ Funktionalität: Als Planer*in moechte ich den Namen von Bloecken anpassen koenn
 
 
     Szenario: Ich versuche den Namen eines Blocks auf einen bereits vergebenen Namen zu ändern
-      Angenommen
+      Angenommen es existieren die Bloecke "Block 1" und "Block 2"
+      Wenn ich den Namen von "Block 1" auf "Block 2" aendere
+      Dann erhalte ich eine Fehlermeldung
 
