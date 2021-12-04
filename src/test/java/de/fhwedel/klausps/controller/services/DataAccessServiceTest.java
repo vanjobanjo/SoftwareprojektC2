@@ -1,21 +1,29 @@
 package de.fhwedel.klausps.controller.services;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.notNull;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.assertions.ReadOnlyBlockAssert;
 import de.fhwedel.klausps.controller.assertions.ReadOnlyPruefungAssert;
-
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.model.api.Block;
-import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Semestertyp;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
-
 import de.fhwedel.klausps.model.impl.BlockImpl;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
 import de.fhwedel.klausps.model.impl.SemesterImpl;
@@ -23,26 +31,19 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.util.*;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.notNull;
-import static org.mockito.Mockito.*;
 
 class DataAccessServiceTest {
 
@@ -353,7 +354,7 @@ class DataAccessServiceTest {
     //TODO falls die Liste implementiert wird Test anpassen
     //   ReadOnlyPruefung roacc = ro01;
     try {
-      assertThat(deviceUnderTest.schedulePruefung(ro01, change1)).hasSize(0);
+      assertThat(deviceUnderTest.schedulePruefung(ro01, change1)).isEmpty();
       //  roacc = deviceUnderTest.schedulePruefung(ro01, change1).get(0);
     } catch (HartesKriteriumException ignore) {
     }
@@ -361,7 +362,7 @@ class DataAccessServiceTest {
     //Assertions.assertEquals(expected1,  roacc.getTermin());
 
     try {
-      assertThat(deviceUnderTest.schedulePruefung(ro01, change2)).hasSize(0);
+      assertThat(deviceUnderTest.schedulePruefung(ro01, change2)).isEmpty();
       //  roacc = deviceUnderTest.schedulePruefung(ro01, change2).get(0);
     } catch (HartesKriteriumException ignore) {
     }

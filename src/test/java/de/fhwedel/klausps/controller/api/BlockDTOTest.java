@@ -1,20 +1,16 @@
 package de.fhwedel.klausps.controller.api;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
-import org.junit.jupiter.api.Test;
-
-import javax.naming.RefAddr;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class BlockDTOTest {
 

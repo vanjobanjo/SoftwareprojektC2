@@ -1,11 +1,10 @@
 package de.fhwedel.klausps.controller.api.builders;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -13,10 +12,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static org.assertj.core.api.Assertions.as;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class PruefungDTOBuilderTest {
 
@@ -96,14 +93,14 @@ class PruefungDTOBuilderTest {
 
   @Test
   void withPruefer() {
-    Set<String> pruefer = Arrays.stream(new String[] {"Hallo", "Welt"}).collect(Collectors.toSet());
+    Set<String> pruefer = Arrays.stream(new String[]{"Hallo", "Welt"}).collect(Collectors.toSet());
     PruefungDTO tester = BUILDER.withPruefer(pruefer).build();
     assertThat(tester.getPruefer()).isEqualTo(pruefer);
   }
 
   @Test
   void withAdditionalPruefer() {
-    Set<String> pruefer = Arrays.stream(new String[] {"Hallo", "Welt"}).collect(Collectors.toSet());
+    Set<String> pruefer = Arrays.stream(new String[]{"Hallo", "Welt"}).collect(Collectors.toSet());
     PruefungDTO tester = BUILDER.withPruefer(pruefer).withAdditionalPruefer("Miwand").build();
     assertThat(tester.getPruefer()).contains("Hallo", "Welt", "Miwand");
   }

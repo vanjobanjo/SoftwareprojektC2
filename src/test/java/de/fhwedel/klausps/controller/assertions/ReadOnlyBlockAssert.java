@@ -4,7 +4,6 @@ package de.fhwedel.klausps.controller.assertions;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import java.util.List;
-import java.util.Set;
 import java.util.StringJoiner;
 import org.assertj.core.api.AbstractAssert;
 
@@ -31,8 +30,6 @@ public class ReadOnlyBlockAssert extends AbstractAssert<ReadOnlyBlockAssert, Rea
     }
     return this;
   }
-
-
 
 
   private String getPruefungsNames(Iterable<ReadOnlyPruefung> pruefungen) {

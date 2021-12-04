@@ -3,11 +3,10 @@ package de.fhwedel.klausps.controller.api;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
-import java.time.Duration;
-import java.time.LocalDateTime;
-
 import de.fhwedel.klausps.model.impl.PruefungImpl;
 import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
