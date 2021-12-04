@@ -5,7 +5,7 @@ import io.cucumber.java.de.Dann;
 import io.cucumber.java.de.Wenn;
 import org.junit.AssumptionViolatedException;
 
-public class createBlock {
+public class createBlockSteps {
 
   @Wenn("ich einen Block mit den Pruefungen {string} und {string} erstelle")
   public void erstelleBlockMitPruefungen(String pruefung1, String pruefung2) {
