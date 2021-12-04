@@ -5,7 +5,7 @@ import io.cucumber.java.de.Dann;
 import io.cucumber.java.de.Wenn;
 import org.junit.AssumptionViolatedException;
 
-public class setNameBlock {
+public class setNameBlockSteps {
 
   @Angenommen("es existiert der geplante Block {string}")
   public void esExistiertDerGeplanteBlock(String blockName) {
