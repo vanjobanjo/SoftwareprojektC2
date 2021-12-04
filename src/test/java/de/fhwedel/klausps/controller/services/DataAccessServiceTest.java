@@ -4,6 +4,7 @@ import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
+import de.fhwedel.klausps.controller.assertions.ReadOnlyBlockAssert;
 import de.fhwedel.klausps.controller.assertions.ReadOnlyPruefungAssert;
 
 import de.fhwedel.klausps.model.api.Block;
@@ -197,8 +198,11 @@ class DataAccessServiceTest {
     block.addPruefung(inBlock1);
 
     when(pruefungsperiode.ungeplanteBloecke()).thenReturn(new HashSet<>(List.of(block)));
-    Set<ReadOnlyBlock> blockController = deviceUnderTest.getUngeplanteBloecke();
-    assertThat(blockController.iterator().next().getROPruefungen()).containsOnly(ro01, ro02);
+    Set<ReadOnlyBlock> ungeplanteBloecke = deviceUnderTest.getUngeplanteBloecke();
+
+    assertThat(ungeplanteBloecke).hasSize(1);
+    ReadOnlyBlock resultBlock = new LinkedList<>(ungeplanteBloecke).get(0);
+    ReadOnlyBlockAssert.assertThat(resultBlock).containsOnlyPruefungen(ro01, ro02);
   }
 
   @Test

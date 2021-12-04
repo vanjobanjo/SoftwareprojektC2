@@ -8,6 +8,7 @@ import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
+import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Semester;
@@ -19,6 +20,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -146,18 +148,12 @@ public class DataAccessService {
   }
 
   public Set<ReadOnlyBlock> getGeplanteBloecke() {
-    return pruefungsperiode.geplanteBloecke().stream()
-        .map(
-            block ->
-                new BlockDTO(
-                    block.getName(),
-                    block.getStartzeitpunkt(),
-                    block.getDauer(),
-                    block.isGeplant(),
-                    block.getPruefungen().stream()
-                        .map(pruefung -> new PruefungDTOBuilder(pruefung).build())
-                        .collect(Collectors.toSet())))
-        .collect(Collectors.toSet());
+    Set<ReadOnlyBlock> result = new HashSet<>();
+    for (Block block : pruefungsperiode.geplanteBloecke()) {
+      result.add(fromModelToDTOBlock(block));
+    }
+    return result;
+
   }
 
   public Set<ReadOnlyBlock> getUngeplanteBloecke() {
@@ -198,5 +194,31 @@ public class DataAccessService {
   public void createEmptyPeriode(
       Semester semester, LocalDate start, LocalDate end, int kapazitaet) {
     this.pruefungsperiode = new PruefungsperiodeImpl(semester, start, end, kapazitaet);
+  }
+
+
+  private ReadOnlyBlock fromModelToDTOBlock(Block modelBlock) {
+    Set<ReadOnlyPruefung> pruefungen = new HashSet<>();
+    for (Pruefung pruefung : modelBlock.getPruefungen()) {
+      pruefungen.add(fromModelToDTOPruefung(pruefung));
+    }
+    return new BlockDTO(modelBlock.getName(),
+        modelBlock.getStartzeitpunkt(),
+        modelBlock.getDauer(),
+        modelBlock.isGeplant(),
+        pruefungen
+    );
+  }
+
+
+  private ReadOnlyPruefung fromModelToDTOPruefung(Pruefung modelPruefung) {
+    return new PruefungDTOBuilder()
+        .withPruefungsName(modelPruefung.getName())
+        .withPruefungsNummer(modelPruefung.getPruefungsnummer())
+        .withDauer(modelPruefung.getDauer())
+        .withStartZeitpunkt(modelPruefung.getStartzeitpunkt())
+        .withPruefer(modelPruefung.getPruefer())
+        .withTeilnehmerKreisSchaetzung(modelPruefung.getSchaetzungen())
+        .build();
   }
 }

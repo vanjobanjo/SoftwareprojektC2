@@ -251,7 +251,7 @@ public class Controller implements InterfaceController {
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, startTermin);
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+   return dataAccessService.schedulePruefung(pruefung, startTermin);
   }
 
   @Override
