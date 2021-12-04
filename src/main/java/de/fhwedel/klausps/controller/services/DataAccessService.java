@@ -80,9 +80,13 @@ public class DataAccessService {
   }
 
   public List<ReadOnlyPruefung> changeDurationOf(ReadOnlyPruefung pruefung, Duration minutes)
-      throws HartesKriteriumException {
+      throws HartesKriteriumException, IllegalArgumentException {
     List<ReadOnlyPruefung> result = new ArrayList<>();
     Pruefung pruefungFromModel = pruefungsperiode.pruefung(pruefung.getName());
+
+    if(minutes.isNegative()){
+      throw new IllegalArgumentException("The duraiton was negativ!");
+    }
     pruefungFromModel.setDauer(minutes);
 
     ReadOnlyPruefung newPruefung =
