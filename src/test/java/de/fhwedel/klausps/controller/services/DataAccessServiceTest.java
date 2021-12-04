@@ -7,7 +7,9 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.assertions.ReadOnlyBlockAssert;
 import de.fhwedel.klausps.controller.assertions.ReadOnlyPruefungAssert;
 
+import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.model.api.Block;
+import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Semester;
@@ -19,11 +21,13 @@ import de.fhwedel.klausps.model.impl.PruefungImpl;
 import de.fhwedel.klausps.model.impl.SemesterImpl;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,6 +35,10 @@ import org.junit.jupiter.api.Test;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.notNull;
@@ -102,12 +110,12 @@ class DataAccessServiceTest {
 
     when(pruefungsperiode.pruefung(expected.getPruefungsnummer())).thenReturn(test);
     assertThat(
-            deviceUnderTest.createPruefung(
-                expected.getName(),
-                expected.getPruefungsnummer(),
-                expected.getPruefer(),
-                expected.getDauer(),
-                expected.getTeilnehmerKreisSchaetzung()))
+        deviceUnderTest.createPruefung(
+            expected.getName(),
+            expected.getPruefungsnummer(),
+            expected.getPruefer(),
+            expected.getDauer(),
+            expected.getTeilnehmerKreisSchaetzung()))
         .isNull();
   }
 
@@ -224,6 +232,7 @@ class DataAccessServiceTest {
     when(pruefungsperiode.pruefung(anyString())).thenReturn(getPruefungWithPruefer("Cohen"));
     ReadOnlyPruefungAssert.assertThat(deviceUnderTest.removePruefer("b321", "Cohen"))
         .hasNotPruefer("Cohen");
+
   }
 
   @Test
@@ -250,6 +259,117 @@ class DataAccessServiceTest {
         getSemester(), LocalDate.of(1996, 9, 1), LocalDate.of(1997, 3, 23), 300);
     assertThat(deviceUnderTest.isPruefungsperiodeSet()).isTrue();
   }
+
+
+  @Test
+  void changeDurationOf_Successfull() {
+    PruefungDTOBuilder pDTOB = new PruefungDTOBuilder();
+    pDTOB.withPruefungsName("Analysi");
+    pDTOB.withDauer(Duration.ofMinutes(90));
+    ReadOnlyPruefung ro01 = pDTOB.build();
+    de.fhwedel.klausps.model.impl.PruefungImpl t = new PruefungImpl(
+        ro01.getPruefungsnummer(),
+        ro01.getName(),
+        "Keine Ahnnung",
+        ro01.getDauer()
+    );
+    pruefungsperiode.addPlanungseinheit(t);
+
+    assertEquals(ro01.getDauer(), Duration.ofMinutes(90));
+    ReadOnlyPruefung roAcc = ro01;
+    try {
+      when(pruefungsperiode.pruefung(ro01.getName())).thenReturn(t);
+      assertThat(deviceUnderTest.changeDurationOf(ro01, Duration.ofMinutes(120))).hasSize(1);
+      roAcc = deviceUnderTest.changeDurationOf(ro01, Duration.ofMinutes(120)).get(0);
+    } catch (HartesKriteriumException ignored) {
+    }
+    assertEquals(roAcc.getDauer(), Duration.ofMinutes(120));
+
+  }
+
+  @Test
+  void changeDurationOf_withMinus() {
+    PruefungDTOBuilder pDTOB = new PruefungDTOBuilder();
+    pDTOB.withPruefungsName("Analysi");
+    pDTOB.withDauer(Duration.ofMinutes(90));
+    ReadOnlyPruefung ro01 = pDTOB.build();
+
+    assertEquals(ro01.getDauer(), Duration.ofMinutes(90));
+    Duration minusMinus = Duration.ofMinutes(-120);
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> deviceUnderTest.changeDurationOf(ro01, minusMinus));
+  }
+
+  @Test
+  void schedulePruefung_successfull() {
+    PruefungDTOBuilder pDTOB = new PruefungDTOBuilder();
+    pDTOB.withPruefungsName("Analysi");
+    pDTOB.withDauer(Duration.ofMinutes(90));
+    ReadOnlyPruefung ro01 = pDTOB.build();
+
+    Assertions.assertTrue(ro01.getTermin().isEmpty());
+    try {
+      deviceUnderTest.schedulePruefung(ro01, LocalDateTime.of(2021, 8, 21, 9, 0));
+    } catch (HartesKriteriumException ignore) {
+    }
+    // TODO falls die Liste implementiert wird Test anpassen
+    //  Assertions.assertFalse(ro01.getTermin().isEmpty());
+  }
+
+  @Test
+  void schedulePruefung_unsuccessfull() {
+
+    PruefungDTOBuilder pDTOB = new PruefungDTOBuilder();
+    pDTOB.withPruefungsName("Analysi");
+    pDTOB.withDauer(Duration.ofMinutes(90));
+    ReadOnlyPruefung ro01 = pDTOB.build();
+
+    Assertions.assertTrue(ro01.getTermin().isEmpty());
+    try {
+      LocalDateTime lt = LocalDateTime.of(2021, 9, 22, 9, 0);
+      when(this.pruefungsperiode.getEnddatum()).thenReturn(LocalDate.of(2021, 8, 22));
+
+      Assertions.assertTrue(deviceUnderTest.schedulePruefung(ro01, lt).isEmpty());
+    } catch (HartesKriteriumException ignore) {
+    }
+  }
+
+  @Test
+  void schedulePruefung_change_successsfull() {
+
+    PruefungDTOBuilder pDTOB = new PruefungDTOBuilder();
+    pDTOB.withPruefungsName("Analysi");
+    pDTOB.withDauer(Duration.ofMinutes(90));
+    ReadOnlyPruefung ro01 = pDTOB.build();
+
+    Assertions.assertTrue(ro01.getTermin().isEmpty());
+
+    LocalDateTime change1 = LocalDateTime.of(2021, 8, 21, 9, 0);
+    LocalDateTime change2 = LocalDateTime.of(2021, 8, 22, 9, 0);
+    Optional<LocalDateTime> expected1 = Optional.of(change1);
+    Optional<LocalDateTime> expected2 = Optional.of(change2);
+
+    //TODO falls die Liste implementiert wird Test anpassen
+    //   ReadOnlyPruefung roacc = ro01;
+    try {
+      assertThat(deviceUnderTest.schedulePruefung(ro01, change1)).hasSize(0);
+      //  roacc = deviceUnderTest.schedulePruefung(ro01, change1).get(0);
+    } catch (HartesKriteriumException ignore) {
+    }
+
+    //Assertions.assertEquals(expected1,  roacc.getTermin());
+
+    try {
+      assertThat(deviceUnderTest.schedulePruefung(ro01, change2)).hasSize(0);
+      //  roacc = deviceUnderTest.schedulePruefung(ro01, change2).get(0);
+    } catch (HartesKriteriumException ignore) {
+    }
+
+    // Assertions.assertEquals(expected2, roacc.getTermin());
+
+  }
+
 
   private Semester getSemester() {
     return new SemesterImpl(Semestertyp.SOMMERSEMESTER, Year.of(1996));
@@ -294,4 +414,6 @@ class DataAccessServiceTest {
     }
     return pruefung;
   }
+
+
 }
