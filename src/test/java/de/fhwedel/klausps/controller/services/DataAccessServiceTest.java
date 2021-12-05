@@ -61,7 +61,7 @@ class DataAccessServiceTest {
   void setUp() {
     this.pruefungsperiode = mock(Pruefungsperiode.class);
     this.deviceUnderTest = ServiceProvider.getDataAccessService();
-    // todo exchange for real ScheduleService
+    // todo make sure the mocked class is not tested
     this.scheduleService = mock(ScheduleService.class);
     deviceUnderTest.setPruefungsperiode(pruefungsperiode);
     deviceUnderTest.setScheduleService(this.scheduleService);
@@ -140,31 +140,15 @@ class DataAccessServiceTest {
 
   @Test
   void getGeplantePruefungenTest() {
-    PruefungDTO p1 = new PruefungDTOBuilder().withPruefungsName("Hallo").build();
-    PruefungDTO p2 = new PruefungDTOBuilder().withPruefungsName("Welt").build();
-    PruefungDTO p3 = new PruefungDTOBuilder().withPruefungsName("xD").build();
+    ReadOnlyPruefung p1 = new PruefungDTOBuilder().withPruefungsName("Hallo").build();
+    ReadOnlyPruefung p2 = new PruefungDTOBuilder().withPruefungsName("Welt").build();
 
     Pruefung pm1 = getPruefungOfReadOnlyPruefung(p1);
     Pruefung pm2 = getPruefungOfReadOnlyPruefung(p2);
-    int scoring1 = 10;
-    int scoring2 = 20;
-    Set<Pruefung> pruefungen = new HashSet<>(Arrays.asList(pm1, pm2));
-    when(pruefungsperiode.geplantePruefungen()).thenReturn(pruefungen);
-    when(scheduleService.scoringOfPruefung(pm1)).thenReturn(scoring1);
-    when(scheduleService.scoringOfPruefung(pm2)).thenReturn(scoring2);
+    when(pruefungsperiode.geplantePruefungen()).thenReturn(Set.of(pm1, pm2));
+    when(scheduleService.scoringOfPruefung(any(Pruefung.class))).thenReturn(10, 20, 30);
 
-    Set<ReadOnlyPruefung> result = deviceUnderTest.getGeplantePruefungen();
-    assertThat(result).containsOnly(p1, p2);
-
-    Iterator<ReadOnlyPruefung> it = result.iterator();
-    ReadOnlyPruefung p1_new = it.next();
-    ReadOnlyPruefung p2_new = it.next();
-    assertThat(p1_new != p1 && p1_new != p2).isTrue();
-    assertThat(p2_new != p1 && p2_new != p2).isTrue();
-    assertThat(p1_new.getScoring()).isEqualTo(scoring1);
-    assertThat(p2_new.getScoring()).isEqualTo(scoring2);
-    assertThat(p1.getScoring()).isZero();
-    assertThat(p2.getScoring()).isZero();
+    assertThat(deviceUnderTest.getGeplantePruefungen()).containsOnly(p1, p2);
   }
 
   @Test
