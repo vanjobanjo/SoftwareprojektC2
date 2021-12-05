@@ -157,16 +157,11 @@ class DataAccessServiceTest {
     PruefungDTO p2 = new PruefungDTOBuilder().withPruefungsName("Welt").build();
     Pruefung pm1 = getPruefungOfReadOnlyPruefung(p1);
     Pruefung pm2 = getPruefungOfReadOnlyPruefung(p2);
-    Set<Pruefung> pruefungen = new HashSet<>(Arrays.asList(pm1, pm2));
-    when(pruefungsperiode.ungeplantePruefungen()).thenReturn(pruefungen);
+
+    when(pruefungsperiode.ungeplantePruefungen()).thenReturn(Set.of(pm1, pm2));
 
     Set<ReadOnlyPruefung> result = deviceUnderTest.getUngeplanteKlausuren();
     assertThat(result).containsOnly(p1, p2);
-    Iterator<ReadOnlyPruefung> it = result.iterator();
-    ReadOnlyPruefung p1_new = it.next();
-    ReadOnlyPruefung p2_new = it.next();
-    assertThat(p1_new != p1 || p1_new != p2).isTrue();
-    assertThat(p2_new != p1 || p2_new != p2).isTrue();
   }
 
   @Test
