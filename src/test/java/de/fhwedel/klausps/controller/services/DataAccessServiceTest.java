@@ -1,8 +1,7 @@
 package de.fhwedel.klausps.controller.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.anyString;
@@ -45,6 +44,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.mockito.internal.matchers.Any;
 
 class DataAccessServiceTest {
 
@@ -360,6 +360,46 @@ class DataAccessServiceTest {
 
     // Assertions.assertEquals(expected2, roacc.getTermin());
 
+  }
+
+  @Test
+  public void unschedulePruefung_integration(){
+    PruefungDTO analysis = new PruefungDTOBuilder()
+            .withPruefungsName("Analysis")
+            .withPruefungsNummer("2")
+            .withDauer(Duration.ofMinutes(120))
+            .withAdditionalPruefer("Harms")
+            .withStartZeitpunkt(LocalDateTime.now())
+            .build();
+
+    Pruefung modelAnalysis = getPruefungOfReadOnlyPruefung(analysis);
+    when(pruefungsperiode.pruefung(analysis.getPruefungsnummer())).thenReturn(modelAnalysis);
+    // schedule service funktioniert noch nicht. deshalb wird einfach nur die pruefung zurückgegeben.
+    when(scheduleService.unschedulePruefung(modelAnalysis)).thenReturn(List.of(modelAnalysis));
+    when(scheduleService.scoringOfPruefung(modelAnalysis)).thenReturn(0);
+    List<ReadOnlyPruefung> result = deviceUnderTest.unschedulePruefung(analysis);
+
+    ReadOnlyPruefung ro = result.get(0);
+    assertThat(result).hasSize(1);
+    assertTrue(ro != analysis);
+  }
+
+  @Test
+  public void unschedulePruefung_noExam(){
+    PruefungDTO analysis = new PruefungDTOBuilder()
+            .withPruefungsName("Analysis")
+            .withPruefungsNummer("2")
+            .withDauer(Duration.ofMinutes(120))
+            .withAdditionalPruefer("Harms")
+            .withStartZeitpunkt(LocalDateTime.now())
+            .build();
+
+    when(pruefungsperiode.pruefung(any())).thenReturn(null);
+    try{
+      deviceUnderTest.unschedulePruefung(analysis);
+    } catch (Exception e){
+      assertThat(e).isInstanceOf(IllegalArgumentException.class);
+    }
   }
 
   private Semester getSemester() {
