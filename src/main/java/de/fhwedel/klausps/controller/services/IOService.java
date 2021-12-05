@@ -14,7 +14,7 @@ public class IOService {
 
   public void createEmptyPeriode(
       Semester semester, LocalDate start, LocalDate end, int kapazitaet) {
-    dataAccessService.setPlanungseinheit(
+    dataAccessService.setPruefungsperiode(
         new PruefungsperiodeImpl(semester, start, end, kapazitaet));
   }
 }

@@ -8,7 +8,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public abstract class ScheduleService {
+public class ScheduleService {
 
     /**
      * Plant eine uebergebene Pruefung ein! Die uebergebene Pruefung muss Teil des Rueckgabewertes sein.
@@ -16,7 +16,10 @@ public abstract class ScheduleService {
      * @param termin - Starttermin
      * @return Liste von veränderten Ergebnissen
      */
-    public abstract List<Pruefung> schedulePruefung(Pruefung pruefung, LocalDateTime termin) throws HartesKriteriumException;
+    public List<Pruefung> schedulePruefung(Pruefung pruefung, LocalDateTime termin) throws HartesKriteriumException {
+      // todo please implement
+      throw new UnsupportedOperationException("not implemented");
+    }
 
     /**
      * Nimmt eine uebergebene Pruefung aus der Planung.
@@ -24,7 +27,10 @@ public abstract class ScheduleService {
      * @param pruefung Pruefung zum ausplanen
      * @return Liste von veraenderte Pruefungen
      */
-    public abstract List<Pruefung> unschedulePruefung(Pruefung pruefung);
+    public List<Pruefung> unschedulePruefung(Pruefung pruefung) {
+      // todo please implement
+      throw new UnsupportedOperationException("not implemented");
+    }
 
     /**
      * Ändert die Dauer einer übergebenen Prüfung. Die übergebene Prüfung muss beim erfolgreichen
@@ -33,12 +39,18 @@ public abstract class ScheduleService {
      * @param minutes - die naue Dauer
      * @return Liste von Pruefung, jene die sich durch die Operation geändert haben.
      */
-    public abstract List<Pruefung> changeDuration(Pruefung pruefung, Duration minutes) throws HartesKriteriumException;
+    public List<Pruefung> changeDuration(Pruefung pruefung, Duration minutes) throws HartesKriteriumException {
+      // todo please implement
+      throw new UnsupportedOperationException("not implemented");
+    }
 
     /**
      * Gibt das Scoring zu einer übergebenen Pruefung zurück.
-     * @param pruefung . Pruefung, dessen Scoring bestimmt werden soll
+     * @param pruefung Pruefung, dessen Scoring bestimmt werden soll
      * @return Scoring
      */
-    public abstract int scoringOfPruefung(Pruefung pruefung);
+    public int scoringOfPruefung(Pruefung pruefung) {
+      // todo please implement
+      throw new UnsupportedOperationException("not implemented");
+    }
 }

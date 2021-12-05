@@ -1,6 +1,9 @@
 package de.fhwedel.klausps.controller.services;
 
+import static java.util.Objects.nonNull;
+
 import de.fhwedel.klausps.controller.api.BlockDTO;
+import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
@@ -10,16 +13,14 @@ import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static java.util.Objects.nonNull;
 
 public class DataAccessService {
 
@@ -97,13 +98,14 @@ public class DataAccessService {
   }
 
   private List<ReadOnlyPruefung> createListOfPruefungWithScoring(List<Pruefung> pruefungen) {
-    return pruefungen.stream()
-        .map(
-            pruefung ->
-                new PruefungDTOBuilder(pruefung)
-                    .withScoring(scheduleService.scoringOfPruefung(pruefung))
-                    .build())
-        .collect(Collectors.toList());
+    List<ReadOnlyPruefung> result = new ArrayList<>();
+    for (Pruefung pruefung : pruefungen) {
+      PruefungDTO build = new PruefungDTOBuilder(pruefung)
+          .withScoring(scheduleService.scoringOfPruefung(pruefung))
+          .build();
+      result.add(build);
+    }
+    return result;
   }
 
   public List<ReadOnlyPruefung> schedulePruefung(
@@ -115,18 +117,19 @@ public class DataAccessService {
       throw new IllegalArgumentException("Exam doesn't exist");
     }
 
-    Pruefung model = pruefungsperiode.pruefung(pruefungsNummer);
+    Pruefung modelPruefung = pruefungsperiode.pruefung(pruefungsNummer);
 
-    if(model.isGeplant()){
+    if (modelPruefung.isGeplant()) {
       throw new IllegalArgumentException("Exam already planned.");
 
     }
 
-    List<Pruefung> resultOfSchedulePruefung = scheduleService.schedulePruefung(model, startTermin);
+    List<Pruefung> resultOfSchedulePruefung = scheduleService.schedulePruefung(modelPruefung,
+        startTermin);
     return createListOfPruefungWithScoring(resultOfSchedulePruefung);
   }
 
-  public List<ReadOnlyPruefung> unschedulePruefung(ReadOnlyPruefung pruefung){
+  public List<ReadOnlyPruefung> unschedulePruefung(ReadOnlyPruefung pruefung) {
     String pruefungsNummer = pruefung.getPruefungsnummer();
 
     if (!existsPruefung(pruefungsNummer)) {
@@ -135,7 +138,7 @@ public class DataAccessService {
 
     Pruefung model = pruefungsperiode.pruefung(pruefungsNummer);
 
-    if(!model.isGeplant()){
+    if (!model.isGeplant()) {
       throw new IllegalArgumentException("Exam already unplanned.");
     }
 
@@ -205,9 +208,6 @@ public class DataAccessService {
     throw new IllegalArgumentException("Passed unknown pruefung!");
   }
 
-  public void setPlanungseinheit(Pruefungsperiode pruefungsperiode) {
-    this.pruefungsperiode = pruefungsperiode;
-  }
 
   private ReadOnlyBlock fromModelToDTOBlock(Block modelBlock) {
     Set<ReadOnlyPruefung> pruefungen = new HashSet<>();

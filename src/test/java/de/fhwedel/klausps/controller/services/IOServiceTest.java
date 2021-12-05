@@ -30,7 +30,7 @@ class IOServiceTest {
   void createEmptyPeriodeTest() {
     deviceUnderTest.createEmptyPeriode(
         getSemester(), LocalDate.of(1996, 9, 1), LocalDate.of(1997, 3, 23), 300);
-    verify(dataAccessService, times(1)).setPlanungseinheit(any(Pruefungsperiode.class));
+    verify(dataAccessService, times(1)).setPruefungsperiode(any(Pruefungsperiode.class));
   }
 
   private Semester getSemester() {

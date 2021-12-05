@@ -6,6 +6,8 @@ public class ServiceProvider {
 
   private static IOService ioService;
 
+  private static ScheduleService scheduleService;
+
   private ServiceProvider() {}
 
   public static DataAccessService getDataAccessService() {
@@ -20,5 +22,12 @@ public class ServiceProvider {
       ioService = new IOService(getDataAccessService());
     }
     return ioService;
+  }
+
+  public static ScheduleService getScheduleService() {
+    if (scheduleService == null) {
+      scheduleService = new ScheduleService();
+    }
+    return scheduleService;
   }
 }
