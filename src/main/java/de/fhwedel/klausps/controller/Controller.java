@@ -12,6 +12,7 @@ import de.fhwedel.klausps.controller.export.ExportTyp;
 import de.fhwedel.klausps.controller.helper.Pair;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.services.DataAccessService;
+import de.fhwedel.klausps.controller.services.ScheduleService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.controller.services.IOService;
 import de.fhwedel.klausps.model.api.Semester;
@@ -31,6 +32,7 @@ public class Controller implements InterfaceController {
 
   private final DataAccessService dataAccessService = ServiceProvider.getDataAccessService();
   private final IOService ioService = ServiceProvider.getIOService();
+  private final ScheduleService scheduleService = ServiceProvider.getScheduleService();
 
   @Override
   public Set<ReadOnlyPruefung> getGeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
@@ -250,7 +252,7 @@ public class Controller implements InterfaceController {
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, startTermin);
     checkNoPruefungDefined();
-   return dataAccessService.schedulePruefung(pruefung, startTermin);
+   return scheduleService.schedulePruefung(pruefung, startTermin);
   }
 
   @Override

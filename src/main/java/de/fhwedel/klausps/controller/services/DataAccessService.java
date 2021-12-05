@@ -42,7 +42,7 @@ public class DataAccessService {
       Duration duration,
       Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
 
-    if (!existsPruefung(pruefungsNr)) {
+    if (!existsPruefungWith(pruefungsNr)) {
       // todo contains static values as it is unclear where to retrieve the data from
       Pruefung pruefungModel = new PruefungImpl(pruefungsNr, name, "", duration, null);
       pruefer.forEach(pruefungModel::addPruefer);
@@ -54,7 +54,7 @@ public class DataAccessService {
     return null;
   }
 
-  private boolean existsPruefung(String pruefungsNummer) {
+  public boolean existsPruefungWith(String pruefungsNummer) {
     return pruefungsperiode.pruefung(pruefungsNummer) != null;
   }
 
@@ -85,7 +85,7 @@ public class DataAccessService {
 
     String pruefungsNummer = pruefung.getPruefungsnummer();
 
-    if (!existsPruefung(pruefungsNummer)) {
+    if (!existsPruefungWith(pruefungsNummer)) {
       throw new IllegalArgumentException("Exam doesn't exist");
     }
 
@@ -100,38 +100,31 @@ public class DataAccessService {
   private List<ReadOnlyPruefung> createListOfPruefungWithScoring(List<Pruefung> pruefungen) {
     List<ReadOnlyPruefung> result = new ArrayList<>();
     for (Pruefung pruefung : pruefungen) {
-      PruefungDTO build = new PruefungDTOBuilder(pruefung)
-          .withScoring(scheduleService.scoringOfPruefung(pruefung))
-          .build();
+      PruefungDTO build =
+          new PruefungDTOBuilder(pruefung)
+              .withScoring(scheduleService.scoringOfPruefung(pruefung))
+              .build();
       result.add(build);
     }
     return result;
   }
 
-  public List<ReadOnlyPruefung> schedulePruefung(
-      ReadOnlyPruefung pruefung, LocalDateTime startTermin) throws HartesKriteriumException {
-
-    String pruefungsNummer = pruefung.getPruefungsnummer();
-
-    if (!existsPruefung(pruefungsNummer)) {
-      throw new IllegalArgumentException("Exam doesn't exist");
-    }
-
-    Pruefung modelPruefung = pruefungsperiode.pruefung(pruefungsNummer);
-
-    if (modelPruefung.isGeplant()) {
-      throw new IllegalArgumentException("Exam already planned.");
-    }
-
-    List<Pruefung> resultOfSchedulePruefung = scheduleService.schedulePruefung(modelPruefung,
-        startTermin);
-    return createListOfPruefungWithScoring(resultOfSchedulePruefung);
+  /**
+   * Schedules a pruefung without any consistency checks.
+   *
+   * @param pruefung The pruefung to schedule.
+   * @param startTermin The time to schedule the pruefung to.
+   */
+  public ReadOnlyPruefung schedulePruefung(ReadOnlyPruefung pruefung, LocalDateTime startTermin) {
+    Pruefung pruefungFromModel = pruefungsperiode.pruefung(pruefung.getPruefungsnummer());
+    pruefungFromModel.setStartzeitpunkt(startTermin);
+    return new PruefungDTOBuilder(pruefungFromModel).build();
   }
 
   public List<ReadOnlyPruefung> unschedulePruefung(ReadOnlyPruefung pruefung) {
     String pruefungsNummer = pruefung.getPruefungsnummer();
 
-    if (!existsPruefung(pruefungsNummer)) {
+    if (!existsPruefungWith(pruefungsNummer)) {
       throw new IllegalArgumentException("Exam doesn't exist");
     }
 
@@ -182,7 +175,7 @@ public class DataAccessService {
   }
 
   public ReadOnlyPruefung addPruefer(String pruefungsNummer, String pruefer) {
-    if (existsPruefung(pruefungsNummer)) {
+    if (existsPruefungWith(pruefungsNummer)) {
       Pruefung pruefung = pruefungsperiode.pruefung(pruefungsNummer);
       pruefung.addPruefer(pruefer);
       return fromModelToDTOPruefungWithScoring(pruefung);
@@ -191,7 +184,7 @@ public class DataAccessService {
   }
 
   public ReadOnlyPruefung removePruefer(String pruefungsNummer, String pruefer) {
-    if (existsPruefung(pruefungsNummer)) {
+    if (existsPruefungWith(pruefungsNummer)) {
       Pruefung pruefung = pruefungsperiode.pruefung(pruefungsNummer);
       pruefung.removePruefer(pruefer);
       return fromModelToDTOPruefungWithScoring(pruefung);
@@ -202,11 +195,11 @@ public class DataAccessService {
   public ReadOnlyPruefung setPruefungsnummer(ReadOnlyPruefung pruefung, String pruefungsnummer) {
     String oldNo = pruefung.getPruefungsnummer();
 
-    if (!existsPruefung(oldNo)) {
+    if (!existsPruefungWith(oldNo)) {
       throw new IllegalArgumentException("Passed unknown pruefung!");
     }
 
-    if (existsPruefung(pruefungsnummer)) {
+    if (existsPruefungWith(pruefungsnummer)) {
       throw new IllegalArgumentException("Passed number already exists");
     }
 
@@ -215,7 +208,6 @@ public class DataAccessService {
 
     return fromModelToDTOPruefungWithScoring(modelPruefung);
   }
-
 
   private ReadOnlyBlock fromModelToDTOBlock(Block block) {
     Set<ReadOnlyPruefung> pruefungen = new HashSet<>();

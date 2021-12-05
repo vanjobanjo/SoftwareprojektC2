@@ -1,6 +1,7 @@
 package de.fhwedel.klausps.controller.assertions;
 
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
+import java.time.LocalDateTime;
 import org.assertj.core.api.AbstractAssert;
 
 public class ReadOnlyPruefungAssert
@@ -57,6 +58,19 @@ public class ReadOnlyPruefungAssert
   public ReadOnlyPruefungAssert hasNotPruefer(String pruefer) {
     if (actual.getPruefer().contains(pruefer)) {
       failWithMessage("Expected not to have pruefer %s but did.", pruefer);
+    }
+    return this;
+  }
+
+  public ReadOnlyPruefungAssert isScheduledAt(LocalDateTime localDateTime) {
+    if (actual.getTermin().isEmpty()) {
+      failWithMessage(
+          "Expected pruefung to be scheduled at %s but was not scheduled at all.", localDateTime);
+    }
+    if (!actual.getTermin().get().equals(localDateTime)) {
+      failWithMessage(
+          "Expected pruefung to be scheduled at %s but was scheduled at %s.",
+          localDateTime, actual.getTermin().get());
     }
     return this;
   }

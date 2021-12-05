@@ -117,12 +117,12 @@ class DataAccessServiceTest {
 
     when(pruefungsperiode.pruefung(expected.getPruefungsnummer())).thenReturn(test);
     assertThat(
-        deviceUnderTest.createPruefung(
-            expected.getName(),
-            expected.getPruefungsnummer(),
-            expected.getPruefer(),
-            expected.getDauer(),
-            expected.getTeilnehmerKreisSchaetzung()))
+            deviceUnderTest.createPruefung(
+                expected.getName(),
+                expected.getPruefungsnummer(),
+                expected.getPruefer(),
+                expected.getDauer(),
+                expected.getTeilnehmerKreisSchaetzung()))
         .isNull();
   }
 
@@ -176,7 +176,6 @@ class DataAccessServiceTest {
     assertThat(p2_new.getScoring()).isEqualTo(scoring2);
     assertThat(p1.getScoring()).isEqualTo(0);
     assertThat(p2.getScoring()).isEqualTo(0);
-
   }
 
   @Test
@@ -202,13 +201,17 @@ class DataAccessServiceTest {
     final int scoring0 = 20;
     final int scoring1 = 30;
     ReadOnlyPruefung ro01 =
-        new PruefungDTOBuilder().withPruefungsName("inBlock0").withPruefungsNummer("123")
-                .withScoring(scoring0)
-                .build();
+        new PruefungDTOBuilder()
+            .withPruefungsName("inBlock0")
+            .withPruefungsNummer("123")
+            .withScoring(scoring0)
+            .build();
     ReadOnlyPruefung ro02 =
-        new PruefungDTOBuilder().withPruefungsName("inBlock1").withPruefungsNummer("1235")
-                .withScoring(scoring1)
-                .build();
+        new PruefungDTOBuilder()
+            .withPruefungsName("inBlock1")
+            .withPruefungsNummer("1235")
+            .withScoring(scoring1)
+            .build();
     Pruefung inBlock0 = getPruefungOfReadOnlyPruefung(ro01);
     Pruefung inBlock1 = getPruefungOfReadOnlyPruefung(ro02);
     Block block = new BlockImpl(pruefungsperiode, "name");
@@ -304,7 +307,7 @@ class DataAccessServiceTest {
       when(pruefungsperiode.pruefung(ro01.getPruefungsnummer())).thenReturn(t);
       when(scheduleService.changeDuration(t, Duration.ofMinutes(120))).thenReturn(List.of(t));
       assertThat(deviceUnderTest.changeDurationOf(ro01, Duration.ofMinutes(120))).hasSize(1);
-      t.setDauer(Duration.ofMinutes(120)); //ScheduleService muss noch implementiert werden.
+      t.setDauer(Duration.ofMinutes(120)); // ScheduleService muss noch implementiert werden.
       roAcc = deviceUnderTest.changeDurationOf(ro01, Duration.ofMinutes(120)).get(0);
     } catch (HartesKriteriumException ignored) {
     }
@@ -325,92 +328,20 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void schedulePruefung_successful() {
-    PruefungDTOBuilder pDTOB = new PruefungDTOBuilder();
-    pDTOB.withPruefungsName("Analysi");
-    pDTOB.withDauer(Duration.ofMinutes(90));
-    ReadOnlyPruefung ro01 = pDTOB.build();
-
-    Assertions.assertTrue(ro01.getTermin().isEmpty());
-    try {
-      when(pruefungsperiode.pruefung(ro01.getPruefungsnummer())).thenReturn(
-          getPruefungOfReadOnlyPruefung(ro01));
-      deviceUnderTest.schedulePruefung(ro01, LocalDateTime.of(2021, 8, 21, 9, 0));
-    } catch (HartesKriteriumException ignore) {
-    }
-    // TODO falls die Liste implementiert wird Test anpassen
-    //  Assertions.assertFalse(ro01.getTermin().isEmpty());
-  }
-
-  @Test
-  void schedulePruefung_unsuccessful() {
-
-    PruefungDTOBuilder pDTOB = new PruefungDTOBuilder();
-    pDTOB.withPruefungsName("Analysi");
-    pDTOB.withDauer(Duration.ofMinutes(90));
-    ReadOnlyPruefung ro01 = pDTOB.build();
-
-    Assertions.assertTrue(ro01.getTermin().isEmpty());
-    try {
-      LocalDateTime lt = LocalDateTime.of(2021, 9, 22, 9, 0);
-      when(this.pruefungsperiode.getEnddatum()).thenReturn(LocalDate.of(2021, 8, 22));
-      when(pruefungsperiode.pruefung(ro01.getPruefungsnummer())).thenReturn(
-          getPruefungOfReadOnlyPruefung(ro01));
-      Assertions.assertTrue(deviceUnderTest.schedulePruefung(ro01, lt).isEmpty());
-    } catch (HartesKriteriumException ignore) {
-    }
-  }
-
-  @Test
-  void schedulePruefung_change_successsfull() {
-
-    PruefungDTOBuilder pDTOB = new PruefungDTOBuilder();
-    pDTOB.withPruefungsName("Analysi");
-    pDTOB.withDauer(Duration.ofMinutes(90));
-    ReadOnlyPruefung ro01 = pDTOB.build();
-
-    Assertions.assertTrue(ro01.getTermin().isEmpty());
-
-    LocalDateTime change1 = LocalDateTime.of(2021, 8, 21, 9, 0);
-    LocalDateTime change2 = LocalDateTime.of(2021, 8, 22, 9, 0);
-    Optional<LocalDateTime> expected1 = Optional.of(change1);
-    Optional<LocalDateTime> expected2 = Optional.of(change2);
-
-    // TODO falls die Liste implementiert wird Test anpassen
-    //   ReadOnlyPruefung roacc = ro01;
-    try {
-      when(pruefungsperiode.pruefung(ro01.getPruefungsnummer())).thenReturn(
-          getPruefungOfReadOnlyPruefung(ro01));
-      assertThat(deviceUnderTest.schedulePruefung(ro01, change1)).isEmpty();
-      //  roacc = deviceUnderTest.schedulePruefung(ro01, change1).get(0);
-    } catch (HartesKriteriumException ignore) {
-    }
-
-    // Assertions.assertEquals(expected1,  roacc.getTermin());
-
-    try {
-      assertThat(deviceUnderTest.schedulePruefung(ro01, change2)).isEmpty();
-      //  roacc = deviceUnderTest.schedulePruefung(ro01, change2).get(0);
-    } catch (HartesKriteriumException ignore) {
-    }
-
-    // Assertions.assertEquals(expected2, roacc.getTermin());
-
-  }
-
-  @Test
   public void unschedulePruefung_integration() {
-    PruefungDTO analysis = new PruefungDTOBuilder()
-        .withPruefungsName("Analysis")
-        .withPruefungsNummer("2")
-        .withDauer(Duration.ofMinutes(120))
-        .withAdditionalPruefer("Harms")
-        .withStartZeitpunkt(LocalDateTime.now())
-        .build();
+    PruefungDTO analysis =
+        new PruefungDTOBuilder()
+            .withPruefungsName("Analysis")
+            .withPruefungsNummer("2")
+            .withDauer(Duration.ofMinutes(120))
+            .withAdditionalPruefer("Harms")
+            .withStartZeitpunkt(LocalDateTime.now())
+            .build();
 
     Pruefung modelAnalysis = getPruefungOfReadOnlyPruefung(analysis);
     when(pruefungsperiode.pruefung(analysis.getPruefungsnummer())).thenReturn(modelAnalysis);
-    // schedule service funktioniert noch nicht. deshalb wird einfach nur die pruefung zurückgegeben.
+    // schedule service funktioniert noch nicht. deshalb wird einfach nur die pruefung
+    // zurückgegeben.
     when(scheduleService.unschedulePruefung(modelAnalysis)).thenReturn(List.of(modelAnalysis));
     when(scheduleService.scoringOfPruefung(modelAnalysis)).thenReturn(0);
     List<ReadOnlyPruefung> result = deviceUnderTest.unschedulePruefung(analysis);
@@ -422,28 +353,29 @@ class DataAccessServiceTest {
 
   @Test
   public void unschedulePruefung_noExam() {
-    PruefungDTO analysis = new PruefungDTOBuilder()
-        .withPruefungsName("Analysis")
-        .withPruefungsNummer("2")
-        .withDauer(Duration.ofMinutes(120))
-        .withAdditionalPruefer("Harms")
-        .withStartZeitpunkt(LocalDateTime.now())
-        .build();
+    PruefungDTO analysis =
+        new PruefungDTOBuilder()
+            .withPruefungsName("Analysis")
+            .withPruefungsNummer("2")
+            .withDauer(Duration.ofMinutes(120))
+            .withAdditionalPruefer("Harms")
+            .withStartZeitpunkt(LocalDateTime.now())
+            .build();
 
     when(pruefungsperiode.pruefung(any())).thenReturn(null);
 
-    assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.unschedulePruefung(analysis));
-
+    assertThrows(
+        IllegalArgumentException.class, () -> deviceUnderTest.unschedulePruefung(analysis));
   }
 
   @Test
-  public void testSetPruefungsnummer(){
+  public void testSetPruefungsnummer() {
 
     String oldNumber = "2";
     String newNumber = "1";
 
-    PruefungDTO analysis = new PruefungDTOBuilder()
+    PruefungDTO analysis =
+        new PruefungDTOBuilder()
             .withPruefungsName("Analysis")
             .withPruefungsNummer(oldNumber)
             .withDauer(Duration.ofMinutes(120))
@@ -455,9 +387,19 @@ class DataAccessServiceTest {
     when(pruefungsperiode.pruefung(oldNumber)).thenReturn(modelAnalysis);
     ReadOnlyPruefung analysisNewNumber = deviceUnderTest.setPruefungsnummer(analysis, newNumber);
     assertThat(analysisNewNumber.getPruefungsnummer()).isEqualTo(newNumber);
-    assertThat(analysisNewNumber).isNotEqualTo(analysis); //Equal arbeitet prüft die Nummern
+    assertThat(analysisNewNumber).isNotEqualTo(analysis); // Equal arbeitet prüft die Nummern
     assertThat(analysisNewNumber.getDauer()).isEqualTo(analysis.getDauer());
-      }
+  }
+
+  @Test
+  void schedulePruefung() {
+    LocalDateTime expectedSchedule = LocalDateTime.of(2022, 1, 1, 10, 30);
+    when(pruefungsperiode.pruefung(anyString()))
+        .thenReturn(new PruefungImpl("Pruefungsnummer", "name", "nbr", Duration.ofMinutes(90)));
+    ReadOnlyPruefungAssert.assertThat(
+            deviceUnderTest.schedulePruefung(getReadOnlyPruefung(), expectedSchedule))
+        .isScheduledAt(expectedSchedule);
+  }
 
   private Semester getSemester() {
     return new SemesterImpl(Semestertyp.SOMMERSEMESTER, Year.of(1996));
