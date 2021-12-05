@@ -153,7 +153,7 @@ public class DataAccessService {
         .collect(Collectors.toSet());
   }
 
-  public Set<ReadOnlyPruefung> getUngeplanteKlausuren() {
+  public Set<ReadOnlyPruefung> getUngeplantePruefungen() {
     return pruefungsperiode.ungeplantePruefungen().stream()
         .map(this::fromModelToDTOPruefungWithScoring)
         .collect(Collectors.toSet());
@@ -209,6 +209,10 @@ public class DataAccessService {
 
     return fromModelToDTOPruefungWithScoring(modelPruefung);
   }
+
+
+
+
 
   private ReadOnlyBlock fromModelToDTOBlock(Block block) {
     Set<ReadOnlyPruefung> pruefungen = new HashSet<>();

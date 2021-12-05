@@ -43,7 +43,7 @@ public class Controller implements InterfaceController {
   @Override
   public Set<ReadOnlyPruefung> getUngeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
     checkNoPruefungDefined();
-    return dataAccessService.getUngeplanteKlausuren();
+    return dataAccessService.getUngeplantePruefungen();
   }
 
   @Override

@@ -22,27 +22,18 @@ import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
-import de.fhwedel.klausps.model.api.Semester;
-import de.fhwedel.klausps.model.api.Semestertyp;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.BlockImpl;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
-import de.fhwedel.klausps.model.impl.SemesterImpl;
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Year;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -160,7 +151,7 @@ class DataAccessServiceTest {
 
     when(pruefungsperiode.ungeplantePruefungen()).thenReturn(Set.of(pm1, pm2));
 
-    Set<ReadOnlyPruefung> result = deviceUnderTest.getUngeplanteKlausuren();
+    Set<ReadOnlyPruefung> result = deviceUnderTest.getUngeplantePruefungen();
     assertThat(result).containsOnly(p1, p2);
   }
 
