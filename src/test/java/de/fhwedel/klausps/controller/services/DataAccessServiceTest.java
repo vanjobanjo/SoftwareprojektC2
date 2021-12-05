@@ -42,7 +42,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -289,7 +288,7 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void changeDurationOf_Successfull() {
+  void changeDurationOf_Successful() {
     PruefungDTOBuilder pDTOB = new PruefungDTOBuilder();
     pDTOB.withPruefungsName("Analysi");
     pDTOB.withDauer(Duration.ofMinutes(90));
@@ -326,7 +325,7 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void schedulePruefung_successfull() {
+  void schedulePruefung_successful() {
     PruefungDTOBuilder pDTOB = new PruefungDTOBuilder();
     pDTOB.withPruefungsName("Analysi");
     pDTOB.withDauer(Duration.ofMinutes(90));
@@ -344,7 +343,7 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void schedulePruefung_unsuccessfull() {
+  void schedulePruefung_unsuccessful() {
 
     PruefungDTOBuilder pDTOB = new PruefungDTOBuilder();
     pDTOB.withPruefungsName("Analysi");
