@@ -165,7 +165,6 @@ class DataAccessServiceTest {
 
     Set<ReadOnlyPruefung> result = deviceUnderTest.getGeplantePruefungen();
     assertThat(result).containsOnly(p1, p2);
-    assertThat(result).doesNotContain(p3);
 
     Iterator<ReadOnlyPruefung> it = result.iterator();
     ReadOnlyPruefung p1_new = it.next();
@@ -174,8 +173,8 @@ class DataAccessServiceTest {
     assertThat(p2_new != p1 && p2_new != p2).isTrue();
     assertThat(p1_new.getScoring()).isEqualTo(scoring1);
     assertThat(p2_new.getScoring()).isEqualTo(scoring2);
-    assertThat(p1.getScoring()).isEqualTo(0);
-    assertThat(p2.getScoring()).isEqualTo(0);
+    assertThat(p1.getScoring()).isZero();
+    assertThat(p2.getScoring()).isZero();
   }
 
   @Test
@@ -328,48 +327,26 @@ class DataAccessServiceTest {
   }
 
   @Test
-  public void unschedulePruefung_integration() {
-    PruefungDTO analysis =
-        new PruefungDTOBuilder()
-            .withPruefungsName("Analysis")
-            .withPruefungsNummer("2")
-            .withDauer(Duration.ofMinutes(120))
-            .withAdditionalPruefer("Harms")
-            .withStartZeitpunkt(LocalDateTime.now())
-            .build();
-
-    Pruefung modelAnalysis = getPruefungOfReadOnlyPruefung(analysis);
-    when(pruefungsperiode.pruefung(analysis.getPruefungsnummer())).thenReturn(modelAnalysis);
-    // schedule service funktioniert noch nicht. deshalb wird einfach nur die pruefung
-    // zurückgegeben.
-    when(scheduleService.unschedulePruefung(modelAnalysis)).thenReturn(List.of(modelAnalysis));
-    when(scheduleService.scoringOfPruefung(modelAnalysis)).thenReturn(0);
-    List<ReadOnlyPruefung> result = deviceUnderTest.unschedulePruefung(analysis);
-
-    ReadOnlyPruefung ro = result.get(0);
-    assertThat(result).hasSize(1);
-    assertNotSame(ro, analysis);
+  void unschedulePruefung_integration() {
+    LocalDateTime initialSchedule = LocalDateTime.of(2022, 1, 1, 10, 30);
+    when(pruefungsperiode.pruefung(anyString()))
+        .thenReturn(
+            new PruefungImpl(
+                "Pruefungsnummer", "name", "nbr", Duration.ofMinutes(90), initialSchedule));
+    ReadOnlyPruefungAssert.assertThat(deviceUnderTest.unschedulePruefung(getReadOnlyPruefung()))
+        .isNotScheduled();
   }
 
   @Test
-  public void unschedulePruefung_noExam() {
-    PruefungDTO analysis =
-        new PruefungDTOBuilder()
-            .withPruefungsName("Analysis")
-            .withPruefungsNummer("2")
-            .withDauer(Duration.ofMinutes(120))
-            .withAdditionalPruefer("Harms")
-            .withStartZeitpunkt(LocalDateTime.now())
-            .build();
-
+  void unschedulePruefung_noExam() {
     when(pruefungsperiode.pruefung(any())).thenReturn(null);
-
+    ReadOnlyPruefung somePruefung = getReadOnlyPruefung();
     assertThrows(
-        IllegalArgumentException.class, () -> deviceUnderTest.unschedulePruefung(analysis));
+        IllegalArgumentException.class, () -> deviceUnderTest.unschedulePruefung(somePruefung));
   }
 
   @Test
-  public void testSetPruefungsnummer() {
+  void SetPruefungsnummerTest() {
 
     String oldNumber = "2";
     String newNumber = "1";
@@ -392,7 +369,7 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void schedulePruefung() {
+  void schedulePruefungTest() {
     LocalDateTime expectedSchedule = LocalDateTime.of(2022, 1, 1, 10, 30);
     when(pruefungsperiode.pruefung(anyString()))
         .thenReturn(new PruefungImpl("Pruefungsnummer", "name", "nbr", Duration.ofMinutes(90)));
@@ -401,8 +378,14 @@ class DataAccessServiceTest {
         .isScheduledAt(expectedSchedule);
   }
 
-  private Semester getSemester() {
-    return new SemesterImpl(Semestertyp.SOMMERSEMESTER, Year.of(1996));
+  @Test
+  void schedulePruefung_noExamTest() {
+    when(pruefungsperiode.pruefung(anyString())).thenReturn(null);
+    ReadOnlyPruefung somePruefung = getReadOnlyPruefung();
+    LocalDateTime someSchedule = getRandomTime();
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> deviceUnderTest.schedulePruefung(somePruefung, someSchedule));
   }
 
   /**
@@ -417,6 +400,10 @@ class DataAccessServiceTest {
         .withAdditionalPruefer("Harms")
         .withDauer(Duration.ofMinutes(90))
         .build();
+  }
+
+  private LocalDateTime getRandomTime() {
+    return LocalDateTime.of(2022, 7, 22, 12, 0);
   }
 
   private Pruefung getPruefungOfReadOnlyPruefung(ReadOnlyPruefung roPruefung) {

@@ -235,7 +235,7 @@ public class Controller implements InterfaceController {
   public void deletePruefung(ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung);
     checkNoPruefungDefined();
-    this.unschedulePruefung(pruefung);
+    this.unschedulePruefung(pruefung); //TODO delete not just unschedule
   }
 
   @Override
@@ -243,7 +243,7 @@ public class Controller implements InterfaceController {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung);
     checkNoPruefungDefined();
-    return dataAccessService.unschedulePruefung(pruefung);
+    return scheduleService.unschedulePruefung(pruefung);
   }
 
   @Override

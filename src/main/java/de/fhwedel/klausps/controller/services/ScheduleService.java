@@ -43,9 +43,15 @@ public class ScheduleService {
    * @param pruefung Pruefung zum ausplanen
    * @return Liste von veraenderte Pruefungen
    */
-  public List<Pruefung> unschedulePruefung(Pruefung pruefung) {
-    // todo please implement
-    throw new UnsupportedOperationException("not implemented");
+  public List<ReadOnlyPruefung> unschedulePruefung(ReadOnlyPruefung pruefung) {
+    String pruefungsNummer = pruefung.getPruefungsnummer();
+
+    if (!dataAccessService.existsPruefungWith(pruefungsNummer)) {
+      throw new IllegalArgumentException("Exam doesn't exist");
+    }
+
+    pruefung = dataAccessService.unschedulePruefung(pruefung);
+    return List.of(pruefung); // TODO return result of test for conflicts
   }
 
   /**

@@ -24,6 +24,8 @@ import java.util.stream.Collectors;
 
 public class DataAccessService {
 
+  private static final String INVALID_ARGUMENT = "Passed unknown pruefung!";
+
   private Pruefungsperiode pruefungsperiode;
   private ScheduleService scheduleService;
 
@@ -117,26 +119,25 @@ public class DataAccessService {
    */
   public ReadOnlyPruefung schedulePruefung(ReadOnlyPruefung pruefung, LocalDateTime startTermin) {
     Pruefung pruefungFromModel = pruefungsperiode.pruefung(pruefung.getPruefungsnummer());
+    if (pruefungFromModel == null) {
+      throw new IllegalArgumentException("Unknown pruefung.");
+    }
     pruefungFromModel.setStartzeitpunkt(startTermin);
     return new PruefungDTOBuilder(pruefungFromModel).build();
   }
 
-  public List<ReadOnlyPruefung> unschedulePruefung(ReadOnlyPruefung pruefung) {
-    String pruefungsNummer = pruefung.getPruefungsnummer();
-
-    if (!existsPruefungWith(pruefungsNummer)) {
-      throw new IllegalArgumentException("Exam doesn't exist");
+  /**
+   * Unschedules a pruefung without any consistency checks.
+   *
+   * @param pruefung The pruefung to schedule.
+   */
+  public ReadOnlyPruefung unschedulePruefung(ReadOnlyPruefung pruefung) {
+    Pruefung pruefungFromModel = pruefungsperiode.pruefung(pruefung.getPruefungsnummer());
+    if (pruefungFromModel == null) {
+      throw new IllegalArgumentException("Unknown pruefung.");
     }
-
-    Pruefung model = pruefungsperiode.pruefung(pruefungsNummer);
-
-    if (!model.isGeplant()) {
-      throw new IllegalArgumentException("Exam already unplanned.");
-    }
-
-    List<Pruefung> resultOfUnschedulePruefung = scheduleService.unschedulePruefung(model);
-
-    return createListOfPruefungWithScoring(resultOfUnschedulePruefung);
+    pruefungFromModel.setStartzeitpunkt(null);
+    return new PruefungDTOBuilder(pruefungFromModel).build();
   }
 
   public ReadOnlyPruefung changeNameOfPruefung(ReadOnlyPruefung toChange, String name) {
@@ -180,7 +181,7 @@ public class DataAccessService {
       pruefung.addPruefer(pruefer);
       return fromModelToDTOPruefungWithScoring(pruefung);
     }
-    throw new IllegalArgumentException("Passed unknown pruefung!");
+    throw new IllegalArgumentException(INVALID_ARGUMENT);
   }
 
   public ReadOnlyPruefung removePruefer(String pruefungsNummer, String pruefer) {
@@ -189,14 +190,14 @@ public class DataAccessService {
       pruefung.removePruefer(pruefer);
       return fromModelToDTOPruefungWithScoring(pruefung);
     }
-    throw new IllegalArgumentException("Passed unknown pruefung!");
+    throw new IllegalArgumentException(INVALID_ARGUMENT);
   }
 
   public ReadOnlyPruefung setPruefungsnummer(ReadOnlyPruefung pruefung, String pruefungsnummer) {
     String oldNo = pruefung.getPruefungsnummer();
 
     if (!existsPruefungWith(oldNo)) {
-      throw new IllegalArgumentException("Passed unknown pruefung!");
+      throw new IllegalArgumentException(INVALID_ARGUMENT);
     }
 
     if (existsPruefungWith(pruefungsnummer)) {

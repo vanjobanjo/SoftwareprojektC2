@@ -74,4 +74,13 @@ public class ReadOnlyPruefungAssert
     }
     return this;
   }
+
+  public ReadOnlyPruefungAssert isNotScheduled() {
+    if (actual.getTermin().isPresent()) {
+      failWithMessage(
+          "Expected pruefung not to be scheduled but was scheduled at %s.",
+          actual.getTermin().get());
+    }
+    return this;
+  }
 }
