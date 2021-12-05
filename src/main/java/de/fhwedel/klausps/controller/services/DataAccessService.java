@@ -126,6 +126,24 @@ public class DataAccessService {
     return createListOfPruefungWithScoring(resultOfSchedulePruefung);
   }
 
+  public List<ReadOnlyPruefung> unschedulePruefung(ReadOnlyPruefung pruefung){
+    String pruefungsNummer = pruefung.getPruefungsnummer();
+
+    if (!existsPruefung(pruefungsNummer)) {
+      throw new IllegalArgumentException("Exam doesn't exist");
+    }
+
+    Pruefung model = pruefungsperiode.pruefung(pruefungsNummer);
+
+    if(!model.isGeplant()){
+      throw new IllegalArgumentException("Exam already unplanned.");
+    }
+
+    List<Pruefung> resultOfUnschedulePruefung = scheduleService.unschedulePruefung(model);
+
+    return createListOfPruefungWithScoring(resultOfUnschedulePruefung);
+  }
+
   public ReadOnlyPruefung changeNameOfPruefung(ReadOnlyPruefung toChange, String name) {
     Pruefung pruefung = pruefungsperiode.pruefung(toChange.getPruefungsnummer());
     pruefung.setName(name);
