@@ -1,5 +1,7 @@
 package de.fhwedel.klausps.controller.services;
 
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomDuration;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomString;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
@@ -19,6 +21,7 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.assertions.ReadOnlyBlockAssert;
 import de.fhwedel.klausps.controller.assertions.ReadOnlyPruefungAssert;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
+import de.fhwedel.klausps.controller.util.TestUtils;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
@@ -27,13 +30,17 @@ import de.fhwedel.klausps.model.impl.BlockImpl;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -157,36 +164,17 @@ class DataAccessServiceTest {
 
   @Test
   void geplanteBloeckeTest() {
-    final int scoring0 = 20;
-    final int scoring1 = 30;
-    ReadOnlyPruefung ro01 =
-        new PruefungDTOBuilder()
-            .withPruefungsName("inBlock0")
-            .withPruefungsNummer("123")
-            .withScoring(scoring0)
-            .build();
-    ReadOnlyPruefung ro02 =
-        new PruefungDTOBuilder()
-            .withPruefungsName("inBlock1")
-            .withPruefungsNummer("1235")
-            .withScoring(scoring1)
-            .build();
-    Pruefung inBlock0 = getPruefungOfReadOnlyPruefung(ro01);
-    Pruefung inBlock1 = getPruefungOfReadOnlyPruefung(ro02);
-    Block block = new BlockImpl(pruefungsperiode, "name");
-    block.addPruefung(inBlock0);
-    block.addPruefung(inBlock1);
+    List<ReadOnlyPruefung> pruefungen = getRandomPruefungen(1234, 2);
+    List<Pruefung> pruefungenFromModel = convertPruefungenFromReadonlyToModel(pruefungen);
+    Block initialBlock = new BlockImpl(pruefungsperiode, "name");
+    pruefungenFromModel.forEach(initialBlock::addPruefung);
 
-    when(pruefungsperiode.geplanteBloecke()).thenReturn(Set.of(block));
-    when(scheduleService.scoringOfPruefung(inBlock0)).thenReturn(scoring0);
-    when(scheduleService.scoringOfPruefung(inBlock1)).thenReturn(scoring1);
+    when(pruefungsperiode.geplanteBloecke()).thenReturn(Set.of(initialBlock));
 
     Set<ReadOnlyBlock> blockController = deviceUnderTest.getGeplanteBloecke();
-    ReadOnlyBlock blockRO = blockController.stream().toList().get(0);
-    Set<ReadOnlyPruefung> ropruefungen = blockRO.getROPruefungen();
-    assertThat(ropruefungen).containsOnly(ro01, ro02);
-    assertThat(scheduleService.scoringOfPruefung(inBlock0)).isEqualTo(scoring0);
-    assertThat(scheduleService.scoringOfPruefung(inBlock1)).isEqualTo(scoring1);
+    ReadOnlyBlock resultingBlock = blockController.stream().toList().get(0);
+    ReadOnlyBlockAssert.assertThat(resultingBlock)
+        .containsOnlyPruefungen(pruefungen.toArray(new ReadOnlyPruefung[0]));
   }
 
   @Test
@@ -348,6 +336,20 @@ class DataAccessServiceTest {
         () -> deviceUnderTest.schedulePruefung(somePruefung, someSchedule));
   }
 
+  private List<ReadOnlyPruefung> getRandomPruefungen(long seed, int amount) {
+    Random random = new Random(seed);
+    List<ReadOnlyPruefung> randomPruefungen = new ArrayList<>(amount);
+    for (int index = 0; index < amount; index++) {
+      randomPruefungen.add(
+          new PruefungDTOBuilder()
+              .withPruefungsName(getRandomString(random, 5))
+              .withDauer(getRandomDuration(random, 120))
+              .withPruefungsNummer(getRandomString(random, 4))
+              .build());
+    }
+    return randomPruefungen;
+  }
+
   /**
    * Gibt eine vorgegeben ReadOnlyPruefung zurueck
    *
@@ -379,6 +381,11 @@ class DataAccessServiceTest {
     }
     roPruefung.getTeilnehmerKreisSchaetzung().forEach(modelPruefung::setSchaetzung);
     return modelPruefung;
+  }
+
+  private List<Pruefung> convertPruefungenFromReadonlyToModel(
+      Collection<ReadOnlyPruefung> pruefungen) {
+    return pruefungen.stream().map(this::getPruefungOfReadOnlyPruefung).toList();
   }
 
   private Pruefung getPruefungWithPruefer(String pruefer) {

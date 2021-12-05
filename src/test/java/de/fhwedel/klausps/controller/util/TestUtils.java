@@ -5,7 +5,7 @@ import java.util.Random;
 
 public class TestUtils {
 
-  public String getRandomString(Random random, int length) {
+  public static String getRandomString(Random random, int length) {
     // code from https://www.baeldung.com/java-random-string modified
     int leftLimit = 97; // letter 'a'
     int rightLimit = 122; // letter 'z'
@@ -17,7 +17,7 @@ public class TestUtils {
     return buffer.toString();
   }
 
-  public Duration getRandomDuration(Random random, int maxMinutes) {
+  public static Duration getRandomDuration(Random random, int maxMinutes) {
     return Duration.ofMinutes(random.nextInt(1, maxMinutes));
   }
 }
