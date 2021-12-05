@@ -44,6 +44,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class DataAccessServiceTest {
 
@@ -53,12 +54,15 @@ class DataAccessServiceTest {
   Map<Teilnehmerkreis, Integer> teilnehmerKreise = new HashMap<>();
   private Pruefungsperiode pruefungsperiode;
   private DataAccessService deviceUnderTest;
+  private ScheduleService scheduleService;
 
   @BeforeEach
   void setUp() {
     this.pruefungsperiode = mock(Pruefungsperiode.class);
     this.deviceUnderTest = ServiceProvider.getDataAccessService();
+    this.scheduleService = mock(ScheduleService.class);
     deviceUnderTest.setPruefungsperiode(pruefungsperiode);
+    deviceUnderTest.setScheduleService(this.scheduleService);
   }
 
   @Test
@@ -257,7 +261,7 @@ class DataAccessServiceTest {
     pDTOB.withPruefungsName("Analysi");
     pDTOB.withDauer(Duration.ofMinutes(90));
     ReadOnlyPruefung ro01 = pDTOB.build();
-    de.fhwedel.klausps.model.impl.PruefungImpl t =
+    PruefungImpl t =
         new PruefungImpl(
             ro01.getPruefungsnummer(), ro01.getName(), "Keine Ahnnung", ro01.getDauer());
     pruefungsperiode.addPlanungseinheit(t);
@@ -265,14 +269,15 @@ class DataAccessServiceTest {
     assertEquals(ro01.getDauer(), Duration.ofMinutes(90));
     ReadOnlyPruefung roAcc = ro01;
     try {
-      when(pruefungsperiode.pruefung(ro01.getName())).thenReturn(t);
+      when(pruefungsperiode.pruefung(ro01.getPruefungsnummer())).thenReturn(t);
+      when(scheduleService.changeDuration(t, Duration.ofMinutes(120))).thenReturn(List.of(t));
       assertThat(deviceUnderTest.changeDurationOf(ro01, Duration.ofMinutes(120))).hasSize(1);
+      t.setDauer(Duration.ofMinutes(120)); //ScheduleService muss noch implementiert werden.
       roAcc = deviceUnderTest.changeDurationOf(ro01, Duration.ofMinutes(120)).get(0);
     } catch (HartesKriteriumException ignored) {
     }
     assertEquals(roAcc.getDauer(), Duration.ofMinutes(120));
   }
-
   @Test
   void changeDurationOf_withMinus() {
     PruefungDTOBuilder pDTOB = new PruefungDTOBuilder();
@@ -295,6 +300,7 @@ class DataAccessServiceTest {
 
     Assertions.assertTrue(ro01.getTermin().isEmpty());
     try {
+      when(pruefungsperiode.pruefung(ro01.getPruefungsnummer())).thenReturn(getPruefungOfReadOnlyPruefung(ro01));
       deviceUnderTest.schedulePruefung(ro01, LocalDateTime.of(2021, 8, 21, 9, 0));
     } catch (HartesKriteriumException ignore) {
     }
@@ -314,7 +320,7 @@ class DataAccessServiceTest {
     try {
       LocalDateTime lt = LocalDateTime.of(2021, 9, 22, 9, 0);
       when(this.pruefungsperiode.getEnddatum()).thenReturn(LocalDate.of(2021, 8, 22));
-
+      when(pruefungsperiode.pruefung(ro01.getPruefungsnummer())).thenReturn(getPruefungOfReadOnlyPruefung(ro01));
       Assertions.assertTrue(deviceUnderTest.schedulePruefung(ro01, lt).isEmpty());
     } catch (HartesKriteriumException ignore) {
     }
@@ -338,6 +344,7 @@ class DataAccessServiceTest {
     // TODO falls die Liste implementiert wird Test anpassen
     //   ReadOnlyPruefung roacc = ro01;
     try {
+      when(pruefungsperiode.pruefung(ro01.getPruefungsnummer())).thenReturn(getPruefungOfReadOnlyPruefung(ro01));
       assertThat(deviceUnderTest.schedulePruefung(ro01, change1)).isEmpty();
       //  roacc = deviceUnderTest.schedulePruefung(ro01, change1).get(0);
     } catch (HartesKriteriumException ignore) {
