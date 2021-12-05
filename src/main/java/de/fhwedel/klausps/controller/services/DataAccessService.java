@@ -121,7 +121,6 @@ public class DataAccessService {
 
     if (modelPruefung.isGeplant()) {
       throw new IllegalArgumentException("Exam already planned.");
-
     }
 
     List<Pruefung> resultOfSchedulePruefung = scheduleService.schedulePruefung(modelPruefung,
@@ -156,19 +155,13 @@ public class DataAccessService {
 
   public Set<ReadOnlyPruefung> getGeplantePruefungen() {
     return pruefungsperiode.geplantePruefungen().stream()
-        .map(
-            pruefung ->
-                new PruefungDTOBuilder(pruefung) // TODO pruefung.getScoring(); Scoring berechnen
-                    .build())
+        .map(this::fromModelToDTOPruefungWithScoring)
         .collect(Collectors.toSet());
   }
 
   public Set<ReadOnlyPruefung> getUngeplanteKlausuren() {
     return pruefungsperiode.ungeplantePruefungen().stream()
-        .map(
-            pruefung ->
-                new PruefungDTOBuilder(pruefung) // TODO use scoring
-                    .build())
+        .map(this::fromModelToDTOPruefungWithScoring)
         .collect(Collectors.toSet());
   }
 
@@ -192,8 +185,7 @@ public class DataAccessService {
     if (existsPruefung(pruefungsNummer)) {
       Pruefung pruefung = pruefungsperiode.pruefung(pruefungsNummer);
       pruefung.addPruefer(pruefer);
-      return new PruefungDTOBuilder(pruefung).build();
-      // TODO add scoring to result
+      return fromModelToDTOPruefungWithScoring(pruefung);
     }
     throw new IllegalArgumentException("Passed unknown pruefung!");
   }
@@ -202,34 +194,54 @@ public class DataAccessService {
     if (existsPruefung(pruefungsNummer)) {
       Pruefung pruefung = pruefungsperiode.pruefung(pruefungsNummer);
       pruefung.removePruefer(pruefer);
-      return new PruefungDTOBuilder(pruefung).build();
-      // TODO add scoring to result
+      return fromModelToDTOPruefungWithScoring(pruefung);
     }
     throw new IllegalArgumentException("Passed unknown pruefung!");
   }
 
+  public ReadOnlyPruefung setPruefungsnummer(ReadOnlyPruefung pruefung, String pruefungsnummer) {
+    String oldNo = pruefung.getPruefungsnummer();
 
-  private ReadOnlyBlock fromModelToDTOBlock(Block modelBlock) {
+    if (!existsPruefung(oldNo)) {
+      throw new IllegalArgumentException("Passed unknown pruefung!");
+    }
+
+    if (existsPruefung(pruefungsnummer)) {
+      throw new IllegalArgumentException("Passed number already exists");
+    }
+
+    Pruefung model = pruefungsperiode.pruefung(oldNo);
+    model.setPruefungsnummer(pruefungsnummer);
+
+    return fromModelToDTOPruefungWithScoring(model);
+  }
+
+  public void setPlanungseinheit(Pruefungsperiode pruefungsperiode) {
+    this.pruefungsperiode = pruefungsperiode;
+  }
+
+  private ReadOnlyBlock fromModelToDTOBlock(Block model) {
     Set<ReadOnlyPruefung> pruefungen = new HashSet<>();
-    for (Pruefung pruefung : modelBlock.getPruefungen()) {
-      pruefungen.add(fromModelToDTOPruefung(pruefung));
+    for (Pruefung pruefung : model.getPruefungen()) {
+      pruefungen.add(fromModelToDTOPruefungWithScoring(pruefung));
     }
     return new BlockDTO(
-        modelBlock.getName(),
-        modelBlock.getStartzeitpunkt(),
-        modelBlock.getDauer(),
-        modelBlock.isGeplant(),
+        model.getName(),
+        model.getStartzeitpunkt(),
+        model.getDauer(),
+        model.isGeplant(),
         pruefungen);
   }
 
-  private ReadOnlyPruefung fromModelToDTOPruefung(Pruefung modelPruefung) {
+  private ReadOnlyPruefung fromModelToDTOPruefungWithScoring(Pruefung model) {
     return new PruefungDTOBuilder()
-        .withPruefungsName(modelPruefung.getName())
-        .withPruefungsNummer(modelPruefung.getPruefungsnummer())
-        .withDauer(modelPruefung.getDauer())
-        .withStartZeitpunkt(modelPruefung.getStartzeitpunkt())
-        .withPruefer(modelPruefung.getPruefer())
-        .withTeilnehmerKreisSchaetzung(modelPruefung.getSchaetzungen())
+        .withPruefungsName(model.getName())
+        .withPruefungsNummer(model.getPruefungsnummer())
+        .withDauer(model.getDauer())
+        .withStartZeitpunkt(model.getStartzeitpunkt())
+        .withPruefer(model.getPruefer())
+        .withTeilnehmerKreisSchaetzung(model.getSchaetzungen())
+        .withScoring(scheduleService.scoringOfPruefung(model))
         .build();
   }
 }

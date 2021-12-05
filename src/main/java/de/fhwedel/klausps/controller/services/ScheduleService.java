@@ -45,9 +45,9 @@ public class ScheduleService {
     }
 
     /**
-     * Gibt das Scoring zu einer übergebenen Pruefung zurück.
-     * @param pruefung Pruefung, dessen Scoring bestimmt werden soll
-     * @return Scoring
+     * Gibt das Scoring zu einer übergebenen Pruefung zurück. Wenn Klausur ungeplant, dann 0.
+     * @param pruefung . Pruefung, dessen Scoring bestimmt werden soll
+     * @return Scoring : ungeplant ? 0 : scoring
      */
     public int scoringOfPruefung(Pruefung pruefung) {
       // todo please implement
