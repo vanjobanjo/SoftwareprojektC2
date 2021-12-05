@@ -26,7 +26,7 @@ public class ServiceProvider {
 
   public static ScheduleService getScheduleService() {
     if (scheduleService == null) {
-      scheduleService = new ScheduleService(dataAccessService);
+      scheduleService = new ScheduleService(getDataAccessService());
     }
     return scheduleService;
   }
