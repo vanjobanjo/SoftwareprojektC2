@@ -83,4 +83,43 @@ public class ReadOnlyPruefungAssert
     }
     return this;
   }
+
+  public ReadOnlyPruefungAssert hasName(String expected) {
+    if (!actual.getName().equals(expected)) {
+      failWithMessage(
+          "Expected pruefung not have the name %s but was %s.", expected, actual.getName());
+    }
+    return this;
+  }
+
+  public ReadOnlyPruefungAssert differsOnlyInNameFrom(ReadOnlyPruefung pruefung) {
+    isNotNull();
+    if (actual.getName().equals(pruefung.getName())) {
+      failWithMessage(
+          "Expected ReadOnlyPruefungs name to differ from %s but was the same.",
+          pruefung.getName());
+    }
+    if (!actual.getPruefungsnummer().equals(pruefung.getPruefungsnummer())) {
+      failWithMessage(
+          "Expected ReadOnlyPruefung to have pruefungsnummer %s but was %s",
+          actual.getPruefungsnummer(), pruefung.getPruefungsnummer());
+    }
+    if (!actual.getPruefer().containsAll(pruefung.getPruefer())
+        || !pruefung.getPruefer().containsAll(actual.getPruefer())) {
+      failWithMessage(
+          "Expected ReadOnlyPruefung to have pruefer %s but was %s",
+          actual.getPruefer().toString(), pruefung.getPruefer().toString());
+    }
+    if (!actual.getDauer().equals(pruefung.getDauer())) {
+      failWithMessage(
+          "Expected ReadOnlyPruefung to have duration %s but was %s",
+          actual.getDauer().toString(), pruefung.getDauer().toString());
+    }
+    if (!actual.getTeilnehmerKreisSchaetzung().equals(pruefung.getTeilnehmerKreisSchaetzung())) {
+      failWithMessage(
+          "Expected ReadOnlyPruefung to have duration %s but was %s",
+          actual.getDauer().toString(), pruefung.getDauer().toString());
+    }
+    return this;
+  }
 }

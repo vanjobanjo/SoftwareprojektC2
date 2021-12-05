@@ -131,21 +131,11 @@ class DataAccessServiceTest {
   void setName_successfullyTest() {
     ReadOnlyPruefung before = getReadOnlyPruefung();
     Pruefung model = getPruefungOfReadOnlyPruefung(before);
+    String newName = "NoNameNeeded";
 
     when(pruefungsperiode.pruefung(before.getPruefungsnummer())).thenReturn(model);
-
-    assertThat(model.getName()).isEqualTo(before.getName());
-
-    ReadOnlyPruefung after = deviceUnderTest.changeNameOfPruefung(before, "NoNameNeeded");
-    assertThat(model.getPruefungsnummer()).isEqualTo(after.getPruefungsnummer());
-    assertThat(model.getName()).isEqualTo(after.getName());
-    assertThat(model.getDauer()).isEqualTo(after.getDauer());
-    assertThat(model.getName()).isNotEqualTo(before.getName());
-    assertThat(model.getDauer()).isEqualTo(before.getDauer());
-    assertThat(model.getDauer()).isEqualTo(after.getDauer());
-    assertThat(model.getPruefer()).isEqualTo(after.getPruefer());
-    assertThat(model.getTeilnehmerkreise()).hasSameElementsAs(before.getTeilnehmerkreise());
-    assertThat(model.getDauer()).isEqualTo(after.getDauer());
+    ReadOnlyPruefung after = deviceUnderTest.changeNameOfPruefung(before, newName);
+    ReadOnlyPruefungAssert.assertThat(after).differsOnlyInNameFrom(before).hasName(newName);
   }
 
   @Test
@@ -414,6 +404,9 @@ class DataAccessServiceTest {
             "",
             roPruefung.getDauer(),
             roPruefung.getTermin().orElse(null));
+    for (String pruefer : roPruefung.getPruefer()) {
+      modelPruefung.addPruefer(pruefer);
+    }
     roPruefung.getTeilnehmerKreisSchaetzung().forEach(modelPruefung::setSchaetzung);
     return modelPruefung;
   }
