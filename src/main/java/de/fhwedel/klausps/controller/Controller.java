@@ -186,7 +186,7 @@ public class Controller implements InterfaceController {
       throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, pruefungsnummer);
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    return dataAccessService.setPruefungsnummer(pruefung, pruefungsnummer);
   }
 
   @Override

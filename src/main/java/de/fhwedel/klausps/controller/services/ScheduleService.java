@@ -36,9 +36,9 @@ public abstract class ScheduleService {
     public abstract List<Pruefung> changeDuration(Pruefung pruefung, Duration minutes) throws HartesKriteriumException;
 
     /**
-     * Gibt das Scoring zu einer übergebenen Pruefung zurück.
+     * Gibt das Scoring zu einer übergebenen Pruefung zurück. Wenn Klausur ungeplant, dann 0.
      * @param pruefung . Pruefung, dessen Scoring bestimmt werden soll
-     * @return Scoring
+     * @return Scoring : ungeplant ? 0 : scoring
      */
     public abstract int scoringOfPruefung(Pruefung pruefung);
 }

@@ -39,6 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -150,18 +152,31 @@ class DataAccessServiceTest {
   void getGeplantePruefungenTest() {
     PruefungDTO p1 = new PruefungDTOBuilder().withPruefungsName("Hallo").build();
     PruefungDTO p2 = new PruefungDTOBuilder().withPruefungsName("Welt").build();
+    PruefungDTO p3 = new PruefungDTOBuilder().withPruefungsName("xD").build();
+
     Pruefung pm1 = getPruefungOfReadOnlyPruefung(p1);
     Pruefung pm2 = getPruefungOfReadOnlyPruefung(p2);
+    int scoring1 = 10;
+    int scoring2 = 20;
     Set<Pruefung> pruefungen = new HashSet<>(Arrays.asList(pm1, pm2));
     when(pruefungsperiode.geplantePruefungen()).thenReturn(pruefungen);
+    when(scheduleService.scoringOfPruefung(pm1)).thenReturn(scoring1);
+    when(scheduleService.scoringOfPruefung(pm2)).thenReturn(scoring2);
 
     Set<ReadOnlyPruefung> result = deviceUnderTest.getGeplantePruefungen();
     assertThat(result).containsOnly(p1, p2);
+    assertThat(result).doesNotContain(p3);
+
     Iterator<ReadOnlyPruefung> it = result.iterator();
     ReadOnlyPruefung p1_new = it.next();
     ReadOnlyPruefung p2_new = it.next();
     assertThat(p1_new != p1 && p1_new != p2).isTrue();
     assertThat(p2_new != p1 && p2_new != p2).isTrue();
+    assertThat(p1_new.getScoring()).isEqualTo(scoring1);
+    assertThat(p2_new.getScoring()).isEqualTo(scoring2);
+    assertThat(p1.getScoring()).isEqualTo(0);
+    assertThat(p2.getScoring()).isEqualTo(0);
+
   }
 
   @Test
@@ -178,16 +193,22 @@ class DataAccessServiceTest {
     Iterator<ReadOnlyPruefung> it = result.iterator();
     ReadOnlyPruefung p1_new = it.next();
     ReadOnlyPruefung p2_new = it.next();
-    assertThat(p1_new != p1 && p1_new != p2).isTrue();
-    assertThat(p2_new != p1 && p2_new != p2).isTrue();
+    assertThat(p1_new != p1 || p1_new != p2).isTrue();
+    assertThat(p2_new != p1 || p2_new != p2).isTrue();
   }
 
   @Test
   void geplanteBloeckeTest() {
+    final int scoring0 = 20;
+    final int scoring1 = 30;
     ReadOnlyPruefung ro01 =
-        new PruefungDTOBuilder().withPruefungsName("inBlock0").withPruefungsNummer("123").build();
+        new PruefungDTOBuilder().withPruefungsName("inBlock0").withPruefungsNummer("123")
+                .withScoring(scoring0)
+                .build();
     ReadOnlyPruefung ro02 =
-        new PruefungDTOBuilder().withPruefungsName("inBlock1").withPruefungsNummer("1235").build();
+        new PruefungDTOBuilder().withPruefungsName("inBlock1").withPruefungsNummer("1235")
+                .withScoring(scoring1)
+                .build();
     Pruefung inBlock0 = getPruefungOfReadOnlyPruefung(ro01);
     Pruefung inBlock1 = getPruefungOfReadOnlyPruefung(ro02);
     Block block = new BlockImpl(pruefungsperiode, "name");
@@ -195,8 +216,15 @@ class DataAccessServiceTest {
     block.addPruefung(inBlock1);
 
     when(pruefungsperiode.geplanteBloecke()).thenReturn(Set.of(block));
+    when(scheduleService.scoringOfPruefung(inBlock0)).thenReturn(scoring0);
+    when(scheduleService.scoringOfPruefung(inBlock1)).thenReturn(scoring1);
+
     Set<ReadOnlyBlock> blockController = deviceUnderTest.getGeplanteBloecke();
-    assertThat(blockController.iterator().next().getROPruefungen()).containsOnly(ro01, ro02);
+    ReadOnlyBlock blockRO = blockController.stream().toList().get(0);
+    Set<ReadOnlyPruefung> ropruefungen = blockRO.getROPruefungen();
+    assertThat(ropruefungen).containsOnly(ro01, ro02);
+    assertThat(scheduleService.scoringOfPruefung(inBlock0)).isEqualTo(scoring0);
+    assertThat(scheduleService.scoringOfPruefung(inBlock1)).isEqualTo(scoring1);
   }
 
   @Test
@@ -216,7 +244,11 @@ class DataAccessServiceTest {
 
     assertThat(ungeplanteBloecke).hasSize(1);
     ReadOnlyBlock resultBlock = new LinkedList<>(ungeplanteBloecke).get(0);
+    ReadOnlyPruefung ro0 = new LinkedList<>(resultBlock.getROPruefungen()).get(0);
+    ReadOnlyPruefung ro1 = new LinkedList<>(resultBlock.getROPruefungen()).get(1);
     ReadOnlyBlockAssert.assertThat(resultBlock).containsOnlyPruefungen(ro01, ro02);
+    assertThat(ro0 != ro01 || ro0 != ro02).isTrue();
+    assertThat(ro1 != ro01 || ro1 != ro02).isTrue();
   }
 
   @Test
@@ -401,6 +433,28 @@ class DataAccessServiceTest {
       assertThat(e).isInstanceOf(IllegalArgumentException.class);
     }
   }
+
+  @Test
+  public void testSetPruefungsnummer(){
+
+    String oldNumber = "2";
+    String newNumber = "1";
+
+    PruefungDTO analysis = new PruefungDTOBuilder()
+            .withPruefungsName("Analysis")
+            .withPruefungsNummer(oldNumber)
+            .withDauer(Duration.ofMinutes(120))
+            .withAdditionalPruefer("Harms")
+            .withStartZeitpunkt(LocalDateTime.now())
+            .build();
+
+    Pruefung modelAnalysis = getPruefungOfReadOnlyPruefung(analysis);
+    when(pruefungsperiode.pruefung(oldNumber)).thenReturn(modelAnalysis);
+    ReadOnlyPruefung analysisNewNumber = deviceUnderTest.setPruefungsnummer(analysis, newNumber);
+    assertThat(analysisNewNumber.getPruefungsnummer()).isEqualTo(newNumber);
+    assertThat(analysisNewNumber).isNotEqualTo(analysis); //Equal arbeitet prüft die Nummern
+    assertThat(analysisNewNumber.getDauer()).isEqualTo(analysis.getDauer());
+      }
 
   private Semester getSemester() {
     return new SemesterImpl(Semestertyp.SOMMERSEMESTER, Year.of(1996));
