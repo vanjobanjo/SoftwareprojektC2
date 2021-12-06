@@ -111,7 +111,7 @@ public class DataAccessService {
   /**
    * Schedules a pruefung without any consistency checks.
    *
-   * @param pruefung The pruefung to schedule.
+   * @param pruefung    The pruefung to schedule.
    * @param startTermin The time to schedule the pruefung to.
    */
   public ReadOnlyPruefung schedulePruefung(ReadOnlyPruefung pruefung, LocalDateTime startTermin) {
@@ -232,9 +232,14 @@ public class DataAccessService {
         .build();
   }
 
-  public boolean deletePruefung(ReadOnlyPruefung roPruefung) {
+  public boolean deletePruefung(ReadOnlyPruefung roPruefung) throws IllegalArgumentException {
     //TODO auf referenzVerwaltungssystem-Nummer ändern, wenn das Model das anpasst!
     Pruefung pruefung = this.pruefungsperiode.pruefung(roPruefung.getPruefungsnummer());
+    if (pruefung == null) {
+      throw new IllegalArgumentException(
+          "Die Pruefungsnummer ist in der Datenbank nicht vorhanden!");
+    }
+    this.unschedulePruefung(roPruefung);
     return this.pruefungsperiode.removePlanungseinheit(pruefung);
   }
 }

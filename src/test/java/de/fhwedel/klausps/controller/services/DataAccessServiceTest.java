@@ -115,12 +115,12 @@ class DataAccessServiceTest {
 
     when(pruefungsperiode.pruefung(expected.getPruefungsnummer())).thenReturn(test);
     assertThat(
-            deviceUnderTest.createPruefung(
-                expected.getName(),
-                expected.getPruefungsnummer(),
-                expected.getPruefer(),
-                expected.getDauer(),
-                expected.getTeilnehmerKreisSchaetzung()))
+        deviceUnderTest.createPruefung(
+            expected.getName(),
+            expected.getPruefungsnummer(),
+            expected.getPruefer(),
+            expected.getDauer(),
+            expected.getTeilnehmerKreisSchaetzung()))
         .isNull();
   }
 
@@ -334,6 +334,25 @@ class DataAccessServiceTest {
     assertThrows(
         IllegalArgumentException.class,
         () -> deviceUnderTest.schedulePruefung(somePruefung, someSchedule));
+  }
+
+
+  @Test
+  void deletePruefung_successful() {
+    ReadOnlyPruefung roP = getRandomPruefungen(8415, 1).get(0);
+    Pruefung pruefungModel = this.getPruefungOfReadOnlyPruefung(roP);
+    when(this.pruefungsperiode.pruefung(roP.getPruefungsnummer())).thenReturn(pruefungModel);
+    when(this.pruefungsperiode.removePlanungseinheit(pruefungModel)).thenReturn(true);
+    this.deviceUnderTest.deletePruefung(roP);
+    verify(this.pruefungsperiode, times(1)).removePlanungseinheit(pruefungModel);
+
+  }
+
+  @Test
+  void deletePruefung_throw() {
+    ReadOnlyPruefung roP = getRandomPruefungen(8415, 1).get(0);
+    when(this.pruefungsperiode.pruefung(any())).thenReturn(null);
+    assertThrows(IllegalArgumentException.class, () -> this.deviceUnderTest.deletePruefung(roP));
   }
 
   private List<ReadOnlyPruefung> getRandomPruefungen(long seed, int amount) {
