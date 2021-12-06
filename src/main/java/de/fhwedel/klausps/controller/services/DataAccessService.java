@@ -231,4 +231,10 @@ public class DataAccessService {
         .withScoring(scheduleService.scoringOfPruefung(pruefung))
         .build();
   }
+
+  public boolean deletePruefung(ReadOnlyPruefung roPruefung) {
+    //TODO auf referenzVerwaltungssystem-Nummer ändern, wenn das Model das anpasst!
+    Pruefung pruefung = this.pruefungsperiode.pruefung(roPruefung.getPruefungsnummer());
+    return this.pruefungsperiode.removePlanungseinheit(pruefung);
+  }
 }

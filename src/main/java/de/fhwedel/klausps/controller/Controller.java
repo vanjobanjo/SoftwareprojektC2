@@ -236,6 +236,7 @@ public class Controller implements InterfaceController {
     noNullParameters(pruefung);
     checkNoPruefungDefined();
     this.unschedulePruefung(pruefung); //TODO delete not just unschedule
+    this.dataAccessService.deletePruefung(pruefung);
   }
 
   @Override
