@@ -1,7 +1,5 @@
 package de.fhwedel.klausps.controller.services;
 
-import static java.util.Objects.nonNull;
-
 import de.fhwedel.klausps.controller.api.BlockDTO;
 import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
@@ -13,14 +11,13 @@ import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.util.Objects.nonNull;
 
 public class DataAccessService {
 
@@ -119,11 +116,11 @@ public class DataAccessService {
    */
   public ReadOnlyPruefung schedulePruefung(ReadOnlyPruefung pruefung, LocalDateTime startTermin) {
     Pruefung pruefungFromModel = pruefungsperiode.pruefung(pruefung.getPruefungsnummer());
-    if (pruefungFromModel == null) {
-      throw new IllegalArgumentException("Unknown pruefung.");
+    if (pruefungFromModel != null) {
+      pruefungFromModel.setStartzeitpunkt(startTermin);
+      return new PruefungDTOBuilder(pruefungFromModel).build();
     }
-    pruefungFromModel.setStartzeitpunkt(startTermin);
-    return new PruefungDTOBuilder(pruefungFromModel).build();
+    throw new IllegalArgumentException("Unknown pruefung.");
   }
 
   /**
@@ -133,11 +130,11 @@ public class DataAccessService {
    */
   public ReadOnlyPruefung unschedulePruefung(ReadOnlyPruefung pruefung) {
     Pruefung pruefungFromModel = pruefungsperiode.pruefung(pruefung.getPruefungsnummer());
-    if (pruefungFromModel == null) {
-      throw new IllegalArgumentException("Unknown pruefung.");
+    if (pruefungFromModel != null) {
+      pruefungFromModel.setStartzeitpunkt(null);
+      return new PruefungDTOBuilder(pruefungFromModel).build();
     }
-    pruefungFromModel.setStartzeitpunkt(null);
-    return new PruefungDTOBuilder(pruefungFromModel).build();
+    throw new IllegalArgumentException("Unknown pruefung.");
   }
 
   public ReadOnlyPruefung changeNameOfPruefung(ReadOnlyPruefung toChange, String name) {
@@ -209,10 +206,6 @@ public class DataAccessService {
 
     return fromModelToDTOPruefungWithScoring(modelPruefung);
   }
-
-
-
-
 
   private ReadOnlyBlock fromModelToDTOBlock(Block block) {
     Set<ReadOnlyPruefung> pruefungen = new HashSet<>();
