@@ -1,4 +1,4 @@
-package de.fhwedel.klausps.controller.integrationTests.steps;
+package integrationTests.steps;
 
 import io.cucumber.java.de.Wenn;
 

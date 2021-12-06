@@ -24,6 +24,7 @@
 
   <properties>
     <junit.version>5.8.0</junit.version>
+    <junit-platform.version>1.2.0</junit-platform.version>
     <assertj.version>3.21.0</assertj.version>
     <mockito.version>4.0.0</mockito.version>
     <cucumber.version>6.6.1</cucumber.version>
@@ -67,10 +68,6 @@
 
 
   <dependencies>
-    <dependency>
-      <groupId>de.fhwedel.klausps</groupId>
-      <artifactId>controller-api</artifactId>
-    </dependency>
     <!-- testing -->
     <dependency>
       <groupId>io.cucumber</groupId>
@@ -114,6 +111,39 @@
       <groupId>org.mockito</groupId>
       <artifactId>mockito-junit-jupiter</artifactId>
       <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>de.fhwedel.klausps</groupId>
+      <artifactId>controller-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>de.fhwedel.klausps</groupId>
+      <artifactId>model-impl</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>de.fhwedel.klausps</groupId>
+      <artifactId>model2</artifactId>
+    </dependency>
+
+    <!-- Test Suite -->
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-runner</artifactId>
+      <version>${junit-platform.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

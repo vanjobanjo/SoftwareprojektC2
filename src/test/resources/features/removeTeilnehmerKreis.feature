@@ -5,7 +5,7 @@ Funktionalität: Als Planender moechte ich zu einer Klausur einen Teilnehmerkrei
   Szenario: Die Klausur hat keinen TeilnehmerKreis + Schaetzung und entferne einen Teilnehmerkreis
     Angenommen die Pruefung "Analysis" hat als Teilnehmerkreisschaetzung: ""
     Wenn ich den Studiengang "B_BWL" Fachsemester 1 mit Ordnung "10.0" und 60 schaetze und entferne
-    Dann werfe IllegalArgumentException
+    Dann erhalte ich eine Fehlermeldung
 
   Szenario: Die Klausur hat bereits einen Teilnehmerkreis + Schaetzung und entferne einen
     Angenommen die Pruefung "Analysis" hat als Teilnehmerkreisschaetzung: B_BWL 1 10.0 50
@@ -15,7 +15,7 @@ Funktionalität: Als Planender moechte ich zu einer Klausur einen Teilnehmerkrei
   Szenario: Die Klausur hat bereits einen Teilnehmerkreis + Schaetzung, entferne TK mit negative Schaetzzahl. Invalider TK
     Angenommen die Pruefung "Analysis" hat als Teilnehmerkreisschaetzung: B_BWL 1 10.0 50, B_WING 1 11.0 100
     Wenn ich den Studiengang "B_WING" Fachsemester 2 mit Ordnung "11.0" und -1 schaetze und entferne
-    Dann werfe IllegalArgumentException
+    Dann erhalte ich eine Fehlermeldung
 
   Szenario: Die Klausur hat zugewiesene Teilnehmerkreise + Schaetzung, entferne eine Schaetzung
   das Scoring wird veraendert und eine Liste von Klausuren werden zurueckgegeben

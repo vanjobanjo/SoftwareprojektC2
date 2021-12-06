@@ -45,10 +45,10 @@ Funktionalität: Als Planer moechte ich Informationen der Pruefungsperiode abfra
     Wenn ich das <Startdatum> und das <Enddatum> der Periode aendere
     Dann werden die Daten entsprechend geaendert
     Beispiele:
-      | Startdatum  | Enddatum   |
-      | 01.01.2021  | 02.02.2021 |
-      | 12.03.2021  | 12.04.2021 |
-      | 01.12.2021" | 20.01.2021 |
+      | Startdatum | Enddatum   |
+      | 01.01.2021 | 02.02.2021 |
+      | 12.03.2021 | 12.04.2021 |
+      | 01.12.2021 | 20.01.2021 |
 
     ################################################################
     #########################  Kapazitaet  #########################
