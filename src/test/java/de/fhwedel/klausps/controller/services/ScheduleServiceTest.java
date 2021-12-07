@@ -32,7 +32,6 @@ import static org.mockito.Mockito.when;
 class ScheduleServiceTest {
   private ScheduleService deviceUnderTest;
   private Pruefungsperiode pruefungsperiode;
-  private DataAccessService accessService;
   private final LocalDate START_PERIOD = LocalDate.of(2000, 1, 1);
   private final LocalDate END_PERIOD = LocalDate.of(2000, 1, 31);
   private final LocalTime _1000 = LocalTime.of(10, 0);
@@ -42,9 +41,9 @@ class ScheduleServiceTest {
     this.pruefungsperiode = mock(Pruefungsperiode.class);
     when(pruefungsperiode.getStartdatum()).thenReturn(START_PERIOD);
     when(pruefungsperiode.getEnddatum()).thenReturn(END_PERIOD);
-    this.accessService = ServiceProvider.getDataAccessService();
-    this.accessService.setPruefungsperiode(this.pruefungsperiode);
-    this.deviceUnderTest = new ScheduleService(this.accessService);
+    DataAccessService accessService = ServiceProvider.getDataAccessService();
+    accessService.setPruefungsperiode(this.pruefungsperiode);
+    this.deviceUnderTest = new ScheduleService(accessService);
     accessService.setScheduleService(this.deviceUnderTest);
   }
 
@@ -68,8 +67,6 @@ class ScheduleServiceTest {
           .withPruefungsNummer("3")
           .withDauer(Duration.ofMinutes(120))
           .build();
-
-  private final LocalDateTime first_january_2000_0_00 = LocalDateTime.of(2000, 1, 1, 0, 0);
 
   @Test
   void scheduleBlockUnConstistentBlock() {
@@ -192,7 +189,6 @@ class ScheduleServiceTest {
   void scheduledBlockExamInBlockIsNotInPeriod(){
     Pruefung model_analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS);
     Pruefung model_dm = getPruefungOfReadOnlyPruefung(RO_DM);
-    Pruefung model_haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL);
 
     when(pruefungsperiode.pruefung(anyString())).thenReturn(null);
     when(pruefungsperiode.pruefung(RO_ANALYSIS.getPruefungsnummer())).thenReturn(model_analysis);
@@ -226,11 +222,6 @@ class ScheduleServiceTest {
     when(pruefungsperiode.pruefung(RO_ANALYSIS.getPruefungsnummer())).thenReturn(model_analysis);
     when(pruefungsperiode.pruefung(RO_DM.getPruefungsnummer())).thenReturn(model_dm);
     // Haskell is not in period
-
-    // in the data model analysis and dm are in a block. haskell is not part of the block
-    Block emptyModelBlock =
-            getModelBlockFromROPruefungen("Empty", null);
-
     when(pruefungsperiode.block(any(Pruefung.class))).thenReturn(null);
 
 
@@ -267,14 +258,6 @@ class ScheduleServiceTest {
     return block;
   }
 
-  private Block getModelBlockFromModelPruefung(
-      String name, LocalDateTime start, Pruefung... pruefungen) {
-    Block block = new BlockImpl(pruefungsperiode, name, start);
-    for (Pruefung p : pruefungen) {
-      block.addPruefung(p);
-    }
-    return block;
-  }
 
   private ReadOnlyBlock getROBlockFromROPruefungen(
       String name, LocalDateTime start, ReadOnlyPruefung... pruefungen) {
