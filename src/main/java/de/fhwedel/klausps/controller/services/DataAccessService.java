@@ -307,10 +307,4 @@ public class DataAccessService {
     return end.isAfter(termin.toLocalDate()) || end.isEqual(termin.toLocalDate());
   }
 
-  private boolean isSameLocalDateTime(Optional<LocalDateTime> time, LocalDateTime time2){
-
-    return (time.isEmpty() && time2 == null) //same termin
-            || time.isPresent()
-            && time2.equals(time.get());
-  }
 }
