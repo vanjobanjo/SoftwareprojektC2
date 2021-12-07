@@ -13,6 +13,7 @@ import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -24,7 +25,7 @@ public class DataAccessService {
   private static final String INVALID_ARGUMENT = "Passed unknown pruefung!";
 
   private Pruefungsperiode pruefungsperiode;
-  private ScheduleService scheduleService;
+  private ScheduleService scheduleService; // TODO Scheduleservice muss hier noch raus.
 
   public void setPruefungsperiode(Pruefungsperiode pruefungsperiode) {
     this.pruefungsperiode = pruefungsperiode;
@@ -55,6 +56,46 @@ public class DataAccessService {
 
   public boolean existsPruefungWith(String pruefungsNummer) {
     return pruefungsperiode.pruefung(pruefungsNummer) != null;
+  }
+
+  /**
+   * Checks the consistency of a ReadOnlyBlock
+   * @param roBlock Block to check with the model data
+   */
+  boolean existsBlock(ReadOnlyBlock roBlock) {
+    if (!roBlock.getROPruefungen().isEmpty()) {
+      Iterator<ReadOnlyPruefung> it = roBlock.getROPruefungen().iterator();
+      ReadOnlyPruefung roPruefung =
+          it.next(); // get the block of the first pruefung and check if the father is all the same
+      boolean consistent = existsPruefungWith(roPruefung.getPruefungsnummer());
+
+      if (consistent) {
+        Pruefung pruefungFromModel = pruefungsperiode.pruefung(roPruefung.getPruefungsnummer());
+        Block blockFromModel = pruefungsperiode.block(pruefungFromModel);
+        consistent =
+            blockFromModel != null
+                && roBlock.getROPruefungen().size() == blockFromModel.getPruefungen().size() //same size
+                && roBlock.getName().equals(blockFromModel.getName()) //same name
+                && ((roBlock.getTermin().isEmpty() && blockFromModel.getStartzeitpunkt() == null) //same termin
+                    || roBlock.getTermin().isPresent()
+                        && roBlock.getTermin().get().equals(blockFromModel.getStartzeitpunkt()));
+
+        while (consistent && it.hasNext()) { //check for every pruefung in roBlock consistency and the parent block is the same as the first one.
+          ReadOnlyPruefung tempRoPruefung = it.next();
+          consistent = existsPruefungWith(tempRoPruefung.getPruefungsnummer());
+          if (consistent) {
+            Pruefung tempModelPruefung =
+                pruefungsperiode.pruefung(tempRoPruefung.getPruefungsnummer());
+            consistent =
+                blockFromModel
+                    == pruefungsperiode.block(
+                        tempModelPruefung);  //all pruefungen must have the same parent block
+          }
+        }
+      }
+      return consistent;
+    }
+    return true; //TODO wie bekommen wir den Model Block wenn der Block leer ist? Um z.B. den Namen und der Termin zu überprüfen.
   }
 
   private void addTeilnehmerKreisSchaetzungToModelPruefung(
@@ -111,7 +152,7 @@ public class DataAccessService {
   /**
    * Schedules a pruefung without any consistency checks.
    *
-   * @param pruefung    The pruefung to schedule.
+   * @param pruefung The pruefung to schedule.
    * @param startTermin The time to schedule the pruefung to.
    */
   public ReadOnlyPruefung schedulePruefung(ReadOnlyPruefung pruefung, LocalDateTime startTermin) {
@@ -135,6 +176,21 @@ public class DataAccessService {
       return new PruefungDTOBuilder(pruefungFromModel).build();
     }
     throw new IllegalArgumentException("Unknown pruefung.");
+  }
+
+  /**
+   * Schedules a block without any consistency checks. The passed block is consistent and has
+   * pruefungen inside.
+   *
+   * @param block The block to schedule
+   * @param termin The time to schedule the pruefung to.
+   */
+  ReadOnlyBlock scheduleBlock(ReadOnlyBlock block, LocalDateTime termin) {
+    String number = new LinkedList<>(block.getROPruefungen()).get(0).getPruefungsnummer();
+    Block blockFromModel = pruefungsperiode.block(pruefungsperiode.pruefung(number));
+    blockFromModel.setStartzeitpunkt(termin);
+
+    return fromModelToDTOBlock(blockFromModel);
   }
 
   public ReadOnlyPruefung changeNameOfPruefung(ReadOnlyPruefung toChange, String name) {
@@ -221,19 +277,13 @@ public class DataAccessService {
   }
 
   private ReadOnlyPruefung fromModelToDTOPruefungWithScoring(Pruefung pruefung) {
-    return new PruefungDTOBuilder()
-        .withPruefungsName(pruefung.getName())
-        .withPruefungsNummer(pruefung.getPruefungsnummer())
-        .withDauer(pruefung.getDauer())
-        .withStartZeitpunkt(pruefung.getStartzeitpunkt())
-        .withPruefer(pruefung.getPruefer())
-        .withTeilnehmerKreisSchaetzung(pruefung.getSchaetzungen())
+    return new PruefungDTOBuilder(pruefung)
         .withScoring(scheduleService.scoringOfPruefung(pruefung))
         .build();
   }
 
   public boolean deletePruefung(ReadOnlyPruefung roPruefung) throws IllegalArgumentException {
-    //TODO auf referenzVerwaltungssystem-Nummer ändern, wenn das Model das anpasst!
+    // TODO auf referenzVerwaltungssystem-Nummer ändern, wenn das Model das anpasst!
     Pruefung pruefung = this.pruefungsperiode.pruefung(roPruefung.getPruefungsnummer());
     if (pruefung == null) {
       throw new IllegalArgumentException(
@@ -241,5 +291,26 @@ public class DataAccessService {
     }
     this.unschedulePruefung(roPruefung);
     return this.pruefungsperiode.removePlanungseinheit(pruefung);
+  }
+
+  boolean terminIsInPeriod(LocalDateTime termin) {
+    return terminIsSameDayOrAfterPeriodStart(termin) && terminIsSameDayOrBeforePeriodEnd(termin);
+  }
+
+  private boolean terminIsSameDayOrAfterPeriodStart(LocalDateTime termin) {
+    LocalDate start = pruefungsperiode.getStartdatum();
+    return start.isBefore(termin.toLocalDate()) || start.isEqual(termin.toLocalDate());
+  }
+
+  private boolean terminIsSameDayOrBeforePeriodEnd(LocalDateTime termin) {
+    LocalDate end = pruefungsperiode.getEnddatum();
+    return end.isAfter(termin.toLocalDate()) || end.isEqual(termin.toLocalDate());
+  }
+
+  private boolean isSameLocalDateTime(Optional<LocalDateTime> time, LocalDateTime time2){
+
+    return (time.isEmpty() && time2 == null) //same termin
+            || time.isPresent()
+            && time2.equals(time.get());
   }
 }
