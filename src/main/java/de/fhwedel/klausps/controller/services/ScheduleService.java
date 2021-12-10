@@ -1,13 +1,19 @@
 package de.fhwedel.klausps.controller.services;
 
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
+
+import de.fhwedel.klausps.controller.helper.Pair;
+
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
+
 import de.fhwedel.klausps.model.api.Pruefung;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 public class ScheduleService {
@@ -58,6 +64,30 @@ public class ScheduleService {
     return List.of(pruefung); // TODO return result of test for conflicts
   }
 
+  public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> scheduleBlock(ReadOnlyBlock block,
+                                                                LocalDateTime termin) throws HartesKriteriumException {
+    for(ReadOnlyPruefung p : block.getROPruefungen()){
+      if(!dataAccessService.existsPruefungWith(p.getPruefungsnummer())){
+        throw new IllegalArgumentException("Exam with " + p.getPruefungsnummer() + " doesn't exist");
+      }
+    }
+
+    if(!dataAccessService.terminIsInPeriod(termin)){
+      throw new IllegalArgumentException("Termin isn't in period");
+    }
+
+    if(block.getROPruefungen().isEmpty()){
+      throw new IllegalArgumentException("Empty blocks aren't allow to be scheduled");
+    }
+
+    if(!dataAccessService.exists(block)){
+      throw new IllegalArgumentException("The block doesn't exist");
+    }
+    ReadOnlyBlock roBlock = dataAccessService.scheduleBlock(block, termin);
+
+    return new Pair<>(roBlock, new LinkedList<>(roBlock.getROPruefungen())); // TODO return result of test for conflicts
+  }
+
   /**
    * Ändert die Dauer einer übergebenen Prüfung. Die übergebene Prüfung muss beim erfolgreichen
    * Verändern auch Teil der Rückgabe sein.
@@ -79,8 +109,7 @@ public class ScheduleService {
    * @return Scoring ungeplant ? 0 : scoring
    */
   public int scoringOfPruefung(Pruefung pruefung) {
-    // todo please implement
-    throw new UnsupportedOperationException("not implemented");
+    return 0; //TODO implement
   }
 
   public void deletePruefung(ReadOnlyPruefung pruefung) {
@@ -88,4 +117,5 @@ public class ScheduleService {
     dataAccessService.deletePruefung(pruefung);
     List<KriteriumsAnalyse> after = restrictionService.checkWeicheKriterien();
   }
+
 }

@@ -13,6 +13,7 @@ import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -24,7 +25,7 @@ public class DataAccessService {
   private static final String INVALID_ARGUMENT = "Passed unknown pruefung!";
 
   private Pruefungsperiode pruefungsperiode;
-  private ScheduleService scheduleService;
+  private ScheduleService scheduleService; // TODO Scheduleservice muss hier noch raus.
 
   public void setPruefungsperiode(Pruefungsperiode pruefungsperiode) {
     this.pruefungsperiode = pruefungsperiode;
@@ -55,6 +56,73 @@ public class DataAccessService {
 
   public boolean existsPruefungWith(String pruefungsNummer) {
     return pruefungsperiode.pruefung(pruefungsNummer) != null;
+  }
+
+  /**
+   * Checks the consistency of a ReadOnlyBlock
+   *
+   * @param block Block to check with the model data
+   */
+  boolean exists(ReadOnlyBlock block) {
+    if (!block.getROPruefungen().isEmpty()) {
+      Optional<Block> modelBlock = searchInModel(block);
+      return modelBlock
+          .filter(value -> areSameBlocksBySpecs(block, value) && haveSamePruefungen(block, value))
+          .isPresent();
+    }
+    return true;
+    // TODO wie bekommen wir den Model Block wenn der Block leer ist? Um z.B. den Namen
+    //  und der Termin zu überprüfen.
+  }
+
+  private boolean haveSamePruefungen(ReadOnlyBlock readOnlyBlock, Block modelBlock) {
+    Set<Pruefung> modelPruefungen = modelBlock.getPruefungen();
+    if (modelPruefungen.size() != readOnlyBlock.getROPruefungen().size()) {
+      return false;
+    }
+    for (ReadOnlyPruefung pruefung : readOnlyBlock.getROPruefungen()) {
+      Pruefung pruefungFromModel = pruefungsperiode.pruefung(pruefung.getPruefungsnummer());
+      if (!existsPruefungWith(pruefung.getPruefungsnummer())
+          || modelPruefungen.stream()
+              .noneMatch(
+                  (Pruefung p) -> hasPruefungsnummer(p, pruefungFromModel.getPruefungsnummer()))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private boolean hasPruefungsnummer(Pruefung pruefung, String pruefungsnummer) {
+    return pruefung.getPruefungsnummer().equals(pruefungsnummer);
+  }
+
+  private Optional<Block> searchInModel(ReadOnlyBlock block) {
+    // TODO a block is expected to get a unique identifier, this should be used for search
+    Iterator<ReadOnlyPruefung> blockIterator = block.getROPruefungen().iterator();
+    if (blockIterator.hasNext()) {
+      ReadOnlyPruefung pruefung = blockIterator.next();
+      Pruefung modelPruefung = pruefungsperiode.pruefung(pruefung.getPruefungsnummer());
+      if (modelPruefung != null) {
+        Block modelBlock = pruefungsperiode.block(modelPruefung);
+        if (modelBlock != null) {
+          return Optional.of(modelBlock);
+        }
+      }
+    }
+    return Optional.empty();
+  }
+
+  private boolean areSameBlocksBySpecs(ReadOnlyBlock readOnlyBlock, Block modelBlock) {
+    if (readOnlyBlock != null) {
+      Optional<LocalDateTime> readOnlyTermin = readOnlyBlock.getTermin();
+      return modelBlock != null
+          && readOnlyBlock.getROPruefungen().size() == modelBlock.getPruefungen().size()
+          && readOnlyBlock.getName().equals(modelBlock.getName())
+          && ((readOnlyBlock.getTermin().isEmpty() && modelBlock.getStartzeitpunkt() == null)
+              || (readOnlyTermin.isPresent()
+                  && readOnlyTermin.get().equals(modelBlock.getStartzeitpunkt())));
+    }
+    return false;
   }
 
   private void addTeilnehmerKreisSchaetzungToModelPruefung(
@@ -111,7 +179,7 @@ public class DataAccessService {
   /**
    * Schedules a pruefung without any consistency checks.
    *
-   * @param pruefung    The pruefung to schedule.
+   * @param pruefung The pruefung to schedule.
    * @param startTermin The time to schedule the pruefung to.
    */
   public ReadOnlyPruefung schedulePruefung(ReadOnlyPruefung pruefung, LocalDateTime startTermin) {
@@ -135,6 +203,21 @@ public class DataAccessService {
       return new PruefungDTOBuilder(pruefungFromModel).build();
     }
     throw new IllegalArgumentException("Unknown pruefung.");
+  }
+
+  /**
+   * Schedules a block without any consistency checks. The passed block is consistent and has
+   * pruefungen inside.
+   *
+   * @param block The block to schedule
+   * @param termin The time to schedule the pruefung to.
+   */
+  ReadOnlyBlock scheduleBlock(ReadOnlyBlock block, LocalDateTime termin) {
+    String number = new LinkedList<>(block.getROPruefungen()).get(0).getPruefungsnummer();
+    Block blockFromModel = pruefungsperiode.block(pruefungsperiode.pruefung(number));
+    blockFromModel.setStartzeitpunkt(termin);
+
+    return fromModelToDTOBlock(blockFromModel);
   }
 
   public ReadOnlyPruefung changeNameOfPruefung(ReadOnlyPruefung toChange, String name) {
@@ -221,19 +304,13 @@ public class DataAccessService {
   }
 
   private ReadOnlyPruefung fromModelToDTOPruefungWithScoring(Pruefung pruefung) {
-    return new PruefungDTOBuilder()
-        .withPruefungsName(pruefung.getName())
-        .withPruefungsNummer(pruefung.getPruefungsnummer())
-        .withDauer(pruefung.getDauer())
-        .withStartZeitpunkt(pruefung.getStartzeitpunkt())
-        .withPruefer(pruefung.getPruefer())
-        .withTeilnehmerKreisSchaetzung(pruefung.getSchaetzungen())
+    return new PruefungDTOBuilder(pruefung)
         .withScoring(scheduleService.scoringOfPruefung(pruefung))
         .build();
   }
 
   public boolean deletePruefung(ReadOnlyPruefung roPruefung) throws IllegalArgumentException {
-    //TODO auf referenzVerwaltungssystem-Nummer ändern, wenn das Model das anpasst!
+    // TODO auf referenzVerwaltungssystem-Nummer ändern, wenn das Model das anpasst!
     Pruefung pruefung = this.pruefungsperiode.pruefung(roPruefung.getPruefungsnummer());
     if (pruefung == null) {
       throw new IllegalArgumentException(
@@ -242,5 +319,18 @@ public class DataAccessService {
     this.unschedulePruefung(roPruefung);
     return this.pruefungsperiode.removePlanungseinheit(pruefung);
   }
+  
+  boolean terminIsInPeriod(LocalDateTime termin) {
+    return terminIsSameDayOrAfterPeriodStart(termin) && terminIsSameDayOrBeforePeriodEnd(termin);
+  }
 
+  private boolean terminIsSameDayOrAfterPeriodStart(LocalDateTime termin) {
+    LocalDate start = pruefungsperiode.getStartdatum();
+    return start.isBefore(termin.toLocalDate()) || start.isEqual(termin.toLocalDate());
+  }
+
+  private boolean terminIsSameDayOrBeforePeriodEnd(LocalDateTime termin) {
+    LocalDate end = pruefungsperiode.getEnddatum();
+    return end.isAfter(termin.toLocalDate()) || end.isEqual(termin.toLocalDate());
+  }
 }
