@@ -235,7 +235,7 @@ public class Controller implements InterfaceController {
   public void deletePruefung(ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung);
     checkNoPruefungDefined();
-    this.dataAccessService.deletePruefung(pruefung);
+    List<ReadOnlyPruefung> result = this.scheduleService.deletePruefung(pruefung);
   }
 
   @Override

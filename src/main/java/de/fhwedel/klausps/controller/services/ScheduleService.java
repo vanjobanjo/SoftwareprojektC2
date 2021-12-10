@@ -1,16 +1,17 @@
 package de.fhwedel.klausps.controller.services;
 
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.helper.Pair;
-import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.model.api.Pruefung;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class ScheduleService {
 
@@ -98,13 +99,34 @@ public class ScheduleService {
    * @return Scoring ungeplant ? 0 : scoring
    */
   public int scoringOfPruefung(Pruefung pruefung) {
+    // TODO get scoring from some kind of cache
     return 0; //TODO implement
   }
 
-  public void deletePruefung(ReadOnlyPruefung pruefung) {
-    List<KriteriumsAnalyse> pre = restrictionService.checkWeicheKriterien();
+  public List<ReadOnlyPruefung> deletePruefung(ReadOnlyPruefung pruefung) {
     dataAccessService.deletePruefung(pruefung);
-    List<KriteriumsAnalyse> after = restrictionService.checkWeicheKriterien();
+    List<WeichesKriteriumAnalyse> analyses = restrictionService.checkWeicheKriterien();
+    // calc new score for all pruefungen
+    Map<String, Integer> scoring = getScoringFrom(analyses);
+    applyScoring(scoring);
+    return analyses.stream()
+        // get a stream of all pruefungen
+        .flatMap((WeichesKriteriumAnalyse x) -> x.getCausingPruefungen().stream())
+        // pass each pruefung only once
+        .distinct() // TODO might not work because of missing implementation of .equals()
+        // convert to DTO representation
+        .map(dataAccessService::fromModelToDTOPruefungWithScoring)
+        .toList();
+  }
+
+  private Map<String, Integer> getScoringFrom(List<WeichesKriteriumAnalyse> analyses) {
+    // TODO extract into adequate class
+    throw new UnsupportedOperationException("Not implemented yet!");
+  }
+
+  private void applyScoring(Map<String, Integer> scoring) {
+    // TODO extract into adequate class
+    throw new UnsupportedOperationException("Not implemented yet!");
   }
 
 }

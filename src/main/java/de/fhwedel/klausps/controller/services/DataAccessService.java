@@ -281,7 +281,8 @@ public class DataAccessService {
         pruefungen);
   }
 
-  private ReadOnlyPruefung fromModelToDTOPruefungWithScoring(Pruefung pruefung) {
+  public ReadOnlyPruefung fromModelToDTOPruefungWithScoring(Pruefung pruefung) {
+    // TODO extract into appropriate class
     return new PruefungDTOBuilder(pruefung)
         .withScoring(scheduleService.scoringOfPruefung(pruefung))
         .build();
