@@ -394,7 +394,7 @@ class DataAccessServiceTest {
                     new HashSet<>(List.of(RO_ANALYSIS, RO_HASKELL, RO_DM)));
     Block modelBlock = new BlockImpl(pruefungsperiode, "Name", null);
     configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, RO_ANALYSIS, RO_DM, RO_HASKELL);
-    assertThat(deviceUnderTest.existsBlock(blockToSchedule)).isTrue();
+    assertThat(deviceUnderTest.exists(blockToSchedule)).isTrue();
   }
 
   @Test
@@ -409,7 +409,7 @@ class DataAccessServiceTest {
 
     Block modelBlock = new BlockImpl(pruefungsperiode, "OtherName", null);
     configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, RO_ANALYSIS, RO_DM, RO_HASKELL);
-    assertThat(deviceUnderTest.existsBlock(blockToSchedule)).isFalse();
+    assertThat(deviceUnderTest.exists(blockToSchedule)).isFalse();
 
   }
 
@@ -425,7 +425,7 @@ class DataAccessServiceTest {
 
     Block modelBlock = new BlockImpl(pruefungsperiode, "Name", null);
     configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, RO_ANALYSIS, RO_DM, RO_HASKELL);
-    assertThat(deviceUnderTest.existsBlock(blockToSchedule)).isFalse();
+    assertThat(deviceUnderTest.exists(blockToSchedule)).isFalse();
 
   }
 
@@ -442,7 +442,7 @@ class DataAccessServiceTest {
     Block modelBlock = new BlockImpl(pruefungsperiode, "Name", termin);
 
     configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, RO_ANALYSIS, RO_DM, RO_HASKELL);
-    assertThat(deviceUnderTest.existsBlock(blockToSchedule)).isFalse();
+    assertThat(deviceUnderTest.exists(blockToSchedule)).isFalse();
   }
 
 
@@ -458,7 +458,7 @@ class DataAccessServiceTest {
                     new HashSet<>(List.of(RO_ANALYSIS, RO_HASKELL, RO_DM)));
     Block modelBlock = new BlockImpl(pruefungsperiode, "Name", null);
     configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, RO_ANALYSIS, RO_DM, RO_HASKELL);
-    assertThat(deviceUnderTest.existsBlock(blockToSchedule)).isFalse();
+    assertThat(deviceUnderTest.exists(blockToSchedule)).isFalse();
   }
 
   @Test
@@ -473,7 +473,7 @@ class DataAccessServiceTest {
 
     Block modelBlock = new BlockImpl(pruefungsperiode, "Name", null);
     configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, RO_ANALYSIS, RO_DM, RO_HASKELL);
-    assertThat(deviceUnderTest.existsBlock(blockToSchedule)).isFalse();
+    assertThat(deviceUnderTest.exists(blockToSchedule)).isFalse();
   }
 
   @Test
@@ -488,7 +488,7 @@ class DataAccessServiceTest {
 
     Block modelBlock = new BlockImpl(pruefungsperiode, "Name", null);
     configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, RO_ANALYSIS, RO_DM);
-    assertThat(deviceUnderTest.existsBlock(blockToSchedule)).isFalse();
+    assertThat(deviceUnderTest.exists(blockToSchedule)).isFalse();
   }
 
   private void configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(Block modelBlock, ReadOnlyPruefung... pruefungen) {

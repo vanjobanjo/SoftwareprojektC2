@@ -60,42 +60,69 @@ public class DataAccessService {
 
   /**
    * Checks the consistency of a ReadOnlyBlock
-   * @param roBlock Block to check with the model data
+   *
+   * @param block Block to check with the model data
    */
-  boolean existsBlock(ReadOnlyBlock roBlock) {
-    if (!roBlock.getROPruefungen().isEmpty()) {
-      Iterator<ReadOnlyPruefung> it = roBlock.getROPruefungen().iterator();
-      ReadOnlyPruefung roPruefung =
-          it.next(); // get the block of the first pruefung and check if the father is all the same
-      boolean consistent = existsPruefungWith(roPruefung.getPruefungsnummer());
+  boolean exists(ReadOnlyBlock block) {
+    if (!block.getROPruefungen().isEmpty()) {
+      Optional<Block> modelBlock = searchInModel(block);
+      return modelBlock
+          .filter(value -> areSameBlocksBySpecs(block, value) && haveSamePruefungen(block, value))
+          .isPresent();
+    }
+    return true;
+    // TODO wie bekommen wir den Model Block wenn der Block leer ist? Um z.B. den Namen
+    //  und der Termin zu überprüfen.
+  }
 
-      if (consistent) {
-        Pruefung pruefungFromModel = pruefungsperiode.pruefung(roPruefung.getPruefungsnummer());
-        Block blockFromModel = pruefungsperiode.block(pruefungFromModel);
-        consistent =
-            blockFromModel != null
-                && roBlock.getROPruefungen().size() == blockFromModel.getPruefungen().size() //same size
-                && roBlock.getName().equals(blockFromModel.getName()) //same name
-                && ((roBlock.getTermin().isEmpty() && blockFromModel.getStartzeitpunkt() == null) //same termin
-                    || roBlock.getTermin().isPresent()
-                        && roBlock.getTermin().get().equals(blockFromModel.getStartzeitpunkt()));
+  private boolean haveSamePruefungen(ReadOnlyBlock readOnlyBlock, Block modelBlock) {
+    Set<Pruefung> modelPruefungen = modelBlock.getPruefungen();
+    if (modelPruefungen.size() != readOnlyBlock.getROPruefungen().size()) {
+      return false;
+    }
+    for (ReadOnlyPruefung pruefung : readOnlyBlock.getROPruefungen()) {
+      Pruefung pruefungFromModel = pruefungsperiode.pruefung(pruefung.getPruefungsnummer());
+      if (!existsPruefungWith(pruefung.getPruefungsnummer())
+          || modelPruefungen.stream()
+              .noneMatch(
+                  (Pruefung p) -> hasPruefungsnummer(p, pruefungFromModel.getPruefungsnummer()))) {
+        return false;
+      }
+    }
+    return true;
+  }
 
-        while (consistent && it.hasNext()) { //check for every pruefung in roBlock consistency and the parent block is the same as the first one.
-          ReadOnlyPruefung tempRoPruefung = it.next();
-          consistent = existsPruefungWith(tempRoPruefung.getPruefungsnummer());
-          if (consistent) {
-            Pruefung tempModelPruefung =
-                pruefungsperiode.pruefung(tempRoPruefung.getPruefungsnummer());
-            consistent =
-                blockFromModel
-                    == pruefungsperiode.block(
-                        tempModelPruefung);  //all pruefungen must have the same parent block
-          }
+  private boolean hasPruefungsnummer(Pruefung pruefung, String pruefungsnummer) {
+    return pruefung.getPruefungsnummer().equals(pruefungsnummer);
+  }
+
+  private Optional<Block> searchInModel(ReadOnlyBlock block) {
+    // TODO a block is expected to get a unique identifier, this should be used for search
+    Iterator<ReadOnlyPruefung> blockIterator = block.getROPruefungen().iterator();
+    if (blockIterator.hasNext()) {
+      ReadOnlyPruefung pruefung = blockIterator.next();
+      Pruefung modelPruefung = pruefungsperiode.pruefung(pruefung.getPruefungsnummer());
+      if (modelPruefung != null) {
+        Block modelBlock = pruefungsperiode.block(modelPruefung);
+        if (modelBlock != null) {
+          return Optional.of(modelBlock);
         }
       }
-      return consistent;
     }
-    return true; //TODO wie bekommen wir den Model Block wenn der Block leer ist? Um z.B. den Namen und der Termin zu überprüfen.
+    return Optional.empty();
+  }
+
+  private boolean areSameBlocksBySpecs(ReadOnlyBlock readOnlyBlock, Block modelBlock) {
+    if (readOnlyBlock != null) {
+      Optional<LocalDateTime> readOnlyTermin = readOnlyBlock.getTermin();
+      return modelBlock != null
+          && readOnlyBlock.getROPruefungen().size() == modelBlock.getPruefungen().size()
+          && readOnlyBlock.getName().equals(modelBlock.getName())
+          && ((readOnlyBlock.getTermin().isEmpty() && modelBlock.getStartzeitpunkt() == null)
+              || (readOnlyTermin.isPresent()
+                  && readOnlyTermin.get().equals(modelBlock.getStartzeitpunkt())));
+    }
+    return false;
   }
 
   private void addTeilnehmerKreisSchaetzungToModelPruefung(
@@ -306,5 +333,4 @@ public class DataAccessService {
     LocalDate end = pruefungsperiode.getEnddatum();
     return end.isAfter(termin.toLocalDate()) || end.isEqual(termin.toLocalDate());
   }
-
 }

@@ -73,7 +73,7 @@ public class ScheduleService {
       throw new IllegalArgumentException("Empty blocks aren't allow to be scheduled");
     }
 
-    if(!dataAccessService.existsBlock(block)){
+    if(!dataAccessService.exists(block)){
       throw new IllegalArgumentException("The block doesn't exist");
     }
     ReadOnlyBlock roBlock = dataAccessService.scheduleBlock(block, termin);
