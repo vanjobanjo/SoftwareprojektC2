@@ -23,6 +23,7 @@ import de.fhwedel.klausps.controller.assertions.ReadOnlyPruefungAssert;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.util.TestUtils;
 import de.fhwedel.klausps.model.api.Block;
+import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
@@ -115,12 +116,12 @@ class DataAccessServiceTest {
 
     when(pruefungsperiode.pruefung(expected.getPruefungsnummer())).thenReturn(test);
     assertThat(
-        deviceUnderTest.createPruefung(
-            expected.getName(),
-            expected.getPruefungsnummer(),
-            expected.getPruefer(),
-            expected.getDauer(),
-            expected.getTeilnehmerKreisSchaetzung()))
+            deviceUnderTest.createPruefung(
+                expected.getName(),
+                expected.getPruefungsnummer(),
+                expected.getPruefer(),
+                expected.getDauer(),
+                expected.getTeilnehmerKreisSchaetzung()))
         .isNull();
   }
 
@@ -166,7 +167,7 @@ class DataAccessServiceTest {
   void geplanteBloeckeTest() {
     List<ReadOnlyPruefung> pruefungen = getRandomPruefungen(1234, 2);
     List<Pruefung> pruefungenFromModel = convertPruefungenFromReadonlyToModel(pruefungen);
-    Block initialBlock = new BlockImpl(pruefungsperiode, "name");
+    Block initialBlock = new BlockImpl(pruefungsperiode, 1, "name", Blocktyp.PARALLEL);
     pruefungenFromModel.forEach(initialBlock::addPruefung);
 
     when(pruefungsperiode.geplanteBloecke()).thenReturn(Set.of(initialBlock));
@@ -185,7 +186,7 @@ class DataAccessServiceTest {
         new PruefungDTOBuilder().withPruefungsName("inBlock1").withPruefungsNummer("1235").build();
     Pruefung inBlock0 = getPruefungOfReadOnlyPruefung(ro01);
     Pruefung inBlock1 = getPruefungOfReadOnlyPruefung(ro02);
-    Block block = new BlockImpl(pruefungsperiode, "name");
+    Block block = new BlockImpl(pruefungsperiode, 1, "name", Blocktyp.PARALLEL);
     block.addPruefung(inBlock0);
     block.addPruefung(inBlock1);
 
@@ -336,7 +337,6 @@ class DataAccessServiceTest {
         () -> deviceUnderTest.schedulePruefung(somePruefung, someSchedule));
   }
 
-
   @Test
   void deletePruefung_successful() {
     ReadOnlyPruefung roP = getRandomPruefungen(8415, 1).get(0);
@@ -345,7 +345,6 @@ class DataAccessServiceTest {
     when(this.pruefungsperiode.removePlanungseinheit(pruefungModel)).thenReturn(true);
     this.deviceUnderTest.deletePruefung(roP);
     verify(this.pruefungsperiode, times(1)).removePlanungseinheit(pruefungModel);
-
   }
 
   @Test
