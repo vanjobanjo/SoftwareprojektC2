@@ -3,7 +3,11 @@ package de.fhwedel.klausps.controller.services;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
+
 import de.fhwedel.klausps.controller.helper.Pair;
+
+import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
+
 import de.fhwedel.klausps.model.api.Pruefung;
 
 import java.time.Duration;
@@ -16,8 +20,11 @@ public class ScheduleService {
 
   private final DataAccessService dataAccessService;
 
-  public ScheduleService(DataAccessService dataAccessService) {
+  private final RestrictionService restrictionService;
+
+  public ScheduleService(DataAccessService dataAccessService, RestrictionService restrictionService) {
     this.dataAccessService = dataAccessService;
+    this.restrictionService = restrictionService;
   }
 
   /**
@@ -103,6 +110,12 @@ public class ScheduleService {
    */
   public int scoringOfPruefung(Pruefung pruefung) {
     return 0; //TODO implement
+  }
+
+  public void deletePruefung(ReadOnlyPruefung pruefung) {
+    List<KriteriumsAnalyse> pre = restrictionService.checkWeicheKriterien();
+    dataAccessService.deletePruefung(pruefung);
+    List<KriteriumsAnalyse> after = restrictionService.checkWeicheKriterien();
   }
 
 }

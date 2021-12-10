@@ -9,6 +9,7 @@ import de.fhwedel.klausps.controller.assertions.ReadOnlyBlockAssert;
 import de.fhwedel.klausps.controller.assertions.ReadOnlyPruefungAssert;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.model.api.Block;
+import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
@@ -173,7 +174,7 @@ class DataAccessServiceTest {
   void geplanteBloeckeTest() {
     List<ReadOnlyPruefung> pruefungen = getRandomPruefungen(1234, 2);
     List<Pruefung> pruefungenFromModel = convertPruefungenFromReadonlyToModel(pruefungen);
-    Block initialBlock = new BlockImpl(pruefungsperiode, "name");
+    Block initialBlock = new BlockImpl(pruefungsperiode, 1, "name", Blocktyp.PARALLEL);
     pruefungenFromModel.forEach(initialBlock::addPruefung);
 
     when(pruefungsperiode.geplanteBloecke()).thenReturn(Set.of(initialBlock));
@@ -192,7 +193,7 @@ class DataAccessServiceTest {
         new PruefungDTOBuilder().withPruefungsName("inBlock1").withPruefungsNummer("1235").build();
     Pruefung inBlock0 = getPruefungOfReadOnlyPruefung(ro01);
     Pruefung inBlock1 = getPruefungOfReadOnlyPruefung(ro02);
-    Block block = new BlockImpl(pruefungsperiode, "name");
+    Block block = new BlockImpl(pruefungsperiode, 1, "name", Blocktyp.PARALLEL);
     block.addPruefung(inBlock0);
     block.addPruefung(inBlock1);
 
