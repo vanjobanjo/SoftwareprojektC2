@@ -10,7 +10,8 @@ public class ServiceProvider {
 
   private static RestrictionService restrictionService;
 
-  private ServiceProvider() {}
+  private ServiceProvider() {
+  }
 
   public static DataAccessService getDataAccessService() {
     if (dataAccessService == null) {

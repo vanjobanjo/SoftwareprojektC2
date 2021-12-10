@@ -5,7 +5,6 @@ import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Map;
-
 import java.util.Set;
 
 public class PruefungDTO extends ReadOnlyPruefung {
