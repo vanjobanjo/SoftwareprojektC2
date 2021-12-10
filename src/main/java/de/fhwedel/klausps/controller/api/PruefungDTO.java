@@ -17,7 +17,7 @@ public class PruefungDTO extends ReadOnlyPruefung {
       Map<Teilnehmerkreis, Integer> teilnehmerkreisSchaetzung,
       Set<String> pruefer,
       int scoring) {
-    super(pruefungsnummer, name, termin, dauer, teilnehmerkreisSchaetzung, pruefer, scoring, true);
+    super(pruefungsnummer, name, termin, dauer, teilnehmerkreisSchaetzung, pruefer, scoring, termin != null);
   }
 
   public PruefungDTO(
