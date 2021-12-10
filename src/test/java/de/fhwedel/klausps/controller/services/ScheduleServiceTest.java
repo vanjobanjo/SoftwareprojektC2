@@ -9,6 +9,7 @@ import de.fhwedel.klausps.controller.assertions.ReadOnlyPruefungAssert;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.helper.Pair;
 import de.fhwedel.klausps.model.api.Block;
+import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.impl.BlockImpl;
@@ -43,7 +44,7 @@ class ScheduleServiceTest {
     when(pruefungsperiode.getEnddatum()).thenReturn(END_PERIOD);
     DataAccessService accessService = ServiceProvider.getDataAccessService();
     accessService.setPruefungsperiode(this.pruefungsperiode);
-    this.deviceUnderTest = new ScheduleService(accessService);
+    this.deviceUnderTest = new ScheduleService(accessService, mock(RestrictionService.class));
     accessService.setScheduleService(this.deviceUnderTest);
   }
 
@@ -251,7 +252,7 @@ class ScheduleServiceTest {
 
   private Block getModelBlockFromROPruefungen(
       String name, LocalDateTime start, ReadOnlyPruefung... pruefungen) {
-    Block block = new BlockImpl(pruefungsperiode, name, start);
+    Block block = new BlockImpl(pruefungsperiode,1, name, Blocktyp.SEQUENTIAL);
     for (ReadOnlyPruefung p : pruefungen) {
       block.addPruefung(getPruefungOfReadOnlyPruefung(p));
     }
