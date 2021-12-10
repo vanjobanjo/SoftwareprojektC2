@@ -333,4 +333,11 @@ public class DataAccessService {
     LocalDate end = pruefungsperiode.getEnddatum();
     return end.isAfter(termin.toLocalDate()) || end.isEqual(termin.toLocalDate());
   }
+
+  public ReadOnlyBlock unscheduleBlock(ReadOnlyBlock block) {
+    ReadOnlyPruefung pruefung = new LinkedList<>(block.getROPruefungen()).get(0);
+    Block blockModel = pruefungsperiode.block(pruefungsperiode.pruefung(pruefung.getPruefungsnummer()));
+    blockModel.setStartzeitpunkt(null);
+    return fromModelToDTOBlock(blockModel);
+  }
 }

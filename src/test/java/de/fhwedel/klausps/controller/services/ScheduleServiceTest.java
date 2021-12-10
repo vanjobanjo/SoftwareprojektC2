@@ -24,6 +24,7 @@ import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -235,6 +236,43 @@ class ScheduleServiceTest {
             () -> deviceUnderTest.scheduleBlock(emptyROBlock, START_PERIOD.atTime(_1000)));
   }
 
+  @Test
+  void unscheduleBlock(){
+
+    LocalDateTime now = LocalDateTime.now();
+    Pruefung model_analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS);
+    Pruefung model_dm = getPruefungOfReadOnlyPruefung(RO_DM);
+
+    model_analysis.setStartzeitpunkt(now);
+    model_dm.setStartzeitpunkt(now);
+
+    when(pruefungsperiode.pruefung(anyString())).thenReturn(null);
+    when(pruefungsperiode.pruefung(RO_ANALYSIS.getPruefungsnummer())).thenReturn(model_analysis);
+    when(pruefungsperiode.pruefung(RO_DM.getPruefungsnummer())).thenReturn(model_dm);
+    // Haskell is not in period
+
+    ReadOnlyPruefung ro_analysis = new PruefungDTOBuilder(RO_ANALYSIS).withStartZeitpunkt(now).build();
+    ReadOnlyPruefung ro_dm =  new PruefungDTOBuilder(RO_DM).withStartZeitpunkt(now).build();
+
+    // in the data model analysis and dm are in a block. haskell is not part of the block
+    Block blockWithAnalysisDM = new BlockImpl(pruefungsperiode, 1, "AnalysisAndDm", Blocktyp.PARALLEL);
+
+    blockWithAnalysisDM.addPruefung(model_analysis);
+    blockWithAnalysisDM.addPruefung(model_dm);
+
+    blockWithAnalysisDM.setStartzeitpunkt(now); //at first add pruefungen than set the startzeitpunkt. otherwise startzeitpunkt will always be null!!
+
+    when(pruefungsperiode.block(any(Pruefung.class))).thenReturn(null);
+    when(pruefungsperiode.block(model_analysis)).thenReturn(blockWithAnalysisDM);
+    when(pruefungsperiode.block(model_dm)).thenReturn(blockWithAnalysisDM);
+
+    ReadOnlyBlock block =
+            getROBlockFromROPruefungen("AnalysisAndDm", now, ro_analysis, ro_dm);
+
+    Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> result = deviceUnderTest.unscheduleBlock(block);
+    assertThat(result.left().getROPruefungen()).contains(ro_analysis, ro_dm);
+  }
+
   private Pruefung getPruefungOfReadOnlyPruefung(ReadOnlyPruefung roPruefung) {
     PruefungImpl modelPruefung =
         new PruefungImpl(
@@ -253,6 +291,7 @@ class ScheduleServiceTest {
   private Block getModelBlockFromROPruefungen(
       String name, LocalDateTime start, ReadOnlyPruefung... pruefungen) {
     Block block = new BlockImpl(pruefungsperiode,1, name, Blocktyp.SEQUENTIAL);
+    block.setStartzeitpunkt(start);
     for (ReadOnlyPruefung p : pruefungen) {
       block.addPruefung(getPruefungOfReadOnlyPruefung(p));
     }
@@ -262,6 +301,6 @@ class ScheduleServiceTest {
 
   private ReadOnlyBlock getROBlockFromROPruefungen(
       String name, LocalDateTime start, ReadOnlyPruefung... pruefungen) {
-    return new BlockDTO(name, start, Duration.ZERO, false, new HashSet<>(List.of(pruefungen)));
+    return new BlockDTO(name, start, Duration.ZERO, start != null, new HashSet<>(List.of(pruefungen)));
   }
 }

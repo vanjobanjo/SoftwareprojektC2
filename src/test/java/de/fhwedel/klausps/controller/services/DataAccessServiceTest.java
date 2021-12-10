@@ -4,6 +4,7 @@ import de.fhwedel.klausps.controller.api.BlockDTO;
 import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.assertions.ReadOnlyBlockAssert;
 import de.fhwedel.klausps.controller.assertions.ReadOnlyPruefungAssert;
@@ -315,6 +316,7 @@ class DataAccessServiceTest {
     Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
     configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, RO_ANALYSIS, RO_DM, RO_HASKELL);
 
+    // no consistency check!
     ReadOnlyBlock result = deviceUnderTest.scheduleBlock(blockToSchedule, termin);
     ReadOnlyBlockAssert.assertThat(result).containsOnlyPruefungen(RO_ANALYSIS, RO_HASKELL, RO_DM);
     assertThat(result.getTermin()).hasValue(termin);
@@ -322,6 +324,34 @@ class DataAccessServiceTest {
       ReadOnlyPruefungAssert.assertThat(p).isScheduledAt(termin);
     }
     assertThat(modelBlock.getStartzeitpunkt()).isEqualTo(termin);
+  }
+
+  @Test
+  void unscheduleBlock_integration() {
+
+    //all start same
+    LocalDateTime termin = LocalDateTime.of(2000, 1, 1, 0,0);
+    ReadOnlyPruefung ro_analysis = new PruefungDTOBuilder(RO_ANALYSIS).withStartZeitpunkt(termin).build();
+    ReadOnlyPruefung ro_dm =  new PruefungDTOBuilder(RO_DM).withStartZeitpunkt(termin).build();
+    ReadOnlyPruefung ro_haskell = new PruefungDTOBuilder(RO_HASKELL).withStartZeitpunkt(termin).build();
+
+    ReadOnlyBlock blockToSchedule =
+            new BlockDTO(
+                    "Name",
+                    termin,
+                    Duration.ZERO,
+                    true,
+                    new HashSet<>(List.of(
+                            ro_analysis, ro_dm, ro_haskell)));
+
+    Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
+    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, ro_analysis, ro_dm, ro_haskell);
+
+    ReadOnlyBlock ro_block_result = deviceUnderTest.unscheduleBlock(blockToSchedule);
+    assertThat(modelBlock.getStartzeitpunkt()).isNull();
+    assertThat(ro_block_result.getTermin()).isEmpty();
+    assertThat(ro_block_result.getROPruefungen().stream().allMatch(ReadOnlyPlanungseinheit::ungeplant)).isTrue();
+
   }
 
   @Test

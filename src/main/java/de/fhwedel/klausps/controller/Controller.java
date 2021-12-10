@@ -322,12 +322,22 @@ public class Controller implements InterfaceController {
   }
 
   @Override
+  @Deprecated
   public ReadOnlyBlock unscheduleBlock(ReadOnlyBlock block)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block);
     checkNoPruefungDefined();
     throw new IllegalStateException("Not implemented yet!");
   }
+
+  public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> unscheduleBlockNEW(ReadOnlyBlock block)
+          throws NoPruefungsPeriodeDefinedException {
+    noNullParameters(block);
+    checkNoPruefungDefined();
+    return scheduleService.unscheduleBlock(block);
+  }
+
+
 
   @Override
   public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> moveBlock(

@@ -66,12 +66,6 @@ public class ScheduleService {
 
   public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> scheduleBlock(ReadOnlyBlock block,
                                                                 LocalDateTime termin) throws HartesKriteriumException {
-    for(ReadOnlyPruefung p : block.getROPruefungen()){
-      if(!dataAccessService.existsPruefungWith(p.getPruefungsnummer())){
-        throw new IllegalArgumentException("Exam with " + p.getPruefungsnummer() + " doesn't exist");
-      }
-    }
-
     if(!dataAccessService.terminIsInPeriod(termin)){
       throw new IllegalArgumentException("Termin isn't in period");
     }
@@ -80,13 +74,35 @@ public class ScheduleService {
       throw new IllegalArgumentException("Empty blocks aren't allow to be scheduled");
     }
 
-    if(!dataAccessService.exists(block)){
-      throw new IllegalArgumentException("The block doesn't exist");
-    }
+    consistentBlockOrThrowException(block);
+
     ReadOnlyBlock roBlock = dataAccessService.scheduleBlock(block, termin);
 
     return new Pair<>(roBlock, new LinkedList<>(roBlock.getROPruefungen())); // TODO return result of test for conflicts
   }
+
+  public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> unscheduleBlock(ReadOnlyBlock block) {
+
+    consistentBlockOrThrowException(block);
+
+    ReadOnlyBlock roBlock = dataAccessService.unscheduleBlock(block); //TODO bevor wir diese Methode aufrufen, müssen wir den RestriktionsService mitteilen, wegen der Scoring Berechnung
+
+
+    return new Pair<>(roBlock, new LinkedList<>(roBlock.getROPruefungen())); // TODO return result of test for conflicts
+  }
+
+  private void consistentBlockOrThrowException(ReadOnlyBlock block) {
+    for(ReadOnlyPruefung p : block.getROPruefungen()){
+      if(!dataAccessService.existsPruefungWith(p.getPruefungsnummer())){
+        throw new IllegalArgumentException("Exam with " + p.getPruefungsnummer() + " doesn't exist");
+      }
+    }
+
+    if(!dataAccessService.exists(block)){
+      throw new IllegalArgumentException("The block doesn't exist");
+    }
+  }
+
 
   /**
    * Ändert die Dauer einer übergebenen Prüfung. Die übergebene Prüfung muss beim erfolgreichen
