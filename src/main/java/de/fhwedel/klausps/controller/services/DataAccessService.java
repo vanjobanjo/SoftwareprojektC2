@@ -1,5 +1,7 @@
 package de.fhwedel.klausps.controller.services;
 
+import static java.util.Objects.nonNull;
+
 import de.fhwedel.klausps.controller.api.BlockDTO;
 import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
@@ -11,21 +13,23 @@ import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
-
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
-
-import static java.util.Objects.nonNull;
 
 public class DataAccessService {
 
-  private static final String INVALID_ARGUMENT = "Passed unknown pruefung!";
-
   private Pruefungsperiode pruefungsperiode;
-  private ScheduleService scheduleService; // TODO Scheduleservice muss hier noch raus.
+  private ScheduleService scheduleService; // TODO ScheduleService muss hier noch raus.
 
   public void setPruefungsperiode(Pruefungsperiode pruefungsperiode) {
     this.pruefungsperiode = pruefungsperiode;
@@ -84,8 +88,8 @@ public class DataAccessService {
       Pruefung pruefungFromModel = pruefungsperiode.pruefung(pruefung.getPruefungsnummer());
       if (!existsPruefungWith(pruefung.getPruefungsnummer())
           || modelPruefungen.stream()
-              .noneMatch(
-                  (Pruefung p) -> hasPruefungsnummer(p, pruefungFromModel.getPruefungsnummer()))) {
+          .noneMatch(
+              (Pruefung p) -> hasPruefungsnummer(p, pruefungFromModel.getPruefungsnummer()))) {
         return false;
       }
     }
@@ -119,8 +123,8 @@ public class DataAccessService {
           && readOnlyBlock.getROPruefungen().size() == modelBlock.getPruefungen().size()
           && readOnlyBlock.getName().equals(modelBlock.getName())
           && ((readOnlyBlock.getTermin().isEmpty() && modelBlock.getStartzeitpunkt() == null)
-              || (readOnlyTermin.isPresent()
-                  && readOnlyTermin.get().equals(modelBlock.getStartzeitpunkt())));
+          || (readOnlyTermin.isPresent()
+          && readOnlyTermin.get().equals(modelBlock.getStartzeitpunkt())));
     }
     return false;
   }
@@ -147,16 +151,10 @@ public class DataAccessService {
       throws HartesKriteriumException, IllegalArgumentException {
 
     if (minutes.isNegative()) {
-      throw new IllegalArgumentException("The duration was negative!");
+      throw new IllegalArgumentException("Die Dauer der Pruefung muss positiv sein.");
     }
 
-    String pruefungsNummer = pruefung.getPruefungsnummer();
-
-    if (!existsPruefungWith(pruefungsNummer)) {
-      throw new IllegalArgumentException("Exam doesn't exist");
-    }
-
-    Pruefung toChangeDuration = pruefungsperiode.pruefung(pruefungsNummer);
+    Pruefung toChangeDuration = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
     // Hartes Kriterium wird in ScheduleService geprüft.
     // Die Änderungen der Pruefungen werden auch im ScheduleService vorgenommen.
     List<Pruefung> resultOfChangingDuration =
@@ -179,16 +177,13 @@ public class DataAccessService {
   /**
    * Schedules a pruefung without any consistency checks.
    *
-   * @param pruefung The pruefung to schedule.
+   * @param pruefung    The pruefung to schedule.
    * @param startTermin The time to schedule the pruefung to.
    */
   public ReadOnlyPruefung schedulePruefung(ReadOnlyPruefung pruefung, LocalDateTime startTermin) {
-    Pruefung pruefungFromModel = pruefungsperiode.pruefung(pruefung.getPruefungsnummer());
-    if (pruefungFromModel != null) {
-      pruefungFromModel.setStartzeitpunkt(startTermin);
-      return new PruefungDTOBuilder(pruefungFromModel).build();
-    }
-    throw new IllegalArgumentException("Unknown pruefung.");
+    Pruefung pruefungFromModel = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
+    pruefungFromModel.setStartzeitpunkt(startTermin);
+    return new PruefungDTOBuilder(pruefungFromModel).build();
   }
 
   /**
@@ -197,19 +192,16 @@ public class DataAccessService {
    * @param pruefung The pruefung to schedule.
    */
   public ReadOnlyPruefung unschedulePruefung(ReadOnlyPruefung pruefung) {
-    Pruefung pruefungFromModel = pruefungsperiode.pruefung(pruefung.getPruefungsnummer());
-    if (pruefungFromModel != null) {
-      pruefungFromModel.setStartzeitpunkt(null);
-      return new PruefungDTOBuilder(pruefungFromModel).build();
-    }
-    throw new IllegalArgumentException("Unknown pruefung.");
+    Pruefung pruefungFromModel = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
+    pruefungFromModel.setStartzeitpunkt(null);
+    return new PruefungDTOBuilder(pruefungFromModel).build();
   }
 
   /**
    * Schedules a block without any consistency checks. The passed block is consistent and has
    * pruefungen inside.
    *
-   * @param block The block to schedule
+   * @param block  The block to schedule
    * @param termin The time to schedule the pruefung to.
    */
   ReadOnlyBlock scheduleBlock(ReadOnlyBlock block, LocalDateTime termin) {
@@ -221,7 +213,7 @@ public class DataAccessService {
   }
 
   public ReadOnlyPruefung changeNameOfPruefung(ReadOnlyPruefung toChange, String name) {
-    Pruefung pruefung = pruefungsperiode.pruefung(toChange.getPruefungsnummer());
+    Pruefung pruefung = getPruefungFromModelOrException(toChange.getPruefungsnummer());
     pruefung.setName(name);
     int scoring = toChange.getScoring();
     return new PruefungDTOBuilder(pruefung).withScoring(scoring).build();
@@ -256,37 +248,23 @@ public class DataAccessService {
   }
 
   public ReadOnlyPruefung addPruefer(String pruefungsNummer, String pruefer) {
-    if (existsPruefungWith(pruefungsNummer)) {
-      Pruefung pruefung = pruefungsperiode.pruefung(pruefungsNummer);
-      pruefung.addPruefer(pruefer);
-      return fromModelToDTOPruefungWithScoring(pruefung);
-    }
-    throw new IllegalArgumentException(INVALID_ARGUMENT);
+    Pruefung pruefung = getPruefungFromModelOrException(pruefungsNummer);
+    pruefung.addPruefer(pruefer);
+    return fromModelToDTOPruefungWithScoring(pruefung);
   }
 
   public ReadOnlyPruefung removePruefer(String pruefungsNummer, String pruefer) {
-    if (existsPruefungWith(pruefungsNummer)) {
-      Pruefung pruefung = pruefungsperiode.pruefung(pruefungsNummer);
-      pruefung.removePruefer(pruefer);
-      return fromModelToDTOPruefungWithScoring(pruefung);
-    }
-    throw new IllegalArgumentException(INVALID_ARGUMENT);
+    Pruefung pruefung = getPruefungFromModelOrException(pruefungsNummer);
+    pruefung.removePruefer(pruefer);
+    return fromModelToDTOPruefungWithScoring(pruefung);
   }
 
   public ReadOnlyPruefung setPruefungsnummer(ReadOnlyPruefung pruefung, String pruefungsnummer) {
-    String oldNo = pruefung.getPruefungsnummer();
-
-    if (!existsPruefungWith(oldNo)) {
-      throw new IllegalArgumentException(INVALID_ARGUMENT);
-    }
-
+    Pruefung modelPruefung = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
     if (existsPruefungWith(pruefungsnummer)) {
-      throw new IllegalArgumentException("Passed number already exists");
+      throw new IllegalArgumentException("Die angegebene Pruefungsnummer ist bereits vergeben.");
     }
-
-    Pruefung modelPruefung = pruefungsperiode.pruefung(oldNo);
     modelPruefung.setPruefungsnummer(pruefungsnummer);
-
     return fromModelToDTOPruefungWithScoring(modelPruefung);
   }
 
@@ -310,16 +288,20 @@ public class DataAccessService {
   }
 
   public boolean deletePruefung(ReadOnlyPruefung roPruefung) throws IllegalArgumentException {
-    // TODO auf referenzVerwaltungssystem-Nummer ändern, wenn das Model das anpasst!
-    Pruefung pruefung = this.pruefungsperiode.pruefung(roPruefung.getPruefungsnummer());
-    if (pruefung == null) {
-      throw new IllegalArgumentException(
-          "Die Pruefungsnummer ist in der Datenbank nicht vorhanden!");
-    }
+    Pruefung pruefung = getPruefungFromModelOrException(roPruefung.getPruefungsnummer());
     this.unschedulePruefung(roPruefung);
     return this.pruefungsperiode.removePlanungseinheit(pruefung);
   }
-  
+
+  private Pruefung getPruefungFromModelOrException(String pruefungsNr)
+      throws IllegalArgumentException {
+    if (!existsPruefungWith(pruefungsNr)) {
+      throw new IllegalArgumentException(
+          "Pruefung mit Pruefungsnummer " + pruefungsNr + " ist in der Datenbank nicht vorhanden.");
+    }
+    return pruefungsperiode.pruefung(pruefungsNr);
+  }
+
   boolean terminIsInPeriod(LocalDateTime termin) {
     return terminIsSameDayOrAfterPeriodStart(termin) && terminIsSameDayOrBeforePeriodEnd(termin);
   }
