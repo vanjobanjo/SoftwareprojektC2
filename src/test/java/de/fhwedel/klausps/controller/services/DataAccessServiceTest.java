@@ -1,5 +1,18 @@
 package de.fhwedel.klausps.controller.services;
 
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomDuration;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomString;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.notNull;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import de.fhwedel.klausps.controller.api.BlockDTO;
 import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
@@ -16,22 +29,20 @@ import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.BlockImpl;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.*;
-
-import static de.fhwedel.klausps.controller.util.TestUtils.getRandomDuration;
-import static de.fhwedel.klausps.controller.util.TestUtils.getRandomString;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.notNull;
-import static org.mockito.Mockito.*;
 
 class DataAccessServiceTest {
 
@@ -41,24 +52,24 @@ class DataAccessServiceTest {
   Map<Teilnehmerkreis, Integer> teilnehmerKreise = new HashMap<>();
 
   final ReadOnlyPruefung RO_ANALYSIS =
-          new PruefungDTOBuilder()
-                  .withPruefungsName("Analysis")
-                  .withPruefungsNummer("1")
-                  .withDauer(Duration.ofMinutes(120))
-                  .build();
+      new PruefungDTOBuilder()
+          .withPruefungsName("Analysis")
+          .withPruefungsNummer("1")
+          .withDauer(Duration.ofMinutes(120))
+          .build();
   final ReadOnlyPruefung RO_DM =
-          new PruefungDTOBuilder()
-                  .withPruefungsName("DM")
-                  .withPruefungsNummer("2")
-                  .withDauer(Duration.ofMinutes(120))
-                  .build();
+      new PruefungDTOBuilder()
+          .withPruefungsName("DM")
+          .withPruefungsNummer("2")
+          .withDauer(Duration.ofMinutes(120))
+          .build();
 
   final ReadOnlyPruefung RO_HASKELL =
-          new PruefungDTOBuilder()
-                  .withPruefungsName("HASKELL")
-                  .withPruefungsNummer("3")
-                  .withDauer(Duration.ofMinutes(120))
-                  .build();
+      new PruefungDTOBuilder()
+          .withPruefungsName("HASKELL")
+          .withPruefungsNummer("3")
+          .withDauer(Duration.ofMinutes(120))
+          .build();
 
   private Pruefungsperiode pruefungsperiode;
   private DataAccessService deviceUnderTest;
@@ -124,12 +135,12 @@ class DataAccessServiceTest {
 
     when(pruefungsperiode.pruefung(expected.getPruefungsnummer())).thenReturn(test);
     assertThat(
-            deviceUnderTest.createPruefung(
-                expected.getName(),
-                expected.getPruefungsnummer(),
-                expected.getPruefer(),
-                expected.getDauer(),
-                expected.getTeilnehmerKreisSchaetzung()))
+        deviceUnderTest.createPruefung(
+            expected.getName(),
+            expected.getPruefungsnummer(),
+            expected.getPruefer(),
+            expected.getDauer(),
+            expected.getTeilnehmerKreisSchaetzung()))
         .isNull();
   }
 
@@ -303,7 +314,33 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void scheduleBlock_integration() {
+  void scheduleBlock_successful() {
+    ReadOnlyBlock blockToSchedule =
+        new BlockDTO(
+            "Name",
+            null,
+            Duration.ZERO,
+            false,
+            new HashSet<>(List.of(RO_ANALYSIS, RO_HASKELL, RO_DM)));
+
+    LocalDateTime termin = LocalDateTime.of(2000, 1, 1, 0, 0);
+    Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
+    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, null,
+        RO_ANALYSIS, RO_DM, RO_HASKELL);
+
+    // no consistency check!
+    ReadOnlyBlock result = deviceUnderTest.scheduleBlock(blockToSchedule, termin);
+    ReadOnlyBlockAssert.assertThat(result).containsOnlyPruefungen(RO_ANALYSIS, RO_HASKELL, RO_DM);
+    assertThat(result.getTermin()).hasValue(termin);
+    for (ReadOnlyPruefung p : result.getROPruefungen()) {
+      ReadOnlyPruefungAssert.assertThat(p).isScheduledAt(termin);
+    }
+    assertThat(modelBlock.getStartzeitpunkt()).isEqualTo(termin);
+  }
+
+  @Test
+  @DisplayName("cannot schedule block that does not exist in model.")
+  void scheduleBlock_different_names() {
     ReadOnlyBlock blockToSchedule =
         new BlockDTO(
             "Namme",
@@ -312,45 +349,44 @@ class DataAccessServiceTest {
             false,
             new HashSet<>(List.of(RO_ANALYSIS, RO_HASKELL, RO_DM)));
 
-    LocalDateTime termin = LocalDateTime.of(2000, 1,1, 0,0);
+    LocalDateTime termin = LocalDateTime.of(2000, 1, 1, 0, 0);
     Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
-    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, RO_ANALYSIS, RO_DM, RO_HASKELL);
+    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, null,
+        RO_ANALYSIS, RO_DM, RO_HASKELL);
 
     // no consistency check!
-    ReadOnlyBlock result = deviceUnderTest.scheduleBlock(blockToSchedule, termin);
-    ReadOnlyBlockAssert.assertThat(result).containsOnlyPruefungen(RO_ANALYSIS, RO_HASKELL, RO_DM);
-    assertThat(result.getTermin()).hasValue(termin);
-    for(ReadOnlyPruefung p : result.getROPruefungen()){
-      ReadOnlyPruefungAssert.assertThat(p).isScheduledAt(termin);
-    }
-    assertThat(modelBlock.getStartzeitpunkt()).isEqualTo(termin);
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.scheduleBlock(blockToSchedule, termin));
   }
 
   @Test
   void unscheduleBlock_integration() {
-
     //all start same
-    LocalDateTime termin = LocalDateTime.of(2000, 1, 1, 0,0);
-    ReadOnlyPruefung ro_analysis = new PruefungDTOBuilder(RO_ANALYSIS).withStartZeitpunkt(termin).build();
-    ReadOnlyPruefung ro_dm =  new PruefungDTOBuilder(RO_DM).withStartZeitpunkt(termin).build();
-    ReadOnlyPruefung ro_haskell = new PruefungDTOBuilder(RO_HASKELL).withStartZeitpunkt(termin).build();
+    LocalDateTime termin = LocalDateTime.of(2000, 1, 1, 0, 0);
+    ReadOnlyPruefung ro_analysis = new PruefungDTOBuilder(RO_ANALYSIS).withStartZeitpunkt(termin)
+        .build();
+    ReadOnlyPruefung ro_dm = new PruefungDTOBuilder(RO_DM).withStartZeitpunkt(termin).build();
+    ReadOnlyPruefung ro_haskell = new PruefungDTOBuilder(RO_HASKELL).withStartZeitpunkt(termin)
+        .build();
 
     ReadOnlyBlock blockToSchedule =
-            new BlockDTO(
-                    "Name",
-                    termin,
-                    Duration.ZERO,
-                    true,
-                    new HashSet<>(List.of(
-                            ro_analysis, ro_dm, ro_haskell)));
+        new BlockDTO(
+            "Name",
+            termin,
+            Duration.ZERO,
+            true,
+            new HashSet<>(List.of(
+                ro_analysis, ro_dm, ro_haskell)));
 
     Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
-    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, ro_analysis, ro_dm, ro_haskell);
+    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, termin,
+        ro_analysis, ro_dm, ro_haskell);
 
     ReadOnlyBlock ro_block_result = deviceUnderTest.unscheduleBlock(blockToSchedule);
     assertThat(modelBlock.getStartzeitpunkt()).isNull();
     assertThat(ro_block_result.getTermin()).isEmpty();
-    assertThat(ro_block_result.getROPruefungen().stream().allMatch(ReadOnlyPlanungseinheit::ungeplant)).isTrue();
+    assertThat(ro_block_result.getROPruefungen().stream()
+        .allMatch(ReadOnlyPlanungseinheit::ungeplant)).isTrue();
 
   }
 
@@ -415,139 +451,161 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void existsBlockSuccessful(){
+  void existsBlockSuccessful() {
     ReadOnlyBlock blockToSchedule =
-            new BlockDTO(
-                    "Name",
-                    null,
-                    Duration.ZERO,
-                    false,
-                    new HashSet<>(List.of(RO_ANALYSIS, RO_HASKELL, RO_DM)));
+        new BlockDTO(
+            "Name",
+            null,
+            Duration.ZERO,
+            false,
+            new HashSet<>(List.of(RO_ANALYSIS, RO_HASKELL, RO_DM)));
     Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
-    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, RO_ANALYSIS, RO_DM, RO_HASKELL);
+    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, null,
+        RO_ANALYSIS, RO_DM, RO_HASKELL);
     assertThat(deviceUnderTest.exists(blockToSchedule)).isTrue();
   }
 
   @Test
-  void existsBlockSuccessfulWithDate(){
-    LocalDateTime termin = LocalDateTime.of(2000, 1, 1, 0,0);
-    ReadOnlyPruefung ro_analysis = new PruefungDTOBuilder(RO_ANALYSIS).withStartZeitpunkt(termin).build();
-    ReadOnlyPruefung ro_dm =  new PruefungDTOBuilder(RO_DM).withStartZeitpunkt(termin).build();
-    ReadOnlyPruefung ro_haskell = new PruefungDTOBuilder(RO_HASKELL).withStartZeitpunkt(termin).build();
+  void existsBlockSuccessfulWithDate() {
+    LocalDateTime termin = LocalDateTime.of(2000, 1, 1, 0, 0);
+    ReadOnlyPruefung ro_analysis = new PruefungDTOBuilder(RO_ANALYSIS).withStartZeitpunkt(termin)
+        .build();
+    ReadOnlyPruefung ro_dm = new PruefungDTOBuilder(RO_DM).withStartZeitpunkt(termin).build();
+    ReadOnlyPruefung ro_haskell = new PruefungDTOBuilder(RO_HASKELL).withStartZeitpunkt(termin)
+        .build();
 
     ReadOnlyBlock blockToSchedule =
-            new BlockDTO(
-                    "Name",
-                    termin,
-                    Duration.ZERO,
-                    true,
-                    new HashSet<>(List.of(
-                            ro_analysis, ro_dm, ro_haskell)));
+        new BlockDTO(
+            "Name",
+            termin,
+            Duration.ZERO,
+            true,
+            new HashSet<>(List.of(
+                ro_analysis, ro_dm, ro_haskell)));
 
     Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
-    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, ro_analysis, ro_dm, ro_haskell);
+    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, termin,
+        ro_analysis, ro_dm, ro_haskell);
     modelBlock.setStartzeitpunkt(termin);
     assertThat(deviceUnderTest.exists(blockToSchedule)).isTrue();
   }
 
   @Test
-  void existsBlockDifferentBlockNames(){
+  void existsBlockDifferentBlockNames() {
     ReadOnlyBlock blockToSchedule =
-            new BlockDTO(
-                    "DifferentName",
-                    null,
-                    Duration.ZERO,
-                    false,
-                    new HashSet<>(List.of(RO_ANALYSIS, RO_HASKELL, RO_DM)));
+        new BlockDTO(
+            "DifferentName",
+            null,
+            Duration.ZERO,
+            false,
+            new HashSet<>(List.of(RO_ANALYSIS, RO_HASKELL, RO_DM)));
 
     Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
-    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, RO_ANALYSIS, RO_DM, RO_HASKELL);
+    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, null,
+        RO_ANALYSIS, RO_DM, RO_HASKELL);
     assertThat(deviceUnderTest.exists(blockToSchedule)).isFalse();
 
   }
 
   @Test
-  void existsBlockDifferentDates(){
+  public void existBlockWithoutPruefungen() {
+    ReadOnlyBlock block = new BlockDTO("name", null, Duration.ZERO, false,
+        new HashSet<>());
+    Block modelBock = new BlockImpl(pruefungsperiode, 1, "name", Blocktyp.SEQUENTIAL);
+    when(pruefungsperiode.ungeplanteBloecke()).thenReturn(new HashSet<>(List.of(modelBock)));
+    assertThat(deviceUnderTest.exists(block)).isTrue();
+  }
+
+
+  @Test
+  void existsBlockDifferentDates() {
     ReadOnlyBlock blockToSchedule =
-            new BlockDTO(
-                    "Name",
-                    LocalDateTime.now(),
-                    Duration.ZERO,
-                    false,
-                    new HashSet<>(List.of(RO_ANALYSIS, RO_HASKELL, RO_DM)));
+        new BlockDTO(
+            "Name",
+            LocalDateTime.now(),
+            Duration.ZERO,
+            false,
+            new HashSet<>(List.of(RO_ANALYSIS, RO_HASKELL, RO_DM)));
 
     Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
-    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, RO_ANALYSIS, RO_DM, RO_HASKELL);
+    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock,
+        LocalDateTime.now(), RO_ANALYSIS, RO_DM, RO_HASKELL);
     assertThat(deviceUnderTest.exists(blockToSchedule)).isFalse();
 
   }
 
   @Test
-  void existsBlockDifferentDates2(){
+  void existsBlockDifferentDates2() {
     ReadOnlyBlock blockToSchedule =
-            new BlockDTO(
-                    "Name",
-                    LocalDateTime.now(),
-                    Duration.ZERO,
-                    false,
-                    new HashSet<>(List.of(RO_ANALYSIS, RO_HASKELL, RO_DM)));
-    LocalDateTime termin = LocalDateTime.of(2000, 1,1, 0,0);
+        new BlockDTO(
+            "Name",
+            LocalDateTime.now(),
+            Duration.ZERO,
+            false,
+            new HashSet<>(List.of(RO_ANALYSIS, RO_HASKELL, RO_DM)));
+    LocalDateTime termin = LocalDateTime.of(2000, 1, 1, 0, 0);
     Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
 
-    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, RO_ANALYSIS, RO_DM, RO_HASKELL);
+    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock,
+        LocalDateTime.now(), RO_ANALYSIS, RO_DM, RO_HASKELL);
     assertThat(deviceUnderTest.exists(blockToSchedule)).isFalse();
   }
 
 
   @Test
-  void existsBlockDifferentDates3(){
-    LocalDateTime termin = LocalDateTime.of(2000, 1,1, 0,0);
+  void existsBlockDifferentDates3() {
+    LocalDateTime termin = LocalDateTime.of(2000, 1, 1, 0, 0);
     ReadOnlyBlock blockToSchedule =
-            new BlockDTO(
-                    "Name",
-                    termin,
-                    Duration.ZERO,
-                    false,
-                    new HashSet<>(List.of(RO_ANALYSIS, RO_HASKELL, RO_DM)));
+        new BlockDTO(
+            "Name",
+            termin,
+            Duration.ZERO,
+            false,
+            new HashSet<>(List.of(RO_ANALYSIS, RO_HASKELL, RO_DM)));
     Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
-    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, RO_ANALYSIS, RO_DM, RO_HASKELL);
+    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, null,
+        RO_ANALYSIS, RO_DM, RO_HASKELL);
     assertThat(deviceUnderTest.exists(blockToSchedule)).isFalse();
   }
 
   @Test
-  void existsBlockROBlockHasLessPruefungen(){
+  void existsBlockROBlockHasLessPruefungen() {
     ReadOnlyBlock blockToSchedule =
-            new BlockDTO(
-                    "Name",
-                    null,
-                    Duration.ZERO,
-                    false,
-                    new HashSet<>(List.of(RO_ANALYSIS, RO_HASKELL)));
+        new BlockDTO(
+            "Name",
+            null,
+            Duration.ZERO,
+            false,
+            new HashSet<>(List.of(RO_ANALYSIS, RO_HASKELL)));
 
     Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
-    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, RO_ANALYSIS, RO_DM, RO_HASKELL);
+    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, null,
+        RO_ANALYSIS, RO_DM, RO_HASKELL);
     assertThat(deviceUnderTest.exists(blockToSchedule)).isFalse();
   }
 
   @Test
-  void existsBlockROBlockHasMorePruefungen(){
+  void existsBlockROBlockHasMorePruefungen() {
     ReadOnlyBlock blockToSchedule =
-            new BlockDTO(
-                    "Name",
-                    null,
-                    Duration.ZERO,
-                    false,
-                    new HashSet<>(List.of(RO_ANALYSIS, RO_HASKELL, RO_DM)));
+        new BlockDTO(
+            "Name",
+            null,
+            Duration.ZERO,
+            false,
+            new HashSet<>(List.of(RO_ANALYSIS, RO_HASKELL, RO_DM)));
 
     Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
-    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, RO_ANALYSIS, RO_DM);
+    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, null,
+        RO_ANALYSIS, RO_DM);
     assertThat(deviceUnderTest.exists(blockToSchedule)).isFalse();
   }
 
-  private void configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(Block modelBlock, ReadOnlyPruefung... pruefungen) {
-    for(ReadOnlyPruefung p : pruefungen){
+  private void configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(
+      Block modelBlock, LocalDateTime termin, ReadOnlyPruefung... pruefungen) {
+    for (ReadOnlyPruefung p : pruefungen) {
       Pruefung temp = getPruefungOfReadOnlyPruefung(p);
       modelBlock.addPruefung(temp);
+      modelBlock.setStartzeitpunkt(termin);
       when(pruefungsperiode.pruefung(p.getPruefungsnummer())).thenReturn(temp);
       when(pruefungsperiode.block(temp)).thenReturn(modelBlock);
     }

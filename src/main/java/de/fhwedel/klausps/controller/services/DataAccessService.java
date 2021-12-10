@@ -68,15 +68,28 @@ public class DataAccessService {
    * @param block Block to check with the model data
    */
   boolean exists(ReadOnlyBlock block) {
-    if (!block.getROPruefungen().isEmpty()) {
+    if (block.getROPruefungen().isEmpty()) {
+      return emptyBlockExists(block);
+    }
+    else {
       Optional<Block> modelBlock = searchInModel(block);
       return modelBlock
           .filter(value -> areSameBlocksBySpecs(block, value) && haveSamePruefungen(block, value))
           .isPresent();
     }
-    return true;
+
     // TODO wie bekommen wir den Model Block wenn der Block leer ist? Um z.B. den Namen
     //  und der Termin zu überprüfen.
+  }
+
+  private boolean emptyBlockExists(ReadOnlyBlock block) {
+    for (Block modelBlock : pruefungsperiode.ungeplanteBloecke()) {
+      // todo add all necessary checks for empty blocks
+      if (modelBlock.getName().equals(block.getName())) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private boolean haveSamePruefungen(ReadOnlyBlock readOnlyBlock, Block modelBlock) {
@@ -205,11 +218,17 @@ public class DataAccessService {
    * @param termin The time to schedule the pruefung to.
    */
   ReadOnlyBlock scheduleBlock(ReadOnlyBlock block, LocalDateTime termin) {
-    String number = new LinkedList<>(block.getROPruefungen()).get(0).getPruefungsnummer();
-    Block blockFromModel = pruefungsperiode.block(pruefungsperiode.pruefung(number));
+    // todo look for model block with same block id, instead of comparing pruefungen
+    Block blockFromModel = getBlockFromModelOrException(block);
     blockFromModel.setStartzeitpunkt(termin);
 
     return fromModelToDTOBlock(blockFromModel);
+  }
+
+  public ReadOnlyBlock unscheduleBlock(ReadOnlyBlock block) {
+    Block blockModel = getBlockFromModelOrException(block);
+    blockModel.setStartzeitpunkt(null);
+    return fromModelToDTOBlock(blockModel);
   }
 
   public ReadOnlyPruefung changeNameOfPruefung(ReadOnlyPruefung toChange, String name) {
@@ -303,6 +322,17 @@ public class DataAccessService {
     return pruefungsperiode.pruefung(pruefungsNr);
   }
 
+  private Block getBlockFromModelOrException(ReadOnlyBlock block) throws IllegalArgumentException {
+    if (!exists(block)) {
+      throw new IllegalArgumentException(
+          "Der angegebene Block ist in der Datenbank nicht vorhanden.");
+    }
+    // todo look for model block with same block id, instead of comparing pruefungen
+    return pruefungsperiode.block(pruefungsperiode.pruefung(
+        new LinkedList<>(block.getROPruefungen()).get(0).getPruefungsnummer()));
+  }
+
+
   boolean terminIsInPeriod(LocalDateTime termin) {
     return terminIsSameDayOrAfterPeriodStart(termin) && terminIsSameDayOrBeforePeriodEnd(termin);
   }
@@ -317,10 +347,4 @@ public class DataAccessService {
     return end.isAfter(termin.toLocalDate()) || end.isEqual(termin.toLocalDate());
   }
 
-  public ReadOnlyBlock unscheduleBlock(ReadOnlyBlock block) {
-    ReadOnlyPruefung pruefung = new LinkedList<>(block.getROPruefungen()).get(0);
-    Block blockModel = pruefungsperiode.block(pruefungsperiode.pruefung(pruefung.getPruefungsnummer()));
-    blockModel.setStartzeitpunkt(null);
-    return fromModelToDTOBlock(blockModel);
-  }
 }

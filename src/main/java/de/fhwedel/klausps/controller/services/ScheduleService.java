@@ -68,34 +68,18 @@ public class ScheduleService {
     if (block.getROPruefungen().isEmpty()) {
       throw new IllegalArgumentException("Leere Bloecke duerfen nicht geplant werden.");
     }
-
-    consistentBlockOrThrowException(block);
-
     ReadOnlyBlock roBlock = dataAccessService.scheduleBlock(block, termin);
 
-    return new Pair<>(roBlock, new LinkedList<>(roBlock.getROPruefungen())); // TODO return result of test for conflicts
+    return new Pair<>(roBlock,
+        new LinkedList<>(roBlock.getROPruefungen())); // TODO return result of test for conflicts
   }
 
   public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> unscheduleBlock(ReadOnlyBlock block) {
-
-    consistentBlockOrThrowException(block);
-
-    ReadOnlyBlock roBlock = dataAccessService.unscheduleBlock(block, block.getTermin()); //TODO bevor wir diese Methode aufrufen, müssen wir den RestriktionsService mitteilen, wegen der Scoring Berechnung
-
-
-    return new Pair<>(roBlock, new LinkedList<>(roBlock.getROPruefungen())); // TODO return result of test for conflicts
-  }
-
-  private void consistentBlockOrThrowException(ReadOnlyBlock block) {
-    for(ReadOnlyPruefung p : block.getROPruefungen()){
-      if(!dataAccessService.existsPruefungWith(p.getPruefungsnummer())){
-        throw new IllegalArgumentException("Exam with " + p.getPruefungsnummer() + " doesn't exist");
-      }
-    }
-
-    if(!dataAccessService.exists(block)){
-      throw new IllegalArgumentException("The block doesn't exist");
-    }
+    ReadOnlyBlock roBlock = dataAccessService.unscheduleBlock(block);
+    //TODO bevor wir diese Methode aufrufen, müssen wir den RestriktionsService mitteilen,
+    // wegen der Scoring Berechnung
+    return new Pair<>(roBlock,
+        new LinkedList<>(roBlock.getROPruefungen())); // TODO return result of test for conflicts
   }
 
   /**
