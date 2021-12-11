@@ -133,4 +133,17 @@ public class ScheduleService {
     throw new UnsupportedOperationException("Not implemented yet!");
   }
 
+  public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> moveBlock(ReadOnlyBlock block, LocalDateTime termin) {
+    if (!dataAccessService.terminIsInPeriod(termin)) {
+      throw new IllegalArgumentException(
+              "Der angegebene Termin liegt ausserhalb der Pruefungsperiode.");
+    }
+
+    if (block.getROPruefungen().isEmpty()) {
+      throw new IllegalArgumentException("Leere Bloecke duerfen nicht geplant werden.");
+    }
+    //TODO update scoring before DataAccessServoce#scheduleBlock
+    ReadOnlyBlock result = dataAccessService.scheduleBlock(block, termin);
+    return new Pair<>(result, new LinkedList<>(result.getROPruefungen()));
+  }
 }
