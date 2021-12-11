@@ -1,6 +1,5 @@
 package integrationTests.steps;
 
-import de.fhwedel.klausps.model.api.Ausbildungsgrad;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import io.cucumber.java.ParameterType;
 import io.cucumber.java.de.Angenommen;
@@ -25,7 +24,8 @@ public class teilnehmerKreisSchaetzungSteps {
     //    Add Schaetzung to Teilnehmerkreis (last element in teilnehmerKreisDetails)
     String[] teilnehmerKreisDetails = input.split(" ");
     return new Teilnehmerkreis() {
-      private final String studiengang = teilnehmerKreisDetails[0];
+      private final char ausbildungsgrad = teilnehmerKreisDetails[0].charAt(0);
+      private final String studiengang = teilnehmerKreisDetails[0].substring(1);
       private final int fachSemester = Integer.parseInt(teilnehmerKreisDetails[1]);
       private final String pruefungsOrdnung = teilnehmerKreisDetails[2];
 
@@ -46,7 +46,11 @@ public class teilnehmerKreisSchaetzungSteps {
 
       @Override
       public Ausbildungsgrad getAusbildungsgrad() {
-        return null; //TODO was muss hier rein?
+        return switch (ausbildungsgrad) {
+          case 'M' -> Ausbildungsgrad.MASTER;
+          case 'B' -> Ausbildungsgrad.BACHELOR;
+          default -> Ausbildungsgrad.AUSBILDUNG;
+        };
       }
     };
   }
