@@ -3,6 +3,7 @@ package de.fhwedel.klausps.controller.api;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
+import de.fhwedel.klausps.model.api.Ausbildungsgrad;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
 import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
 import java.time.Duration;
@@ -15,7 +16,7 @@ class PruefungDTOTest {
   @Test
   @DisplayName("Teilnehmerkreis hinzufügen")
   void addTeilnehmerkreis() {
-    TeilnehmerkreisImpl t = new TeilnehmerkreisImpl("Inf", "10", 1);
+    TeilnehmerkreisImpl t = new TeilnehmerkreisImpl("Inf", "10", 1, Ausbildungsgrad.BACHELOR);
     PruefungDTO pruefungDTO = new PruefungDTOBuilder()
         .withPruefungsName("Test")
         .withPruefungsNummer("1234")
@@ -30,7 +31,7 @@ class PruefungDTOTest {
   @Test
   @DisplayName("Teilnehmerkreis wird probiert nochmal hinzugefügt zu werden, soll aber nicht klappen")
   void addTeilnehmerkreis_schon_Vorhanden() {
-    TeilnehmerkreisImpl teilnehmerkreis = new TeilnehmerkreisImpl("Inf", "11", 1);
+    TeilnehmerkreisImpl teilnehmerkreis = new TeilnehmerkreisImpl("Inf", "11", 1, Ausbildungsgrad.BACHELOR);
     PruefungDTOBuilder pruefungDTOBuilder = new PruefungDTOBuilder()
         .withPruefungsName("Test")
         .withPruefungsNummer("1234")
@@ -48,7 +49,7 @@ class PruefungDTOTest {
   @Test
   @DisplayName("Änderung der Duration von einer Pruefung im Builder erfolgreich")
   void setDurationFromPruefung() {
-    TeilnehmerkreisImpl teilnehmerkreis = new TeilnehmerkreisImpl("Inf", "11", 1);
+    TeilnehmerkreisImpl teilnehmerkreis = new TeilnehmerkreisImpl("Inf", "11", 1, Ausbildungsgrad.BACHELOR);
     PruefungDTOBuilder pruefungDTOBuilder = new PruefungDTOBuilder()
         .withPruefungsName("Test")
         .withPruefungsNummer("1234")
@@ -68,8 +69,8 @@ class PruefungDTOTest {
   @DisplayName("Baue DTO von Modelpruefung")
   void buildDTOFromModelPruefung() {
     PruefungImpl model = new PruefungImpl("Hallo", "Hallo", "", Duration.ofMinutes(60));
-    TeilnehmerkreisImpl bwl = new TeilnehmerkreisImpl("BWL", "10", 10);
-    TeilnehmerkreisImpl inf = new TeilnehmerkreisImpl("inf", "10", 10);
+    TeilnehmerkreisImpl bwl = new TeilnehmerkreisImpl("BWL", "10", 10, Ausbildungsgrad.BACHELOR);
+    TeilnehmerkreisImpl inf = new TeilnehmerkreisImpl("inf", "10", 10, Ausbildungsgrad.BACHELOR);
     model.setSchaetzung(bwl, 10);
     model.setSchaetzung(inf, 10);
     PruefungDTO dtoController = new PruefungDTOBuilder(model).build();

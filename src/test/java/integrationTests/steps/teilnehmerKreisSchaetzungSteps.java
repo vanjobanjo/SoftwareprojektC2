@@ -1,5 +1,6 @@
 package integrationTests.steps;
 
+import de.fhwedel.klausps.model.api.Ausbildungsgrad;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import io.cucumber.java.ParameterType;
 import io.cucumber.java.de.Angenommen;
