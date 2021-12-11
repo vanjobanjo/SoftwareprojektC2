@@ -7,10 +7,7 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
-import de.fhwedel.klausps.model.api.Block;
-import de.fhwedel.klausps.model.api.Pruefung;
-import de.fhwedel.klausps.model.api.Pruefungsperiode;
-import de.fhwedel.klausps.model.api.Teilnehmerkreis;
+import de.fhwedel.klausps.model.api.*;
 import de.fhwedel.klausps.model.impl.BlockImpl;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
 
@@ -342,7 +339,7 @@ public class DataAccessService {
     return end.isAfter(termin.toLocalDate()) || end.isEqual(termin.toLocalDate());
   }
 
-  public ReadOnlyBlock createBlock(String name, ReadOnlyPruefung[] pruefungen) {
+  public ReadOnlyBlock createBlock(String name, ReadOnlyPruefung... pruefungen) {
     if (Arrays.stream(pruefungen).anyMatch(ReadOnlyPlanungseinheit::geplant))
       throw new IllegalArgumentException("Einer der übergebenen Prüfungen ist geplant.");
 
@@ -360,8 +357,8 @@ public class DataAccessService {
       throw new IllegalArgumentException("Doppelte Prüfungen im Block!");
     }
 
-    return null;
-
+    Block block_model = new BlockImpl(pruefungsperiode, name, Blocktyp.SEQUENTIAL); //TODO bei Erzeugung Sequential?
+    Arrays.stream(pruefungen).forEach(pruefung -> block_model.addPruefung(pruefungsperiode.pruefung(pruefung.getPruefungsnummer())));
+    return fromModelToDTOBlock(block_model);
   }
-
 }
