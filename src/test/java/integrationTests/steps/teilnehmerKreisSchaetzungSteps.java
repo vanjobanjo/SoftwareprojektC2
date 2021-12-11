@@ -1,5 +1,6 @@
 package integrationTests.steps;
 
+import de.fhwedel.klausps.model.api.Ausbildungsgrad;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import io.cucumber.java.ParameterType;
 import io.cucumber.java.de.Angenommen;
@@ -41,6 +42,11 @@ public class teilnehmerKreisSchaetzungSteps {
       @Override
       public int getFachsemester() {
         return fachSemester;
+      }
+
+      @Override
+      public Ausbildungsgrad getAusbildungsgrad() {
+        return null; //TODO was muss hier rein?
       }
     };
   }

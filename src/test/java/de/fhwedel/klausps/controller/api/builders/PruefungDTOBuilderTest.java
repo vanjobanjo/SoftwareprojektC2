@@ -1,10 +1,12 @@
 package de.fhwedel.klausps.controller.api.builders;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import de.fhwedel.klausps.controller.api.PruefungDTO;
+import de.fhwedel.klausps.model.api.Ausbildungsgrad;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -12,8 +14,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class PruefungDTOBuilderTest {
 
@@ -34,7 +36,7 @@ class PruefungDTOBuilderTest {
   @Test
   void withTeilnehmerKreisSchaetzung() {
     Map<Teilnehmerkreis, Integer> temp = new HashMap<>();
-    TeilnehmerkreisImpl analysis = new TeilnehmerkreisImpl("BWL", "10", 0);
+    TeilnehmerkreisImpl analysis = new TeilnehmerkreisImpl("BWL", "10", 0, Ausbildungsgrad.BACHELOR);
     temp.put(analysis, 10);
     PruefungDTO tester = BUILDER.withTeilnehmerKreisSchaetzung(temp).build();
     assertThat(tester.getTeilnehmerKreisSchaetzung()).isEqualTo(temp);
@@ -43,8 +45,8 @@ class PruefungDTOBuilderTest {
   @Test
   void withAdditionalTeilnehmerkreis() {
     Map<Teilnehmerkreis, Integer> temp = new HashMap<>();
-    TeilnehmerkreisImpl analysis = new TeilnehmerkreisImpl("BWL", "10", 0);
-    TeilnehmerkreisImpl additional = new TeilnehmerkreisImpl("adfd", ">SD", 3);
+    TeilnehmerkreisImpl analysis = new TeilnehmerkreisImpl("BWL", "10", 0, Ausbildungsgrad.BACHELOR);
+    TeilnehmerkreisImpl additional = new TeilnehmerkreisImpl("adfd", ">SD", 3, Ausbildungsgrad.BACHELOR);
     temp.put(analysis, 10);
     PruefungDTO tester =
         BUILDER
@@ -58,8 +60,8 @@ class PruefungDTOBuilderTest {
 
   @Test
   void withAdditionalTeilnehmerkreisSchaetzung() {
-    TeilnehmerkreisImpl analysis = new TeilnehmerkreisImpl("BWL", "10", 0);
-    TeilnehmerkreisImpl additional = new TeilnehmerkreisImpl("adfd", ">SD", 3);
+    TeilnehmerkreisImpl analysis = new TeilnehmerkreisImpl("BWL", "10", 0, Ausbildungsgrad.BACHELOR);
+    TeilnehmerkreisImpl additional = new TeilnehmerkreisImpl("adfd", ">SD", 3, Ausbildungsgrad.BACHELOR);
 
     PruefungDTO tester =
         BUILDER
@@ -109,7 +111,7 @@ class PruefungDTOBuilderTest {
   @DisplayName(
       "Teilnehmerkreis Schaetzung wurde zur Prüfung hinzugefügt, geschaetze Zahl muss 0 sein")
   void addTeilnehmerkreisSchaetzung() {
-    TeilnehmerkreisImpl tester = new TeilnehmerkreisImpl("test", "test", 99);
+    TeilnehmerkreisImpl tester = new TeilnehmerkreisImpl("test", "test", 99, Ausbildungsgrad.BACHELOR);
     PruefungDTOBuilder builder = new PruefungDTOBuilder().withAdditionalTeilnehmerkreis(tester);
     Integer expected_schaetzung_fuer_tester = 0;
     PruefungDTO pruefungDTO = builder.build();
