@@ -298,11 +298,20 @@ public class Controller implements InterfaceController {
   }
 
   @Override
+  @Deprecated
   public ReadOnlyBlock createBlock(ReadOnlyPruefung... pruefungen)
       throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
     noNullParameters((Object[]) pruefungen);
     checkNoPruefungDefined();
     throw new IllegalStateException("Not implemented yet!");
+  }
+
+  public ReadOnlyBlock createBlock(String name, ReadOnlyPruefung... pruefungen)
+          throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
+    noNullParameters((Object[]) pruefungen);
+    noNullParameters(name);
+    checkNoPruefungDefined();
+    return dataAccessService.createBlock(name, pruefungen);
   }
 
   @Override
