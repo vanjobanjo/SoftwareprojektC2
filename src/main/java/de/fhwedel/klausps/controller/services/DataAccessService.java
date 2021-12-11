@@ -359,6 +359,9 @@ public class DataAccessService {
 
     Block block_model = new BlockImpl(pruefungsperiode, name, Blocktyp.SEQUENTIAL); //TODO bei Erzeugung Sequential?
     Arrays.stream(pruefungen).forEach(pruefung -> block_model.addPruefung(pruefungsperiode.pruefung(pruefung.getPruefungsnummer())));
+    if(!pruefungsperiode.addPlanungseinheit(block_model)){
+      throw new IllegalArgumentException("Irgendwas ist schief gelaufen.");
+    }
     return fromModelToDTOBlock(block_model);
   }
 }

@@ -592,6 +592,7 @@ class DataAccessServiceTest {
 
   @Test
   void createBlock_Successsful() {
+    when(pruefungsperiode.addPlanungseinheit(any())).thenReturn(true);
     configureMock_getPruefungToROPruefung(RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
     ReadOnlyBlock ro = deviceUnderTest.createBlock("Hallo", RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
     assertThat(ro.getROPruefungen()).containsOnly(RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
@@ -629,6 +630,7 @@ class DataAccessServiceTest {
   @Test
   void createBlock_Successful2() {
     configureMock_getPruefungToROPruefung(RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
+    when(pruefungsperiode.addPlanungseinheit(any())).thenReturn(true); // pruefungsperiode is gemocked!
     ReadOnlyBlock ro = deviceUnderTest.createBlock("Hallo", RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
     Block model = new BlockImpl(pruefungsperiode, "Name", Blocktyp.SEQUENTIAL);
     LocalDateTime now = LocalDateTime.now();
