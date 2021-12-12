@@ -21,8 +21,12 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 public class Controller implements InterfaceController {
 
@@ -228,10 +232,10 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public void deletePruefung(ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException {
+  public List<ReadOnlyPruefung> deletePruefung(ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung);
     checkNoPruefungDefined();
-    List<ReadOnlyPruefung> result = this.scheduleService.deletePruefung(pruefung);
+    return scheduleService.deletePruefung(pruefung);
   }
 
   @Override
@@ -294,14 +298,6 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  @Deprecated
-  public ReadOnlyBlock createBlock(ReadOnlyPruefung... pruefungen)
-      throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
-    noNullParameters((Object[]) pruefungen);
-    checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
-  }
-
   public ReadOnlyBlock createBlock(String name, ReadOnlyPruefung... pruefungen)
           throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
     noNullParameters((Object[]) pruefungen);
@@ -320,23 +316,15 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public ReadOnlyBlock deleteBlock(ReadOnlyBlock block) throws NoPruefungsPeriodeDefinedException {
+  public List<ReadOnlyPruefung> deleteBlock(ReadOnlyBlock block) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block);
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    return scheduleService.deleteBlock(block);
   }
 
   @Override
-  @Deprecated
-  public ReadOnlyBlock unscheduleBlock(ReadOnlyBlock block)
+  public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> unscheduleBlock(ReadOnlyBlock block)
       throws NoPruefungsPeriodeDefinedException {
-    noNullParameters(block);
-    checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
-  }
-
-  public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> unscheduleBlockNEW(ReadOnlyBlock block)
-          throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block);
     checkNoPruefungDefined();
     return scheduleService.unscheduleBlock(block);
@@ -354,7 +342,7 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public ReadOnlyBlock addPruefungToBlock(ReadOnlyBlock block, ReadOnlyPruefung pruefung)
+  public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> addPruefungToBlock(ReadOnlyBlock block, ReadOnlyPruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block, pruefung);
     checkNoPruefungDefined();
