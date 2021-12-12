@@ -310,13 +310,6 @@ public class Controller implements InterfaceController {
     return dataAccessService.createBlock(name, pruefungen);
   }
 
-  public ReadOnlyBlock createBlock(String name)
-          throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
-    noNullParameters(name);
-    checkNoPruefungDefined();
-    return dataAccessService.createBlock(name);
-  }
-
   @Override
   public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> scheduleBlock(
       ReadOnlyBlock block, LocalDateTime start)
