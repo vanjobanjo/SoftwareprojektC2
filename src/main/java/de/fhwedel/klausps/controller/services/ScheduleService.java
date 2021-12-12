@@ -153,9 +153,10 @@ public class ScheduleService {
 
     List<ReadOnlyPruefung> pruefungInBlock = dataAccessService.deleteBlock(unscheduledBlock); //scoring must be 0
     changes.addAll(pruefungInBlock);
-    changes = changes.stream().distinct().collect(Collectors.toList()); //delete double
+    changes = changes.stream().distinct().toList(); //delete double
     return changes;
   }
+
   public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> moveBlock(ReadOnlyBlock block, LocalDateTime termin) {
     if (!dataAccessService.terminIsInPeriod(termin)) {
       throw new IllegalArgumentException(
