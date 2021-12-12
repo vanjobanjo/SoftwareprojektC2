@@ -1,10 +1,8 @@
 package de.fhwedel.klausps.controller.services;
 
 import de.fhwedel.klausps.controller.api.visitor.WeichesKriteriumVisitors;
-import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.model.api.Pruefung;
-import de.fhwedel.klausps.model.api.Pruefungsperiode;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -13,10 +11,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ScheduleService {
+public class ScoringService {
   private Map<Pruefung, Map<WeichesKriterium, Set<Pruefung>>> analysen;
 
-  public ScheduleService(Set<Pruefung> geplantePruefungen) {
+  public ScoringService(Set<Pruefung> geplantePruefungen) {
     this.analysen =
         analyseAll(
             WeichesKriteriumVisitors.values(),
@@ -121,7 +119,7 @@ public class ScheduleService {
                 pruefung -> pruefung,
                 Collectors.flatMapping(
                     pruefung ->
-                        ScheduleService.analyseKriterienToPruefung(
+                        ScoringService.analyseKriterienToPruefung(
                             kriterien,
                             scheduledPruefungen.stream()
                                 .filter(pruefung2 -> !pruefung2.equals(pruefung))

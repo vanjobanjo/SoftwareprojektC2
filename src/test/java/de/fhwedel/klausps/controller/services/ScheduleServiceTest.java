@@ -6,7 +6,6 @@ import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
 import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
-import io.cucumber.java.hu.Ha;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +16,6 @@ import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -64,7 +62,7 @@ public class ScheduleServiceTest {
 
       when(pruefungsperiode.geplantePruefungen()).thenReturn(pruefungen);
       this.dataAccessService = new DataAccessService(pruefungsperiode);
-    ScheduleService scheduleService = dataAccessService.getScheduleService();
+    ScoringService scheduleService = dataAccessService.getScheduleService();
     Set<Pruefung> conflictedPruefungToDm = scheduleService.getKriteriumsAnalyise(DM_GEPLANT_010121_0900_DAUER120).get(WeichesKriterium.MEHRERE_PRUEFUNGEN_AM_TAG);
     assertThat(conflictedPruefungToDm).containsOnly(ANALYSIS_GEPLANT_010121_0800_DAUER120);
     Set<Pruefung> conflictedPruefungToAnalysis = scheduleService.getKriteriumsAnalyise(ANALYSIS_GEPLANT_010121_0800_DAUER120).get(WeichesKriterium.MEHRERE_PRUEFUNGEN_AM_TAG);

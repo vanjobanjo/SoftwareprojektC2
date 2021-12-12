@@ -20,12 +20,12 @@ import java.util.stream.Collectors;
 public class DataAccessService {
 
   private Pruefungsperiode pruefungsperiode;
-  private final ScheduleService scheduleService;
+  private final ScoringService scheduleService;
 
   public DataAccessService(Pruefungsperiode pruefungsperiode) {
 
     this.pruefungsperiode = pruefungsperiode;
-    this.scheduleService = new ScheduleService(pruefungsperiode.geplantePruefungen());
+    this.scheduleService = new ScoringService(pruefungsperiode.geplantePruefungen());
   }
 
   public ReadOnlyPruefung createPruefung(
@@ -180,7 +180,7 @@ public class DataAccessService {
     }
   }
 
-  ScheduleService getScheduleService(){
+  ScoringService getScheduleService(){
     return scheduleService;
   }
 }
