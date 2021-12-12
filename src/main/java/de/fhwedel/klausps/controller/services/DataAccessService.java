@@ -1,24 +1,35 @@
 package de.fhwedel.klausps.controller.services;
 
+import static java.util.Objects.nonNull;
+
 import de.fhwedel.klausps.controller.api.BlockDTO;
 import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.model.api.Block;
+import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
+import de.fhwedel.klausps.model.impl.BlockImpl;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
-
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
-
-import static java.util.Objects.nonNull;
 
 public class DataAccessService {
 
@@ -64,7 +75,8 @@ public class DataAccessService {
   boolean exists(ReadOnlyBlock block) {
     if (block.getROPruefungen().isEmpty()) {
       return emptyBlockExists(block);
-    } else {
+    }
+    else {
       Optional<Block> modelBlock = searchInModel(block);
       return modelBlock
           .filter(value -> areSameBlocksBySpecs(block, value) && haveSamePruefungen(block, value))
@@ -94,8 +106,8 @@ public class DataAccessService {
       Pruefung pruefungFromModel = pruefungsperiode.pruefung(pruefung.getPruefungsnummer());
       if (!existsPruefungWith(pruefung.getPruefungsnummer())
           || modelPruefungen.stream()
-              .noneMatch(
-                  (Pruefung p) -> hasPruefungsnummer(p, pruefungFromModel.getPruefungsnummer()))) {
+          .noneMatch(
+              (Pruefung p) -> hasPruefungsnummer(p, pruefungFromModel.getPruefungsnummer()))) {
         return false;
       }
     }
@@ -129,8 +141,8 @@ public class DataAccessService {
           && readOnlyBlock.getROPruefungen().size() == modelBlock.getPruefungen().size()
           && readOnlyBlock.getName().equals(modelBlock.getName())
           && ((readOnlyBlock.getTermin().isEmpty() && modelBlock.getStartzeitpunkt() == null)
-              || (readOnlyTermin.isPresent()
-                  && readOnlyTermin.get().equals(modelBlock.getStartzeitpunkt())));
+          || (readOnlyTermin.isPresent()
+          && readOnlyTermin.get().equals(modelBlock.getStartzeitpunkt())));
     }
     return false;
   }
@@ -183,7 +195,7 @@ public class DataAccessService {
   /**
    * Schedules a pruefung without any consistency checks.
    *
-   * @param pruefung The pruefung to schedule.
+   * @param pruefung    The pruefung to schedule.
    * @param startTermin The time to schedule the pruefung to.
    */
   public ReadOnlyPruefung schedulePruefung(ReadOnlyPruefung pruefung, LocalDateTime startTermin) {
@@ -207,7 +219,7 @@ public class DataAccessService {
    * Schedules a block without any consistency checks. The passed block is consistent and has
    * pruefungen inside.
    *
-   * @param block The block to schedule
+   * @param block  The block to schedule
    * @param termin The time to schedule the pruefung to.
    */
   ReadOnlyBlock scheduleBlock(ReadOnlyBlock block, LocalDateTime termin) {
@@ -326,6 +338,7 @@ public class DataAccessService {
             new LinkedList<>(block.getROPruefungen()).get(0).getPruefungsnummer()));
   }
 
+
   boolean terminIsInPeriod(LocalDateTime termin) {
     return terminIsSameDayOrAfterPeriodStart(termin) && terminIsSameDayOrBeforePeriodEnd(termin);
   }
@@ -357,5 +370,49 @@ public class DataAccessService {
     return modelPruefung.stream()
         .map(this::fromModelToDTOPruefungWithScoring)
         .collect(Collectors.toList());
+  }
+  public ReadOnlyBlock createBlock(String name, ReadOnlyPruefung... pruefungen) {
+    if (Arrays.stream(pruefungen).anyMatch(ReadOnlyPlanungseinheit::geplant)) {
+      throw new IllegalArgumentException("Einer der übergebenen Prüfungen ist geplant.");
+    }
+
+    if (isAnyInBlock(List.of(pruefungen))) {
+      throw new IllegalArgumentException("Einer der Prüfungen ist bereits im Block!");
+    }
+
+    if (contaisDuplicatePruefung(pruefungen)) {
+      throw new IllegalArgumentException("Doppelte Prüfungen im Block!");
+    }
+
+    Block block_model =
+        new BlockImpl(
+            pruefungsperiode, name, Blocktyp.SEQUENTIAL); // TODO bei Erzeugung Sequential?
+    Arrays.stream(pruefungen)
+        .forEach(
+            pruefung ->
+                block_model.addPruefung(pruefungsperiode.pruefung(pruefung.getPruefungsnummer())));
+    if (!pruefungsperiode.addPlanungseinheit(block_model)) {
+      throw new IllegalArgumentException("Irgendwas ist schief gelaufen."
+          + " Der Block konnte nicht in die Datenbank übertragen werden.");
+    }
+    return fromModelToDTOBlock(block_model);
+  }
+
+  private boolean isAnyInBlock(Collection<ReadOnlyPruefung> pruefungen) {
+    return pruefungen.stream()
+        .anyMatch(
+            (pruefung) -> this.pruefungIsInBlock(pruefung.getPruefungsnummer()));
+  }
+
+  private boolean pruefungIsInBlock(String pruefungsNummer) {
+    if (existsPruefungWith(pruefungsNummer)) {
+      return Optional.ofNullable(pruefungsperiode.block(pruefungsperiode.pruefung(pruefungsNummer)))
+          .isPresent();
+    }
+    throw new IllegalArgumentException("Pruefung existiert nicht.");
+  }
+
+  private boolean contaisDuplicatePruefung(ReadOnlyPruefung[] pruefungen) {
+    return pruefungen.length != Arrays.stream(pruefungen).distinct().count();
   }
 }
