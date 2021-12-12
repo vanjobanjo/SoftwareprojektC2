@@ -17,7 +17,7 @@ public class PruefungDTO extends ReadOnlyPruefung {
       Map<Teilnehmerkreis, Integer> teilnehmerkreisSchaetzung,
       Set<String> pruefer,
       int scoring) {
-    super(pruefungsnummer, name, termin, dauer, teilnehmerkreisSchaetzung, pruefer, scoring, termin != null);
+    super(pruefungsnummer, name, termin, dauer, teilnehmerkreisSchaetzung, pruefer, scoring);
   }
 
   public PruefungDTO(
@@ -27,7 +27,7 @@ public class PruefungDTO extends ReadOnlyPruefung {
       Map<Teilnehmerkreis, Integer> teilnehmerkreisSchaetzung,
       Set<String> pruefer,
       int scoring) {
-    super(pruefungsnummer, name, null, dauer, teilnehmerkreisSchaetzung, pruefer, scoring, false);
+    super(pruefungsnummer, name, null, dauer, teilnehmerkreisSchaetzung, pruefer, scoring);
   }
 
   public PruefungDTO(
@@ -45,8 +45,7 @@ public class PruefungDTO extends ReadOnlyPruefung {
         dauer,
         teilnehmerkreisSchaetzung,
         Set.of(pruefer),
-        scoring,
-        true);
+        scoring);
   }
 
   public PruefungDTO(
@@ -63,7 +62,6 @@ public class PruefungDTO extends ReadOnlyPruefung {
         dauer,
         teilnehmerkreisSchaetzung,
         Set.of(pruefer),
-        scoring,
-        false);
+        scoring);
   }
 }
