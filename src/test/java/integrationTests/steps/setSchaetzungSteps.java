@@ -1,4 +1,4 @@
-package de.fhwedel.klausps.controller.integrationTests.steps;
+package integrationTests.steps;
 
 
 import io.cucumber.java.de.Angenommen;
@@ -8,7 +8,7 @@ import org.junit.AssumptionViolatedException;
 
 public class setSchaetzungSteps {
     @Angenommen("^die Prüfung \"([^\"]*)\" hat die Schätzung (\\d+)$")
-    public void diePruefungHatDieSchaetzung(String pruefungsname, int aktuelleSchätzung)  {
+    public void diePruefungHatDieSchaetzung(String pruefungsname, int aktuelleSchaetzung)  {
         // Write code here that turns the phrase above into concrete actions
            throw new AssumptionViolatedException("Not implemented yet!");
     }

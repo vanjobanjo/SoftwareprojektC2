@@ -1,4 +1,4 @@
-package de.fhwedel.klausps.controller.integrationTests.state;
+package integrationTests.state;
 
 /**
  * A state to work on during a scenario.

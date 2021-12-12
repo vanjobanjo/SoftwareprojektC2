@@ -1,6 +1,6 @@
-package de.fhwedel.klausps.controller.integrationTests.steps;
+package integrationTests.steps;
 
-import de.fhwedel.klausps.controller.integrationTests.state.State;
+import integrationTests.state.State;
 
 /**
  * A common point for helper methods required in many step definitions.
