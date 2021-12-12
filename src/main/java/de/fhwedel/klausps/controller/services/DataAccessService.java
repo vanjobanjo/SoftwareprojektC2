@@ -337,6 +337,7 @@ public class DataAccessService {
             new LinkedList<>(block.getROPruefungen()).get(0).getPruefungsnummer()));
   }
 
+
   boolean terminIsInPeriod(LocalDateTime termin) {
     return terminIsSameDayOrAfterPeriodStart(termin) && terminIsSameDayOrBeforePeriodEnd(termin);
   }
@@ -349,6 +350,25 @@ public class DataAccessService {
   private boolean terminIsSameDayOrBeforePeriodEnd(LocalDateTime termin) {
     LocalDate end = pruefungsperiode.getEnddatum();
     return end.isAfter(termin.toLocalDate()) || end.isEqual(termin.toLocalDate());
+  }
+
+  // nur fuer ungeplante bloecke aufrufen, wegen SCORING!!!!!
+  public List<ReadOnlyPruefung> deleteBlock(ReadOnlyBlock block) {
+    if (block.geplant()) {
+      throw new IllegalArgumentException("Nur für ungeplante Blöcke möglich!");
+    }
+    Block model = getBlockFromModelOrException(block);
+    Set<Pruefung> modelPruefung =
+        new HashSet<>(
+            model
+                .getPruefungen()); // very important, when we call
+    // de.fhwedel.klausps.model.api.Block.removeAllPruefungen it
+    // removes also the set, so we need a deep copy of the set
+    model.removeAllPruefungen();
+    pruefungsperiode.removePlanungseinheit(model);
+    return modelPruefung.stream()
+        .map(this::fromModelToDTOPruefungWithScoring)
+        .toList();
   }
 
   public ReadOnlyBlock createBlock(String name, ReadOnlyPruefung... pruefungen) {
