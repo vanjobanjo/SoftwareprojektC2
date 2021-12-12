@@ -75,8 +75,7 @@ public class DataAccessService {
   boolean exists(ReadOnlyBlock block) {
     if (block.getROPruefungen().isEmpty()) {
       return emptyBlockExists(block);
-    }
-    else {
+    } else {
       Optional<Block> modelBlock = searchInModel(block);
       return modelBlock
           .filter(value -> areSameBlocksBySpecs(block, value) && haveSamePruefungen(block, value))
@@ -363,14 +362,15 @@ public class DataAccessService {
         new HashSet<>(
             model
                 .getPruefungen()); // very important, when we call
-                                   // de.fhwedel.klausps.model.api.Block.removeAllPruefungen it
-                                   // removes also the set, so we need a deep copy of the set
+    // de.fhwedel.klausps.model.api.Block.removeAllPruefungen it
+    // removes also the set, so we need a deep copy of the set
     model.removeAllPruefungen();
     pruefungsperiode.removePlanungseinheit(model);
     return modelPruefung.stream()
         .map(this::fromModelToDTOPruefungWithScoring)
-        .collect(Collectors.toList());
+        .toList();
   }
+
   public ReadOnlyBlock createBlock(String name, ReadOnlyPruefung... pruefungen) {
     if (Arrays.stream(pruefungen).anyMatch(ReadOnlyPlanungseinheit::geplant)) {
       throw new IllegalArgumentException("Einer der übergebenen Prüfungen ist geplant.");
