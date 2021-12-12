@@ -297,23 +297,14 @@ public class Controller implements InterfaceController {
     throw new IllegalStateException("Not implemented yet!");
   }
 
-  /**
-   * Fasst die übergebenen {@link ReadOnlyPruefung Prüfungen} zu einem {@link ReadOnlyBlock Block}
-   * zusammen
-   *
-   * @param name       Name des Blockes
-   * @param pruefungen Prüfungen - keine Prüfungen auch möglich
-   * @return Block                              ungeplanter Block mit evtl. Pruefungen
-   * @throws IllegalArgumentException           fliegt wenn eine Klausur bereits geplant wurde oder in einem anderen Block ist.
-   * @throws NoPruefungsPeriodeDefinedException Wenn zuvor keine Prüfungsperiode definiert wurde.
-   */
   @Override
-  public ReadOnlyBlock createBlock(String name, ReadOnlyPruefung... pruefungen) throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
+  public ReadOnlyBlock createBlock(String name, ReadOnlyPruefung... pruefungen)
+          throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
     noNullParameters((Object[]) pruefungen);
+    noNullParameters(name);
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    return dataAccessService.createBlock(name, pruefungen);
   }
-
 
   @Override
   public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> scheduleBlock(

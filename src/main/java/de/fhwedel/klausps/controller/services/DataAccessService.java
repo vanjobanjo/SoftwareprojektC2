@@ -6,17 +6,22 @@ import de.fhwedel.klausps.controller.api.BlockDTO;
 import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.model.api.Block;
+import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
+import de.fhwedel.klausps.model.impl.BlockImpl;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -70,8 +75,7 @@ public class DataAccessService {
   boolean exists(ReadOnlyBlock block) {
     if (block.getROPruefungen().isEmpty()) {
       return emptyBlockExists(block);
-    }
-    else {
+    } else {
       Optional<Block> modelBlock = searchInModel(block);
       return modelBlock
           .filter(value -> areSameBlocksBySpecs(block, value) && haveSamePruefungen(block, value))
@@ -328,10 +332,10 @@ public class DataAccessService {
           "Der angegebene Block ist in der Datenbank nicht vorhanden.");
     }
     // todo look for model block with same block id, instead of comparing pruefungen
-    return pruefungsperiode.block(pruefungsperiode.pruefung(
-        new LinkedList<>(block.getROPruefungen()).get(0).getPruefungsnummer()));
+    return pruefungsperiode.block(
+        pruefungsperiode.pruefung(
+            new LinkedList<>(block.getROPruefungen()).get(0).getPruefungsnummer()));
   }
-
 
   boolean terminIsInPeriod(LocalDateTime termin) {
     return terminIsSameDayOrAfterPeriodStart(termin) && terminIsSameDayOrBeforePeriodEnd(termin);
@@ -347,4 +351,48 @@ public class DataAccessService {
     return end.isAfter(termin.toLocalDate()) || end.isEqual(termin.toLocalDate());
   }
 
+  public ReadOnlyBlock createBlock(String name, ReadOnlyPruefung... pruefungen) {
+    if (Arrays.stream(pruefungen).anyMatch(ReadOnlyPlanungseinheit::geplant)) {
+      throw new IllegalArgumentException("Einer der übergebenen Prüfungen ist geplant.");
+    }
+
+    if (isAnyInBlock(List.of(pruefungen))) {
+      throw new IllegalArgumentException("Einer der Prüfungen ist bereits im Block!");
+    }
+
+    if (contaisDuplicatePruefung(pruefungen)) {
+      throw new IllegalArgumentException("Doppelte Prüfungen im Block!");
+    }
+
+    Block block_model =
+        new BlockImpl(
+            pruefungsperiode, name, Blocktyp.SEQUENTIAL); // TODO bei Erzeugung Sequential?
+    Arrays.stream(pruefungen)
+        .forEach(
+            pruefung ->
+                block_model.addPruefung(pruefungsperiode.pruefung(pruefung.getPruefungsnummer())));
+    if (!pruefungsperiode.addPlanungseinheit(block_model)) {
+      throw new IllegalArgumentException("Irgendwas ist schief gelaufen."
+          + " Der Block konnte nicht in die Datenbank übertragen werden.");
+    }
+    return fromModelToDTOBlock(block_model);
+  }
+
+  private boolean isAnyInBlock(Collection<ReadOnlyPruefung> pruefungen) {
+    return pruefungen.stream()
+        .anyMatch(
+            (pruefung) -> this.pruefungIsInBlock(pruefung.getPruefungsnummer()));
+  }
+
+  private boolean pruefungIsInBlock(String pruefungsNummer) {
+    if (existsPruefungWith(pruefungsNummer)) {
+      return Optional.ofNullable(pruefungsperiode.block(pruefungsperiode.pruefung(pruefungsNummer)))
+          .isPresent();
+    }
+    throw new IllegalArgumentException("Pruefung existiert nicht.");
+  }
+
+  private boolean contaisDuplicatePruefung(ReadOnlyPruefung[] pruefungen) {
+    return pruefungen.length != Arrays.stream(pruefungen).distinct().count();
+  }
 }
