@@ -6,12 +6,14 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.helper.Pair;
 import de.fhwedel.klausps.model.api.Pruefung;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ScheduleService {
 
@@ -19,8 +21,8 @@ public class ScheduleService {
 
   private final RestrictionService restrictionService;
 
-  public ScheduleService(DataAccessService dataAccessService,
-      RestrictionService restrictionService) {
+  public ScheduleService(
+      DataAccessService dataAccessService, RestrictionService restrictionService) {
     this.dataAccessService = dataAccessService;
     this.restrictionService = restrictionService;
   }
@@ -30,7 +32,7 @@ public class ScheduleService {
    * sein.
    *
    * @param pruefung Pruefung die zu planen ist.
-   * @param termin   Starttermin
+   * @param termin Starttermin
    * @return Liste von veränderten Ergebnissen
    */
   public List<ReadOnlyPruefung> schedulePruefung(ReadOnlyPruefung pruefung, LocalDateTime termin)
@@ -57,9 +59,8 @@ public class ScheduleService {
     return List.of(pruefung); // TODO return result of test for conflicts
   }
 
-
-  public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> scheduleBlock(ReadOnlyBlock block,
-      LocalDateTime termin) throws HartesKriteriumException {
+  public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> scheduleBlock(
+      ReadOnlyBlock block, LocalDateTime termin) throws HartesKriteriumException {
     if (!dataAccessService.terminIsInPeriod(termin)) {
       throw new IllegalArgumentException(
           "Der angegebene Termin liegt ausserhalb der Pruefungsperiode.");
@@ -70,15 +71,17 @@ public class ScheduleService {
     }
     ReadOnlyBlock roBlock = dataAccessService.scheduleBlock(block, termin);
 
-    return new Pair<>(roBlock,
+    return new Pair<>(
+        roBlock,
         new LinkedList<>(roBlock.getROPruefungen())); // TODO return result of test for conflicts
   }
 
   public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> unscheduleBlock(ReadOnlyBlock block) {
     ReadOnlyBlock roBlock = dataAccessService.unscheduleBlock(block);
-    //TODO bevor wir diese Methode aufrufen, müssen wir den RestriktionsService mitteilen,
+    // TODO bevor wir diese Methode aufrufen, müssen wir den RestriktionsService mitteilen,
     // wegen der Scoring Berechnung
-    return new Pair<>(roBlock,
+    return new Pair<>(
+        roBlock,
         new LinkedList<>(roBlock.getROPruefungen())); // TODO return result of test for conflicts
   }
 
@@ -87,7 +90,7 @@ public class ScheduleService {
    * Verändern auch Teil der Rückgabe sein.
    *
    * @param pruefung Pruefung, dessen Dauer geändert werden muss.
-   * @param minutes  die neue Dauer
+   * @param minutes die neue Dauer
    * @return Liste von Pruefung, jene die sich durch die Operation geändert haben.
    */
   public List<Pruefung> changeDuration(Pruefung pruefung, Duration minutes)
@@ -104,7 +107,7 @@ public class ScheduleService {
    */
   public int scoringOfPruefung(Pruefung pruefung) {
     // TODO get scoring from some kind of cache
-    return 0; //TODO implement
+    return 0; // TODO implement
   }
 
   public List<ReadOnlyPruefung> deletePruefung(ReadOnlyPruefung pruefung) {
@@ -133,4 +136,25 @@ public class ScheduleService {
     throw new UnsupportedOperationException("Not implemented yet!");
   }
 
+  public List<ReadOnlyPruefung> deleteBlock(ReadOnlyBlock block) {
+    if (!dataAccessService.exists(block)) {
+      throw new IllegalArgumentException("Block existiert nicht!");
+    }
+
+    ReadOnlyBlock unscheduledBlock;
+    List<ReadOnlyPruefung> changes = new LinkedList<>();
+
+    if (block.geplant()) {
+     Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> impact = unscheduleBlock(block); //TODO unscheduleBlock muss das Scoring berechnen.
+     unscheduledBlock = impact.left();
+     changes = impact.right();
+    } else {
+      unscheduledBlock = block;
+    }
+
+    List<ReadOnlyPruefung> pruefungInBlock = dataAccessService.deleteBlock(unscheduledBlock); //scoring must be 0
+    changes.addAll(pruefungInBlock);
+    changes = changes.stream().distinct().collect(Collectors.toList()); //delete double
+    return changes;
+  }
 }

@@ -600,6 +600,64 @@ class DataAccessServiceTest {
     assertThat(deviceUnderTest.exists(blockToSchedule)).isFalse();
   }
 
+  @Test
+  @DisplayName("Block must be unplanned in DataAccessService")
+  void deleteBlock_successful() {
+    ReadOnlyBlock blockToDelete =
+        new BlockDTO(
+            "Name",
+            null,
+            Duration.ZERO,
+            false,
+            new HashSet<>(List.of(RO_ANALYSIS, RO_HASKELL, RO_DM)));
+
+    Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
+
+    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock,null, RO_ANALYSIS, RO_HASKELL, RO_DM);
+
+    List<ReadOnlyPruefung> ro_result = deviceUnderTest.deleteBlock(blockToDelete);
+
+    assertThat(ro_result).containsOnly(RO_DM, RO_ANALYSIS, RO_HASKELL);
+    assertThat(modelBlock.getPruefungen()).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Parameter is invalid")
+  void deleteBlock_() {
+    ReadOnlyBlock blockToDelete =
+            new BlockDTO(
+                    "Name",
+                    null,
+                    Duration.ZERO,
+                    false,
+                    new HashSet<>(List.of(RO_ANALYSIS, RO_HASKELL, RO_DM)));
+
+    Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
+    Block modelBlockWithHaskell = new BlockImpl(pruefungsperiode, 2, "Name", Blocktyp.SEQUENTIAL);
+
+    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock,null, RO_ANALYSIS, RO_DM);
+    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlockWithHaskell,null, RO_HASKELL);
+
+    assertThrows(IllegalArgumentException.class, () -> deviceUnderTest.deleteBlock(blockToDelete));
+  }
+
+  @Test
+  @DisplayName("Parameter is invalid: Block is planned but must be unplanned")
+  void deleteBlock_planned() {
+    ReadOnlyBlock blockToDelete =
+            new BlockDTO(
+                    "Name",
+                    null,
+                    Duration.ZERO,
+                    false,
+                    new HashSet<>(List.of(RO_ANALYSIS, RO_DM)));
+
+    Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
+    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock,LocalDateTime.now(), RO_ANALYSIS, RO_DM);
+
+    assertThrows(IllegalArgumentException.class, () -> deviceUnderTest.deleteBlock(blockToDelete));
+  }
+
   private void configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(
       Block modelBlock, LocalDateTime termin, ReadOnlyPruefung... pruefungen) {
     for (ReadOnlyPruefung p : pruefungen) {

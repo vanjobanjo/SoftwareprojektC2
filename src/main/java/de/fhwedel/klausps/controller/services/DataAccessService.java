@@ -1,7 +1,5 @@
 package de.fhwedel.klausps.controller.services;
 
-import static java.util.Objects.nonNull;
-
 import de.fhwedel.klausps.controller.api.BlockDTO;
 import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
@@ -13,18 +11,14 @@ import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
+
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.util.Objects.nonNull;
 
 public class DataAccessService {
 
@@ -70,8 +64,7 @@ public class DataAccessService {
   boolean exists(ReadOnlyBlock block) {
     if (block.getROPruefungen().isEmpty()) {
       return emptyBlockExists(block);
-    }
-    else {
+    } else {
       Optional<Block> modelBlock = searchInModel(block);
       return modelBlock
           .filter(value -> areSameBlocksBySpecs(block, value) && haveSamePruefungen(block, value))
@@ -101,8 +94,8 @@ public class DataAccessService {
       Pruefung pruefungFromModel = pruefungsperiode.pruefung(pruefung.getPruefungsnummer());
       if (!existsPruefungWith(pruefung.getPruefungsnummer())
           || modelPruefungen.stream()
-          .noneMatch(
-              (Pruefung p) -> hasPruefungsnummer(p, pruefungFromModel.getPruefungsnummer()))) {
+              .noneMatch(
+                  (Pruefung p) -> hasPruefungsnummer(p, pruefungFromModel.getPruefungsnummer()))) {
         return false;
       }
     }
@@ -136,8 +129,8 @@ public class DataAccessService {
           && readOnlyBlock.getROPruefungen().size() == modelBlock.getPruefungen().size()
           && readOnlyBlock.getName().equals(modelBlock.getName())
           && ((readOnlyBlock.getTermin().isEmpty() && modelBlock.getStartzeitpunkt() == null)
-          || (readOnlyTermin.isPresent()
-          && readOnlyTermin.get().equals(modelBlock.getStartzeitpunkt())));
+              || (readOnlyTermin.isPresent()
+                  && readOnlyTermin.get().equals(modelBlock.getStartzeitpunkt())));
     }
     return false;
   }
@@ -190,7 +183,7 @@ public class DataAccessService {
   /**
    * Schedules a pruefung without any consistency checks.
    *
-   * @param pruefung    The pruefung to schedule.
+   * @param pruefung The pruefung to schedule.
    * @param startTermin The time to schedule the pruefung to.
    */
   public ReadOnlyPruefung schedulePruefung(ReadOnlyPruefung pruefung, LocalDateTime startTermin) {
@@ -214,7 +207,7 @@ public class DataAccessService {
    * Schedules a block without any consistency checks. The passed block is consistent and has
    * pruefungen inside.
    *
-   * @param block  The block to schedule
+   * @param block The block to schedule
    * @param termin The time to schedule the pruefung to.
    */
   ReadOnlyBlock scheduleBlock(ReadOnlyBlock block, LocalDateTime termin) {
@@ -328,10 +321,10 @@ public class DataAccessService {
           "Der angegebene Block ist in der Datenbank nicht vorhanden.");
     }
     // todo look for model block with same block id, instead of comparing pruefungen
-    return pruefungsperiode.block(pruefungsperiode.pruefung(
-        new LinkedList<>(block.getROPruefungen()).get(0).getPruefungsnummer()));
+    return pruefungsperiode.block(
+        pruefungsperiode.pruefung(
+            new LinkedList<>(block.getROPruefungen()).get(0).getPruefungsnummer()));
   }
-
 
   boolean terminIsInPeriod(LocalDateTime termin) {
     return terminIsSameDayOrAfterPeriodStart(termin) && terminIsSameDayOrBeforePeriodEnd(termin);
@@ -347,4 +340,22 @@ public class DataAccessService {
     return end.isAfter(termin.toLocalDate()) || end.isEqual(termin.toLocalDate());
   }
 
+  // nur fuer ungeplante bloecke aufrufen, wegen SCORING!!!!!
+  public List<ReadOnlyPruefung> deleteBlock(ReadOnlyBlock block) {
+    if (block.geplant()) {
+      throw new IllegalArgumentException("Nur für ungeplante Blöcke möglich!");
+    }
+    Block model = getBlockFromModelOrException(block);
+    Set<Pruefung> modelPruefung =
+        new HashSet<>(
+            model
+                .getPruefungen()); // very important, when we call
+                                   // de.fhwedel.klausps.model.api.Block.removeAllPruefungen it
+                                   // removes also the set, so we need a deep copy of the set
+    model.removeAllPruefungen();
+    pruefungsperiode.removePlanungseinheit(model);
+    return modelPruefung.stream()
+        .map(this::fromModelToDTOPruefungWithScoring)
+        .collect(Collectors.toList());
+  }
 }
