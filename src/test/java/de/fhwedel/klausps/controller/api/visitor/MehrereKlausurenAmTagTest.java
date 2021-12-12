@@ -1,5 +1,7 @@
 package de.fhwedel.klausps.controller.api.visitor;
 
+import de.fhwedel.klausps.controller.api.scoring.bipred.WeichesKriteriumBiPred;
+import de.fhwedel.klausps.controller.api.scoring.bipred.BiPredKriterien;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
 import org.junit.jupiter.api.Test;
@@ -17,7 +19,7 @@ class MehrereKlausurenAmTagTest {
     private LocalDateTime date_101021_8am = LocalDateTime.of(date_101021, LocalTime.of(8, 0));
     private LocalDateTime date_101021_10pm = LocalDateTime.of(date_101021, LocalTime.of(22, 0));
     private LocalDateTime date_111121_8am = LocalDateTime.of(date_111121, LocalTime.of(8, 0));
-    WeichesKriteriumVisitor kriterium = WeichesKriteriumVisitors.MEHRERE_PRUEFUNG_AM_TAG.getWeichesKriteriumVisitor();
+    WeichesKriteriumBiPred kriterium = BiPredKriterien.MEHRERE_PRUEFUNG_AM_TAG.getWeichesKriteriumVisitor();
 
     @Test
     public void testSameDay_schouldBeTrue() {

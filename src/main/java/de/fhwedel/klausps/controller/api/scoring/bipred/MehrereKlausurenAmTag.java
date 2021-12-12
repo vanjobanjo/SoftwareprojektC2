@@ -1,9 +1,9 @@
-package de.fhwedel.klausps.controller.api.visitor;
+package de.fhwedel.klausps.controller.api.scoring.bipred;
 
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.model.api.Pruefung;
 
-public class MehrereKlausurenAmTag extends WeichesKriteriumVisitor {
+public class MehrereKlausurenAmTag extends WeichesKriteriumBiPred {
 
     public MehrereKlausurenAmTag() {
         super(WeichesKriterium.MEHRERE_PRUEFUNGEN_AM_TAG);

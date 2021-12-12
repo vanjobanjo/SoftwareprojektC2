@@ -1,6 +1,6 @@
 package de.fhwedel.klausps.controller.services;
 
-import de.fhwedel.klausps.controller.api.visitor.WeichesKriteriumVisitors;
+import de.fhwedel.klausps.controller.api.scoring.bipred.BiPredKriterien;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.model.api.Pruefung;
 
@@ -17,7 +17,7 @@ public class ScoringService {
   public ScoringService(Set<Pruefung> geplantePruefungen) {
     this.analysen =
         analyseAll(
-            WeichesKriteriumVisitors.values(),
+            BiPredKriterien.values(),
             geplantePruefungen);
   }
 
@@ -47,7 +47,7 @@ public class ScoringService {
     pruefung.setStartzeitpunkt(termin);
     Map<WeichesKriterium, Set<Pruefung>> analyseToPruefung =
         analyseKriterienToPruefung(
-            WeichesKriteriumVisitors.values(),
+            BiPredKriterien.values(),
             getGeplantePruefungen(),
             pruefung);
     updateAnalyseScheduled(analyseToPruefung, pruefung);
@@ -98,7 +98,7 @@ public class ScoringService {
 
   // So okay
   public static Map<WeichesKriterium, Set<Pruefung>> analyseKriterienToPruefung(
-      WeichesKriteriumVisitors[] kriterien, Set<Pruefung> scheduledPruefungen, Pruefung toCheck) {
+          BiPredKriterien[] kriterien, Set<Pruefung> scheduledPruefungen, Pruefung toCheck) {
     return Arrays.stream(kriterien)
         .collect(
             Collectors.groupingBy(
@@ -112,7 +112,7 @@ public class ScoringService {
 
   // So okay
   public static Map<Pruefung, Map<WeichesKriterium, Set<Pruefung>>> analyseAll(
-      WeichesKriteriumVisitors[] kriterien, Set<Pruefung> scheduledPruefungen) {
+          BiPredKriterien[] kriterien, Set<Pruefung> scheduledPruefungen) {
     return scheduledPruefungen.stream()
         .collect(
             Collectors.groupingBy(

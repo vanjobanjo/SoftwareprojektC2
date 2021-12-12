@@ -1,14 +1,14 @@
-package de.fhwedel.klausps.controller.api.visitor;
+package de.fhwedel.klausps.controller.api.scoring.bipred;
 
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.model.api.Pruefung;
 
 import java.util.function.BiPredicate;
 
-public abstract class WeichesKriteriumVisitor implements BiPredicate<Pruefung, Pruefung>{
+public abstract class WeichesKriteriumBiPred implements BiPredicate<Pruefung, Pruefung>{
     protected final WeichesKriterium kriterium;
 
-    protected WeichesKriteriumVisitor(WeichesKriterium kriterium) {
+    protected WeichesKriteriumBiPred(WeichesKriterium kriterium) {
         this.kriterium = kriterium;
     }
 
