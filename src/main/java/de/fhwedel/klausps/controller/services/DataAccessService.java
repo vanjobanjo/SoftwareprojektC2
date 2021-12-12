@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -355,9 +356,7 @@ public class DataAccessService {
       throw new IllegalArgumentException("Einer der übergebenen Prüfungen ist geplant.");
     }
 
-    if (Arrays.stream(pruefungen)
-        .anyMatch(
-            (pruefung) -> this.pruefungIsInBlock(pruefung.getPruefungsnummer()))) {
+    if (isAnyInBlock(List.of(pruefungen))) {
       throw new IllegalArgumentException("Einer der Prüfungen ist bereits im Block!");
     }
 
@@ -377,6 +376,12 @@ public class DataAccessService {
           + " Der Block konnte nicht in die Datenbank übertragen werden.");
     }
     return fromModelToDTOBlock(block_model);
+  }
+
+  private boolean isAnyInBlock(Collection<ReadOnlyPruefung> pruefungen) {
+    return pruefungen.stream()
+        .anyMatch(
+            (pruefung) -> this.pruefungIsInBlock(pruefung.getPruefungsnummer()));
   }
 
   private boolean pruefungIsInBlock(String pruefungsNummer) {
