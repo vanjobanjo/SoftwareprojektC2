@@ -260,7 +260,7 @@ public class Controller implements InterfaceController {
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, termin);
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    return scheduleService.movePruefung(pruefung, termin);
   }
 
   @Override

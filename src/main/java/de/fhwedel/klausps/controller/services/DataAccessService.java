@@ -332,9 +332,8 @@ public class DataAccessService {
           "Der angegebene Block ist in der Datenbank nicht vorhanden.");
     }
     // todo look for model block with same block id, instead of comparing pruefungen
-    return pruefungsperiode.block(
-        pruefungsperiode.pruefung(
-            new LinkedList<>(block.getROPruefungen()).get(0).getPruefungsnummer()));
+    return pruefungsperiode.block(pruefungsperiode.pruefung(
+        new LinkedList<>(block.getROPruefungen()).get(0).getPruefungsnummer()));
   }
 
 
@@ -350,6 +349,19 @@ public class DataAccessService {
   private boolean terminIsSameDayOrBeforePeriodEnd(LocalDateTime termin) {
     LocalDate end = pruefungsperiode.getEnddatum();
     return end.isAfter(termin.toLocalDate()) || end.isEqual(termin.toLocalDate());
+  }
+
+  public ReadOnlyPruefung getPruefungWith(String pruefungsNummer) {
+    return fromModelToDTOPruefungWithScoring(getPruefungFromModelOrException(pruefungsNummer));
+  }
+
+  public Optional<LocalDateTime> getStartOfPruefungWith(String pruefungsNummer) {
+    LocalDateTime start = getPruefungFromModelOrException(pruefungsNummer).getStartzeitpunkt();
+    if (start == null) {
+      return Optional.empty();
+    } else {
+      return Optional.of(start);
+    }
   }
 
   // nur fuer ungeplante bloecke aufrufen, wegen SCORING!!!!!

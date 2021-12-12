@@ -1,18 +1,18 @@
 package de.fhwedel.klausps.controller.analysis;
 
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
-import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.util.Set;
 
 public class WeichesKriteriumAnalyse {
 
-  Set<Pruefung> causingPruefungen;
+  Set<ReadOnlyPruefung> causingPruefungen;
   WeichesKriterium kriterium;
   Set<Teilnehmerkreis> affectedTeilnehmerKreise;
   Integer amountAffectedStudents;
 
-  public Set<Pruefung> getCausingPruefungen() {
+  public Set<ReadOnlyPruefung> getCausingPruefungen() {
     return causingPruefungen;
   }
 
