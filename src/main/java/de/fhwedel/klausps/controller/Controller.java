@@ -315,15 +315,9 @@ public class Controller implements InterfaceController {
     return scheduleService.scheduleBlock(block, start);
   }
 
-  @Deprecated
+
   @Override
   public List<ReadOnlyPruefung> deleteBlock(ReadOnlyBlock block) throws NoPruefungsPeriodeDefinedException {
-    noNullParameters(block);
-    checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
-  }
-
-  public List<ReadOnlyPruefung> deleteBlockNew(ReadOnlyBlock block) throws NoPruefungsPeriodeDefinedException{
     noNullParameters(block);
     checkNoPruefungDefined();
     return scheduleService.deleteBlock(block);
