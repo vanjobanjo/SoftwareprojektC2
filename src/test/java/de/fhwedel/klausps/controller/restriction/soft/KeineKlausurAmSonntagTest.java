@@ -4,7 +4,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 
-import de.fhwedel.klausps.controller.PruefungsFactory;
+import de.fhwedel.klausps.controller.TestFactory;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
@@ -29,17 +29,17 @@ class KeineKlausurAmSonntagTest {
     DataAccessService accessService = ServiceProvider.getDataAccessService();
     accessService.setPruefungsperiode(this.mocked_periode);
     this.deviceUnderTest = new KeineKlausurAmSonntag(accessService);
-    PruefungsFactory.configureMock_setStartEndOfPeriode(mocked_periode, START_PERIODE, END_PERIODE);
+    TestFactory.configureMock_setStartEndOfPeriode(mocked_periode, START_PERIODE, END_PERIODE);
   }
 
   @Test
   void keineKlausurenAmSonntag_isTrue() {
     LocalDateTime sonntag = LocalDateTime.of(2021, 12, 19, 0, 0);
-    ReadOnlyPruefung roPruefung_sonntag = PruefungsFactory.planRoPruefung(
-        PruefungsFactory.RO_ANALYSIS_UNPLANNED,
+    ReadOnlyPruefung roPruefung_sonntag = TestFactory.planRoPruefung(
+        TestFactory.RO_ANALYSIS_UNPLANNED,
         sonntag);
-    Pruefung model_pruefung_so = PruefungsFactory.getPruefungOfReadOnlyPruefung(roPruefung_sonntag);
-    PruefungsFactory.configureMock_getPruefungFromPeriode(mocked_periode, model_pruefung_so);
+    Pruefung model_pruefung_so = TestFactory.getPruefungOfReadOnlyPruefung(roPruefung_sonntag);
+    TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, model_pruefung_so);
 
     assertThat(deviceUnderTest.test(model_pruefung_so)).isTrue();
   }
@@ -47,11 +47,11 @@ class KeineKlausurAmSonntagTest {
   @Test
   void keineKlausurenAmSonntag_isFalse() {
     LocalDateTime samstag = LocalDateTime.of(2021, 12, 18, 0, 0);
-    ReadOnlyPruefung roPruefung_sonntag = PruefungsFactory.planRoPruefung(
-        PruefungsFactory.RO_ANALYSIS_UNPLANNED,
+    ReadOnlyPruefung roPruefung_sonntag = TestFactory.planRoPruefung(
+        TestFactory.RO_ANALYSIS_UNPLANNED,
         samstag);
-    Pruefung model_pruefung_sa = PruefungsFactory.getPruefungOfReadOnlyPruefung(roPruefung_sonntag);
-    PruefungsFactory.configureMock_getPruefungFromPeriode(mocked_periode, model_pruefung_sa);
+    Pruefung model_pruefung_sa = TestFactory.getPruefungOfReadOnlyPruefung(roPruefung_sonntag);
+    TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, model_pruefung_sa);
 
     assertThat(deviceUnderTest.test(model_pruefung_sa)).isFalse();
   }
@@ -59,12 +59,12 @@ class KeineKlausurAmSonntagTest {
   @Test
   void keineKlausurenAmTag_outOfPeriode() {
     LocalDateTime samstag = LocalDateTime.of(2024, 12, 18, 0, 0);
-    ReadOnlyPruefung roPruefung_sonntag = PruefungsFactory.planRoPruefung(
-        PruefungsFactory.RO_ANALYSIS_UNPLANNED,
+    ReadOnlyPruefung roPruefung_sonntag = TestFactory.planRoPruefung(
+        TestFactory.RO_ANALYSIS_UNPLANNED,
         samstag);
-    Pruefung model_pruefung_out = PruefungsFactory.getPruefungOfReadOnlyPruefung(
+    Pruefung model_pruefung_out = TestFactory.getPruefungOfReadOnlyPruefung(
         roPruefung_sonntag);
-    PruefungsFactory.configureMock_getPruefungFromPeriode(mocked_periode, model_pruefung_out);
+    TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, model_pruefung_out);
 
     assertThrows(IllegalArgumentException.class, () -> deviceUnderTest.test(model_pruefung_out));
   }

@@ -11,7 +11,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-public class PruefungsFactory {
+public class TestFactory {
 
   public static ReadOnlyPruefung RO_ANALYSIS_UNPLANNED =
       new PruefungDTOBuilder()
@@ -62,8 +62,8 @@ public class PruefungsFactory {
 
   }
 
-  public static PruefungsFactory build() {
-    return new PruefungsFactory();
+  public static TestFactory build() {
+    return new TestFactory();
   }
 
   public static ReadOnlyPruefung planRoPruefung(ReadOnlyPruefung ro, LocalDateTime time) {
