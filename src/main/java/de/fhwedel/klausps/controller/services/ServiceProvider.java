@@ -8,7 +8,10 @@ public class ServiceProvider {
 
   private static ScheduleService scheduleService;
 
-  private ServiceProvider() {}
+  private static RestrictionService restrictionService;
+
+  private ServiceProvider() {
+  }
 
   public static DataAccessService getDataAccessService() {
     if (dataAccessService == null) {
@@ -26,8 +29,16 @@ public class ServiceProvider {
 
   public static ScheduleService getScheduleService() {
     if (scheduleService == null) {
-      scheduleService = new ScheduleService(getDataAccessService());
+      scheduleService = new ScheduleService(getDataAccessService(), getRestrictionService());
     }
     return scheduleService;
   }
+
+  public static RestrictionService getRestrictionService() {
+    if (restrictionService == null) {
+      restrictionService = new RestrictionService();
+    }
+    return restrictionService;
+  }
+
 }

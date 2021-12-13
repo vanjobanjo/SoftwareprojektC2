@@ -12,9 +12,9 @@ import de.fhwedel.klausps.controller.export.ExportTyp;
 import de.fhwedel.klausps.controller.helper.Pair;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.services.DataAccessService;
+import de.fhwedel.klausps.controller.services.IOService;
 import de.fhwedel.klausps.controller.services.ScheduleService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
-import de.fhwedel.klausps.controller.services.IOService;
 import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.nio.file.Path;
@@ -232,10 +232,10 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public void deletePruefung(ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException {
+  public List<ReadOnlyPruefung> deletePruefung(ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung);
     checkNoPruefungDefined();
-    this.dataAccessService.deletePruefung(pruefung);
+    return scheduleService.deletePruefung(pruefung);
   }
 
   @Override
@@ -260,7 +260,7 @@ public class Controller implements InterfaceController {
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, termin);
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    return scheduleService.movePruefung(pruefung, termin);
   }
 
   @Override
@@ -298,11 +298,12 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public ReadOnlyBlock createBlock(ReadOnlyPruefung... pruefungen)
-      throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
+  public ReadOnlyBlock createBlock(String name, ReadOnlyPruefung... pruefungen)
+          throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
     noNullParameters((Object[]) pruefungen);
+    noNullParameters(name);
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    return dataAccessService.createBlock(name, pruefungen);
   }
 
   @Override
@@ -311,23 +312,25 @@ public class Controller implements InterfaceController {
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     noNullParameters(block, start);
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    return scheduleService.scheduleBlock(block, start);
   }
 
   @Override
-  public ReadOnlyBlock deleteBlock(ReadOnlyBlock block) throws NoPruefungsPeriodeDefinedException {
+  public List<ReadOnlyPruefung> deleteBlock(ReadOnlyBlock block) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block);
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    return scheduleService.deleteBlock(block);
   }
 
   @Override
-  public ReadOnlyBlock unscheduleBlock(ReadOnlyBlock block)
+  public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> unscheduleBlock(ReadOnlyBlock block)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block);
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    return scheduleService.unscheduleBlock(block);
   }
+
+
 
   @Override
   public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> moveBlock(
@@ -335,11 +338,11 @@ public class Controller implements InterfaceController {
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     noNullParameters(block, termin);
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    return scheduleService.moveBlock(block, termin);
   }
 
   @Override
-  public ReadOnlyBlock addPruefungToBlock(ReadOnlyBlock block, ReadOnlyPruefung pruefung)
+  public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> addPruefungToBlock(ReadOnlyBlock block, ReadOnlyPruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block, pruefung);
     checkNoPruefungDefined();

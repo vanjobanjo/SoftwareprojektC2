@@ -5,7 +5,6 @@ import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Map;
-
 import java.util.Set;
 
 public class PruefungDTO extends ReadOnlyPruefung {
@@ -18,7 +17,7 @@ public class PruefungDTO extends ReadOnlyPruefung {
       Map<Teilnehmerkreis, Integer> teilnehmerkreisSchaetzung,
       Set<String> pruefer,
       int scoring) {
-    super(pruefungsnummer, name, termin, dauer, teilnehmerkreisSchaetzung, pruefer, scoring, true);
+    super(pruefungsnummer, name, termin, dauer, teilnehmerkreisSchaetzung, pruefer, scoring);
   }
 
   public PruefungDTO(
@@ -28,7 +27,7 @@ public class PruefungDTO extends ReadOnlyPruefung {
       Map<Teilnehmerkreis, Integer> teilnehmerkreisSchaetzung,
       Set<String> pruefer,
       int scoring) {
-    super(pruefungsnummer, name, null, dauer, teilnehmerkreisSchaetzung, pruefer, scoring, false);
+    super(pruefungsnummer, name, null, dauer, teilnehmerkreisSchaetzung, pruefer, scoring);
   }
 
   public PruefungDTO(
@@ -46,8 +45,7 @@ public class PruefungDTO extends ReadOnlyPruefung {
         dauer,
         teilnehmerkreisSchaetzung,
         Set.of(pruefer),
-        scoring,
-        true);
+        scoring);
   }
 
   public PruefungDTO(
@@ -64,7 +62,6 @@ public class PruefungDTO extends ReadOnlyPruefung {
         dauer,
         teilnehmerkreisSchaetzung,
         Set.of(pruefer),
-        scoring,
-        false);
+        scoring);
   }
 }

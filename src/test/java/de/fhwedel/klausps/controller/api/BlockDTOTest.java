@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
+import de.fhwedel.klausps.model.api.Ausbildungsgrad;
 import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -16,8 +17,8 @@ class BlockDTOTest {
 
   @Test
   void teilnehmerKreisSchaetzung() {
-    TeilnehmerkreisImpl bwl = new TeilnehmerkreisImpl("BWL", "Bla", 10);
-    TeilnehmerkreisImpl inf = new TeilnehmerkreisImpl("inf", "Bla", 10);
+    TeilnehmerkreisImpl bwl = new TeilnehmerkreisImpl("BWL", "Bla", 10, Ausbildungsgrad.BACHELOR);
+    TeilnehmerkreisImpl inf = new TeilnehmerkreisImpl("inf", "Bla", 10, Ausbildungsgrad.BACHELOR);
     PruefungDTO analysis =
         new PruefungDTOBuilder().withAdditionalTeilnehmerkreisSchaetzung(bwl, 10).build();
 

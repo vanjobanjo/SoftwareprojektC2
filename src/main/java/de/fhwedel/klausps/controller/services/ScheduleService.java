@@ -1,20 +1,38 @@
 package de.fhwedel.klausps.controller.services;
 
+import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
+import de.fhwedel.klausps.controller.helper.Pair;
 import de.fhwedel.klausps.model.api.Pruefung;
+import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+
+
+import java.util.Set;
+import java.util.stream.Collectors;
+
 
 public class ScheduleService {
 
   private final DataAccessService dataAccessService;
 
-  public ScheduleService(DataAccessService dataAccessService) {
+  private final RestrictionService restrictionService;
+
+  public ScheduleService(DataAccessService dataAccessService,
+      RestrictionService restrictionService) {
     this.dataAccessService = dataAccessService;
+    this.restrictionService = restrictionService;
   }
 
   /**
@@ -27,11 +45,10 @@ public class ScheduleService {
    */
   public List<ReadOnlyPruefung> schedulePruefung(ReadOnlyPruefung pruefung, LocalDateTime termin)
       throws HartesKriteriumException {
-    String pruefungsNummer = pruefung.getPruefungsnummer();
-
-    if (!dataAccessService.existsPruefungWith(pruefungsNummer)) {
-      throw new IllegalArgumentException("Exam doesn't exist");
-    }
+    // todo before any restriction test: unschedule Pruefung
+    //  then test restrictions
+    //  if hard restriction violated, reschedule at previous position else schedule at new position
+    // no check if pruefung exists needed, because DataAccessService already does it
     dataAccessService.schedulePruefung(pruefung, termin);
     return Collections.emptyList(); // TODO return result of test for conflicts
   }
@@ -44,14 +61,36 @@ public class ScheduleService {
    * @return Liste von veraenderte Pruefungen
    */
   public List<ReadOnlyPruefung> unschedulePruefung(ReadOnlyPruefung pruefung) {
-    String pruefungsNummer = pruefung.getPruefungsnummer();
-
-    if (!dataAccessService.existsPruefungWith(pruefungsNummer)) {
-      throw new IllegalArgumentException("Exam doesn't exist");
-    }
-
+    // todo before any restriction test: unschedule Pruefung
+    //  then test restrictions
     pruefung = dataAccessService.unschedulePruefung(pruefung);
     return List.of(pruefung); // TODO return result of test for conflicts
+  }
+
+
+  public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> scheduleBlock(ReadOnlyBlock block,
+      LocalDateTime termin) throws HartesKriteriumException {
+    if (!dataAccessService.terminIsInPeriod(termin)) {
+      throw new IllegalArgumentException(
+          "Der angegebene Termin liegt ausserhalb der Pruefungsperiode.");
+    }
+
+    if (block.getROPruefungen().isEmpty()) {
+      throw new IllegalArgumentException("Leere Bloecke duerfen nicht geplant werden.");
+    }
+    ReadOnlyBlock roBlock = dataAccessService.scheduleBlock(block, termin);
+
+    return new Pair<>(
+        roBlock,
+        new LinkedList<>(roBlock.getROPruefungen())); // TODO return result of test for conflicts
+  }
+
+  public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> unscheduleBlock(ReadOnlyBlock block) {
+    ReadOnlyBlock roBlock = dataAccessService.unscheduleBlock(block);
+    //TODO bevor wir diese Methode aufrufen, müssen wir den RestriktionsService mitteilen,
+    // wegen der Scoring Berechnung
+    return new Pair<>(roBlock,
+        new LinkedList<>(roBlock.getROPruefungen())); // TODO return result of test for conflicts
   }
 
   /**
@@ -59,7 +98,7 @@ public class ScheduleService {
    * Verändern auch Teil der Rückgabe sein.
    *
    * @param pruefung Pruefung, dessen Dauer geändert werden muss.
-   * @param minutes die naue Dauer
+   * @param minutes die neue Dauer
    * @return Liste von Pruefung, jene die sich durch die Operation geändert haben.
    */
   public List<Pruefung> changeDuration(Pruefung pruefung, Duration minutes)
@@ -75,7 +114,123 @@ public class ScheduleService {
    * @return Scoring ungeplant ? 0 : scoring
    */
   public int scoringOfPruefung(Pruefung pruefung) {
-    // todo please implement
-    throw new UnsupportedOperationException("not implemented");
+    // TODO get scoring from some kind of cache
+    return 0; // TODO implement
   }
+
+  public List<ReadOnlyPruefung> deletePruefung(ReadOnlyPruefung pruefung) {
+    dataAccessService.deletePruefung(pruefung);
+    List<WeichesKriteriumAnalyse> analyses = restrictionService.checkWeicheKriterien();
+    // calc new score for all pruefungen
+    Map<String, Integer> scoring = getScoringFrom(analyses);
+    applyScoring(scoring);
+    return analyses.stream()
+        // get a stream of all pruefungen
+        .flatMap((WeichesKriteriumAnalyse x) -> x.getCausingPruefungen().stream())
+        // pass each pruefung only once
+        .distinct() // TODO might not work because of missing implementation of .equals()
+        .toList();
+  }
+
+  private Map<String, Integer> getScoringFrom(List<WeichesKriteriumAnalyse> analyses) {
+    // TODO extract into adequate class
+    throw new UnsupportedOperationException("Not implemented yet!");
+  }
+
+  private void applyScoring(Map<String, Integer> scoring) {
+    // TODO extract into adequate class
+    throw new UnsupportedOperationException("Not implemented yet!");
+  }
+
+  public List<ReadOnlyPruefung> deleteBlock(ReadOnlyBlock block) {
+    if (!dataAccessService.exists(block)) {
+      throw new IllegalArgumentException("Block existiert nicht!");
+    }
+
+    ReadOnlyBlock unscheduledBlock;
+    List<ReadOnlyPruefung> changes = new LinkedList<>();
+
+    if (block.geplant()) {
+     Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> impact = unscheduleBlock(block); //TODO unscheduleBlock muss das Scoring berechnen.
+     unscheduledBlock = impact.left();
+     changes = impact.right();
+    } else {
+      unscheduledBlock = block;
+    }
+
+    List<ReadOnlyPruefung> pruefungInBlock = dataAccessService.deleteBlock(unscheduledBlock); //scoring must be 0
+    changes.addAll(pruefungInBlock);
+    changes = changes.stream().distinct().toList(); //delete double
+    return changes;
+  }
+  
+  public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> moveBlock(ReadOnlyBlock block, LocalDateTime termin) {
+    if (!dataAccessService.terminIsInPeriod(termin)) {
+      throw new IllegalArgumentException(
+              "Der angegebene Termin liegt ausserhalb der Pruefungsperiode.");
+    }
+
+    if (block.getROPruefungen().isEmpty()) {
+      throw new IllegalArgumentException("Leere Bloecke duerfen nicht geplant werden.");
+    }
+    //TODO update scoring before DataAccessServoce#scheduleBlock
+    ReadOnlyBlock result = dataAccessService.scheduleBlock(block, termin);
+    return new Pair<>(result, new LinkedList<>(result.getROPruefungen()));
+  }
+
+  public List<ReadOnlyPruefung> movePruefung(ReadOnlyPruefung pruefung, LocalDateTime expectedStart)
+      throws HartesKriteriumException {
+    LocalDateTime currentStart =
+        dataAccessService.getStartOfPruefungWith(pruefung.getPruefungsnummer())
+            .orElseThrow(
+                () -> new IllegalArgumentException("Only a planned pruefung can be moved!"));
+    dataAccessService.schedulePruefung(pruefung, expectedStart);
+    List<HartesKriteriumAnalyse> hardRestrictionFailures = restrictionService.checkHarteKriterien();
+    if (!hardRestrictionFailures.isEmpty()) {
+      dataAccessService.schedulePruefung(pruefung, currentStart);
+      signalHartesKriteriumFailure(hardRestrictionFailures);
+    }
+    return new ArrayList<>((getPruefungenInvolvedIn(restrictionService.checkWeicheKriterien())));
+  }
+
+
+  private Set<ReadOnlyPruefung> getPruefungenInvolvedIn(
+      List<WeichesKriteriumAnalyse> weicheKriterien) {
+    Set<ReadOnlyPruefung> result = new HashSet<>();
+    for (WeichesKriteriumAnalyse weichesKriteriumAnalyse : weicheKriterien) {
+      result.addAll(weichesKriteriumAnalyse.getCausingPruefungen());
+    }
+    return result;
+  }
+
+  private void signalHartesKriteriumFailure(List<HartesKriteriumAnalyse> hardRestrictionFailures)
+      throws HartesKriteriumException {
+    Set<ReadOnlyPruefung> causingPruefungen = getPruefungenInvolvedIn(hardRestrictionFailures);
+    throw new HartesKriteriumException(
+        getPruefungenInvolvedIn(hardRestrictionFailures),
+        getAllTeilnehmerkreiseFrom(hardRestrictionFailures),
+        0);
+    // TODO number of affected students can not be calculated correctly when multiple analyses
+    //  affect the same teilnehmerkreise, therefore currently set to 0
+  }
+
+  private Set<ReadOnlyPruefung> getPruefungenInvolvedIn(
+      Iterable<HartesKriteriumAnalyse> hartesKriteriumAnalysen) {
+    Set<ReadOnlyPruefung> result = new HashSet<>();
+    for (HartesKriteriumAnalyse hartesKriteriumAnalyse : hartesKriteriumAnalysen) {
+      result.addAll(hartesKriteriumAnalyse.getCausingPruefungen());
+    }
+    return result;
+  }
+
+  private Set<Teilnehmerkreis> getAllTeilnehmerkreiseFrom(
+      Iterable<HartesKriteriumAnalyse> hartesKriteriumAnalysen) {
+    Set<Teilnehmerkreis> result = new HashSet<>();
+    for (HartesKriteriumAnalyse hartesKriteriumAnalyse : hartesKriteriumAnalysen) {
+      result.addAll(hartesKriteriumAnalyse.getAffectedTeilnehmerkreise());
+    }
+    return result;
+  }
+
+
 }

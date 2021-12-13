@@ -4,7 +4,6 @@ import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -29,7 +28,9 @@ public class PruefungDTOBuilder {
   private int scoring;
   private Set<String> pruefer;
 
-  /** Builder Konstruktor */
+  /**
+   * Builder Konstruktor
+   */
   public PruefungDTOBuilder() {
     this.pruefungsNummer = PRUEUNGS_NUMMER_DEFAULT;
     this.pruefungsName = PRUEFUNGS_NAME_DEFAULT;
