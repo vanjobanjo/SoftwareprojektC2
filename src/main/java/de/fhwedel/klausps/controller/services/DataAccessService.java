@@ -338,7 +338,7 @@ public class DataAccessService {
   }
 
 
-  boolean terminIsInPeriod(LocalDateTime termin) {
+  public boolean terminIsInPeriod(LocalDateTime termin) {
     return terminIsSameDayOrAfterPeriodStart(termin) && terminIsSameDayOrBeforePeriodEnd(termin);
   }
 
