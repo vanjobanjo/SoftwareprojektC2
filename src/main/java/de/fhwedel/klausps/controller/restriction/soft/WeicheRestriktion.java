@@ -1,8 +1,9 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
+import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
-import de.fhwedel.klausps.model.api.Pruefung;
+import java.util.List;
 
 
 public abstract class WeicheRestriktion {
@@ -17,7 +18,8 @@ public abstract class WeicheRestriktion {
     this.kriterium = kriterium;
   }
 
-  protected boolean isInPeriod(Pruefung pruefung){
-    return dataAccessService.terminIsInPeriod(pruefung.getStartzeitpunkt());
+  public List<KriteriumsAnalyse> evaluate() {
+    throw new UnsupportedOperationException("Not implemented yet!");
   }
+
 }

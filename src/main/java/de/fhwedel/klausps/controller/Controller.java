@@ -61,38 +61,38 @@ public class Controller implements InterfaceController {
   @Override
   public LocalDate getStartDatumPeriode() throws NoPruefungsPeriodeDefinedException {
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    return dataAccessService.getStartOfPeriode();
   }
 
   @Override
   public LocalDate getEndDatumPeriode() throws NoPruefungsPeriodeDefinedException {
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    return dataAccessService.getEndOfPeriode();
   }
 
   @Override
   public int getKapazitaetPeriode() throws NoPruefungsPeriodeDefinedException {
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    return dataAccessService.getPeriodenKapazitaet();
   }
 
   @Override
   public Semester getSemester() throws NoPruefungsPeriodeDefinedException {
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    return dataAccessService.getSemester();
   }
 
   @Override
   public void setSemester(Semester semester) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(semester);
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    dataAccessService.setSemester(semester);
   }
 
   @Override
   public Set<Teilnehmerkreis> getAllTeilnehmerKreise() throws NoPruefungsPeriodeDefinedException {
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    return dataAccessService.getAllTeilnehmerkreise();
   }
 
   @Override
@@ -232,7 +232,8 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public List<ReadOnlyPruefung> deletePruefung(ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException {
+  public List<ReadOnlyPruefung> deletePruefung(ReadOnlyPruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung);
     checkNoPruefungDefined();
     return scheduleService.deletePruefung(pruefung);
@@ -299,7 +300,7 @@ public class Controller implements InterfaceController {
 
   @Override
   public ReadOnlyBlock createBlock(String name, ReadOnlyPruefung... pruefungen)
-          throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
+      throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
     noNullParameters((Object[]) pruefungen);
     noNullParameters(name);
     checkNoPruefungDefined();
@@ -316,7 +317,8 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public List<ReadOnlyPruefung> deleteBlock(ReadOnlyBlock block) throws NoPruefungsPeriodeDefinedException {
+  public List<ReadOnlyPruefung> deleteBlock(ReadOnlyBlock block)
+      throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block);
     checkNoPruefungDefined();
     return scheduleService.deleteBlock(block);
@@ -330,8 +332,6 @@ public class Controller implements InterfaceController {
     return scheduleService.unscheduleBlock(block);
   }
 
-
-
   @Override
   public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> moveBlock(
       ReadOnlyBlock block, LocalDateTime termin)
@@ -342,7 +342,8 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> addPruefungToBlock(ReadOnlyBlock block, ReadOnlyPruefung pruefung)
+  public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> addPruefungToBlock(ReadOnlyBlock block,
+      ReadOnlyPruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block, pruefung);
     checkNoPruefungDefined();
