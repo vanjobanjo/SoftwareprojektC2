@@ -17,8 +17,11 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+
 import java.util.Set;
 import java.util.stream.Collectors;
+
 
 public class ScheduleService {
 
@@ -64,8 +67,9 @@ public class ScheduleService {
     return List.of(pruefung); // TODO return result of test for conflicts
   }
 
-  public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> scheduleBlock(
-      ReadOnlyBlock block, LocalDateTime termin) throws HartesKriteriumException {
+
+  public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> scheduleBlock(ReadOnlyBlock block,
+      LocalDateTime termin) throws HartesKriteriumException {
     if (!dataAccessService.terminIsInPeriod(termin)) {
       throw new IllegalArgumentException(
           "Der angegebene Termin liegt ausserhalb der Pruefungsperiode.");
@@ -156,9 +160,24 @@ public class ScheduleService {
 
     List<ReadOnlyPruefung> pruefungInBlock = dataAccessService.deleteBlock(unscheduledBlock); //scoring must be 0
     changes.addAll(pruefungInBlock);
-    changes = changes.stream().distinct().collect(Collectors.toList()); //delete double
+    changes = changes.stream().distinct().toList(); //delete double
     return changes;
   }
+  
+  public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> moveBlock(ReadOnlyBlock block, LocalDateTime termin) {
+    if (!dataAccessService.terminIsInPeriod(termin)) {
+      throw new IllegalArgumentException(
+              "Der angegebene Termin liegt ausserhalb der Pruefungsperiode.");
+    }
+
+    if (block.getROPruefungen().isEmpty()) {
+      throw new IllegalArgumentException("Leere Bloecke duerfen nicht geplant werden.");
+    }
+    //TODO update scoring before DataAccessServoce#scheduleBlock
+    ReadOnlyBlock result = dataAccessService.scheduleBlock(block, termin);
+    return new Pair<>(result, new LinkedList<>(result.getROPruefungen()));
+  }
+
   public List<ReadOnlyPruefung> movePruefung(ReadOnlyPruefung pruefung, LocalDateTime expectedStart)
       throws HartesKriteriumException {
     LocalDateTime currentStart =
@@ -212,5 +231,6 @@ public class ScheduleService {
     }
     return result;
   }
+
 
 }

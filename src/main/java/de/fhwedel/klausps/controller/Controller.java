@@ -315,7 +315,6 @@ public class Controller implements InterfaceController {
     return scheduleService.scheduleBlock(block, start);
   }
 
-
   @Override
   public List<ReadOnlyPruefung> deleteBlock(ReadOnlyBlock block) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block);
@@ -331,13 +330,15 @@ public class Controller implements InterfaceController {
     return scheduleService.unscheduleBlock(block);
   }
 
+
+
   @Override
   public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> moveBlock(
       ReadOnlyBlock block, LocalDateTime termin)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     noNullParameters(block, termin);
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    return scheduleService.moveBlock(block, termin);
   }
 
   @Override
