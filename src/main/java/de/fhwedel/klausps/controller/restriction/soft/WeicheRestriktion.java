@@ -3,7 +3,7 @@ package de.fhwedel.klausps.controller.restriction.soft;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
-import java.util.List;
+import de.fhwedel.klausps.model.api.Pruefung;
 
 
 public abstract class WeicheRestriktion {
@@ -18,8 +18,6 @@ public abstract class WeicheRestriktion {
     this.kriterium = kriterium;
   }
 
-  public List<KriteriumsAnalyse> evaluate() {
-    throw new UnsupportedOperationException("Not implemented yet!");
-  }
+  public abstract KriteriumsAnalyse evaluate(Pruefung toPlan);
 
 }

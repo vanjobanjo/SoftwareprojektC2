@@ -1,12 +1,14 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
+import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Pruefung;
 import java.time.DayOfWeek;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Predicate;
 
 public class KeineKlausurAmSonntag extends WeicheRestriktion implements Predicate<Pruefung> {
@@ -35,7 +37,13 @@ public class KeineKlausurAmSonntag extends WeicheRestriktion implements Predicat
   }
 
   @Override
-  public List<KriteriumsAnalyse> evaluate() {
-    throw new UnsupportedOperationException("Not implemented yet!");
+  public KriteriumsAnalyse evaluate(Pruefung toPlan) {
+    if (test(toPlan)) {
+      return new KriteriumsAnalyse(Set.of(new PruefungDTOBuilder(toPlan).build()),
+          WeichesKriterium.SONNTAG, new HashSet<>(toPlan.getTeilnehmerkreise()),
+          toPlan.schaetzung());
+    } else {
+      return null;
+    }
   }
 }
