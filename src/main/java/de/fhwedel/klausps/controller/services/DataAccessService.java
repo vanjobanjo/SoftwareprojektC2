@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -47,12 +48,8 @@ public class DataAccessService {
     this.scheduleService = scheduleService;
   }
 
-  public ReadOnlyPruefung createPruefung(
-      String name,
-      String pruefungsNr,
-      Set<String> pruefer,
-      Duration duration,
-      Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
+  public ReadOnlyPruefung createPruefung(String name, String pruefungsNr, Set<String> pruefer,
+      Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
 
     if (!existsPruefungWith(pruefungsNr)) {
       // todo contains static values as it is unclear where to retrieve the data from
@@ -60,8 +57,8 @@ public class DataAccessService {
       pruefer.forEach(pruefungModel::addPruefer);
       addTeilnehmerKreisSchaetzungToModelPruefung(pruefungModel, teilnehmerkreise);
       pruefungsperiode.addPlanungseinheit(pruefungModel);
-      return new PruefungDTOBuilder(pruefungModel)
-          .build(); // Scoring ist 0, da Pruefung beim Erstellen ungeplant.
+      return new PruefungDTOBuilder(
+          pruefungModel).build(); // Scoring ist 0, da Pruefung beim Erstellen ungeplant.
     }
     return null;
   }
@@ -80,8 +77,8 @@ public class DataAccessService {
       return emptyBlockExists(block);
     } else {
       Optional<Block> modelBlock = searchInModel(block);
-      return modelBlock
-          .filter(value -> areSameBlocksBySpecs(block, value) && haveSamePruefungen(block, value))
+      return modelBlock.filter(
+              value -> areSameBlocksBySpecs(block, value) && haveSamePruefungen(block, value))
           .isPresent();
     }
 
@@ -106,10 +103,8 @@ public class DataAccessService {
     }
     for (ReadOnlyPruefung pruefung : readOnlyBlock.getROPruefungen()) {
       Pruefung pruefungFromModel = pruefungsperiode.pruefung(pruefung.getPruefungsnummer());
-      if (!existsPruefungWith(pruefung.getPruefungsnummer())
-          || modelPruefungen.stream()
-          .noneMatch(
-              (Pruefung p) -> hasPruefungsnummer(p, pruefungFromModel.getPruefungsnummer()))) {
+      if (!existsPruefungWith(pruefung.getPruefungsnummer()) || modelPruefungen.stream().noneMatch(
+          (Pruefung p) -> hasPruefungsnummer(p, pruefungFromModel.getPruefungsnummer()))) {
         return false;
       }
     }
@@ -141,25 +136,21 @@ public class DataAccessService {
       Optional<LocalDateTime> readOnlyTermin = readOnlyBlock.getTermin();
       return modelBlock != null
           && readOnlyBlock.getROPruefungen().size() == modelBlock.getPruefungen().size()
-          && readOnlyBlock.getName().equals(modelBlock.getName())
-          && ((readOnlyBlock.getTermin().isEmpty() && modelBlock.getStartzeitpunkt() == null)
-          || (readOnlyTermin.isPresent()
-          && readOnlyTermin.get().equals(modelBlock.getStartzeitpunkt())));
+          && readOnlyBlock.getName().equals(modelBlock.getName()) && (
+          (readOnlyBlock.getTermin().isEmpty() && modelBlock.getStartzeitpunkt() == null) || (
+              readOnlyTermin.isPresent() && readOnlyTermin.get()
+                  .equals(modelBlock.getStartzeitpunkt())));
     }
     return false;
   }
 
-  private void addTeilnehmerKreisSchaetzungToModelPruefung(
-      Pruefung pruefungModel, Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
+  private void addTeilnehmerKreisSchaetzungToModelPruefung(Pruefung pruefungModel,
+      Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
     teilnehmerkreise.forEach(pruefungModel::setSchaetzung);
   }
 
-  public ReadOnlyPruefung createPruefung(
-      String name,
-      String pruefungsNr,
-      String pruefer,
-      Duration duration,
-      Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
+  public ReadOnlyPruefung createPruefung(String name, String pruefungsNr, String pruefer,
+      Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
     return createPruefung(name, pruefungsNr, Set.of(pruefer), duration, teilnehmerkreise);
   }
 
@@ -177,18 +168,16 @@ public class DataAccessService {
     Pruefung toChangeDuration = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
     // Hartes Kriterium wird in ScheduleService geprüft.
     // Die Änderungen der Pruefungen werden auch im ScheduleService vorgenommen.
-    List<Pruefung> resultOfChangingDuration =
-        scheduleService.changeDuration(toChangeDuration, minutes);
+    List<Pruefung> resultOfChangingDuration = scheduleService.changeDuration(toChangeDuration,
+        minutes);
     return createListOfPruefungWithScoring(resultOfChangingDuration);
   }
 
   private List<ReadOnlyPruefung> createListOfPruefungWithScoring(List<Pruefung> pruefungen) {
     List<ReadOnlyPruefung> result = new ArrayList<>();
     for (Pruefung pruefung : pruefungen) {
-      PruefungDTO build =
-          new PruefungDTOBuilder(pruefung)
-              .withScoring(scheduleService.scoringOfPruefung(pruefung))
-              .build();
+      PruefungDTO build = new PruefungDTOBuilder(pruefung).withScoring(
+          scheduleService.scoringOfPruefung(pruefung)).build();
       result.add(build);
     }
     return result;
@@ -247,14 +236,12 @@ public class DataAccessService {
 
   public Set<ReadOnlyPruefung> getGeplantePruefungen() {
     return pruefungsperiode.geplantePruefungen().stream()
-        .map(this::fromModelToDTOPruefungWithScoring)
-        .collect(Collectors.toSet());
+        .map(this::fromModelToDTOPruefungWithScoring).collect(Collectors.toSet());
   }
 
   public Set<ReadOnlyPruefung> getUngeplantePruefungen() {
     return pruefungsperiode.ungeplantePruefungen().stream()
-        .map(this::fromModelToDTOPruefungWithScoring)
-        .collect(Collectors.toSet());
+        .map(this::fromModelToDTOPruefungWithScoring).collect(Collectors.toSet());
   }
 
   public Set<ReadOnlyBlock> getGeplanteBloecke() {
@@ -299,18 +286,13 @@ public class DataAccessService {
     for (Pruefung pruefung : block.getPruefungen()) {
       pruefungen.add(fromModelToDTOPruefungWithScoring(pruefung));
     }
-    return new BlockDTO(
-        block.getName(),
-        block.getStartzeitpunkt(),
-        block.getDauer(),
-        block.isGeplant(),
-        pruefungen);
+    return new BlockDTO(block.getName(), block.getStartzeitpunkt(), block.getDauer(),
+        block.isGeplant(), pruefungen);
   }
 
   public ReadOnlyPruefung fromModelToDTOPruefungWithScoring(Pruefung pruefung) {
     // TODO extract into appropriate class
-    return new PruefungDTOBuilder(pruefung)
-        .withScoring(scheduleService.scoringOfPruefung(pruefung))
+    return new PruefungDTOBuilder(pruefung).withScoring(scheduleService.scoringOfPruefung(pruefung))
         .build();
   }
 
@@ -373,17 +355,13 @@ public class DataAccessService {
       throw new IllegalArgumentException("Nur für ungeplante Blöcke möglich!");
     }
     Block model = getBlockFromModelOrException(block);
-    Set<Pruefung> modelPruefung =
-        new HashSet<>(
-            model
-                .getPruefungen()); // very important, when we call
+    Set<Pruefung> modelPruefung = new HashSet<>(
+        model.getPruefungen()); // very important, when we call
     // de.fhwedel.klausps.model.api.Block.removeAllPruefungen it
     // removes also the set, so we need a deep copy of the set
     model.removeAllPruefungen();
     pruefungsperiode.removePlanungseinheit(model);
-    return modelPruefung.stream()
-        .map(this::fromModelToDTOPruefungWithScoring)
-        .toList();
+    return modelPruefung.stream().map(this::fromModelToDTOPruefungWithScoring).toList();
   }
 
   public ReadOnlyBlock createBlock(String name, ReadOnlyPruefung... pruefungen) {
@@ -399,13 +377,10 @@ public class DataAccessService {
       throw new IllegalArgumentException("Doppelte Prüfungen im Block!");
     }
 
-    Block block_model =
-        new BlockImpl(
-            pruefungsperiode, name, Blocktyp.SEQUENTIAL); // TODO bei Erzeugung Sequential?
-    Arrays.stream(pruefungen)
-        .forEach(
-            pruefung ->
-                block_model.addPruefung(pruefungsperiode.pruefung(pruefung.getPruefungsnummer())));
+    Block block_model = new BlockImpl(pruefungsperiode, name,
+        Blocktyp.SEQUENTIAL); // TODO bei Erzeugung Sequential?
+    Arrays.stream(pruefungen).forEach(pruefung -> block_model.addPruefung(
+        pruefungsperiode.pruefung(pruefung.getPruefungsnummer())));
     if (!pruefungsperiode.addPlanungseinheit(block_model)) {
       throw new IllegalArgumentException("Irgendwas ist schief gelaufen."
           + " Der Block konnte nicht in die Datenbank übertragen werden.");
@@ -441,8 +416,7 @@ public class DataAccessService {
 
   private boolean isAnyInBlock(Collection<ReadOnlyPruefung> pruefungen) {
     return pruefungen.stream()
-        .anyMatch(
-            (pruefung) -> this.pruefungIsInBlock(pruefung.getPruefungsnummer()));
+        .anyMatch((pruefung) -> this.pruefungIsInBlock(pruefung.getPruefungsnummer()));
   }
 
   private boolean pruefungIsInBlock(String pruefungsNummer) {
@@ -476,6 +450,30 @@ public class DataAccessService {
   public void setSemester(@NotNull Semester semester) {
     // TODO model does not support setting the semester
     throw new UnsupportedOperationException("Not implemented yet!");
+  }
+
+  public List<ReadOnlyPruefung> getAllPruefungenBetween(LocalDateTime start, LocalDateTime end) {
+
+    List<ReadOnlyPruefung> listOfAllPruefungenBetween = new ArrayList<>();
+
+    for (Planungseinheit einheit : this.pruefungsperiode.planungseinheitenBetween(start, end)) {
+      if (einheit.isBlock()) {
+        for (Pruefung pruefung : einheit.asBlock().getPruefungen()) {
+
+          listOfAllPruefungenBetween.add(
+              createPruefung(pruefung.getName(), pruefung.getPruefungsnummer(),
+                  pruefung.getPruefer(), pruefung.getDauer(), pruefung.getSchaetzungen()));
+        }
+      } else {
+
+        Pruefung pruefung = einheit.asPruefung();
+
+        listOfAllPruefungenBetween.add(
+            createPruefung(pruefung.getName(), pruefung.getPruefungsnummer(), pruefung.getPruefer(),
+                pruefung.getDauer(), pruefung.getSchaetzungen()));
+      }
+    }
+    return listOfAllPruefungenBetween;
   }
 
   public Set<Teilnehmerkreis> getAllTeilnehmerkreise() {
