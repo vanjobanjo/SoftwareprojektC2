@@ -390,17 +390,15 @@ public class DataAccessService {
       throw new IllegalArgumentException("Doppelte Prüfungen im Block!");
     }
 
-   // Block block_model = new BlockImpl(pruefungsperiode, name,
-    //    Blocktyp.SEQUENTIAL); // TODO bei Erzeugung Sequential?
-
-   // Arrays.stream(pruefungen).forEach(pruefung -> block_model.addPruefung(
-  //      pruefungsperiode.pruefung(pruefung.getPruefungsnummer())));
-    //if (!pruefungsperiode.addPlanungseinheit(block_model)) {
-   //   throw new IllegalArgumentException("Irgendwas ist schief gelaufen."
-    //      + " Der Block konnte nicht in die Datenbank übertragen werden.");
-   // }
-   // return fromModelToDTOBlock(block_model);
-    return null;
+    Block block_model = new BlockImpl(pruefungsperiode, name,
+        Blocktyp.SEQUENTIAL); // TODO bei Erzeugung Sequential?
+    Arrays.stream(pruefungen).forEach(pruefung -> block_model.addPruefung(
+        pruefungsperiode.pruefung(pruefung.getPruefungsnummer())));
+    if (!pruefungsperiode.addPlanungseinheit(block_model)) {
+      throw new IllegalArgumentException("Irgendwas ist schief gelaufen."
+          + " Der Block konnte nicht in die Datenbank übertragen werden.");
+    }
+    return fromModelToDTOBlock(block_model);
   }
 
   /**
