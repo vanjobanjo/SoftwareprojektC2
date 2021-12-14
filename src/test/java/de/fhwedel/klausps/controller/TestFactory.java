@@ -10,6 +10,7 @@ import de.fhwedel.klausps.model.impl.PruefungImpl;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 public class TestFactory {
 
@@ -57,9 +58,15 @@ public class TestFactory {
   }
 
   public static void configureMock_getPruefungFromPeriode(final Pruefungsperiode MOCKED_PERIODE,
-      Pruefung pruefung) {
-    when(MOCKED_PERIODE.pruefung(pruefung.getPruefungsnummer())).thenReturn(pruefung);
+      Pruefung... pruefung) {
+    for(Pruefung p : pruefung){
+    when(MOCKED_PERIODE.pruefung(p.getPruefungsnummer())).thenReturn(p);
+    }
+  }
 
+  public static void configureMock_geplantePruefungenFromPeriode(final Pruefungsperiode MOCKED_PERIODE,
+      Set<Pruefung> pruefungen) {
+    when(MOCKED_PERIODE.geplantePruefungen()).thenReturn(pruefungen);
   }
 
   public static TestFactory build() {

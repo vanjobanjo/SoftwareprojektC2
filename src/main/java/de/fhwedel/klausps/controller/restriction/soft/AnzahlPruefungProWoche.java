@@ -14,28 +14,28 @@ import java.util.stream.Collectors;
 public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predicate<Pruefung> {
 
   // for testing
-  public static int LIMIT = 5;
-  private final int DAYS_WEEK = 7;
+  public static int LIMIT_DEFAULT = 5;
+  private static int DAYS_WEEK_DEFAULT = 7;
   private final int limit;
 
   private final LocalDate startPeriode;
-  final Map<Integer, Set<Pruefung>> weekPruefungMap;
+  private final Map<Integer, Set<Pruefung>> weekPruefungMap;
 
   //Mock Konstruktor
   AnzahlPruefungProWoche(
       DataAccessService dataAccessService,
-      final int LIMIT) {
+      final int LIMIT_TEST) {
     super(dataAccessService, WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE);
     startPeriode = dataAccessService.getStartOfPeriode();
     weekPruefungMap = weekMapOfPruefung(dataAccessService.getGeplanteModelPruefung(), startPeriode);
-    limit = LIMIT;
+    limit = LIMIT_TEST;
   }
 
   public AnzahlPruefungProWoche() {
     super(ServiceProvider.getDataAccessService(), WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE);
     startPeriode = dataAccessService.getStartOfPeriode();
     weekPruefungMap = weekMapOfPruefung(dataAccessService.getGeplanteModelPruefung(), startPeriode);
-    limit = LIMIT;
+    limit = LIMIT_DEFAULT;
   }
 
   Map<Integer, Set<Pruefung>> weekMapOfPruefung(Set<Pruefung> geplantePruefung,
@@ -46,19 +46,20 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
   }
 
   private int getWeek(LocalDate startPeriode, Pruefung pruefung) {
-    return (startPeriode.getDayOfYear() - pruefung.getStartzeitpunkt().getDayOfYear()) / DAYS_WEEK;
+    return (pruefung.getStartzeitpunkt().getDayOfYear() - startPeriode.getDayOfYear())
+        / DAYS_WEEK_DEFAULT;
   }
 
   @Override
   public boolean test(Pruefung pruefung) {
-    if(!isInPeriod(pruefung)){
-      throw new IllegalArgumentException("Pruefung: " + pruefung.toString() + " liegt nicht in der Periode");
+    if (!isInPeriod(pruefung)) {
+      throw new IllegalArgumentException("Pruefung: " + pruefung + " liegt nicht in der Periode");
     }
     int week = getWeek(startPeriode, pruefung);
 
     Optional<Set<Pruefung>> pruefungen = Optional.ofNullable(weekPruefungMap.get(week));
 
-    return pruefungen.isPresent() && pruefungen.get().size() >= LIMIT; //TODO how to check?
+    return pruefungen.isPresent() && pruefungen.get().size() >= limit; //TODO how to check?
   }
 
   private boolean isInPeriod(Pruefung pruefung) {
