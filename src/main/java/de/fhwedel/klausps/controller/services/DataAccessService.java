@@ -452,25 +452,18 @@ public class DataAccessService {
     throw new UnsupportedOperationException("Not implemented yet!");
   }
 
-  public List<ReadOnlyPruefung> getAllPruefungenBetween(LocalDateTime start, LocalDateTime end) {
+  public List<Pruefung> getAllPruefungenBetween(LocalDateTime start, LocalDateTime end) {
 
-    List<ReadOnlyPruefung> listOfAllPruefungenBetween = new ArrayList<>();
+    List<Pruefung> listOfAllPruefungenBetween = new ArrayList<>();
 
     for (Planungseinheit einheit : this.pruefungsperiode.planungseinheitenBetween(start, end)) {
       if (einheit.isBlock()) {
         for (Pruefung pruefung : einheit.asBlock().getPruefungen()) {
 
-          listOfAllPruefungenBetween.add(
-              createPruefung(pruefung.getName(), pruefung.getPruefungsnummer(),
-                  pruefung.getPruefer(), pruefung.getDauer(), pruefung.getSchaetzungen()));
+          listOfAllPruefungenBetween.add(pruefung);
         }
       } else {
-
-        Pruefung pruefung = einheit.asPruefung();
-
-        listOfAllPruefungenBetween.add(
-            createPruefung(pruefung.getName(), pruefung.getPruefungsnummer(), pruefung.getPruefer(),
-                pruefung.getDauer(), pruefung.getSchaetzungen()));
+        listOfAllPruefungenBetween.add(einheit.asPruefung());
       }
     }
     return listOfAllPruefungenBetween;
