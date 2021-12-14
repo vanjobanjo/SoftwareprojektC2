@@ -28,18 +28,18 @@ public class twoKlausurenSameTime extends HartRestriktion implements Predicate<P
     LocalDateTime start = pruefung.getStartzeitpunkt().minusMinutes(MINUTESBETWEENPRUEFUNGEN);
     LocalDateTime end = pruefung.getStartzeitpunkt().plus(pruefung.getDauer())
         .plusMinutes(MINUTESBETWEENPRUEFUNGEN);
-    List<ReadOnlyPruefung> testList = dataAccessService.getAllPruefungenBetween(start,end);
+    List<Pruefung> testList = dataAccessService.getAllPruefungenBetween(start,end);
     Set<Teilnehmerkreis> teilnehmer = pruefung.getTeilnehmerkreise();
-    for(ReadOnlyPruefung roPruefung : testList){
-      for(Teilnehmerkreis teilnehmerkreis : roPruefung.getTeilnehmerkreise()){
+    for(Pruefung pruefunginTimeZone : testList){
+      for(Teilnehmerkreis teilnehmerkreis : pruefunginTimeZone.getTeilnehmerkreise()){
         if(teilnehmer.contains(teilnehmerkreis)){
-          if(!this.inConflictROPruefung.contains(roPruefung)) {
+          if(!this.inConflictROPruefung.contains(pruefunginTimeZone)) {
             //hier sollte ein Teilnehmerkreis nur einmal dazu addiert werden.
-            this.countStudents += roPruefung.getTeilnehmerKreisSchaetzung().get(teilnehmerkreis);
+            this.countStudents += pruefunginTimeZone.getSchaetzungen().get(teilnehmerkreis);
           }
           //Hier ist es egal, da es ein Set ist und es nur einmal vorkommen darf
             this.inConfilictTeilnehmerkreis.add(teilnehmerkreis);
-            this.inConflictROPruefung.add(roPruefung);
+            this.inConflictROPruefung.add(pruefunginTimeZone);
 
           test = true;
         }

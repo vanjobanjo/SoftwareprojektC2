@@ -5,6 +5,7 @@ import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.services.DataAccessService;
+import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.util.HashSet;
 import java.util.List;
@@ -15,7 +16,7 @@ public class HartRestriktion  {
 
 
 
-  Set<ReadOnlyPruefung> inConflictROPruefung;
+  Set<Pruefung> inConflictROPruefung;
   Set<Teilnehmerkreis> inConfilictTeilnehmerkreis;
   int countStudents;
   HartesKriterium hardRestriction;
