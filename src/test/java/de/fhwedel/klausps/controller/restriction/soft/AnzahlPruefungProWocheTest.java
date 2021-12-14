@@ -47,6 +47,8 @@ class AnzahlPruefungProWocheTest {
     TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, mathe_0, dm_0, haskell_1);
     TestFactory.configureMock_geplantePruefungenFromPeriode(mocked_periode,
         Set.of(mathe_0, dm_0, haskell_1));
+
+    //mock must be configured before constructor call
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
     Map<Integer, Set<Pruefung>> result = deviceUnderTest.weekMapOfPruefung(
         Set.of(mathe_0, dm_0, haskell_1), START_PERIODE);
@@ -76,6 +78,7 @@ class AnzahlPruefungProWocheTest {
 
     TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, haskell_0_isNotPlanned_ShouldBePlanned_At);
 
+    //mock must be configured before constructor call
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
 
     assertThat(deviceUnderTest.test(haskell_0_isNotPlanned_ShouldBePlanned_At)).isTrue();
