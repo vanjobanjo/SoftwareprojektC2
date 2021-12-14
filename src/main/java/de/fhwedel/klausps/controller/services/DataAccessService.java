@@ -174,6 +174,7 @@ public class DataAccessService {
     return createListOfPruefungWithScoring(resultOfChangingDuration);
   }
 
+
   private List<ReadOnlyPruefung> createListOfPruefungWithScoring(List<Pruefung> pruefungen) {
     List<ReadOnlyPruefung> result = new ArrayList<>();
     for (Pruefung pruefung : pruefungen) {
@@ -240,6 +241,10 @@ public class DataAccessService {
         .map(this::fromModelToDTOPruefungWithScoring).collect(Collectors.toSet());
   }
 
+
+  public Set<Pruefung> getGeplanteModelPruefung(){
+    return pruefungsperiode.geplantePruefungen();
+  }
   public Set<ReadOnlyPruefung> getUngeplantePruefungen() {
     return pruefungsperiode.ungeplantePruefungen().stream()
         .map(this::fromModelToDTOPruefungWithScoring).collect(Collectors.toSet());
@@ -291,11 +296,18 @@ public class DataAccessService {
         block.isGeplant(), pruefungen);
   }
 
-  public ReadOnlyPruefung fromModelToDTOPruefungWithScoring(Pruefung pruefung) {
+  private ReadOnlyPruefung fromModelToDTOPruefungWithScoring(Pruefung pruefung) {
     // TODO extract into appropriate class
     return new PruefungDTOBuilder(pruefung).withScoring(scheduleService.scoringOfPruefung(pruefung))
         .build();
   }
+
+  private ReadOnlyPruefung fromModelToDTOPruefungWithoutScoring(Pruefung pruefung) {
+    // TODO extract into appropriate class
+    return new PruefungDTOBuilder(pruefung)
+        .build();
+  }
+
 
   public boolean deletePruefung(ReadOnlyPruefung roPruefung) throws IllegalArgumentException {
     Pruefung pruefung = getPruefungFromModelOrException(roPruefung.getPruefungsnummer());
