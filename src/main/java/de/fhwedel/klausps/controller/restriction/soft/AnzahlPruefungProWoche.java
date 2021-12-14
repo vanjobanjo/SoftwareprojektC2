@@ -1,11 +1,14 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
+import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Pruefung;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -70,5 +73,20 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
   @Override
   public Optional<KriteriumsAnalyse> evaluate(Pruefung pruefung) {
     throw new UnsupportedOperationException("Not implemented yet!");
+  }
+
+  @Override
+  public KriteriumsAnalyse evaluate(Pruefung toPlan) {
+    if (test(toPlan)) {
+      Set<ReadOnlyPruefung> betroffen = weekPruefungMap.get(getWeek(startPeriode, toPlan)).stream()
+          .map(x -> new PruefungDTOBuilder(x).build()).collect(
+              Collectors.toSet());
+      betroffen.add(new PruefungDTOBuilder(toPlan).build());
+      return new KriteriumsAnalyse(betroffen,
+          WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE, new HashSet<>(toPlan.getTeilnehmerkreise()),
+          toPlan.schaetzung());
+    } else {
+      return null;
+    }
   }
 }
