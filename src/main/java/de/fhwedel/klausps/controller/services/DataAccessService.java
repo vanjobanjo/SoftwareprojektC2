@@ -53,7 +53,8 @@ public class DataAccessService {
 
     if (!existsPruefungWith(pruefungsNr)) {
       // todo contains static values as it is unclear where to retrieve the data from
-      Pruefung pruefungModel = new PruefungImpl(pruefungsNr, name, "", duration, null);
+      //TODO hier die Duration weg machen
+      Pruefung pruefungModel = new PruefungImpl(pruefungsNr, name, "", ((int) duration.toMinutes()), null);
       pruefer.forEach(pruefungModel::addPruefer);
       addTeilnehmerKreisSchaetzungToModelPruefung(pruefungModel, teilnehmerkreise);
       pruefungsperiode.addPlanungseinheit(pruefungModel);
@@ -377,15 +378,17 @@ public class DataAccessService {
       throw new IllegalArgumentException("Doppelte Prüfungen im Block!");
     }
 
-    Block block_model = new BlockImpl(pruefungsperiode, name,
-        Blocktyp.SEQUENTIAL); // TODO bei Erzeugung Sequential?
-    Arrays.stream(pruefungen).forEach(pruefung -> block_model.addPruefung(
-        pruefungsperiode.pruefung(pruefung.getPruefungsnummer())));
-    if (!pruefungsperiode.addPlanungseinheit(block_model)) {
-      throw new IllegalArgumentException("Irgendwas ist schief gelaufen."
-          + " Der Block konnte nicht in die Datenbank übertragen werden.");
-    }
-    return fromModelToDTOBlock(block_model);
+   // Block block_model = new BlockImpl(pruefungsperiode, name,
+    //    Blocktyp.SEQUENTIAL); // TODO bei Erzeugung Sequential?
+
+   // Arrays.stream(pruefungen).forEach(pruefung -> block_model.addPruefung(
+  //      pruefungsperiode.pruefung(pruefung.getPruefungsnummer())));
+    //if (!pruefungsperiode.addPlanungseinheit(block_model)) {
+   //   throw new IllegalArgumentException("Irgendwas ist schief gelaufen."
+    //      + " Der Block konnte nicht in die Datenbank übertragen werden.");
+   // }
+   // return fromModelToDTOBlock(block_model);
+    return null;
   }
 
   /**
@@ -455,6 +458,10 @@ public class DataAccessService {
   public List<Pruefung> getAllPruefungenBetween(LocalDateTime start, LocalDateTime end) {
 
     List<Pruefung> listOfAllPruefungenBetween = new ArrayList<>();
+
+    if(start.isAfter(end)){
+      throw new IllegalArgumentException("Der Start liegt nach dem Ende des Zeitslots");
+    }
 
     for (Planungseinheit einheit : this.pruefungsperiode.planungseinheitenBetween(start, end)) {
       if (einheit.isBlock()) {

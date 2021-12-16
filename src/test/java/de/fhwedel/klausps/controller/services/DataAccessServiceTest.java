@@ -642,6 +642,57 @@ class DataAccessServiceTest {
         .isEqualTo(new PruefungDTOBuilder(RO_HASKELL_UNPLANNED).withStartZeitpunkt(now).build());
   }
 
+
+  @Test
+  void getBetween(){
+
+    LocalDateTime start = LocalDateTime.of(2021,8,11,9,0);
+    LocalDateTime end = LocalDateTime.of(2021,8,11,10,0);
+
+    Set<Planungseinheit> setPlanung = new HashSet<>();
+    Planungseinheit dm = mock(Planungseinheit.class);
+    Planungseinheit haskel = mock(Planungseinheit.class);
+    Planungseinheit infotech = mock(Planungseinheit.class);
+
+    setPlanung.add(dm);
+    setPlanung.add(haskel);
+    setPlanung.add(infotech);
+
+    List<Pruefung> listPruefung = new ArrayList<>();
+    listPruefung.add(dm.asPruefung());
+    listPruefung.add(haskel.asPruefung());
+    listPruefung.add(infotech.asPruefung());
+
+    when(this.pruefungsperiode.planungseinheitenBetween(start,end)).thenReturn(setPlanung);
+
+    assertEquals(listPruefung,this.deviceUnderTest.getAllPruefungenBetween(start,end));
+  }
+
+  @Test
+  void getBetween_throwIllegal(){
+
+    LocalDateTime start = LocalDateTime.of(2021,8,11,9,0);
+    LocalDateTime end = LocalDateTime.of(2021,8,11,10,0);
+
+    Set<Planungseinheit> setPlanung = new HashSet<>();
+    Planungseinheit dm = mock(Planungseinheit.class);
+    Planungseinheit haskel = mock(Planungseinheit.class);
+    Planungseinheit infotech = mock(Planungseinheit.class);
+
+    setPlanung.add(dm);
+    setPlanung.add(haskel);
+    setPlanung.add(infotech);
+
+    List<Pruefung> listPruefung = new ArrayList<>();
+    listPruefung.add(dm.asPruefung());
+    listPruefung.add(haskel.asPruefung());
+    listPruefung.add(infotech.asPruefung());
+
+    when(this.pruefungsperiode.planungseinheitenBetween(start,end)).thenReturn(setPlanung);
+    assertThrows(IllegalArgumentException.class, () -> this.deviceUnderTest.getAllPruefungenBetween(end,start));
+
+  }
+
   private void configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(
       Block modelBlock, LocalDateTime termin, ReadOnlyPruefung... pruefungen) {
     for (ReadOnlyPruefung p : pruefungen) {
