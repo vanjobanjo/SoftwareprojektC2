@@ -8,7 +8,6 @@ import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.helper.Pair;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -17,10 +16,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-
 import java.util.Set;
-import java.util.stream.Collectors;
 
 
 public class ScheduleService {
@@ -40,7 +36,7 @@ public class ScheduleService {
    * sein.
    *
    * @param pruefung Pruefung die zu planen ist.
-   * @param termin Starttermin
+   * @param termin   Starttermin
    * @return Liste von veränderten Ergebnissen
    */
   public List<ReadOnlyPruefung> schedulePruefung(ReadOnlyPruefung pruefung, LocalDateTime termin)
@@ -98,7 +94,7 @@ public class ScheduleService {
    * Verändern auch Teil der Rückgabe sein.
    *
    * @param pruefung Pruefung, dessen Dauer geändert werden muss.
-   * @param minutes die neue Dauer
+   * @param minutes  die neue Dauer
    * @return Liste von Pruefung, jene die sich durch die Operation geändert haben.
    */
   public List<Pruefung> changeDuration(Pruefung pruefung, Duration minutes)
@@ -151,31 +147,34 @@ public class ScheduleService {
     List<ReadOnlyPruefung> changes = new LinkedList<>();
 
     if (block.geplant()) {
-     Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> impact = unscheduleBlock(block); //TODO unscheduleBlock muss das Scoring berechnen.
-     unscheduledBlock = impact.left();
-     changes = impact.right();
+      Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> impact = unscheduleBlock(
+          block); //TODO unscheduleBlock muss das Scoring berechnen.
+      unscheduledBlock = impact.left();
+      changes = impact.right();
     } else {
       unscheduledBlock = block;
     }
 
-    List<ReadOnlyPruefung> pruefungInBlock = dataAccessService.deleteBlock(unscheduledBlock); //scoring must be 0
+    List<ReadOnlyPruefung> pruefungInBlock = dataAccessService.deleteBlock(
+        unscheduledBlock); //scoring must be 0
     changes.addAll(pruefungInBlock);
     changes = changes.stream().distinct().toList(); //delete double
     return changes;
   }
-  
-  public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> moveBlock(ReadOnlyBlock block, LocalDateTime termin) {
-    if (!dataAccessService.terminIsInPeriod(termin)) {
-      throw new IllegalArgumentException(
-              "Der angegebene Termin liegt ausserhalb der Pruefungsperiode.");
-    }
 
-    if (block.getROPruefungen().isEmpty()) {
-      throw new IllegalArgumentException("Leere Bloecke duerfen nicht geplant werden.");
+  public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> moveBlock(ReadOnlyBlock block,
+      LocalDateTime termin) throws HartesKriteriumException {
+    if (block.getTermin().isEmpty()) {
+      throw new IllegalArgumentException("Nur geplante Blöcke können verschoben werden!");
     }
-    //TODO update scoring before DataAccessServoce#scheduleBlock
-    ReadOnlyBlock result = dataAccessService.scheduleBlock(block, termin);
-    return new Pair<>(result, new LinkedList<>(result.getROPruefungen()));
+    LocalDateTime oldTermin = block.getTermin().get();
+    ReadOnlyBlock removedBlock = dataAccessService.unscheduleBlock(block);
+    try {
+      return scheduleBlock(block, termin);
+    } catch (HartesKriteriumException hardRestrictionViolation) {
+      dataAccessService.scheduleBlock(removedBlock, oldTermin);
+      throw hardRestrictionViolation;
+    }
   }
 
   public List<ReadOnlyPruefung> movePruefung(ReadOnlyPruefung pruefung, LocalDateTime expectedStart)
@@ -183,7 +182,7 @@ public class ScheduleService {
     LocalDateTime currentStart =
         dataAccessService.getStartOfPruefungWith(pruefung.getPruefungsnummer())
             .orElseThrow(
-                () -> new IllegalArgumentException("Only a planned pruefung can be moved!"));
+                () -> new IllegalArgumentException("Nur geplante Pruefungen können verschoben werden!"));
     dataAccessService.schedulePruefung(pruefung, expectedStart);
     List<HartesKriteriumAnalyse> hardRestrictionFailures = restrictionService.checkHarteKriterien();
     if (!hardRestrictionFailures.isEmpty()) {
