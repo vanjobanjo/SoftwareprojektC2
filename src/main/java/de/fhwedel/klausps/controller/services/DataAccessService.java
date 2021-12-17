@@ -53,7 +53,7 @@ public class DataAccessService {
     if (!existsPruefungWith(pruefungsNr)) {
       // todo contains static values as it is unclear where to retrieve the data from
       //TODO hier die Duration weg machen
-      Pruefung pruefungModel = new PruefungImpl(pruefungsNr, name, "", ((int) duration.toMinutes()), null);
+      Pruefung pruefungModel = new PruefungImpl(pruefungsNr, name, "", duration);
       pruefer.forEach(pruefungModel::addPruefer);
       addTeilnehmerKreisSchaetzungToModelPruefung(pruefungModel, teilnehmerkreise);
       pruefungsperiode.addPlanungseinheit(pruefungModel);

@@ -13,6 +13,8 @@ import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ScheduleService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Ausbildungsgrad;
+import de.fhwedel.klausps.model.api.Block;
+import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
@@ -26,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class twoKlausurenSameTimeTest {
 
@@ -64,6 +67,137 @@ class twoKlausurenSameTimeTest {
     };
   }
 
+  Pruefung getPruefung(String name){
+    return new Pruefung() {
+      String pruefungsnummer;
+      String name;
+      @Override
+      public String getPruefungsnummer() {
+        return "1";
+      }
+
+      @Override
+      public void setPruefungsnummer(String pruefungsnummer) {
+  this.pruefungsnummer = pruefungsnummer;
+      }
+
+      @Override
+      public String getName() {
+        return this.name;
+      }
+
+      @Override
+      public void setName(String name) {
+  this.name = name;
+      }
+
+      @Override
+      public String getReferenzVerwaltungsystem() {
+        return null;
+      }
+
+      @Override
+      public void setDauer(Duration dauer) {
+
+      }
+
+      @Override
+      public void setSchaetzung(Teilnehmerkreis teilnehmerkreis, int schaetzung) {
+
+      }
+
+      @Override
+      public boolean addPruefer(String kuerzel) {
+        return false;
+      }
+
+      @Override
+      public boolean removePruefer(String kuerzel) {
+        return false;
+      }
+
+      @Override
+      public boolean addTeilnehmerkreis(Teilnehmerkreis teilnehmerkreis) {
+        return false;
+      }
+
+      @Override
+      public boolean addTeilnehmerkreis(Teilnehmerkreis teilnehmerkreis, int schaetzung) {
+        return false;
+      }
+
+      @Override
+      public boolean removeTeilnehmerkreis(Teilnehmerkreis teilnehmerkreis) {
+        return false;
+      }
+
+      @Override
+      public boolean isBlock() {
+        return false;
+      }
+
+      @Override
+      public Block asBlock() {
+        return null;
+      }
+
+      @Override
+      public Pruefung asPruefung() {
+        return null;
+      }
+
+      @Override
+      public LocalDateTime getStartzeitpunkt() {
+        return null;
+      }
+
+      @Override
+      public void setStartzeitpunkt(LocalDateTime startzeitpunkt) {
+
+      }
+
+      @Override
+      public Duration getDauer() {
+        return null;
+      }
+
+      @Override
+      public Set<String> getPruefer() {
+        return null;
+      }
+
+      @Override
+      public Map<Teilnehmerkreis, Integer> getSchaetzungen() {
+        return null;
+      }
+
+      @Override
+      public Set<Teilnehmerkreis> getTeilnehmerkreise() {
+        return null;
+      }
+
+      @Override
+      public Set<Ausbildungsgrad> getAusbildungsgrade() {
+        return null;
+      }
+
+      @Override
+      public boolean isGeplant() {
+        return false;
+      }
+
+      @Override
+      public int schaetzung() {
+        return 0;
+      }
+
+      @Override
+      public LocalDateTime endzeitpunkt() {
+        return null;
+      }
+    };
+  }
+
 
   @BeforeEach
   void setUp() {
@@ -76,10 +210,14 @@ class twoKlausurenSameTimeTest {
   }
 
   @Test
-  void twoKlausurenSameTimeTest_test() {
+  void twoKlausurenSameTimeTest_twoSameTime() {
+
+    Planungseinheit analysisPL = mock(Planungseinheit.class);
+
+    Planungseinheit haskelPL = mock(Planungseinheit.class);
 
     Pruefung analysis = mock(Pruefung.class);
-    Pruefung dm = mock(Pruefung.class);
+
     Pruefung haskel = mock(Pruefung.class);
 
     Set<Teilnehmerkreis> teilnehmer = new HashSet<>();
@@ -87,24 +225,71 @@ class twoKlausurenSameTimeTest {
 
     teilnehmer.add(informatik);
 
-    when(dm.getTeilnehmerkreise()).thenReturn(teilnehmer);
+
     when(analysis.getTeilnehmerkreise()).thenReturn(teilnehmer);
     when(haskel.getTeilnehmerkreise()).thenReturn(teilnehmer);
 
     ArrayList<Pruefung> listOfPruefungen = new ArrayList<>();
     listOfPruefungen.add(analysis);
-    listOfPruefungen.add(dm);
+
+
+    Set<Planungseinheit> setOfPruefungen = new HashSet<>();
+    setOfPruefungen.add(analysisPL);
+
+
+    Set<Pruefung> setOfConflictPruefunge = new HashSet<>();
+
+    setOfConflictPruefunge.add(analysis);
+    setOfConflictPruefunge.add(haskel);
+
+    Set<Teilnehmerkreis> setOfConflictTeilnehmer = new HashSet<>();
+    setOfConflictTeilnehmer.add(informatik);
+
+    int studends = 8;
+
+    Map<Teilnehmerkreis, Integer> teilnehmerCount = new HashMap<>();
+    teilnehmerCount.put(informatik, Integer.valueOf(8));
+
+    when(haskel.getSchaetzungen()).thenReturn(teilnehmerCount);
+
+    when(analysis.getSchaetzungen()).thenReturn(teilnehmerCount);
+
+    when(haskel.getTeilnehmerkreise()).thenReturn(setOfConflictTeilnehmer);
+
+    when(analysis.getTeilnehmerkreise()).thenReturn(setOfConflictTeilnehmer);
 
     twoKlausurenSameTime h = new twoKlausurenSameTime(this.deviceUnderTest,
         HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG);
+    LocalDateTime start = LocalDateTime.of(2021, 8, 11, 9, 0);
 
-    when(deviceUnderTest.getAllPruefungenBetween(any(), any())).thenReturn(listOfPruefungen);
+    when(analysisPL.asPruefung()).thenReturn(analysis);
+    when(haskelPL.asPruefung()).thenReturn(haskel);
+    when(pruefungsperiode.planungseinheitenBetween(start, start.plusMinutes(120))).thenReturn(setOfPruefungen);
+
+    when(deviceUnderTest.getAllPruefungenBetween(start, start.plusMinutes(120))).thenReturn(listOfPruefungen);
+
+
+    Duration duration = Duration.ofMinutes(120);
+
+    when(haskel.getStartzeitpunkt()).thenReturn(start);
+    when(haskel.getDauer()).thenReturn(duration);
+
 
     assertTrue(h.test(haskel));
+
+    assertEquals(setOfConflictPruefunge, h.inConflictROPruefung);
+    assertEquals(setOfConflictTeilnehmer, h.inConfilictTeilnehmerkreis);
+    assertEquals(studends, h.countStudents);
+
   }
 
+/*
   @Test
   void twoKlausurenSameTimeTest() {
+
+    Planungseinheit analysisPL = mock(Planungseinheit.class);
+    Planungseinheit dmPL = mock(Planungseinheit.class);
+    Planungseinheit haskelPL = mock(Planungseinheit.class);
 
     Pruefung analysis = mock(Pruefung.class);
     Pruefung dm = mock(Pruefung.class);
@@ -122,6 +307,10 @@ class twoKlausurenSameTimeTest {
     ArrayList<Pruefung> listOfPruefungen = new ArrayList<>();
     listOfPruefungen.add(analysis);
     listOfPruefungen.add(dm);
+
+    Set<Planungseinheit> setOfPruefungen = new HashSet<>();
+    setOfPruefungen.add(analysisPL);
+    setOfPruefungen.add(dmPL);
 
     Set<Pruefung> setOfConflictPruefunge = new HashSet<>();
     setOfConflictPruefunge.add(dm);
@@ -146,10 +335,16 @@ class twoKlausurenSameTimeTest {
 
     twoKlausurenSameTime h = new twoKlausurenSameTime(this.deviceUnderTest,
         HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG);
-
-    when(deviceUnderTest.getAllPruefungenBetween(any(), any())).thenReturn(listOfPruefungen);
-
     LocalDateTime start = LocalDateTime.of(2021, 8, 11, 9, 0);
+
+    when(analysisPL.asPruefung()).thenReturn(analysis);
+    when(dmPL.asPruefung()).thenReturn(dm);
+    when(haskelPL.asPruefung()).thenReturn(haskel);
+    when(pruefungsperiode.planungseinheitenBetween(start, start.plusMinutes(120))).thenReturn(setOfPruefungen);
+
+
+    when(deviceUnderTest.getAllPruefungenBetween(start, start.plusMinutes(120))).thenReturn(listOfPruefungen);
+
 
     Duration duration = Duration.ofMinutes(120);
 
@@ -162,7 +357,7 @@ class twoKlausurenSameTimeTest {
 
     when(dm.getStartzeitpunkt()).thenReturn(start);
     when(dm.getDauer()).thenReturn(duration);*/
-
+/*
     assertTrue(h.test(haskel));
 
     assertEquals(setOfConflictPruefunge, h.inConflictROPruefung);
@@ -173,13 +368,25 @@ class twoKlausurenSameTimeTest {
 
 
 
-
+/*
   @Test
   void twoKlausurenSameTimeTest_DiffrentTeilnehmerkreise() {
+
+    Planungseinheit analysisPL1 = mock(Planungseinheit.class);
+    Planungseinheit dmPL1 = mock(Planungseinheit.class);
+    Planungseinheit haskelPL1 = mock(Planungseinheit.class);
+
+    Planungseinheit analysisPL = Mockito.spy(analysisPL1);
+    Planungseinheit dmPL = Mockito.spy(dmPL1);
+    Planungseinheit haskelPL = Mockito.spy(haskelPL1);
 
     Pruefung analysis = mock(Pruefung.class);
     Pruefung dm = mock(Pruefung.class);
     Pruefung haskel = mock(Pruefung.class);
+
+    when(analysisPL.asPruefung()).thenReturn(analysis);
+    when(dmPL.asPruefung()).thenReturn(dm);
+    when(haskelPL.asPruefung()).thenReturn(haskel);
 
     Set<Teilnehmerkreis> teilnehmer1 = new HashSet<>();
     Set<Teilnehmerkreis> teilnehmer2 = new HashSet<>();
@@ -194,6 +401,10 @@ class twoKlausurenSameTimeTest {
     when(dm.getTeilnehmerkreise()).thenReturn(teilnehmer1);
     when(analysis.getTeilnehmerkreise()).thenReturn(teilnehmer2);
     when(haskel.getTeilnehmerkreise()).thenReturn(teilnehmer3);
+
+    Set<Planungseinheit> setOfPruefungenSameTime = new HashSet<>();
+    setOfPruefungenSameTime.add(analysis);
+    setOfPruefungenSameTime.add(dm);
 
     ArrayList<Pruefung> listOfPruefungenSameTime = new ArrayList<>();
     listOfPruefungenSameTime.add(analysis);
@@ -233,10 +444,12 @@ class twoKlausurenSameTimeTest {
 
     twoKlausurenSameTime h = new twoKlausurenSameTime(this.deviceUnderTest,
         HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG);
-
-    when(deviceUnderTest.getAllPruefungenBetween(any(), any())).thenReturn(listOfPruefungenSameTime);
-
     LocalDateTime start = LocalDateTime.of(2021, 8, 11, 9, 0);
+    when(pruefungsperiode.planungseinheitenBetween(start,start.plusMinutes(120))).thenReturn(setOfPruefungenSameTime);
+
+    when(deviceUnderTest.getAllPruefungenBetween(start, start.plusMinutes(120))).thenReturn(listOfPruefungenSameTime);
+
+
 
     Duration duration = Duration.ofMinutes(120);
 
@@ -249,7 +462,7 @@ class twoKlausurenSameTimeTest {
 
     when(dm.getStartzeitpunkt()).thenReturn(start);
     when(dm.getDauer()).thenReturn(duration);*/
-
+/*
     assertFalse(h.test(haskel));
 
     assertEquals(setOfConflictPruefunge, h.inConflictROPruefung);
@@ -326,7 +539,7 @@ class twoKlausurenSameTimeTest {
 
     when(dm.getStartzeitpunkt()).thenReturn(start);
     when(dm.getDauer()).thenReturn(duration);*/
-
+/*
     assertFalse(h.test(haskel));
 
     assertEquals(setOfConflictPruefunge, h.inConflictROPruefung);
@@ -335,5 +548,5 @@ class twoKlausurenSameTimeTest {
 
   }
 
-
+*/
 }
