@@ -32,7 +32,7 @@ public class TwoKlausurenSameTime extends HartRestriktion implements Predicate<P
     for(Pruefung pruefungInTimeZone : testList){
       for(Teilnehmerkreis teilnehmerkreis : pruefungInTimeZone.getTeilnehmerkreise()){
         if(teilnehmer.contains(teilnehmerkreis)){
-          if(!this.inConflictROPruefung.contains(pruefungInTimeZone)) {
+          if(!this.inConflictROPruefung.contains(pruefungInTimeZone) && !inConfilictTeilnehmerkreis.contains(teilnehmerkreis)) {
             //hier sollte ein Teilnehmerkreis nur einmal dazu addiert werden.
             this.countStudents += pruefungInTimeZone.getSchaetzungen().get(teilnehmerkreis);
           }

@@ -339,4 +339,85 @@ class TwoKlausurenSameTimeTest {
     assertEquals(setOfConflictTeilnehmer, h.inConfilictTeilnehmerkreis);
     assertEquals(studends, h.countStudents);
   }
+
+  @Test
+  void twoKlausurenSameTime_ThreeSameTime() {
+
+    TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService,
+        HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG);
+
+    Planungseinheit analysisPL = mock(Planungseinheit.class);
+    Planungseinheit haskelPL = mock(Planungseinheit.class);
+    Planungseinheit dmPL = mock(Planungseinheit.class);
+
+    Pruefung analysis = mock(Pruefung.class);
+    Pruefung haskel = mock(Pruefung.class);
+    Pruefung dm = mock(Pruefung.class);
+
+    Set<Teilnehmerkreis> teilnehmer = new HashSet<>();
+    Teilnehmerkreis informatik = getTeilnehmerKreis("Informatik");
+
+    teilnehmer.add(informatik);
+
+    when(analysis.getTeilnehmerkreise()).thenReturn(teilnehmer);
+    when(haskel.getTeilnehmerkreise()).thenReturn(teilnehmer);
+    when(dm.getTeilnehmerkreise()).thenReturn(teilnehmer);
+
+    ArrayList<Pruefung> listOfPruefungen = new ArrayList<>();
+    listOfPruefungen.add(dm);
+    listOfPruefungen.add(haskel);
+    listOfPruefungen.add(analysis);
+
+
+    Set<Planungseinheit> setOfPruefungen = new HashSet<>();
+    setOfPruefungen.add(analysisPL);
+    setOfPruefungen.add(dmPL);
+
+
+
+    Set<Pruefung> setOfConflictPruefunge = new HashSet<>();
+  setOfConflictPruefunge.add(dm);
+  setOfConflictPruefunge.add(analysis);
+    setOfConflictPruefunge.add(haskel);
+
+
+
+    Set<Teilnehmerkreis> setOfConflictTeilnehmer = new HashSet<>();
+    setOfConflictTeilnehmer.add(informatik);
+
+    int studends = 8;
+
+    Map<Teilnehmerkreis, Integer> teilnehmerCount = new HashMap<>();
+    teilnehmerCount.put(informatik, Integer.valueOf(8));
+
+    when(haskel.getSchaetzungen()).thenReturn(teilnehmerCount);
+    when(analysis.getSchaetzungen()).thenReturn(teilnehmerCount);
+    when(dm.getSchaetzungen()).thenReturn(teilnehmerCount);
+
+    when(haskel.getTeilnehmerkreise()).thenReturn(setOfConflictTeilnehmer);
+    when(analysis.getTeilnehmerkreise()).thenReturn(setOfConflictTeilnehmer);
+    when(dm.getTeilnehmerkreise()).thenReturn(setOfConflictTeilnehmer);
+
+
+    LocalDateTime start = LocalDateTime.of(2021, 8, 11, 9, 0);
+
+    when(analysisPL.asPruefung()).thenReturn(analysis);
+    when(haskelPL.asPruefung()).thenReturn(haskel);
+    when(dmPL.asPruefung()).thenReturn(dm);
+    // when(pruefungsperiode.planungseinheitenBetween(start, start.plusMinutes(120))).thenReturn(setOfPruefungen);
+
+    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(listOfPruefungen);
+
+    Duration duration = Duration.ofMinutes(120);
+
+    when(haskel.getTeilnehmerkreise()).thenReturn(teilnehmer);
+    when(haskel.getStartzeitpunkt()).thenReturn(start);
+    when(haskel.getDauer()).thenReturn(duration);
+
+    assertTrue(h.test(haskel));
+
+    assertEquals(setOfConflictPruefunge, h.inConflictROPruefung);
+    assertEquals(setOfConflictTeilnehmer, h.inConfilictTeilnehmerkreis);
+    assertEquals(studends, h.countStudents);
+  }
 }

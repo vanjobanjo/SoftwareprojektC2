@@ -41,7 +41,7 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
     for(Pruefung pruefungInTimeZone : testList){
       for(Teilnehmerkreis teilnehmerkreis : pruefungInTimeZone.getTeilnehmerkreise()){
         if(teilnehmer.contains(teilnehmerkreis)){
-          if(!this.setReadyOnly.contains(pruefungInTimeZone)) {
+          if(!this.setTeilnehmer.contains(teilnehmerkreis)) {
             //hier sollte ein Teilnehmerkreis nur einmal dazu addiert werden.
             this.countStudents += pruefungInTimeZone.getSchaetzungen().get(teilnehmerkreis);
           }
