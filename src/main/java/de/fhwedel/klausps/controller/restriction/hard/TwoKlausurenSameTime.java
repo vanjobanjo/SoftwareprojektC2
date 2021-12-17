@@ -1,6 +1,5 @@
 package de.fhwedel.klausps.controller.restriction.hard;
 
-import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Pruefung;
@@ -10,11 +9,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
-public class twoKlausurenSameTime extends HartRestriktion implements Predicate<Pruefung> {
+public class TwoKlausurenSameTime extends HartRestriktion implements Predicate<Pruefung> {
 
   long MINUTESBETWEENPRUEFUNGEN = 30;
 
-  twoKlausurenSameTime(DataAccessService dataAccessService,
+  TwoKlausurenSameTime(DataAccessService dataAccessService,
       HartesKriterium kriterium) {
     super(dataAccessService, kriterium);
   }
@@ -40,6 +39,7 @@ public class twoKlausurenSameTime extends HartRestriktion implements Predicate<P
           //Hier ist es egal, da es ein Set ist und es nur einmal vorkommen darf
             this.inConfilictTeilnehmerkreis.add(teilnehmerkreis);
             this.inConflictROPruefung.add(pruefungInTimeZone);
+            this.inConflictROPruefung.add(pruefung);
 
           test = true;
         }
