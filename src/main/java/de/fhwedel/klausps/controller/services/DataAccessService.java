@@ -24,7 +24,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -241,9 +240,10 @@ public class DataAccessService {
   }
 
 
-  public Set<Pruefung> getGeplanteModelPruefung(){
+  public Set<Pruefung> getGeplanteModelPruefung() {
     return pruefungsperiode.geplantePruefungen();
   }
+
   public Set<ReadOnlyPruefung> getUngeplantePruefungen() {
     return pruefungsperiode.ungeplantePruefungen().stream()
         .map(this::fromModelToDTOPruefungWithScoring).collect(Collectors.toSet());
@@ -464,29 +464,6 @@ public class DataAccessService {
     throw new UnsupportedOperationException("Not implemented yet!");
   }
 
-  public List<ReadOnlyPruefung> getAllPruefungenBetween(LocalDateTime start, LocalDateTime end) {
-
-    List<ReadOnlyPruefung> listOfAllPruefungenBetween = new ArrayList<>();
-
-    for (Planungseinheit einheit : this.pruefungsperiode.planungseinheitenBetween(start, end)) {
-      if (einheit.isBlock()) {
-        for (Pruefung pruefung : einheit.asBlock().getPruefungen()) {
-
-          listOfAllPruefungenBetween.add(
-              createPruefung(pruefung.getName(), pruefung.getPruefungsnummer(),
-                  pruefung.getPruefer(), pruefung.getDauer(), pruefung.getSchaetzungen()));
-        }
-      } else {
-
-        Pruefung pruefung = einheit.asPruefung();
-
-        listOfAllPruefungenBetween.add(
-            createPruefung(pruefung.getName(), pruefung.getPruefungsnummer(), pruefung.getPruefer(),
-                pruefung.getDauer(), pruefung.getSchaetzungen()));
-      }
-    }
-    return listOfAllPruefungenBetween;
-  }
 
   public List<Pruefung> getAllPruefungenBetween(LocalDateTime start, LocalDateTime end) {
 
