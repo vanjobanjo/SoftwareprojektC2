@@ -56,18 +56,9 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
 
   @Override
   public boolean test(Pruefung pruefung) {
-    if (!isInPeriod(pruefung)) {
-      throw new IllegalArgumentException("Pruefung: " + pruefung + " liegt nicht in der Periode");
-    }
     int week = getWeek(startPeriode, pruefung);
-
-    Optional<Set<Pruefung>> pruefungen = Optional.ofNullable(weekPruefungMap.get(week));
-
-    return pruefungen.isPresent() && pruefungen.get().size() >= limit; //TODO how to check?
-  }
-
-  private boolean isInPeriod(Pruefung pruefung) {
-    return dataAccessService.terminIsInPeriod(pruefung.getStartzeitpunkt());
+    Set<Pruefung> pruefungen  = weekPruefungMap.get(week);
+    return getPlanungseinheitenToPruefungen(pruefungen).size() >= limit;
   }
 
   @Override
@@ -76,15 +67,15 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
   }
 
   @Override
-  public KriteriumsAnalyse evaluate(Pruefung toPlan) {
-    if (test(toPlan)) {
-      Set<ReadOnlyPruefung> betroffen = weekPruefungMap.get(getWeek(startPeriode, toPlan)).stream()
+  public KriteriumsAnalyse evaluate(Pruefung toEvaluate) {
+    if (test(toEvaluate)) {
+      Set<ReadOnlyPruefung> betroffen = weekPruefungMap.get(getWeek(startPeriode, toEvaluate)).stream()
           .map(x -> new PruefungDTOBuilder(x).build()).collect(
               Collectors.toSet());
-      betroffen.add(new PruefungDTOBuilder(toPlan).build());
+      betroffen.add(new PruefungDTOBuilder(toEvaluate).build());
       return new KriteriumsAnalyse(betroffen,
-          WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE, new HashSet<>(toPlan.getTeilnehmerkreise()),
-          toPlan.schaetzung());
+          WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE, new HashSet<>(toEvaluate.getTeilnehmerkreise()),
+          toEvaluate.schaetzung());
     } else {
       return null;
     }

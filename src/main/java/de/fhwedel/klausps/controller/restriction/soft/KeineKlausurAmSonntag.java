@@ -37,6 +37,11 @@ public class KeineKlausurAmSonntag extends WeicheRestriktion implements Predicat
   }
 
   @Override
+  public KriteriumsAnalyse evaluate(Pruefung toEvaluate) {
+    if (test(toEvaluate)) {
+      return new KriteriumsAnalyse(Set.of(new PruefungDTOBuilder(toEvaluate).build()), //TODO soll das Scoring hier auch drin sein?
+          WeichesKriterium.SONNTAG, new HashSet<>(toEvaluate.getTeilnehmerkreise()),
+          toEvaluate.schaetzung());
   public Optional<KriteriumsAnalyse> evaluate(Pruefung pruefung) {
     throw new UnsupportedOperationException("Not implemented yet!");
   }
