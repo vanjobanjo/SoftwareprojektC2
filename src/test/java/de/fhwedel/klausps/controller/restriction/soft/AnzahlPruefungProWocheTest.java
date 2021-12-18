@@ -94,20 +94,18 @@ class AnzahlPruefungProWocheTest {
           TestFactory.planRoPruefung(TestFactory.RO_ANALYSIS_UNPLANNED, week_0.atTime(start)));
       Pruefung dm_0 = TestFactory.getPruefungOfReadOnlyPruefung(
           TestFactory.planRoPruefung(TestFactory.RO_DM_UNPLANNED, week_0.atTime(start)));
+    Pruefung haskell_1 = TestFactory.getPruefungOfReadOnlyPruefung(
+        TestFactory.planRoPruefung(TestFactory.RO_HASKELL_UNPLANNED, week_1.atTime(start)));
 
-
-      TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, mathe_0, dm_0);
+      TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, mathe_0, dm_0, haskell_1);
       TestFactory.configureMock_geplantePruefungenFromPeriode(mocked_periode,
-          Set.of(mathe_0, dm_0));
-
-      Pruefung haskell_1_isNotPlanned_ShouldBePlanned_At = TestFactory.getPruefungOfReadOnlyPruefung(
-          TestFactory.planRoPruefung(TestFactory.RO_HASKELL_UNPLANNED, week_1.atTime(start)));
-
-    TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, haskell_1_isNotPlanned_ShouldBePlanned_At);
+          Set.of(mathe_0, dm_0, haskell_1));
 
 
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
 
-      assertThat(deviceUnderTest.test(haskell_1_isNotPlanned_ShouldBePlanned_At)).isTrue();
+      assertThat(deviceUnderTest.test(haskell_1)).isFalse();
+      assertThat(deviceUnderTest.test(mathe_0)).isTrue();
+    assertThat(deviceUnderTest.test(dm_0)).isTrue();
   }
 }
