@@ -6,6 +6,8 @@ import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
+import de.fhwedel.klausps.model.api.Block;
+import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -14,6 +16,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predicate<Pruefung> {
 
@@ -57,8 +60,9 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
   @Override
   public boolean test(Pruefung pruefung) {
     int week = getWeek(startPeriode, pruefung);
-    Set<Pruefung> pruefungen  = weekPruefungMap.get(week);
-    return getPlanungseinheitenToPruefungen(pruefungen).size() >= limit;
+    Set<Pruefung> pruefungen = weekPruefungMap.get(week);
+    Set<Planungseinheit> planungseinheiten = getPlanungseinheitenToPruefungen(pruefungen);
+    return getPlanungseinheitenToPruefungen(pruefungen).size() >= limit; // Blöcke werden kumuliert.
   }
 
   @Override
@@ -69,15 +73,46 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
   @Override
   public KriteriumsAnalyse evaluate(Pruefung toEvaluate) {
     if (test(toEvaluate)) {
-      Set<ReadOnlyPruefung> betroffen = weekPruefungMap.get(getWeek(startPeriode, toEvaluate)).stream()
+      Optional<Block> blockOpt = dataAccessService.getBlockTo(toEvaluate);
+      Set<Pruefung> conflictedPruefungen = weekPruefungMap.get(getWeek(startPeriode, toEvaluate));
+      if (blockOpt.isPresent()) {
+        Set<Planungseinheit> conflictedPlanungseinheiten = getPlanungseinheitenToPruefungen(
+            conflictedPruefungen);
+        assert conflictedPlanungseinheiten.contains(blockOpt.get());
+        conflictedPlanungseinheiten.remove(blockOpt.get());
+        Set<ReadOnlyPruefung> betroffen = extractROFromPlanungseinheiten(
+            conflictedPlanungseinheiten);
+        return new KriteriumsAnalyse(betroffen,
+            WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE,
+            new HashSet<>(toEvaluate.getTeilnehmerkreise()),
+            toEvaluate.schaetzung());
+      }
+      Set<Pruefung> conflicted = weekPruefungMap.get(getWeek(startPeriode, toEvaluate));
+      assert conflicted.remove(toEvaluate);
+
+      Set<ReadOnlyPruefung> betroffen = conflicted
+          .stream()
           .map(x -> new PruefungDTOBuilder(x).build()).collect(
               Collectors.toSet());
-      betroffen.add(new PruefungDTOBuilder(toEvaluate).build());
+
       return new KriteriumsAnalyse(betroffen,
-          WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE, new HashSet<>(toEvaluate.getTeilnehmerkreise()),
+          WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE,
+          new HashSet<>(toEvaluate.getTeilnehmerkreise()),
           toEvaluate.schaetzung());
     } else {
       return null;
     }
+  }
+
+  private Set<ReadOnlyPruefung> extractROFromPlanungseinheiten(
+      Set<Planungseinheit> planungseinheiten) {
+    Stream<ReadOnlyPruefung> fromBlock = planungseinheiten.stream().filter(Planungseinheit::isBlock)
+        .flatMap(block -> block.asBlock().getPruefungen().stream()
+            .map(pruefung -> new PruefungDTOBuilder(pruefung).build()));
+    Stream<ReadOnlyPruefung> withoutBlock = planungseinheiten.stream()
+        .filter(planungseinheit -> !planungseinheit.isBlock())
+        .map(pruefung -> new PruefungDTOBuilder(pruefung.asPruefung()).build());
+
+    return Stream.concat(fromBlock, withoutBlock).collect(Collectors.toSet());
   }
 }
