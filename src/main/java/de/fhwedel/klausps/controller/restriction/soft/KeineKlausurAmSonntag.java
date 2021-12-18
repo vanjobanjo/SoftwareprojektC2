@@ -37,11 +37,11 @@ public class KeineKlausurAmSonntag extends WeicheRestriktion implements Predicat
   }
 
   @Override
-  public KriteriumsAnalyse evaluate(Pruefung toPlan) {
-    if (test(toPlan)) {
-      return new KriteriumsAnalyse(Set.of(new PruefungDTOBuilder(toPlan).build()),
-          WeichesKriterium.SONNTAG, new HashSet<>(toPlan.getTeilnehmerkreise()),
-          toPlan.schaetzung());
+  public KriteriumsAnalyse evaluate(Pruefung toEvaluate) {
+    if (test(toEvaluate)) {
+      return new KriteriumsAnalyse(Set.of(new PruefungDTOBuilder(toEvaluate).build()), //TODO soll das Scoring hier auch drin sein?
+          WeichesKriterium.SONNTAG, new HashSet<>(toEvaluate.getTeilnehmerkreise()),
+          toEvaluate.schaetzung());
     } else {
       return null;
     }
