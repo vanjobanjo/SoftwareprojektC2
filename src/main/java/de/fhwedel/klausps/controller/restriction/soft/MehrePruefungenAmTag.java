@@ -2,6 +2,7 @@ package de.fhwedel.klausps.controller.restriction.soft;
 
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
+import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
@@ -38,7 +39,13 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
     LocalDateTime start = startDay(pruefung.getStartzeitpunkt());
     LocalDateTime end = endDay(pruefung.getStartzeitpunkt());
 
-    List<Pruefung> testList = dataAccessService.getAllPruefungenBetween(start, end);
+    List<Pruefung> testList = null;
+    try {
+      testList = dataAccessService.getAllPruefungenBetween(start, end);
+    } catch (IllegalTimeSpanException e) {
+      //Kann nicht davor liegen, da ich den Morgen und den Abend nehme
+      e.printStackTrace();
+    }
     Set<Teilnehmerkreis> teilnehmer = pruefung.getTeilnehmerkreise();
     for (Pruefung pruefungInTimeZone : testList) {
       for (Teilnehmerkreis teilnehmerkreis : pruefungInTimeZone.getTeilnehmerkreise()) {

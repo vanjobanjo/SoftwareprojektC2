@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Ausbildungsgrad;
@@ -106,7 +107,13 @@ class TwoKlausurenSameTimeTest {
     when(haskelPL.asPruefung()).thenReturn(haskel);
     // when(pruefungsperiode.planungseinheitenBetween(start, start.plusMinutes(120))).thenReturn(setOfPruefungen);
 
-    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(listOfPruefungen);
+    try {
+      when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(listOfPruefungen);
+    } catch (IllegalTimeSpanException e) {
+
+      //start kann nicht vor ende liegen, da ich das berechne
+      e.printStackTrace();
+    }
 
     Duration duration = Duration.ofMinutes(120);
 
@@ -164,7 +171,13 @@ class TwoKlausurenSameTimeTest {
     when(haskelPL.asPruefung()).thenReturn(haskel);
     // when(pruefungsperiode.planungseinheitenBetween(start, start.plusMinutes(120))).thenReturn(setOfPruefungen);
 
-    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(listOfPruefungen);
+    try {
+      when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(listOfPruefungen);
+    } catch (IllegalTimeSpanException e) {
+
+      //start kann nicht vor ende liegen, da ich das berechne
+      e.printStackTrace();
+    }
 
     Duration duration = Duration.ofMinutes(120);
 
@@ -235,7 +248,12 @@ class TwoKlausurenSameTimeTest {
     when(dmPL.asPruefung()).thenReturn(dm);
     // when(pruefungsperiode.planungseinheitenBetween(start, start.plusMinutes(120))).thenReturn(setOfPruefungen);
 
-    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(listOfPruefungen);
+    try {
+      when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(listOfPruefungen);
+    } catch (IllegalTimeSpanException e) {
+      //start kann nicht vor ende liegen, da ich das berechne
+      e.printStackTrace();
+    }
 
     Duration duration = Duration.ofMinutes(120);
 
@@ -333,7 +351,12 @@ class TwoKlausurenSameTimeTest {
     listOfPruefungen.add(haskel);
     listOfPruefungen.add(analysis);
 
-    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(listOfPruefungen);
+    try {
+      when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(listOfPruefungen);
+    } catch (IllegalTimeSpanException e) {
+      //start kann nicht vor ende liegen, da ich das berechne
+      e.printStackTrace();
+    }
 
     Duration duration = Duration.ofMinutes(120);
 

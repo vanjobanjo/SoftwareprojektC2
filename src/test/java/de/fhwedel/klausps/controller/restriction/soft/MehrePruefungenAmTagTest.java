@@ -10,6 +10,7 @@ import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.assertions.ReadOnlyPruefungAssert;
+import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Planungseinheit;
@@ -98,7 +99,13 @@ class MehrePruefungenAmTagTest {
     listOfPruefungen.add(haskel);
     listOfPruefungen.add(analysis);
 
-    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(listOfPruefungen);
+    try {
+      when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(listOfPruefungen);
+    } catch (IllegalTimeSpanException e) {
+
+      //Kann nicht davor liegen, da ich den Morgen und den Abend nehme
+      e.printStackTrace();
+    }
 
     Duration duration = Duration.ofMinutes(120);
 
