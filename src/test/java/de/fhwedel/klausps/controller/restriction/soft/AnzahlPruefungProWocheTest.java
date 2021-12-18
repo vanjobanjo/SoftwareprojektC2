@@ -3,9 +3,14 @@ package de.fhwedel.klausps.controller.restriction.soft;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import de.fhwedel.klausps.controller.TestFactory;
+import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
+import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
+import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
+import de.fhwedel.klausps.controller.util.TestFactory;
+import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import java.time.LocalDate;
@@ -13,6 +18,7 @@ import java.time.LocalTime;
 import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class AnzahlPruefungProWocheTest {
@@ -68,7 +74,6 @@ class AnzahlPruefungProWocheTest {
     Pruefung dm_0 = TestFactory.getPruefungOfReadOnlyPruefung(
         TestFactory.planRoPruefung(TestFactory.RO_DM_UNPLANNED, week_0.atTime(start)));
 
-
     TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, mathe_0, dm_0);
     TestFactory.configureMock_geplantePruefungenFromPeriode(mocked_periode,
         Set.of(mathe_0, dm_0));
@@ -76,7 +81,8 @@ class AnzahlPruefungProWocheTest {
     Pruefung haskell_0_isNotPlanned_ShouldBePlanned_At = TestFactory.getPruefungOfReadOnlyPruefung(
         TestFactory.planRoPruefung(TestFactory.RO_HASKELL_UNPLANNED, week_0.atTime(start)));
 
-    TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, haskell_0_isNotPlanned_ShouldBePlanned_At);
+    TestFactory.configureMock_getPruefungFromPeriode(mocked_periode,
+        haskell_0_isNotPlanned_ShouldBePlanned_At);
 
     //mock must be configured before constructor call
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
@@ -85,27 +91,165 @@ class AnzahlPruefungProWocheTest {
   }
 
   @Test
-  void limitIsNotReached_test() {
+  void limit_test() {
 
-      LocalDate week_0 = START_PERIODE.plusDays(6);
-      LocalDate week_1 = START_PERIODE.plusDays(7);
-      LocalTime start = LocalTime.of(0, 0);
-      Pruefung mathe_0 = TestFactory.getPruefungOfReadOnlyPruefung(
-          TestFactory.planRoPruefung(TestFactory.RO_ANALYSIS_UNPLANNED, week_0.atTime(start)));
-      Pruefung dm_0 = TestFactory.getPruefungOfReadOnlyPruefung(
-          TestFactory.planRoPruefung(TestFactory.RO_DM_UNPLANNED, week_0.atTime(start)));
+    LocalDate week_0 = START_PERIODE.plusDays(6);
+    LocalDate week_1 = START_PERIODE.plusDays(7);
+    LocalTime start = LocalTime.of(0, 0);
+    Pruefung mathe_0 = TestFactory.getPruefungOfReadOnlyPruefung(
+        TestFactory.planRoPruefung(TestFactory.RO_ANALYSIS_UNPLANNED, week_0.atTime(start)));
+    Pruefung dm_0 = TestFactory.getPruefungOfReadOnlyPruefung(
+        TestFactory.planRoPruefung(TestFactory.RO_DM_UNPLANNED, week_0.atTime(start)));
     Pruefung haskell_1 = TestFactory.getPruefungOfReadOnlyPruefung(
         TestFactory.planRoPruefung(TestFactory.RO_HASKELL_UNPLANNED, week_1.atTime(start)));
 
-      TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, mathe_0, dm_0, haskell_1);
-      TestFactory.configureMock_geplantePruefungenFromPeriode(mocked_periode,
-          Set.of(mathe_0, dm_0, haskell_1));
+    TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, mathe_0, dm_0, haskell_1);
+    TestFactory.configureMock_geplantePruefungenFromPeriode(mocked_periode,
+        Set.of(mathe_0, dm_0, haskell_1));
+
+    this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
+
+    assertThat(deviceUnderTest.test(haskell_1)).isFalse();
+    assertThat(deviceUnderTest.test(mathe_0)).isTrue();
+    assertThat(deviceUnderTest.test(dm_0)).isTrue();
+  }
+
+
+  @DisplayName("DM und Mathe sind in der selben Woche und das Kriterium wird verletzt.")
+  @Test
+  void evaluate_test() {
+
+    LocalDate week_0 = START_PERIODE.plusDays(6);
+    LocalDate week_1 = START_PERIODE.plusDays(7);
+    LocalTime start = LocalTime.of(0, 0);
+    Pruefung mathe_0 = TestFactory.getPruefungOfReadOnlyPruefung(
+        TestFactory.planRoPruefung(TestFactory.RO_ANALYSIS_UNPLANNED, week_0.atTime(start)));
+    Pruefung dm_0 = TestFactory.getPruefungOfReadOnlyPruefung(
+        TestFactory.planRoPruefung(TestFactory.RO_DM_UNPLANNED, week_0.atTime(start)));
+    Pruefung haskell_1 = TestFactory.getPruefungOfReadOnlyPruefung(
+        TestFactory.planRoPruefung(TestFactory.RO_HASKELL_UNPLANNED, week_1.atTime(start)));
+
+    mathe_0.addTeilnehmerkreis(TestFactory.bwl, 10);
+    dm_0.addTeilnehmerkreis(TestFactory.bwl, 10);
+    haskell_1.addTeilnehmerkreis(TestFactory.bwl, 10);
+
+    TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, mathe_0, dm_0, haskell_1);
+    TestFactory.configureMock_geplantePruefungenFromPeriode(mocked_periode,
+        Set.of(mathe_0, dm_0, haskell_1));
+
+    this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
+
+    KriteriumsAnalyse result = deviceUnderTest.evaluate(dm_0);
+
+    ReadOnlyPruefung analysis = new PruefungDTOBuilder(mathe_0).build();
+    ReadOnlyPruefung dm = new PruefungDTOBuilder(dm_0).build();
+    ReadOnlyPruefung haskell = new PruefungDTOBuilder(haskell_1).build();
+
+    assertThat(result).isNotNull();
+    assertThat(result.getKriterium()).isEqualTo(WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE);
+    assertThat(result.getAnzahlBetroffenerStudenten()).isNotEqualTo(20); //not 20
+    assertThat(result.getAnzahlBetroffenerStudenten()).isEqualTo(10);
+    assertThat(result.getBetroffenePruefungen()).containsOnly(analysis, dm);
+    assertThat(result.getBetroffenePruefungen()).containsOnly(analysis, dm);
+    assertThat(deviceUnderTest.evaluate(haskell_1)).isNull();
+  }
+
+  @DisplayName("DM und Mathe sind im Block. Haskell wird am selben Tag geplant.")
+  @Test
+  void evaluate_Block_test() {
+
+    LocalDate week_0 = START_PERIODE.plusDays(6);
+    LocalTime start = LocalTime.of(0, 0);
+    Pruefung mathe_0 = TestFactory.getPruefungOfReadOnlyPruefung(
+        TestFactory.planRoPruefung(TestFactory.RO_ANALYSIS_UNPLANNED, week_0.atTime(start)));
+    Pruefung dm_0 = TestFactory.getPruefungOfReadOnlyPruefung(
+        TestFactory.planRoPruefung(TestFactory.RO_DM_UNPLANNED, week_0.atTime(start)));
+    Pruefung haskell_0 = TestFactory.getPruefungOfReadOnlyPruefung(
+        TestFactory.planRoPruefung(TestFactory.RO_HASKELL_UNPLANNED, week_0.atTime(start)));
+
+    mathe_0.addTeilnehmerkreis(TestFactory.bwl, 10);
+    dm_0.addTeilnehmerkreis(TestFactory.bwl, 10);
+    haskell_0.addTeilnehmerkreis(TestFactory.bwl, 10);
+
+    TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, mathe_0, dm_0, haskell_0);
+    TestFactory.configureMock_geplantePruefungenFromPeriode(mocked_periode,
+        Set.of(mathe_0, dm_0, haskell_0));
+
+    Block block = TestFactory.configureMock_addPruefungToBlockModel(mocked_periode, "Block",
+        dm_0.getStartzeitpunkt(), dm_0, mathe_0);
 
 
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
 
-      assertThat(deviceUnderTest.test(haskell_1)).isFalse();
-      assertThat(deviceUnderTest.test(mathe_0)).isTrue();
-    assertThat(deviceUnderTest.test(dm_0)).isTrue();
+    KriteriumsAnalyse result_dm0 = deviceUnderTest.evaluate(dm_0);
+
+    ReadOnlyPruefung analysis = new PruefungDTOBuilder(mathe_0).build();
+    ReadOnlyPruefung dm = new PruefungDTOBuilder(dm_0).build();
+    ReadOnlyPruefung haskell = new PruefungDTOBuilder(haskell_0).build();
+
+    assertThat(result_dm0).isNotNull();
+    assertThat(result_dm0.getKriterium()).isEqualTo(WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE);
+    assertThat(result_dm0.getAnzahlBetroffenerStudenten()).isNotEqualTo(20); //not 20
+    assertThat(result_dm0.getAnzahlBetroffenerStudenten()).isEqualTo(10);
+    // weil Analysis und DM im Block sind, darf Analysis nicht mehr davon betroffen sein.
+    assertThat(result_dm0.getBetroffenePruefungen()).containsOnly(dm, haskell);
+    assertThat(result_dm0.getBetroffenePruefungen()).doesNotContain(analysis);
+
+    //für haskell müssen alle 3 unter betroffen sein, weil alle in der selben woche stattfinden.
+    KriteriumsAnalyse result_haskell0 = deviceUnderTest.evaluate(haskell_0);
+    assertThat(result_haskell0.getAnzahlBetroffenerStudenten()).isEqualTo(10);
+    assertThat(result_haskell0.getBetroffenePruefungen()).containsOnly(dm,analysis, haskell);
   }
+
+  @DisplayName("DM und Mathe sind im Block. Haskell wird am selben Tag geplant.")
+  @Test
+  void evaluate_Block_test2() {
+
+    LocalDate week_0 = START_PERIODE.plusDays(6);
+    LocalTime start = LocalTime.of(0, 0);
+    Pruefung mathe_0 = TestFactory.getPruefungOfReadOnlyPruefung(
+        TestFactory.planRoPruefung(TestFactory.RO_ANALYSIS_UNPLANNED, week_0.atTime(start)));
+    Pruefung dm_0 = TestFactory.getPruefungOfReadOnlyPruefung(
+        TestFactory.planRoPruefung(TestFactory.RO_DM_UNPLANNED, week_0.atTime(start)));
+    Pruefung haskell_0 = TestFactory.getPruefungOfReadOnlyPruefung(
+        TestFactory.planRoPruefung(TestFactory.RO_HASKELL_UNPLANNED, week_0.atTime(start)));
+
+    mathe_0.addTeilnehmerkreis(TestFactory.bwl, 10);
+    dm_0.addTeilnehmerkreis(TestFactory.bwl, 10);
+    dm_0.addTeilnehmerkreis(TestFactory.inf, 20);
+    haskell_0.addTeilnehmerkreis(TestFactory.bwl, 10);
+    haskell_0.addTeilnehmerkreis(TestFactory.inf, 20);
+
+
+    TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, mathe_0, dm_0, haskell_0);
+    TestFactory.configureMock_geplantePruefungenFromPeriode(mocked_periode,
+        Set.of(mathe_0, dm_0, haskell_0));
+
+    Block block = TestFactory.configureMock_addPruefungToBlockModel(mocked_periode, "Block",
+        dm_0.getStartzeitpunkt(), dm_0, mathe_0);
+
+
+    this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
+
+    KriteriumsAnalyse result_dm0 = deviceUnderTest.evaluate(dm_0);
+
+    ReadOnlyPruefung analysis = new PruefungDTOBuilder(mathe_0).build();
+    ReadOnlyPruefung dm = new PruefungDTOBuilder(dm_0).build();
+    ReadOnlyPruefung haskell = new PruefungDTOBuilder(haskell_0).build();
+
+    assertThat(result_dm0).isNotNull();
+    assertThat(result_dm0.getKriterium()).isEqualTo(WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE);
+    assertThat(result_dm0.getAnzahlBetroffenerStudenten()).isNotEqualTo(20);
+    assertThat(result_dm0.getAnzahlBetroffenerStudenten()).isEqualTo(30);
+    // weil Analysis und DM im Block sind, darf Analysis nicht mehr davon betroffen sein.
+    assertThat(result_dm0.getBetroffenePruefungen()).containsOnly(dm, haskell);
+    assertThat(result_dm0.getBetroffenePruefungen()).doesNotContain(analysis);
+
+    //für haskell müssen alle 3 unter betroffen sein, weil alle in der selben woche stattfinden.
+    KriteriumsAnalyse result_haskell0 = deviceUnderTest.evaluate(haskell_0);
+    assertThat(result_haskell0.getAnzahlBetroffenerStudenten()).isEqualTo(30);
+    assertThat(result_haskell0.getBetroffenePruefungen()).containsOnly(dm,analysis, haskell);
+  }
+
+
 }

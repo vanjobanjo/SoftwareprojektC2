@@ -1,6 +1,7 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
@@ -11,8 +12,10 @@ import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -23,7 +26,7 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
 
   // for testing
   public static int LIMIT_DEFAULT = 5;
-  private static final int  DAYS_WEEK_DEFAULT = 7;
+  private static final int DAYS_WEEK_DEFAULT = 7;
   private final int limit;
 
   private final LocalDate startPeriode;
@@ -56,6 +59,7 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
     return (pruefung.getStartzeitpunkt().getDayOfYear() - startPeriode.getDayOfYear())
         / DAYS_WEEK_DEFAULT;
   }
+
   @Override
   public boolean test(Pruefung pruefung) {
     int week = getWeek(startPeriode, pruefung);
@@ -93,7 +97,14 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
         .flatMap(pruefung -> pruefung.getTeilnehmerkreise().stream()).collect(
             Collectors.toSet());
 
-    int affected =  conflictedPruefungen.stream().mapToInt(Planungseinheit::schaetzung).sum();
+    int affected = conflictedRoPruefungen
+        .stream()
+        .map(ReadOnlyPlanungseinheit::getTeilnehmerKreisSchaetzung)
+        .distinct() //die Schätzungen zum TK müssen gleich sein, sonst IllegalStateException. Das gilt auch für die API
+        .map(Map::entrySet)
+        .flatMap(Collection::stream)
+        .collect(Collectors.toMap(Entry::getKey, Entry::getValue))
+        .values().stream().mapToInt(integer -> integer).sum();
 
     return new KriteriumsAnalyse(conflictedRoPruefungen,
         WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE, conflictedTeilnehmerkreis, affected);
