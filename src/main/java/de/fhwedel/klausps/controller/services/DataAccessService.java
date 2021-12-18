@@ -191,8 +191,12 @@ public class DataAccessService {
    */
   public ReadOnlyPruefung schedulePruefung(ReadOnlyPruefung pruefung, LocalDateTime startTermin) {
     Pruefung pruefungFromModel = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
-    pruefungFromModel.setStartzeitpunkt(startTermin);
-    return new PruefungDTOBuilder(pruefungFromModel).build();
+    if (pruefungsperiode.block(pruefungFromModel) != null) {
+      throw new IllegalArgumentException("Prüfung befindet sich innerhalb eines Blockes");
+    } else {
+      pruefungFromModel.setStartzeitpunkt(startTermin);
+      return new PruefungDTOBuilder(pruefungFromModel).build();
+    }
   }
 
   /**
