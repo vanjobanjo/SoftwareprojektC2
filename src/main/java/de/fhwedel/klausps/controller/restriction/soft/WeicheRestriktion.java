@@ -25,23 +25,5 @@ public abstract class WeicheRestriktion {
 
   public abstract KriteriumsAnalyse evaluate(Pruefung toEvaluate);
 
-  /**
-   * Kumuliert die Prüfungen die innerhalb eines Blockes sind.
-   * Wenn eine Prüfung innerhalb eines Blockes ist, wird der übergeordenete Block
-   * in die Menge hinzugefügt.
-   * @param pruefungen Pruefungen.
-   * @return Menge mit Planungseinheiten
-   */
-  public Set<Planungseinheit> getPlanungseinheitenToPruefungen(Set<Pruefung> pruefungen) {
-    Set<Planungseinheit> planungseinheiten = new HashSet<>();
-    for (Pruefung p : pruefungen) {
-      Optional<Block> blockOpt = dataAccessService.getBlockTo(p);
-      if (blockOpt.isPresent()) {
-        planungseinheiten.add(blockOpt.get());
-      } else {
-        planungseinheiten.add(p);
-      }
-    }
-    return planungseinheiten;
-  }
+
 }
