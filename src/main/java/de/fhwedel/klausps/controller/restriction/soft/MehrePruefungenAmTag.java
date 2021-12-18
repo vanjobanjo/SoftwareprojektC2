@@ -12,8 +12,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
-import jdk.jshell.spi.ExecutionControl;
-import jdk.jshell.spi.ExecutionControl.NotImplementedException;
 
 public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate<Pruefung> {
 
@@ -21,7 +19,11 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
   Set<Teilnehmerkreis> setTeilnehmer = new HashSet<>();
   int countStudents = 0;
 
-  KriteriumsAnalyse kA = new KriteriumsAnalyse(setReadyOnly,WeichesKriterium.MEHRERE_PRUEFUNGEN_AM_TAG,setTeilnehmer,countStudents);
+  static final int START_ZEIT = 8;
+  static final int END_ZEIT = 18;
+
+  KriteriumsAnalyse kA = new KriteriumsAnalyse(setReadyOnly,
+      WeichesKriterium.MEHRERE_PRUEFUNGEN_AM_TAG, setTeilnehmer, countStudents);
 
   protected MehrePruefungenAmTag(
       DataAccessService dataAccessService,
@@ -35,13 +37,13 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
 
     LocalDateTime start = startDay(pruefung.getStartzeitpunkt());
     LocalDateTime end = endDay(pruefung.getStartzeitpunkt());
-        ;
-    List<Pruefung> testList = dataAccessService.getAllPruefungenBetween(start,end);
+
+    List<Pruefung> testList = dataAccessService.getAllPruefungenBetween(start, end);
     Set<Teilnehmerkreis> teilnehmer = pruefung.getTeilnehmerkreise();
-    for(Pruefung pruefungInTimeZone : testList){
-      for(Teilnehmerkreis teilnehmerkreis : pruefungInTimeZone.getTeilnehmerkreise()){
-        if(teilnehmer.contains(teilnehmerkreis)){
-          if(!this.setTeilnehmer.contains(teilnehmerkreis)) {
+    for (Pruefung pruefungInTimeZone : testList) {
+      for (Teilnehmerkreis teilnehmerkreis : pruefungInTimeZone.getTeilnehmerkreise()) {
+        if (teilnehmer.contains(teilnehmerkreis)) {
+          if (!this.setTeilnehmer.contains(teilnehmerkreis)) {
             //hier sollte ein Teilnehmerkreis nur einmal dazu addiert werden.
             this.countStudents += pruefungInTimeZone.getSchaetzungen().get(teilnehmerkreis);
           }
@@ -56,11 +58,12 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
     return test;
   }
 
-  private LocalDateTime startDay(LocalDateTime time){
-    return LocalDateTime.of(time.getYear(),time.getMonth(),time.getDayOfMonth(),0,0);
+  private LocalDateTime startDay(LocalDateTime time) {
+    return LocalDateTime.of(time.getYear(), time.getMonth(), time.getDayOfMonth(), START_ZEIT, 0);
   }
-  private LocalDateTime endDay(LocalDateTime time){
-    return LocalDateTime.of(time.getYear(),time.getMonth(),time.getDayOfMonth(),23,59);
+
+  private LocalDateTime endDay(LocalDateTime time) {
+    return LocalDateTime.of(time.getYear(), time.getMonth(), time.getDayOfMonth(), END_ZEIT, 0);
   }
 
 }

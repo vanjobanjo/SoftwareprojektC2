@@ -11,7 +11,7 @@ import java.util.function.Predicate;
 
 public class TwoKlausurenSameTime extends HartRestriktion implements Predicate<Pruefung> {
 
-  long MINUTESBETWEENPRUEFUNGEN = 30;
+  static final long MINUTES_BETWEEN_PRUEFUNGEN = 30;
 
   TwoKlausurenSameTime(DataAccessService dataAccessService,
       HartesKriterium kriterium) {
@@ -24,22 +24,22 @@ public class TwoKlausurenSameTime extends HartRestriktion implements Predicate<P
 
     boolean test = false;
 
-    LocalDateTime start = pruefung.getStartzeitpunkt().minusMinutes(MINUTESBETWEENPRUEFUNGEN);
+    LocalDateTime start = pruefung.getStartzeitpunkt().minusMinutes(MINUTES_BETWEEN_PRUEFUNGEN);
     LocalDateTime end = pruefung.getStartzeitpunkt().plus(pruefung.getDauer())
-        .plusMinutes(MINUTESBETWEENPRUEFUNGEN);
-    List<Pruefung> testList = dataAccessService.getAllPruefungenBetween(start,end);
+        .plusMinutes(MINUTES_BETWEEN_PRUEFUNGEN);
+    List<Pruefung> testList = dataAccessService.getAllPruefungenBetween(start, end);
     Set<Teilnehmerkreis> teilnehmer = pruefung.getTeilnehmerkreise();
-    for(Pruefung pruefungInTimeZone : testList){
-      for(Teilnehmerkreis teilnehmerkreis : pruefungInTimeZone.getTeilnehmerkreise()){
-        if(teilnehmer.contains(teilnehmerkreis)){
-          if(!inConfilictTeilnehmerkreis.contains(teilnehmerkreis)) {
+    for (Pruefung pruefungInTimeZone : testList) {
+      for (Teilnehmerkreis teilnehmerkreis : pruefungInTimeZone.getTeilnehmerkreise()) {
+        if (teilnehmer.contains(teilnehmerkreis)) {
+          if (!inConfilictTeilnehmerkreis.contains(teilnehmerkreis)) {
             //hier sollte ein Teilnehmerkreis nur einmal dazu addiert werden.
             this.countStudents += pruefungInTimeZone.getSchaetzungen().get(teilnehmerkreis);
           }
           //Hier ist es egal, da es ein Set ist und es nur einmal vorkommen darf
-            this.inConfilictTeilnehmerkreis.add(teilnehmerkreis);
-            this.inConflictROPruefung.add(pruefungInTimeZone);
-            this.inConflictROPruefung.add(pruefung);
+          this.inConfilictTeilnehmerkreis.add(teilnehmerkreis);
+          this.inConflictROPruefung.add(pruefungInTimeZone);
+          this.inConflictROPruefung.add(pruefung);
 
           test = true;
         }
