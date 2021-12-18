@@ -1,7 +1,6 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
-import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
@@ -12,10 +11,8 @@ import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -59,7 +56,6 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
     return (pruefung.getStartzeitpunkt().getDayOfYear() - startPeriode.getDayOfYear())
         / DAYS_WEEK_DEFAULT;
   }
-
   @Override
   public boolean test(Pruefung pruefung) {
     int week = getWeek(startPeriode, pruefung);
