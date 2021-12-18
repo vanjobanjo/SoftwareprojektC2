@@ -108,6 +108,6 @@ class AnzahlPruefungProWocheTest {
 
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
 
-      assertThat(deviceUnderTest.test(haskell_1_isNotPlanned_ShouldBePlanned_At)).isFalse();
+      assertThat(deviceUnderTest.test(haskell_1_isNotPlanned_ShouldBePlanned_At)).isTrue();
   }
 }
