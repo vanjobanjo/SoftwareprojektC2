@@ -19,13 +19,15 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
 
   @Override
   public Optional<KriteriumsAnalyse> evaluate(Pruefung pruefung) {
-    LocalDateTime pruefungsEnde = pruefung.getStartzeitpunkt().plus(pruefung.getDauer());
-    try {
-      List<Planungseinheit> simultaneousPruefungen = dataAccessService.getAllPruefungenBetween(
-          pruefung.getStartzeitpunkt(), pruefungsEnde);
-    } catch (IllegalTimeSpanException e) {
-      // can never happen, as the duration of a pruefung is checked to be > 0
-      throw new IllegalStateException("A Pruefung with a negative duration can not exist.", e);
+    if (pruefung.isGeplant()) {
+      LocalDateTime pruefungsEnde = pruefung.getStartzeitpunkt().plus(pruefung.getDauer());
+      try {
+        List<Planungseinheit> simultaneousPruefungen = dataAccessService.getAllPruefungenBetween(
+            pruefung.getStartzeitpunkt(), pruefungsEnde);
+      } catch (IllegalTimeSpanException e) {
+        // can never happen, as the duration of a pruefung is checked to be > 0
+        throw new IllegalStateException("A Pruefung with a negative duration can not exist.", e);
+      }
     }
     return Optional.empty();
   }

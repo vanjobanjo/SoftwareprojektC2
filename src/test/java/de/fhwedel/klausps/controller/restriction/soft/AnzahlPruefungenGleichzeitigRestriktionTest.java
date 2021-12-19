@@ -1,14 +1,14 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
-import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefung;
-import static java.util.Collections.emptySet;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedPruefung;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Pruefung;
+import java.util.Collections;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
 
   /*
    * Grenzfaelle:
-   * - Nur die aufgerufene Klausur ist geplant
+   * x Nur die aufgerufene Klausur ist geplant
    * - Aufruf mit ungeplanter Klausur
    * - Keine gleichzeitigen Klausuren
    * - Genau so viele Klausuren gleichzeitig wie erlaubt
@@ -41,6 +41,14 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
   void evaluate_onlyCheckedPruefungIsPlanned() {
     Pruefung pruefung = getRandomPlannedPruefung(5L);
     when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(pruefung));
+
+    assertThat(deviceUnderTest.evaluate(pruefung)).isEmpty();
+  }
+
+  @Test
+  void evaluate_callWithUnplannedPruefung() {
+    Pruefung pruefung = getRandomUnplannedPruefung(5L);
+    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Collections.emptySet());
 
     assertThat(deviceUnderTest.evaluate(pruefung)).isEmpty();
   }

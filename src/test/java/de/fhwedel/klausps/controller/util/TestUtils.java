@@ -43,7 +43,7 @@ public class TestUtils {
     return randomPruefungen;
   }
 
-  public static Pruefung getRandomPruefung(long seed) {
+  public static Pruefung getRandomUnplannedPruefung(long seed) {
     return getRandomPruefungen(seed, 1).get(0);
   }
 
