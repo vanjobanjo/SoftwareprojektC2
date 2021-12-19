@@ -76,7 +76,9 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
 
   @Override
   public Optional<KriteriumsAnalyse> evaluate(Pruefung pruefung) {
-    if (!test(pruefung)) {
+    boolean violationRestriction = test(pruefung);
+
+    if (!violationRestriction) {
       return Optional.empty();
     }
 
@@ -92,15 +94,15 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
 
     Set<ReadOnlyPruefung> conflictedRoPruefungen = conflictedPruefungen
         .stream()
-        .map(x -> new PruefungDTOBuilder(x).build()).collect(
+        .map(prue -> new PruefungDTOBuilder(prue).build()).collect(
             Collectors.toSet());
 
     Set<Teilnehmerkreis> conflictedTeilnehmerkreis = conflictedPruefungen.stream()
-        .flatMap(p -> p.getTeilnehmerkreise().stream()).collect(
+        .flatMap(prue -> prue.getTeilnehmerkreise().stream()).collect(
             Collectors.toSet());
 
     int affected = numberAffectedStudents(conflictedPruefungen);
-
+    
     return Optional.of(new KriteriumsAnalyse(conflictedRoPruefungen,
         ANZAHL_PRUEFUNGEN_PRO_WOCHE, conflictedTeilnehmerkreis, affected));
   }
