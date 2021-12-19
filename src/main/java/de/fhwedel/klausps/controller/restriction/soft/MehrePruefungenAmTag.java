@@ -7,6 +7,7 @@ import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
+import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.LocalDateTime;
@@ -28,9 +29,7 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
   KriteriumsAnalyse kA = new KriteriumsAnalyse(setReadyOnly,
       WeichesKriterium.MEHRERE_PRUEFUNGEN_AM_TAG, setTeilnehmer, countStudents);
 
-  protected MehrePruefungenAmTag(
-      DataAccessService dataAccessService,
-      WeichesKriterium kriterium) {
+  protected MehrePruefungenAmTag(DataAccessService dataAccessService, WeichesKriterium kriterium) {
     super(dataAccessService, kriterium);
   }
 
@@ -41,35 +40,55 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
 
   @Override
   public boolean test(Pruefung pruefung) {
-    boolean test = false;
+    boolean weichesKrierium = false;
 
     LocalDateTime start = startDay(pruefung.getStartzeitpunkt());
     LocalDateTime end = endDay(pruefung.getStartzeitpunkt());
 
-    List<Pruefung> testList = null;
+    List<Planungseinheit> testList = null;
     try {
       testList = dataAccessService.getAllPruefungenBetween(start, end);
     } catch (IllegalTimeSpanException e) {
       //Kann nicht davor liegen, da ich den Morgen und den Abend nehme
       e.printStackTrace();
     }
-    Set<Teilnehmerkreis> teilnehmer = pruefung.getTeilnehmerkreise();
-    for (Pruefung pruefungInTimeZone : testList) {
-      for (Teilnehmerkreis teilnehmerkreis : pruefungInTimeZone.getTeilnehmerkreise()) {
-        if (teilnehmer.contains(teilnehmerkreis)) {
-          if (!this.setTeilnehmer.contains(teilnehmerkreis)) {
-            //hier sollte ein Teilnehmerkreis nur einmal dazu addiert werden.
-            this.countStudents += pruefungInTimeZone.getSchaetzungen().get(teilnehmerkreis);
+    Set<Pruefung> pruefungenFromBlock;
+    for (Planungseinheit planungseinheit : testList) {
+      if (planungseinheit.isBlock()) {
+        pruefungenFromBlock = planungseinheit.asBlock().getPruefungen();
+        if (!pruefungenFromBlock.contains(pruefung)) {
+          for (Pruefung pruefungBlock : pruefungenFromBlock) {
+            weichesKrierium =
+                getTeilnehmerkreisFromPruefung(pruefung, pruefungBlock) || weichesKrierium;
           }
-          //Hier ist es egal, da es ein Set ist und es nur einmal vorkommen darf
-          this.setTeilnehmer.add(teilnehmerkreis);
-          this.setReadyOnly.add(new PruefungDTOBuilder(pruefungInTimeZone).build());
-
-          test = true;
         }
+      } else {
+        weichesKrierium = getTeilnehmerkreisFromPruefung(pruefung, planungseinheit.asPruefung())
+            || weichesKrierium;
       }
     }
-    return test;
+    if (weichesKrierium) {
+      this.setReadyOnly.add(new PruefungDTOBuilder(pruefung).build());
+    }
+    return weichesKrierium;
+  }
+
+  private boolean getTeilnehmerkreisFromPruefung(Pruefung pruefung, Pruefung toCheck) {
+    boolean retBool = false;
+    Set<Teilnehmerkreis> teilnehmer = pruefung.getTeilnehmerkreise();
+    for (Teilnehmerkreis teilnehmerkreis : toCheck.getTeilnehmerkreise()) {
+      if (teilnehmer.contains(teilnehmerkreis)) {
+        if (!setTeilnehmer.contains(teilnehmerkreis)) {
+          //hier sollte ein Teilnehmerkreis nur einmal dazu addiert werden.
+          this.countStudents += toCheck.getSchaetzungen().get(teilnehmerkreis);
+        }
+        //Hier ist es egal, da es ein Set ist und es nur einmal vorkommen darf
+        this.setTeilnehmer.add(teilnehmerkreis);
+        this.setReadyOnly.add(new PruefungDTOBuilder(toCheck).build());
+        retBool = true;
+      }
+    }
+    return retBool;
   }
 
   private LocalDateTime startDay(LocalDateTime time) {

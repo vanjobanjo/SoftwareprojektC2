@@ -95,9 +95,9 @@ class MehrePruefungenAmTagTest {
     when(analysisPL.asPruefung()).thenReturn(analysis);
     when(haskelPL.asPruefung()).thenReturn(haskel);
 
-    ArrayList<Pruefung> listOfPruefungen = new ArrayList<>();
-    listOfPruefungen.add(haskel);
-    listOfPruefungen.add(analysis);
+    ArrayList<Planungseinheit> listOfPruefungen = new ArrayList<>();
+    listOfPruefungen.add(haskelPL);
+    listOfPruefungen.add(analysisPL);
 
     try {
       when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(listOfPruefungen);
