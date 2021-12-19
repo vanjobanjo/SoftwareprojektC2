@@ -1,6 +1,6 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
@@ -68,7 +68,7 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
   }
 
   @Override
-  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
+  public Optional<KriteriumsAnalyse> evaluate(Pruefung pruefung) {
     throw new UnsupportedOperationException("Not implemented yet!");
   }
 }

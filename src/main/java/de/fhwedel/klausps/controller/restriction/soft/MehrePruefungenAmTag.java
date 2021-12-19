@@ -1,6 +1,5 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
@@ -34,7 +33,7 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
   }
 
   @Override
-  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
+  public Optional<KriteriumsAnalyse> evaluate(Pruefung pruefung) {
     throw new UnsupportedOperationException("Not implemented yet!");
   }
 
