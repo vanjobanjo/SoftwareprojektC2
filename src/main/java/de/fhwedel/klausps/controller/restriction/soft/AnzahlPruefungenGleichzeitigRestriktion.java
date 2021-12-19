@@ -5,11 +5,11 @@ import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.ANZAHL_PR
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.services.DataAccessService;
+import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
 
@@ -21,7 +21,8 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
   public Optional<KriteriumsAnalyse> evaluate(Pruefung pruefung) {
     LocalDateTime pruefungsEnde = pruefung.getStartzeitpunkt().plus(pruefung.getDauer());
     try {
-      List<Pruefung> simultaneousPruefungen = dataAccessService.getAllPruefungenBetween(pruefung.getStartzeitpunkt(), pruefungsEnde);
+      List<Planungseinheit> simultaneousPruefungen = dataAccessService.getAllPruefungenBetween(
+          pruefung.getStartzeitpunkt(), pruefungsEnde);
     } catch (IllegalTimeSpanException e) {
       // can never happen, as the duration of a pruefung is checked to be > 0
       throw new IllegalStateException("A Pruefung with a negative duration can not exist.", e);

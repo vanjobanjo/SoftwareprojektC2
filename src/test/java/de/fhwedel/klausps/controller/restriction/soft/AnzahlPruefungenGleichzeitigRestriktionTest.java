@@ -1,13 +1,15 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefung;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Pruefung;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -37,9 +39,10 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
 
   @Test
   void evaluate_onlyCheckedPruefungIsPlanned() {
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(emptySet());
+    Pruefung pruefung = getRandomPlannedPruefung(5L);
+    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(pruefung));
 
-    //assertThat(deviceUnderTest.evaluate(any(Pruefung.class))).isEmpty();
+    assertThat(deviceUnderTest.evaluate(pruefung)).isEmpty();
   }
 
 }
