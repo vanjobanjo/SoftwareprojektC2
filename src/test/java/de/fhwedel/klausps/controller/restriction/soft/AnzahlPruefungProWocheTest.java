@@ -67,7 +67,6 @@ class AnzahlPruefungProWocheTest {
   @Test
   void limitIsReached_test() {
     LocalDate week_0 = START_PERIODE.plusDays(6);
-    LocalDate week_1 = START_PERIODE.plusDays(7);
     LocalTime start = LocalTime.of(0, 0);
     Pruefung mathe_0 = TestFactory.getPruefungOfReadOnlyPruefung(
         TestFactory.planRoPruefung(TestFactory.RO_ANALYSIS_UNPLANNED, week_0.atTime(start)));
@@ -175,7 +174,7 @@ class AnzahlPruefungProWocheTest {
     TestFactory.configureMock_geplantePruefungenFromPeriode(mocked_periode,
         Set.of(mathe_0, dm_0, haskell_0));
 
-    Block block = TestFactory.configureMock_addPruefungToBlockModel(mocked_periode, "Block",
+    TestFactory.configureMock_addPruefungToBlockModel(mocked_periode, "Block",
         dm_0.getStartzeitpunkt(), dm_0, mathe_0);
 
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
@@ -223,7 +222,7 @@ class AnzahlPruefungProWocheTest {
     TestFactory.configureMock_geplantePruefungenFromPeriode(mocked_periode,
         Set.of(mathe_0, dm_0, haskell_0));
 
-    Block block = TestFactory.configureMock_addPruefungToBlockModel(mocked_periode, "Block",
+    TestFactory.configureMock_addPruefungToBlockModel(mocked_periode, "Block",
         dm_0.getStartzeitpunkt(), dm_0, mathe_0);
 
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
@@ -419,7 +418,7 @@ class AnzahlPruefungProWocheTest {
     TestFactory.configureMock_geplantePruefungenFromPeriode(mocked_periode,
         Set.of(mathe_0, dm_0, haskell_0));
 
-    Block block = TestFactory.configureMock_addPruefungToBlockModel(mocked_periode, "Block",
+    TestFactory.configureMock_addPruefungToBlockModel(mocked_periode, "Block",
         dm_0.getStartzeitpunkt(), dm_0, mathe_0);
 
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
@@ -452,6 +451,4 @@ class AnzahlPruefungProWocheTest {
     assertThat(result_haskell0.getBetroffenePruefungen()).containsOnly(dm, analysis, haskell);
     assertThat(result_haskell0.getTeilnehmer()).containsOnly(TestFactory.inf, TestFactory.bwl);
   }
-
-
 }

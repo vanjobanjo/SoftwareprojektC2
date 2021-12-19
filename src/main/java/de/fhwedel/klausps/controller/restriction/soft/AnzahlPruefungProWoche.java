@@ -7,17 +7,14 @@ import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Block;
-import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predicate<Pruefung> {
 
@@ -58,6 +55,13 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
         / DAYS_WEEK_DEFAULT;
   }
 
+  /**
+   * Test whether the passed pruefung violates the crterium, by checking the Set size of the the
+   * specific Map entry. The Map key is the week of the periode starting with 0.
+   *
+   * @param pruefung Pruefung to check the restriction for.
+   * @return violates the restriction?
+   */
   @Override
   public boolean test(Pruefung pruefung) {
     int week = getWeek(startPeriode, pruefung);
@@ -81,12 +85,8 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
 
     //when pruefung is in block, don't add the sibblings into the conflicted exams
     if (blockOpt.isPresent()) {
-      Set<Planungseinheit> conflictedPlanungseinheiten = getPlanungseinheitenToPruefungen(
+      conflictedPruefungen = filterSiblingsOfPruefung(pruefung,
           conflictedPruefungen);
-      conflictedPlanungseinheiten.remove(blockOpt.get());
-      conflictedPruefungen = getPruefungenFromPlanungseinheiten(
-          conflictedPlanungseinheiten);
-      conflictedPruefungen.add(pruefung);
     }
 
     Set<ReadOnlyPruefung> conflictedRoPruefungen = conflictedPruefungen
@@ -98,48 +98,10 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
         .flatMap(p -> p.getTeilnehmerkreise().stream()).collect(
             Collectors.toSet());
 
-    int affected = getAffectedStudents(conflictedRoPruefungen);
+    int affected = numberAffectedStudents(conflictedPruefungen);
 
     return Optional.of(new KriteriumsAnalyse(conflictedRoPruefungen,
         WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE, conflictedTeilnehmerkreis, affected));
   }
 
-  /**
-   * If there is block, it will give us the sibblings exam inside the block and not the block
-   * itself.
-   *
-   * @param planungseinheiten blocks or exams
-   * @return All Pruefungen
-   */
-  private Set<Pruefung> getPruefungenFromPlanungseinheiten(
-      Set<Planungseinheit> planungseinheiten) {
-    Stream<Pruefung> fromBlock = planungseinheiten.stream().filter(Planungseinheit::isBlock)
-        .flatMap(block -> block.asBlock().getPruefungen().stream());
-
-    Stream<Pruefung> withoutBlock = planungseinheiten.stream()
-        .filter(planungseinheit -> !planungseinheit.isBlock())
-        .map(Planungseinheit::asPruefung);
-
-    return Stream.concat(fromBlock, withoutBlock).collect(Collectors.toSet());
-  }
-
-  /**
-   * Accumulates the exams, the set only contains distinct Planungseinheiten. When the a pruefung is
-   * a block the return contains the block of the pruefung and not the exam itself.
-   *
-   * @param pruefungen Pruefungen.
-   * @return Accumlated Planungseinheiten.
-   */
-  private Set<Planungseinheit> getPlanungseinheitenToPruefungen(Set<Pruefung> pruefungen) {
-    Set<Planungseinheit> planungseinheiten = new HashSet<>();
-    for (Pruefung p : pruefungen) {
-      Optional<Block> blockOpt = dataAccessService.getBlockTo(p);
-      if (blockOpt.isPresent()) {
-        planungseinheiten.add(blockOpt.get());
-      } else {
-        planungseinheiten.add(p);
-      }
-    }
-    return planungseinheiten;
-  }
 }
