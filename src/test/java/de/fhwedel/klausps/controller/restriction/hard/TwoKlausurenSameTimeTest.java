@@ -80,7 +80,7 @@ class TwoKlausurenSameTimeTest {
     when(analysis.getTeilnehmerkreise()).thenReturn(teilnehmer);
     when(haskel.getTeilnehmerkreise()).thenReturn(teilnehmer);
 
-    ArrayList<Pruefung> listOfPruefungen = new ArrayList<>();
+    ArrayList<Planungseinheit> listOfPruefungen = new ArrayList<>();
     listOfPruefungen.add(analysisPL);
 
     Set<Pruefung> setOfConflictPruefunge = new HashSet<>();
@@ -149,7 +149,7 @@ class TwoKlausurenSameTimeTest {
     when(analysis.getTeilnehmerkreise()).thenReturn(teilnehmer);
     when(haskel.getTeilnehmerkreise()).thenReturn(teilnehmer);
 
-    ArrayList<Pruefung> listOfPruefungen = new ArrayList<>();
+    ArrayList<Planungseinheit> listOfPruefungen = new ArrayList<>();
 
     Set<Pruefung> setOfConflictPruefunge = new HashSet<>();
 
@@ -215,7 +215,7 @@ class TwoKlausurenSameTimeTest {
     when(haskel.getTeilnehmerkreise()).thenReturn(teilnehmer);
     when(dm.getTeilnehmerkreise()).thenReturn(teilnehmer);
 
-    ArrayList<Pruefung> listOfPruefungen = new ArrayList<>();
+    ArrayList<Planungseinheit> listOfPruefungen = new ArrayList<>();
     listOfPruefungen.add(dmPL);
     listOfPruefungen.add(haskelPL);
     listOfPruefungen.add(analysisPL);
@@ -346,7 +346,7 @@ class TwoKlausurenSameTimeTest {
     when(dmPL.asPruefung()).thenReturn(dm);
     // when(pruefungsperiode.planungseinheitenBetween(start, start.plusMinutes(120))).thenReturn(setOfPruefungen);
 
-    ArrayList<Pruefung> listOfPruefungen = new ArrayList<>();
+    ArrayList<Planungseinheit> listOfPruefungen = new ArrayList<>();
     listOfPruefungen.add(dmPL);
     listOfPruefungen.add(haskelPL);
     listOfPruefungen.add(analysisPL);

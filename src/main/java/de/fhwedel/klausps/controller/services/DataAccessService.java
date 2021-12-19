@@ -475,23 +475,12 @@ public class DataAccessService {
     return this.pruefungsperiode.planungseinheitenBetween(start, end);
   }
 
-  public List<Pruefung> getAllPruefungenBetween(LocalDateTime start, LocalDateTime end)
+  public List<Planungseinheit> getAllPruefungenBetween(LocalDateTime start, LocalDateTime end)
       throws IllegalTimeSpanException {
-
-    List<Pruefung> listOfAllPruefungenBetween = new ArrayList<>();
-
-    if(start.isAfter(end)){
+    if (start.isAfter(end)) {
       throw new IllegalTimeSpanException("Der Start liegt nach dem Ende des Zeitslots");
     }
-
-    for (Planungseinheit einheit : this.pruefungsperiode.planungseinheitenBetween(start, end)) {
-      if (einheit.isBlock()) {
-        listOfAllPruefungenBetween.addAll(einheit.asBlock().getPruefungen());
-      } else {
-        listOfAllPruefungenBetween.add(einheit.asPruefung());
-      }
-    }
-    return listOfAllPruefungenBetween;
+    return List.copyOf(pruefungsperiode.planungseinheitenBetween(start, end));
   }
 
   public Set<Teilnehmerkreis> getAllTeilnehmerkreise() {

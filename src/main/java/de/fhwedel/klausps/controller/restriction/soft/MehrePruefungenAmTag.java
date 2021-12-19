@@ -42,7 +42,7 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
     LocalDateTime start = startDay(pruefung.getStartzeitpunkt());
     LocalDateTime end = endDay(pruefung.getStartzeitpunkt());
 
-    List<Pruefung> testList = null;
+    List<Planungseinheit> testList = null;
     try {
       testList = dataAccessService.getAllPruefungenBetween(start, end);
     } catch (IllegalTimeSpanException e) {
