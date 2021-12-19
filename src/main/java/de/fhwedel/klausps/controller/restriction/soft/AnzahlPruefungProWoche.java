@@ -1,7 +1,6 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
-import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
@@ -12,10 +11,8 @@ import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -30,6 +27,7 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
   private final int limit;
 
   private final LocalDate startPeriode;
+  // the set contains all pruefungen of the week, also the sibblings in the block
   private final Map<Integer, Set<Pruefung>> weekPruefungMap;
 
   //Mock Konstruktor
@@ -81,6 +79,7 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
         blockOpt = dataAccessService.getBlockTo(pruefung);
     Set<Pruefung> conflictedPruefungen = weekPruefungMap.get(getWeek(startPeriode, pruefung));
 
+    //when pruefung is in block, don't add the sibblings into the conflicted exams
     if (blockOpt.isPresent()) {
       Set<Planungseinheit> conflictedPlanungseinheiten = getPlanungseinheitenToPruefungen(
           conflictedPruefungen);
@@ -105,20 +104,32 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
         WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE, conflictedTeilnehmerkreis, affected));
   }
 
-
+  /**
+   * If there is block, it will give us the sibblings exam inside the block and not the block
+   * itself.
+   *
+   * @param planungseinheiten blocks or exams
+   * @return All Pruefungen
+   */
   private Set<Pruefung> getPruefungenFromPlanungseinheiten(
       Set<Planungseinheit> planungseinheiten) {
     Stream<Pruefung> fromBlock = planungseinheiten.stream().filter(Planungseinheit::isBlock)
         .flatMap(block -> block.asBlock().getPruefungen().stream());
 
-    try (Stream<Pruefung> withoutBlock = planungseinheiten.stream()
+    Stream<Pruefung> withoutBlock = planungseinheiten.stream()
         .filter(planungseinheit -> !planungseinheit.isBlock())
-        .map(Planungseinheit::asPruefung)) {
+        .map(Planungseinheit::asPruefung);
 
-      return Stream.concat(fromBlock, withoutBlock).collect(Collectors.toSet());
-    }
+    return Stream.concat(fromBlock, withoutBlock).collect(Collectors.toSet());
   }
 
+  /**
+   * Accumulates the exams, the set only contains distinct Planungseinheiten. When the a pruefung is
+   * a block the return contains the block of the pruefung and not the exam itself.
+   *
+   * @param pruefungen Pruefungen.
+   * @return Accumlated Planungseinheiten.
+   */
   private Set<Planungseinheit> getPlanungseinheitenToPruefungen(Set<Pruefung> pruefungen) {
     Set<Planungseinheit> planungseinheiten = new HashSet<>();
     for (Pruefung p : pruefungen) {
