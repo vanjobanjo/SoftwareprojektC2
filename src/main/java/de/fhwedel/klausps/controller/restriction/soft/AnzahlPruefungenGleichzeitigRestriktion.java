@@ -23,7 +23,8 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
     try {
       List<Pruefung> simultaneousPruefungen = dataAccessService.getAllPruefungenBetween(pruefung.getStartzeitpunkt(), pruefungsEnde);
     } catch (IllegalTimeSpanException e) {
-
+      // can never happen, as the duration of a pruefung is checked to be > 0
+      throw new IllegalStateException("A Pruefung with a negative duration can not exist.", e);
     }
     return Optional.empty();
   }

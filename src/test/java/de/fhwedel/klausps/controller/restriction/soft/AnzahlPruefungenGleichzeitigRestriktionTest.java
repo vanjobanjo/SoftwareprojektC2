@@ -37,9 +37,9 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
 
   @Test
   void evaluate_onlyCheckedPruefungIsPlanned() {
-    /*when(dataAccessService.getGeplanteModelPruefung()).thenReturn(emptySet());
+    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(emptySet());
 
-    assertThat(deviceUnderTest.evaluate(any(Pruefung.class))).isEmpty();*/
+    //assertThat(deviceUnderTest.evaluate(any(Pruefung.class))).isEmpty();
   }
 
 }
