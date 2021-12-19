@@ -51,6 +51,16 @@ public class TestUtils {
     return getRandomPlannedPruefungen(seed, 1).get(0);
   }
 
+  public static List<Pruefung> getRandomPruefungenAt(long seed, LocalDateTime... schedules) {
+    Random random = new Random(seed);
+    List<Pruefung> randomPruefungen = new ArrayList<>(schedules.length);
+    for (LocalDateTime schedule: schedules) {
+      randomPruefungen.add(new PruefungImpl(getRandomString(random, 5), getRandomString(random, 5),
+          getRandomString(random, 5), getRandomDuration(random, 120), schedule));
+    }
+    return randomPruefungen;
+  }
+
   public static String getRandomString(Random random, int length) {
     // code from https://www.baeldung.com/java-random-string modified
     int leftLimit = 97; // letter 'a'
