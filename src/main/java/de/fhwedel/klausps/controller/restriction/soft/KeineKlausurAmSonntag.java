@@ -39,11 +39,14 @@ public class KeineKlausurAmSonntag extends WeicheRestriktion implements Predicat
 
   @Override
   public Optional<KriteriumsAnalyse> evaluate(Pruefung pruefung) {
-    if (test(pruefung)) {
-      return Optional.of(new KriteriumsAnalyse(Set.of(new PruefungDTOBuilder(pruefung).build()),
-          WeichesKriterium.SONNTAG, new HashSet<>(pruefung.getTeilnehmerkreise()),
-          pruefung.schaetzung()));
+    boolean violationRestriction = test(pruefung);
+
+    if (!violationRestriction) {
+      return Optional.empty();
     }
-    return Optional.empty();
+
+    return Optional.of(new KriteriumsAnalyse(Set.of(new PruefungDTOBuilder(pruefung).build()),
+        WeichesKriterium.SONNTAG, new HashSet<>(pruefung.getTeilnehmerkreise()),
+        pruefung.schaetzung()));
   }
 }
