@@ -260,6 +260,58 @@ public class ScheduleService {
 
 
   private Set<Pruefung> getPruefungenInvolvedIn(
+  public List<ReadOnlyPruefung> addTeilnehmerKreis(ReadOnlyPruefung roPruefung,
+      Teilnehmerkreis teilnehmerkreis) throws HartesKriteriumException {
+
+    if (roPruefung.getTeilnehmerkreise().contains(teilnehmerkreis)) {
+      return new ArrayList<>();
+    }
+    List<ReadOnlyPruefung> listOfRead = new ArrayList<>();
+
+    if (this.dataAccessService.addTeilnehmerkreis(roPruefung, teilnehmerkreis)) {
+      try {
+        //TODO hier auf HarteRestirktionen testen dann noch auf Weiche und dann Liste zurückgeben
+     //   listOfRead = testHartKriterium(roPruefung);
+     //   listOfRead.addAll()
+        throw new HartesKriteriumException(null,null,null);
+      } catch (HartesKriteriumException e) {
+        this.dataAccessService.removeTeilnehmerkreis(roPruefung, teilnehmerkreis);
+        throw e;
+      }
+    }
+    return listOfRead;
+
+  }
+
+  public List<ReadOnlyPruefung> remmoveTeilnehmerKreis(ReadOnlyPruefung roPruefung,
+      Teilnehmerkreis teilnehmerkreis) throws HartesKriteriumException {
+
+    if (!roPruefung.getTeilnehmerkreise().contains(teilnehmerkreis)) {
+      return new ArrayList<>();
+    }
+    List<ReadOnlyPruefung> listOfRead = new ArrayList<>();
+
+    if (this.dataAccessService.removeTeilnehmerkreis(roPruefung, teilnehmerkreis)) {
+      try {
+       //TODO hier auf HarteRestirktionen testen dann noch auf Weiche und dann Liste zurückgeben
+        //listOfRead = signalHartesKriteriumFailure(null);
+        throw new HartesKriteriumException(null,null,null);
+      } catch (HartesKriteriumException e) {
+        this.dataAccessService.addTeilnehmerkreis(roPruefung, teilnehmerkreis);
+        throw e;
+      }
+    }
+    return listOfRead;
+  }
+
+  private List<ReadOnlyPruefung> testHartKriterium(ReadOnlyPruefung roPruefung)
+      throws HartesKriteriumException {
+
+    throw new IllegalStateException("Not implemented yet!");
+  }
+
+
+  private Set<ReadOnlyPruefung> getPruefungenInvolvedIn(
       List<WeichesKriteriumAnalyse> weicheKriterien) {
     Set<Pruefung> result = new HashSet<>();
     for (WeichesKriteriumAnalyse weichesKriteriumAnalyse : weicheKriterien) {
@@ -271,10 +323,10 @@ public class ScheduleService {
   private void signalHartesKriteriumFailure(List<HartesKriteriumAnalyse> hardRestrictionFailures)
       throws HartesKriteriumException {
     Set<ReadOnlyPruefung> causingPruefungen = getPruefungenInvolvedIn(hardRestrictionFailures);
-
-    //TODO entfernen von den zu vielen Teilnehmerkreisen
-    throw new HartesKriteriumException(getPruefungenInvolvedIn(hardRestrictionFailures),
-        getAllTeilnehmerkreiseFrom(hardRestrictionFailures), 0);
+    throw new HartesKriteriumException(
+        getPruefungenInvolvedIn(hardRestrictionFailures),
+        getAllTeilnehmerkreiseFrom(hardRestrictionFailures),
+        0);
     // TODO number of affected students can not be calculated correctly when multiple analyses
     //  affect the same teilnehmerkreise, therefore currently set to 0
   }
