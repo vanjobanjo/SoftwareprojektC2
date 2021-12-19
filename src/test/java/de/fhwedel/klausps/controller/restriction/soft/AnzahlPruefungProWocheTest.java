@@ -139,7 +139,7 @@ class AnzahlPruefungProWocheTest {
 
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
 
-    KriteriumsAnalyse result = deviceUnderTest.evaluate(dm_0);
+    KriteriumsAnalyse result = deviceUnderTest.evaluate(dm_0).get();
 
     ReadOnlyPruefung analysis = new PruefungDTOBuilder(mathe_0).build();
     ReadOnlyPruefung dm = new PruefungDTOBuilder(dm_0).build();
@@ -151,7 +151,7 @@ class AnzahlPruefungProWocheTest {
     assertThat(result.getAnzahlBetroffenerStudenten()).isEqualTo(10);
     assertThat(result.getBetroffenePruefungen()).containsOnly(analysis, dm);
     assertThat(result.getBetroffenePruefungen()).containsOnly(analysis, dm);
-    assertThat(deviceUnderTest.evaluate(haskell_1)).isNull();
+    assertThat(deviceUnderTest.evaluate(haskell_1)).isEmpty();
   }
 
   @DisplayName("DM und Mathe sind im Block. Haskell wird am selben Tag geplant.")
@@ -181,7 +181,7 @@ class AnzahlPruefungProWocheTest {
 
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
 
-    KriteriumsAnalyse result_dm0 = deviceUnderTest.evaluate(dm_0);
+    KriteriumsAnalyse result_dm0 = deviceUnderTest.evaluate(dm_0).get();
 
     ReadOnlyPruefung analysis = new PruefungDTOBuilder(mathe_0).build();
     ReadOnlyPruefung dm = new PruefungDTOBuilder(dm_0).build();
@@ -196,7 +196,7 @@ class AnzahlPruefungProWocheTest {
     assertThat(result_dm0.getBetroffenePruefungen()).doesNotContain(analysis);
 
     //für haskell müssen alle 3 unter betroffen sein, weil alle in der selben woche stattfinden.
-    KriteriumsAnalyse result_haskell0 = deviceUnderTest.evaluate(haskell_0);
+    KriteriumsAnalyse result_haskell0 = deviceUnderTest.evaluate(haskell_0).get();
     assertThat(result_haskell0.getAnzahlBetroffenerStudenten()).isEqualTo(10);
     assertThat(result_haskell0.getBetroffenePruefungen()).containsOnly(dm,analysis, haskell);
   }
@@ -231,7 +231,7 @@ class AnzahlPruefungProWocheTest {
 
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
 
-    KriteriumsAnalyse result_dm0 = deviceUnderTest.evaluate(dm_0);
+    KriteriumsAnalyse result_dm0 = deviceUnderTest.evaluate(dm_0).get();
 
     ReadOnlyPruefung analysis = new PruefungDTOBuilder(mathe_0).build();
     ReadOnlyPruefung dm = new PruefungDTOBuilder(dm_0).build();
@@ -246,7 +246,7 @@ class AnzahlPruefungProWocheTest {
     assertThat(result_dm0.getBetroffenePruefungen()).doesNotContain(analysis);
 
     //für haskell müssen alle 3 unter betroffen sein, weil alle in der selben woche stattfinden.
-    KriteriumsAnalyse result_haskell0 = deviceUnderTest.evaluate(haskell_0);
+    KriteriumsAnalyse result_haskell0 = deviceUnderTest.evaluate(haskell_0).get();
     assertThat(result_haskell0.getAnzahlBetroffenerStudenten()).isEqualTo(30);
     assertThat(result_haskell0.getBetroffenePruefungen()).containsOnly(dm,analysis, haskell);
   }

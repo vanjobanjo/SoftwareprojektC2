@@ -68,21 +68,18 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
 
     return blockOpt.isEmpty() ? pruefungen.size() >= limit
         : (pruefungen.size() - blockOpt.get().getPruefungen().size()) + 1 >= limit;
+    //ignore the exams in the block of pruefung.
   }
 
   @Override
   public Optional<KriteriumsAnalyse> evaluate(Pruefung pruefung) {
-    throw new UnsupportedOperationException("Not implemented yet!");
-  }
-
-  @Override
-  public KriteriumsAnalyse evaluate(Pruefung toEvaluate) {
-    if (!test(toEvaluate)) {
-      return null;
+    if (!test(pruefung)) {
+      return Optional.empty();
     }
 
-    Optional<Block> blockOpt = dataAccessService.getBlockTo(toEvaluate);
-    Set<Pruefung> conflictedPruefungen = weekPruefungMap.get(getWeek(startPeriode, toEvaluate));
+    Optional<Block>
+        blockOpt = dataAccessService.getBlockTo(pruefung);
+    Set<Pruefung> conflictedPruefungen = weekPruefungMap.get(getWeek(startPeriode, pruefung));
 
     if (blockOpt.isPresent()) {
       Set<Planungseinheit> conflictedPlanungseinheiten = getPlanungseinheitenToPruefungen(
@@ -90,7 +87,7 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
       conflictedPlanungseinheiten.remove(blockOpt.get());
       conflictedPruefungen = getPruefungenFromPlanungseinheiten(
           conflictedPlanungseinheiten);
-      conflictedPruefungen.add(toEvaluate);
+      conflictedPruefungen.add(pruefung);
     }
 
     Set<ReadOnlyPruefung> conflictedRoPruefungen = conflictedPruefungen
@@ -99,20 +96,13 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
             Collectors.toSet());
 
     Set<Teilnehmerkreis> conflictedTeilnehmerkreis = conflictedPruefungen.stream()
-        .flatMap(pruefung -> pruefung.getTeilnehmerkreise().stream()).collect(
+        .flatMap(p -> p.getTeilnehmerkreise().stream()).collect(
             Collectors.toSet());
 
-    int affected = conflictedRoPruefungen
-        .stream()
-        .map(ReadOnlyPlanungseinheit::getTeilnehmerKreisSchaetzung)
-        .distinct() //die Schätzungen zum TK müssen gleich sein, sonst IllegalStateException. Das gilt auch für die API
-        .map(Map::entrySet)
-        .flatMap(Collection::stream)
-        .collect(Collectors.toMap(Entry::getKey, Entry::getValue))
-        .values().stream().mapToInt(integer -> integer).sum();
+    int affected = getAffectedStudents(conflictedRoPruefungen);
 
-    return new KriteriumsAnalyse(conflictedRoPruefungen,
-        WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE, conflictedTeilnehmerkreis, affected);
+    return Optional.of(new KriteriumsAnalyse(conflictedRoPruefungen,
+        WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE, conflictedTeilnehmerkreis, affected));
   }
 
 
