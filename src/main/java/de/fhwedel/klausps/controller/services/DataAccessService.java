@@ -467,10 +467,10 @@ public class DataAccessService {
   }
 
 
-  public List<Pruefung> getAllPruefungenBetween(LocalDateTime start, LocalDateTime end)
+  public List<Planungseinheit> getAllPruefungenBetween(LocalDateTime start, LocalDateTime end)
       throws IllegalTimeSpanException {
 
-    List<Pruefung> listOfAllPruefungenBetween = new ArrayList<>();
+    List<Planungseinheit> listOfAllPruefungenBetween = new ArrayList<>();
 
     if(start.isAfter(end)){
       throw new IllegalTimeSpanException("Der Start liegt nach dem Ende des Zeitslots");
@@ -479,7 +479,6 @@ public class DataAccessService {
     for (Planungseinheit einheit : this.pruefungsperiode.planungseinheitenBetween(start, end)) {
       if (einheit.isBlock()) {
         for (Pruefung pruefung : einheit.asBlock().getPruefungen()) {
-
           listOfAllPruefungenBetween.add(pruefung);
         }
       } else {
