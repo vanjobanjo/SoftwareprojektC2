@@ -44,8 +44,8 @@ class MehrePruefungenAmTagTest {
     MehrePruefungenAmTag mehrePruefungenAmTag = new MehrePruefungenAmTag(dataAccessService,
         WeichesKriterium.MEHRERE_PRUEFUNGEN_AM_TAG);
 
-    Planungseinheit analysisPL = mock(Planungseinheit.class);
-    Planungseinheit haskelPL = mock(Planungseinheit.class);
+    Pruefung analysisPL = mock(Pruefung.class);
+    Pruefung haskelPL = mock(Pruefung.class);
 
     Pruefung analysis = mock(Pruefung.class);
     Pruefung haskel = mock(Pruefung.class);
@@ -95,7 +95,7 @@ class MehrePruefungenAmTagTest {
     when(analysisPL.asPruefung()).thenReturn(analysis);
     when(haskelPL.asPruefung()).thenReturn(haskel);
 
-    ArrayList<Planungseinheit> listOfPruefungen = new ArrayList<>();
+    ArrayList<Pruefung> listOfPruefungen = new ArrayList<>();
     listOfPruefungen.add(haskelPL);
     listOfPruefungen.add(analysisPL);
 

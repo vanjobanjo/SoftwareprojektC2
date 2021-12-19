@@ -413,6 +413,7 @@ public class DataAccessService {
    * @param time The time to check for.
    * @return The amount of planned pruefungen.
    */
+  @Deprecated
   public Integer getAmountOfPruefungenAt(LocalDateTime time) {
     Set<Planungseinheit> planungseinheiten = pruefungsperiode.planungseinheitenAt(time);
     Set<String> pruefungsNummernInBloecken = new HashSet<>();
@@ -470,11 +471,14 @@ public class DataAccessService {
     throw new UnsupportedOperationException("Not implemented yet!");
   }
 
+  Set<Planungseinheit> getPlanungseinheitenBetween(LocalDateTime start, LocalDateTime end) {
+    return this.pruefungsperiode.planungseinheitenBetween(start, end);
+  }
 
-  public List<Planungseinheit> getAllPruefungenBetween(LocalDateTime start, LocalDateTime end)
+  public List<Pruefung> getAllPruefungenBetween(LocalDateTime start, LocalDateTime end)
       throws IllegalTimeSpanException {
 
-    List<Planungseinheit> listOfAllPruefungenBetween = new ArrayList<>();
+    List<Pruefung> listOfAllPruefungenBetween = new ArrayList<>();
 
     if(start.isAfter(end)){
       throw new IllegalTimeSpanException("Der Start liegt nach dem Ende des Zeitslots");
@@ -482,9 +486,7 @@ public class DataAccessService {
 
     for (Planungseinheit einheit : this.pruefungsperiode.planungseinheitenBetween(start, end)) {
       if (einheit.isBlock()) {
-        for (Pruefung pruefung : einheit.asBlock().getPruefungen()) {
-          listOfAllPruefungenBetween.add(pruefung);
-        }
+        listOfAllPruefungenBetween.addAll(einheit.asBlock().getPruefungen());
       } else {
         listOfAllPruefungenBetween.add(einheit.asPruefung());
       }

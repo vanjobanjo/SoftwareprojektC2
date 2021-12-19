@@ -28,7 +28,7 @@ public class TwoKlausurenSameTime extends HartRestriktion implements Predicate<P
     LocalDateTime start = pruefung.getStartzeitpunkt().minusMinutes(MINUTES_BETWEEN_PRUEFUNGEN);
     LocalDateTime end = pruefung.getStartzeitpunkt().plus(pruefung.getDauer())
         .plusMinutes(MINUTES_BETWEEN_PRUEFUNGEN);
-    List<Planungseinheit> testList = null;
+    List<Pruefung> testList = null;
     try {
       testList = dataAccessService.getAllPruefungenBetween(start, end);
     } catch (IllegalTimeSpanException e) {

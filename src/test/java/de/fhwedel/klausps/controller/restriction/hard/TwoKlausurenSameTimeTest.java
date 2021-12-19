@@ -64,8 +64,8 @@ class TwoKlausurenSameTimeTest {
     TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService,
         HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG);
 
-    Planungseinheit analysisPL = mock(Planungseinheit.class);
-    Planungseinheit haskelPL = mock(Planungseinheit.class);
+    Pruefung analysisPL = mock(Pruefung.class);
+    Pruefung haskelPL = mock(Pruefung.class);
 
     Pruefung analysis = mock(Pruefung.class);
     Pruefung haskel = mock(Pruefung.class);
@@ -80,7 +80,7 @@ class TwoKlausurenSameTimeTest {
     when(analysis.getTeilnehmerkreise()).thenReturn(teilnehmer);
     when(haskel.getTeilnehmerkreise()).thenReturn(teilnehmer);
 
-    ArrayList<Planungseinheit> listOfPruefungen = new ArrayList<>();
+    ArrayList<Pruefung> listOfPruefungen = new ArrayList<>();
     listOfPruefungen.add(analysisPL);
 
     Set<Pruefung> setOfConflictPruefunge = new HashSet<>();
@@ -149,7 +149,7 @@ class TwoKlausurenSameTimeTest {
     when(analysis.getTeilnehmerkreise()).thenReturn(teilnehmer);
     when(haskel.getTeilnehmerkreise()).thenReturn(teilnehmer);
 
-    ArrayList<Planungseinheit> listOfPruefungen = new ArrayList<>();
+    ArrayList<Pruefung> listOfPruefungen = new ArrayList<>();
 
     Set<Pruefung> setOfConflictPruefunge = new HashSet<>();
 
@@ -198,9 +198,9 @@ class TwoKlausurenSameTimeTest {
     TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService,
         HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG);
 
-    Planungseinheit analysisPL = mock(Planungseinheit.class);
-    Planungseinheit haskelPL = mock(Planungseinheit.class);
-    Planungseinheit dmPL = mock(Planungseinheit.class);
+    Pruefung analysisPL = mock(Pruefung.class);
+    Pruefung haskelPL = mock(Pruefung.class);
+    Pruefung dmPL = mock(Pruefung.class);
 
     Pruefung analysis = mock(Pruefung.class);
     Pruefung haskel = mock(Pruefung.class);
@@ -215,7 +215,7 @@ class TwoKlausurenSameTimeTest {
     when(haskel.getTeilnehmerkreise()).thenReturn(teilnehmer);
     when(dm.getTeilnehmerkreise()).thenReturn(teilnehmer);
 
-    ArrayList<Planungseinheit> listOfPruefungen = new ArrayList<>();
+    ArrayList<Pruefung> listOfPruefungen = new ArrayList<>();
     listOfPruefungen.add(dmPL);
     listOfPruefungen.add(haskelPL);
     listOfPruefungen.add(analysisPL);
@@ -275,9 +275,9 @@ class TwoKlausurenSameTimeTest {
     TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService,
         HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG);
 
-    Planungseinheit analysisPL = mock(Planungseinheit.class);
-    Planungseinheit haskelPL = mock(Planungseinheit.class);
-    Planungseinheit dmPL = mock(Planungseinheit.class);
+    Pruefung analysisPL = mock(Pruefung.class);
+    Pruefung haskelPL = mock(Pruefung.class);
+    Pruefung dmPL = mock(Pruefung.class);
 
     Pruefung analysis = mock(Pruefung.class);
     Pruefung haskel = mock(Pruefung.class);
@@ -346,7 +346,7 @@ class TwoKlausurenSameTimeTest {
     when(dmPL.asPruefung()).thenReturn(dm);
     // when(pruefungsperiode.planungseinheitenBetween(start, start.plusMinutes(120))).thenReturn(setOfPruefungen);
 
-    ArrayList<Planungseinheit> listOfPruefungen = new ArrayList<>();
+    ArrayList<Pruefung> listOfPruefungen = new ArrayList<>();
     listOfPruefungen.add(dmPL);
     listOfPruefungen.add(haskelPL);
     listOfPruefungen.add(analysisPL);

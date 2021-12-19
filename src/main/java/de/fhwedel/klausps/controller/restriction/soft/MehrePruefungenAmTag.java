@@ -18,13 +18,11 @@ import java.util.function.Predicate;
 
 public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate<Pruefung> {
 
+  static final int START_ZEIT = 8;
+  static final int END_ZEIT = 18;
   Set<ReadOnlyPruefung> setReadyOnly = new HashSet<>();
   Set<Teilnehmerkreis> setTeilnehmer = new HashSet<>();
   int countStudents = 0;
-
-  static final int START_ZEIT = 8;
-  static final int END_ZEIT = 18;
-
   KriteriumsAnalyse kA = new KriteriumsAnalyse(setReadyOnly,
       WeichesKriterium.MEHRERE_PRUEFUNGEN_AM_TAG, setTeilnehmer, countStudents);
 
@@ -44,7 +42,7 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
     LocalDateTime start = startDay(pruefung.getStartzeitpunkt());
     LocalDateTime end = endDay(pruefung.getStartzeitpunkt());
 
-    List<Planungseinheit> testList = null;
+    List<Pruefung> testList = null;
     try {
       testList = dataAccessService.getAllPruefungenBetween(start, end);
     } catch (IllegalTimeSpanException e) {
@@ -52,6 +50,9 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
       e.printStackTrace();
     }
     Set<Pruefung> pruefungenFromBlock;
+    // TODO wieso wird überprüft, ob ein Ergebnis von "getAllPruefungenBetween" ein Block ist,
+    //  die Methode sorgt ganz explizit dafür, dass die Klausuren in den Blöcken statt der Blöcke
+    //  selbst returned werden
     for (Planungseinheit planungseinheit : testList) {
       if (planungseinheit.isBlock()) {
         pruefungenFromBlock = planungseinheit.asBlock().getPruefungen();
