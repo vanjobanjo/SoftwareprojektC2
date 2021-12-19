@@ -1,6 +1,6 @@
 package de.fhwedel.klausps.controller.restriction.hard;
 
-import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
+
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
@@ -10,7 +10,6 @@ import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.xml.crypto.Data;
 
 public class HartRestriktion  {
 
@@ -32,8 +31,10 @@ public class HartRestriktion  {
 
 
 
+
   public List<KriteriumsAnalyse> evaluate() throws HartesKriteriumException {
     throw new UnsupportedOperationException("Not implemented yet!");
+
   }
 
 

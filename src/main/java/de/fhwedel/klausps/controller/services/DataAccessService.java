@@ -9,6 +9,7 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
+import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Planungseinheit;
@@ -52,7 +53,8 @@ public class DataAccessService {
 
     if (!existsPruefungWith(pruefungsNr)) {
       // todo contains static values as it is unclear where to retrieve the data from
-      Pruefung pruefungModel = new PruefungImpl(pruefungsNr, name, "", duration, null);
+      //TODO hier die Duration weg machen
+      Pruefung pruefungModel = new PruefungImpl(pruefungsNr, name, "", duration);
       pruefer.forEach(pruefungModel::addPruefer);
       addTeilnehmerKreisSchaetzungToModelPruefung(pruefungModel, teilnehmerkreise);
       pruefungsperiode.addPlanungseinheit(pruefungModel);
@@ -469,9 +471,16 @@ public class DataAccessService {
   }
 
 
-  public List<Pruefung> getAllPruefungenBetween(LocalDateTime start, LocalDateTime end) {
+
+
+  public List<Pruefung> getAllPruefungenBetween(LocalDateTime start, LocalDateTime end)
+      throws IllegalTimeSpanException {
 
     List<Pruefung> listOfAllPruefungenBetween = new ArrayList<>();
+
+    if(start.isAfter(end)){
+      throw new IllegalTimeSpanException("Der Start liegt nach dem Ende des Zeitslots");
+    }
 
     for (Planungseinheit einheit : this.pruefungsperiode.planungseinheitenBetween(start, end)) {
       if (einheit.isBlock()) {

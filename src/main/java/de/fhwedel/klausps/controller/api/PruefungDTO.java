@@ -6,62 +6,34 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
+import org.jetbrains.annotations.NotNull;
 
 public class PruefungDTO extends ReadOnlyPruefung {
 
-  public PruefungDTO(
-      String pruefungsnummer,
-      String name,
-      LocalDateTime termin,
-      Duration dauer,
-      Map<Teilnehmerkreis, Integer> teilnehmerkreisSchaetzung,
-      Set<String> pruefer,
-      int scoring) {
+  public PruefungDTO(@NotNull String pruefungsnummer, @NotNull String name,
+      @NotNull LocalDateTime termin, @NotNull Duration dauer,
+      @NotNull Map<Teilnehmerkreis, Integer> teilnehmerkreisSchaetzung,
+      @NotNull Set<String> pruefer, int scoring) {
     super(pruefungsnummer, name, termin, dauer, teilnehmerkreisSchaetzung, pruefer, scoring);
   }
 
-  public PruefungDTO(
-      String pruefungsnummer,
-      String name,
-      Duration dauer,
-      Map<Teilnehmerkreis, Integer> teilnehmerkreisSchaetzung,
-      Set<String> pruefer,
-      int scoring) {
+  public PruefungDTO(@NotNull String pruefungsnummer, @NotNull String name, @NotNull Duration dauer,
+      @NotNull Map<Teilnehmerkreis, Integer> teilnehmerkreisSchaetzung,
+      @NotNull Set<String> pruefer, int scoring) {
     super(pruefungsnummer, name, null, dauer, teilnehmerkreisSchaetzung, pruefer, scoring);
   }
 
-  public PruefungDTO(
-      String pruefungsnummer,
-      String name,
-      LocalDateTime termin,
-      Duration dauer,
-      Map<Teilnehmerkreis, Integer> teilnehmerkreisSchaetzung,
-      String pruefer,
+  public PruefungDTO(@NotNull String pruefungsnummer, @NotNull String name,
+      @NotNull LocalDateTime termin, @NotNull Duration dauer,
+      @NotNull Map<Teilnehmerkreis, Integer> teilnehmerkreisSchaetzung, @NotNull String pruefer,
       int scoring) {
-    super(
-        pruefungsnummer,
-        name,
-        termin,
-        dauer,
-        teilnehmerkreisSchaetzung,
-        Set.of(pruefer),
+    super(pruefungsnummer, name, termin, dauer, teilnehmerkreisSchaetzung, Set.of(pruefer),
         scoring);
   }
 
-  public PruefungDTO(
-      String pruefungsnummer,
-      String name,
-      Duration dauer,
-      Map<Teilnehmerkreis, Integer> teilnehmerkreisSchaetzung,
-      String pruefer,
+  public PruefungDTO(@NotNull String pruefungsnummer, @NotNull String name, @NotNull Duration dauer,
+      @NotNull Map<Teilnehmerkreis, Integer> teilnehmerkreisSchaetzung, @NotNull String pruefer,
       int scoring) {
-    super(
-        pruefungsnummer,
-        name,
-        null,
-        dauer,
-        teilnehmerkreisSchaetzung,
-        Set.of(pruefer),
-        scoring);
+    super(pruefungsnummer, name, null, dauer, teilnehmerkreisSchaetzung, Set.of(pruefer), scoring);
   }
 }
