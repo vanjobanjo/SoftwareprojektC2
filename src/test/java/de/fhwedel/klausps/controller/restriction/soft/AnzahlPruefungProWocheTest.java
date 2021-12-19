@@ -178,7 +178,6 @@ class AnzahlPruefungProWocheTest {
     Block block = TestFactory.configureMock_addPruefungToBlockModel(mocked_periode, "Block",
         dm_0.getStartzeitpunkt(), dm_0, mathe_0);
 
-
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
 
     KriteriumsAnalyse result_dm0 = deviceUnderTest.evaluate(dm_0).get();
@@ -198,7 +197,7 @@ class AnzahlPruefungProWocheTest {
     //für haskell müssen alle 3 unter betroffen sein, weil alle in der selben woche stattfinden.
     KriteriumsAnalyse result_haskell0 = deviceUnderTest.evaluate(haskell_0).get();
     assertThat(result_haskell0.getAnzahlBetroffenerStudenten()).isEqualTo(10);
-    assertThat(result_haskell0.getBetroffenePruefungen()).containsOnly(dm,analysis, haskell);
+    assertThat(result_haskell0.getBetroffenePruefungen()).containsOnly(dm, analysis, haskell);
   }
 
   @DisplayName("DM und Mathe sind im Block. Haskell wird am selben Tag geplant.")
@@ -220,14 +219,12 @@ class AnzahlPruefungProWocheTest {
     haskell_0.addTeilnehmerkreis(TestFactory.bwl, 10);
     haskell_0.addTeilnehmerkreis(TestFactory.inf, 20);
 
-
     TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, mathe_0, dm_0, haskell_0);
     TestFactory.configureMock_geplantePruefungenFromPeriode(mocked_periode,
         Set.of(mathe_0, dm_0, haskell_0));
 
     Block block = TestFactory.configureMock_addPruefungToBlockModel(mocked_periode, "Block",
         dm_0.getStartzeitpunkt(), dm_0, mathe_0);
-
 
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
 
@@ -245,10 +242,11 @@ class AnzahlPruefungProWocheTest {
     assertThat(result_dm0.getBetroffenePruefungen()).containsOnly(dm, haskell);
     assertThat(result_dm0.getBetroffenePruefungen()).doesNotContain(analysis);
 
+    KriteriumsAnalyse result_analysis = deviceUnderTest.evaluate(mathe_0).get();
     //für haskell müssen alle 3 unter betroffen sein, weil alle in der selben woche stattfinden.
     KriteriumsAnalyse result_haskell0 = deviceUnderTest.evaluate(haskell_0).get();
     assertThat(result_haskell0.getAnzahlBetroffenerStudenten()).isEqualTo(30);
-    assertThat(result_haskell0.getBetroffenePruefungen()).containsOnly(dm,analysis, haskell);
+    assertThat(result_haskell0.getBetroffenePruefungen()).containsOnly(dm, analysis, haskell);
   }
 
 
@@ -273,8 +271,6 @@ class AnzahlPruefungProWocheTest {
     haskell_0.addTeilnehmerkreis(TestFactory.bwl, 10);
     haskell_0.addTeilnehmerkreis(TestFactory.inf, 20);
 
-
-
     TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, mathe_0, dm_0, haskell_0);
     TestFactory.configureMock_geplantePruefungenFromPeriode(mocked_periode,
         Set.of(mathe_0, dm_0, haskell_0));
@@ -283,9 +279,7 @@ class AnzahlPruefungProWocheTest {
     Block block = TestFactory.configureMock_addPruefungToBlockModel(mocked_periode, "Block",
         dm_0.getStartzeitpunkt(), dm_0, mathe_0);
 
-
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
-
 
     ReadOnlyPruefung analysis = new PruefungDTOBuilder(mathe_0).build();
     ReadOnlyPruefung dm = new PruefungDTOBuilder(dm_0).build();
@@ -308,6 +302,8 @@ class AnzahlPruefungProWocheTest {
     //die Summe aller TK die betroffen sind 40.
     assertThat(result_haskell0.getAnzahlBetroffenerStudenten()).isEqualTo(40);
     assertThat(result_haskell0.getBetroffenePruefungen()).containsOnly(dm, analysis, haskell);
+    assertThat(result_haskell0.getTeilnehmer()).containsOnly(TestFactory.bwl, TestFactory.wing,
+        TestFactory.inf);
   }
 
   @DisplayName("Keine Blöcke viele unterschiedliche Teilnehmerkreise")
@@ -333,14 +329,11 @@ class AnzahlPruefungProWocheTest {
     haskell_0.addTeilnehmerkreis(TestFactory.inf, 20);
     haskell_0.addTeilnehmerkreis(TestFactory.wing, 10);
 
-
-
     TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, mathe_0, dm_0, haskell_0);
     TestFactory.configureMock_geplantePruefungenFromPeriode(mocked_periode,
         Set.of(mathe_0, dm_0, haskell_0));
 
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
-
 
     ReadOnlyPruefung analysis = new PruefungDTOBuilder(mathe_0).build();
     ReadOnlyPruefung dm = new PruefungDTOBuilder(dm_0).build();
@@ -391,8 +384,6 @@ class AnzahlPruefungProWocheTest {
     haskell_2.addTeilnehmerkreis(TestFactory.inf, 20);
     haskell_2.addTeilnehmerkreis(TestFactory.wing, 10);
 
-
-
     TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, mathe_0, dm_1, haskell_2);
     TestFactory.configureMock_geplantePruefungenFromPeriode(mocked_periode,
         Set.of(mathe_0, dm_1, haskell_2));
@@ -402,8 +393,64 @@ class AnzahlPruefungProWocheTest {
     assertThat(deviceUnderTest.evaluate(mathe_0)).isEmpty();
     assertThat(deviceUnderTest.evaluate(dm_1)).isEmpty();
     assertThat(deviceUnderTest.evaluate(haskell_2)).isEmpty();
+  }
 
 
+  @DisplayName("DM und Mathe sind im Block. Haskell wird am selben Tag geplant.")
+  @Test
+  void evaluate_Block_test10() {
+
+    LocalDate week_0 = START_PERIODE.plusDays(6);
+    LocalTime start = LocalTime.of(0, 0);
+    Pruefung mathe_0 = TestFactory.getPruefungOfReadOnlyPruefung(
+        TestFactory.planRoPruefung(TestFactory.RO_ANALYSIS_UNPLANNED, week_0.atTime(start)));
+    Pruefung dm_0 = TestFactory.getPruefungOfReadOnlyPruefung(
+        TestFactory.planRoPruefung(TestFactory.RO_DM_UNPLANNED, week_0.atTime(start)));
+    Pruefung haskell_0 = TestFactory.getPruefungOfReadOnlyPruefung(
+        TestFactory.planRoPruefung(TestFactory.RO_HASKELL_UNPLANNED, week_0.atTime(start)));
+
+    mathe_0.addTeilnehmerkreis(TestFactory.bwl, 10);
+    dm_0.addTeilnehmerkreis(TestFactory.bwl, 10);
+    dm_0.addTeilnehmerkreis(TestFactory.inf, 20);
+
+    haskell_0.addTeilnehmerkreis(TestFactory.bwl, 10);
+
+    TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, mathe_0, dm_0, haskell_0);
+    TestFactory.configureMock_geplantePruefungenFromPeriode(mocked_periode,
+        Set.of(mathe_0, dm_0, haskell_0));
+
+    Block block = TestFactory.configureMock_addPruefungToBlockModel(mocked_periode, "Block",
+        dm_0.getStartzeitpunkt(), dm_0, mathe_0);
+
+    this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
+
+    KriteriumsAnalyse result_dm0 = deviceUnderTest.evaluate(dm_0).get();
+
+    ReadOnlyPruefung analysis = new PruefungDTOBuilder(mathe_0).build();
+    ReadOnlyPruefung dm = new PruefungDTOBuilder(dm_0).build();
+    ReadOnlyPruefung haskell = new PruefungDTOBuilder(haskell_0).build();
+
+    assertThat(result_dm0).isNotNull();
+    assertThat(result_dm0.getKriterium()).isEqualTo(WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE);
+    assertThat(result_dm0.getAnzahlBetroffenerStudenten()).isNotEqualTo(20);
+    assertThat(result_dm0.getAnzahlBetroffenerStudenten()).isEqualTo(30);
+    // weil Analysis und DM im Block sind, darf Analysis nicht mehr davon betroffen sein.
+    assertThat(result_dm0.getBetroffenePruefungen()).containsOnly(dm, haskell);
+    assertThat(result_dm0.getBetroffenePruefungen()).doesNotContain(analysis);
+
+    KriteriumsAnalyse result_analysis = deviceUnderTest.evaluate(mathe_0).get();
+    assertThat(result_analysis.getAnzahlBetroffenerStudenten()).isEqualTo(10);
+
+    //Analysis darf nicht Inf enthalten, da er der TK von BWL ist. Es muss ignoriert werden.
+    assertThat(result_analysis.getTeilnehmer()).doesNotContain(TestFactory.inf);
+    assertThat(result_analysis.getBetroffenePruefungen()).containsOnly(analysis, haskell);
+    assertThat(result_analysis.getTeilnehmer()).containsOnly(TestFactory.bwl);
+
+    //für haskell müssen alle 3 unter betroffen sein, weil alle in der selben woche stattfinden.
+    KriteriumsAnalyse result_haskell0 = deviceUnderTest.evaluate(haskell_0).get();
+    assertThat(result_haskell0.getAnzahlBetroffenerStudenten()).isEqualTo(30);
+    assertThat(result_haskell0.getBetroffenePruefungen()).containsOnly(dm, analysis, haskell);
+    assertThat(result_haskell0.getTeilnehmer()).containsOnly(TestFactory.inf, TestFactory.bwl);
   }
 
 
