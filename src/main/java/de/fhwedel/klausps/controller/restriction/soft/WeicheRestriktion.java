@@ -39,8 +39,8 @@ public abstract class WeicheRestriktion {
   public abstract Optional<KriteriumsAnalyse> evaluate(Pruefung pruefung);
 
   /**
-   * Calculates the number of students he passed Set of pruefung. It filters the duplicates
-   * Teilnehmerkreise.
+   * Calculates the number of students of the passed Set of pruefungen. It considera als the
+   * duplicates Teilnehmerkreise.
    *
    * @param pruefungen Set of Pruefung.
    * @return number of affected students.
