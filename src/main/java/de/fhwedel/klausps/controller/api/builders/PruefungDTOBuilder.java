@@ -92,8 +92,8 @@ public class PruefungDTOBuilder {
     return this;
   }
 
-  public PruefungDTOBuilder withAdditionalTeilnehmerkreisSchaetzung(
-      Teilnehmerkreis teilnehmerkreis, Integer schaetzung) {
+  public PruefungDTOBuilder withAdditionalTeilnehmerkreisSchaetzung(Teilnehmerkreis teilnehmerkreis,
+      Integer schaetzung) {
     teilnehmerkreisSchaetzung.put(teilnehmerkreis, schaetzung);
     return this;
   }
@@ -124,13 +124,25 @@ public class PruefungDTOBuilder {
   }
 
   public PruefungDTO build() {
-    return new PruefungDTO(
-        this.pruefungsNummer,
-        this.pruefungsName,
-        this.startZeitpunkt,
-        this.dauer,
-        this.teilnehmerkreisSchaetzung,
-        this.pruefer,
-        this.scoring);
+    if (isPlanned()) {
+      return buildPlannedPruefung();
+    } else {
+      return buildUnplannedPruefung();
+    }
   }
+
+  private boolean isPlanned() {
+    return startZeitpunkt != null;
+  }
+
+  private PruefungDTO buildPlannedPruefung() {
+    return new PruefungDTO(this.pruefungsNummer, this.pruefungsName, this.startZeitpunkt,
+        this.dauer, this.teilnehmerkreisSchaetzung, this.pruefer, this.scoring);
+  }
+
+  private PruefungDTO buildUnplannedPruefung() {
+    return new PruefungDTO(this.pruefungsNummer, this.pruefungsName, this.dauer,
+        this.teilnehmerkreisSchaetzung, this.pruefer, this.scoring);
+  }
+
 }
