@@ -286,15 +286,18 @@ class AnzahlPruefungProWocheTest {
 
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
 
-    KriteriumsAnalyse result_dm0 = deviceUnderTest.evaluate(dm_0).get();
 
     ReadOnlyPruefung analysis = new PruefungDTOBuilder(mathe_0).build();
     ReadOnlyPruefung dm = new PruefungDTOBuilder(dm_0).build();
     ReadOnlyPruefung haskell = new PruefungDTOBuilder(haskell_0).build();
 
+    // Die Teilnehmerkreis von Analysis müssen ignoriert werden, da sie in einem Block mit Analysis sind.
+    KriteriumsAnalyse result_dm0 = deviceUnderTest.evaluate(dm_0).get();
+
     assertThat(result_dm0).isNotNull();
     assertThat(result_dm0.getKriterium()).isEqualTo(WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE);
-    assertThat(result_dm0.getAnzahlBetroffenerStudenten()).isNotEqualTo(20);
+    // wenn es nicht in einem Block wäre, dann wäre die Schätzung 40.
+    assertThat(result_dm0.getAnzahlBetroffenerStudenten()).isNotEqualTo(40);
     assertThat(result_dm0.getAnzahlBetroffenerStudenten()).isEqualTo(30);
     // weil Analysis und DM im Block sind, darf Analysis nicht mehr davon betroffen sein.
     assertThat(result_dm0.getBetroffenePruefungen()).containsOnly(dm, haskell);
@@ -302,8 +305,105 @@ class AnzahlPruefungProWocheTest {
 
     //für haskell müssen alle 3 unter betroffen sein, weil alle in der selben woche stattfinden.
     KriteriumsAnalyse result_haskell0 = deviceUnderTest.evaluate(haskell_0).get();
-    assertThat(result_haskell0.getAnzahlBetroffenerStudenten()).isEqualTo(30);
-    assertThat(result_haskell0.getBetroffenePruefungen()).containsOnly(dm,analysis, haskell);
+    //die Summe aller TK die betroffen sind 40.
+    assertThat(result_haskell0.getAnzahlBetroffenerStudenten()).isEqualTo(40);
+    assertThat(result_haskell0.getBetroffenePruefungen()).containsOnly(dm, analysis, haskell);
+  }
+
+  @DisplayName("Keine Blöcke viele unterschiedliche Teilnehmerkreise")
+  @Test
+  void evaluate_Block_test4() {
+    LocalDate week_0 = START_PERIODE.plusDays(6);
+    LocalTime start = LocalTime.of(0, 0);
+    Pruefung mathe_0 = TestFactory.getPruefungOfReadOnlyPruefung(
+        TestFactory.planRoPruefung(TestFactory.RO_ANALYSIS_UNPLANNED, week_0.atTime(start)));
+    Pruefung dm_0 = TestFactory.getPruefungOfReadOnlyPruefung(
+        TestFactory.planRoPruefung(TestFactory.RO_DM_UNPLANNED, week_0.atTime(start)));
+    Pruefung haskell_0 = TestFactory.getPruefungOfReadOnlyPruefung(
+        TestFactory.planRoPruefung(TestFactory.RO_HASKELL_UNPLANNED, week_0.atTime(start)));
+
+    mathe_0.addTeilnehmerkreis(TestFactory.bwl, 10);
+    mathe_0.addTeilnehmerkreis(TestFactory.wing, 10);
+
+    dm_0.addTeilnehmerkreis(TestFactory.bwl, 10);
+    dm_0.addTeilnehmerkreis(TestFactory.inf, 20);
+    dm_0.addTeilnehmerkreis(TestFactory.wing, 10);
+
+    haskell_0.addTeilnehmerkreis(TestFactory.bwl, 10);
+    haskell_0.addTeilnehmerkreis(TestFactory.inf, 20);
+    haskell_0.addTeilnehmerkreis(TestFactory.wing, 10);
+
+
+
+    TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, mathe_0, dm_0, haskell_0);
+    TestFactory.configureMock_geplantePruefungenFromPeriode(mocked_periode,
+        Set.of(mathe_0, dm_0, haskell_0));
+
+    this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
+
+
+    ReadOnlyPruefung analysis = new PruefungDTOBuilder(mathe_0).build();
+    ReadOnlyPruefung dm = new PruefungDTOBuilder(dm_0).build();
+    ReadOnlyPruefung haskell = new PruefungDTOBuilder(haskell_0).build();
+
+    // Die Teilnehmerkreis von Analysis müssen ignoriert werden, da sie in einem Block mit Analysis sind.
+    KriteriumsAnalyse result_dm0 = deviceUnderTest.evaluate(dm_0).get();
+
+    assertThat(result_dm0).isNotNull();
+    assertThat(result_dm0.getKriterium()).isEqualTo(WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE);
+    assertThat(result_dm0.getAnzahlBetroffenerStudenten()).isEqualTo(40);
+
+    assertThat(result_dm0.getBetroffenePruefungen()).containsOnly(dm, haskell, analysis);
+
+    KriteriumsAnalyse result_haskell0 = deviceUnderTest.evaluate(haskell_0).get();
+
+    assertThat(result_haskell0.getAnzahlBetroffenerStudenten()).isEqualTo(40);
+    assertThat(result_haskell0.getBetroffenePruefungen()).containsOnly(dm, analysis, haskell);
+
+    KriteriumsAnalyse result_analysis = deviceUnderTest.evaluate(mathe_0).get();
+    assertThat(result_analysis.getAnzahlBetroffenerStudenten()).isEqualTo(40);
+    assertThat(result_analysis.getBetroffenePruefungen()).containsOnly(dm, analysis, haskell);
+  }
+
+  @DisplayName("Keine Konflikte")
+  @Test
+  void evaluate_Block_test5() {
+    LocalDate week_0 = START_PERIODE.plusDays(6);
+    LocalDate week_1 = START_PERIODE.plusDays(8);
+    LocalDate week_2 = START_PERIODE.plusDays(15);
+
+    LocalTime start = LocalTime.of(0, 0);
+    Pruefung mathe_0 = TestFactory.getPruefungOfReadOnlyPruefung(
+        TestFactory.planRoPruefung(TestFactory.RO_ANALYSIS_UNPLANNED, week_0.atTime(start)));
+    Pruefung dm_1 = TestFactory.getPruefungOfReadOnlyPruefung(
+        TestFactory.planRoPruefung(TestFactory.RO_DM_UNPLANNED, week_1.atTime(start)));
+    Pruefung haskell_2 = TestFactory.getPruefungOfReadOnlyPruefung(
+        TestFactory.planRoPruefung(TestFactory.RO_HASKELL_UNPLANNED, week_2.atTime(start)));
+
+    mathe_0.addTeilnehmerkreis(TestFactory.bwl, 10);
+    mathe_0.addTeilnehmerkreis(TestFactory.wing, 10);
+
+    dm_1.addTeilnehmerkreis(TestFactory.bwl, 10);
+    dm_1.addTeilnehmerkreis(TestFactory.inf, 20);
+    dm_1.addTeilnehmerkreis(TestFactory.wing, 10);
+
+    haskell_2.addTeilnehmerkreis(TestFactory.bwl, 10);
+    haskell_2.addTeilnehmerkreis(TestFactory.inf, 20);
+    haskell_2.addTeilnehmerkreis(TestFactory.wing, 10);
+
+
+
+    TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, mathe_0, dm_1, haskell_2);
+    TestFactory.configureMock_geplantePruefungenFromPeriode(mocked_periode,
+        Set.of(mathe_0, dm_1, haskell_2));
+
+    this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
+
+    assertThat(deviceUnderTest.evaluate(mathe_0)).isEmpty();
+    assertThat(deviceUnderTest.evaluate(dm_1)).isEmpty();
+    assertThat(deviceUnderTest.evaluate(haskell_2)).isEmpty();
+
+
   }
 
 
