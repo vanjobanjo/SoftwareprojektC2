@@ -472,7 +472,7 @@ public class DataAccessService {
 
     List<Planungseinheit> listOfAllPruefungenBetween = new ArrayList<>();
 
-    if(start.isAfter(end)){
+    if (start.isAfter(end)) {
       throw new IllegalTimeSpanException("Der Start liegt nach dem Ende des Zeitslots");
     }
 
@@ -497,5 +497,20 @@ public class DataAccessService {
       allTeilnehmerkreise.addAll(pruefung.getTeilnehmerkreise());
     }
     return allTeilnehmerkreise;
+  }
+
+  public boolean removeTeilnehmerkreis(ReadOnlyPruefung roPruefung,
+      Teilnehmerkreis teilnehmerkreis) {
+
+    Pruefung pruefung = this.pruefungsperiode.pruefung(roPruefung.getPruefungsnummer());
+
+    return pruefung.removeTeilnehmerkreis(teilnehmerkreis);
+
+  }
+
+  public boolean addTeilnehmerkreis(ReadOnlyPruefung roPruefung, Teilnehmerkreis teilnehmerkreis) {
+    Pruefung pruefung = this.pruefungsperiode.pruefung(roPruefung.getPruefungsnummer());
+
+    return pruefung.addTeilnehmerkreis(teilnehmerkreis);
   }
 }
