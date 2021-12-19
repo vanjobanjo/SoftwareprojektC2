@@ -33,14 +33,14 @@ public abstract class WeicheRestriktion {
    */
   public abstract Optional<KriteriumsAnalyse> evaluate(Pruefung pruefung);
 
-  public int getAffectedStudents(Set<ReadOnlyPruefung> roPruefung) {
+  public int getAffectedStudents(Set<ReadOnlyPruefung> conflictedRoPruefung) {
     int affected = 0;
-    LinkedList<Teilnehmerkreis> tk = roPruefung.stream()
+    LinkedList<Teilnehmerkreis> tk = conflictedRoPruefung.stream()
         .flatMap(p -> p.getTeilnehmerkreise().stream())
         .distinct().collect(Collectors.toCollection(LinkedList::new));
     while (!tk.isEmpty()) {
       Teilnehmerkreis temp = tk.remove(0);
-      affected += getSchaetzungToTk(temp, roPruefung);
+      affected += getSchaetzungToTk(temp, conflictedRoPruefung);
     }
     return affected;
   }
