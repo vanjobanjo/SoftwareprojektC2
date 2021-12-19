@@ -1,5 +1,6 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
@@ -11,6 +12,7 @@ import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -30,6 +32,11 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
       DataAccessService dataAccessService,
       WeichesKriterium kriterium) {
     super(dataAccessService, kriterium);
+  }
+
+  @Override
+  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
+    throw new UnsupportedOperationException("Not implemented yet!");
   }
 
   @Override
