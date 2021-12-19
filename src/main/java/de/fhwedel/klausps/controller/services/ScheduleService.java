@@ -7,6 +7,8 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.helper.Pair;
+import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
+import de.fhwedel.klausps.controller.restriction.hard.TwoKlausurenSameTime;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
@@ -20,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import jdk.jshell.spi.ExecutionControl.NotImplementedException;
 
 
 public class ScheduleService {
@@ -189,10 +192,9 @@ public class ScheduleService {
   /*
   public List<ReadOnlyPruefung> movePruefung(ReadOnlyPruefung pruefung, LocalDateTime expectedStart)
       throws HartesKriteriumException {
-    LocalDateTime currentStart =
-        dataAccessService.getStartOfPruefungWith(pruefung.getPruefungsnummer())
-            .orElseThrow(
-                () -> new IllegalArgumentException("Nur geplante Pruefungen können verschoben werden!"));
+    LocalDateTime currentStart = dataAccessService.getStartOfPruefungWith(
+        pruefung.getPruefungsnummer()).orElseThrow(
+        () -> new IllegalArgumentException("Nur geplante Pruefungen können verschoben werden!"));
     dataAccessService.schedulePruefung(pruefung, expectedStart);
     List<HartesKriteriumAnalyse> hardRestrictionFailures = restrictionService.checkHarteKriterien();
     if (!hardRestrictionFailures.isEmpty()) {
@@ -203,6 +205,58 @@ public class ScheduleService {
   }*/
 
 
+  public List<ReadOnlyPruefung> addTeilnehmerKreis(ReadOnlyPruefung roPruefung,
+      Teilnehmerkreis teilnehmerkreis) throws HartesKriteriumException {
+
+    if (roPruefung.getTeilnehmerkreise().contains(teilnehmerkreis)) {
+      return new ArrayList<>();
+    }
+    List<ReadOnlyPruefung> listOfRead = new ArrayList<>();
+
+    if (this.dataAccessService.addTeilnehmerkreis(roPruefung, teilnehmerkreis)) {
+      try {
+        //TODO hier auf HarteRestirktionen testen dann noch auf Weiche und dann Liste zurückgeben
+     //   listOfRead = testHartKriterium(roPruefung);
+     //   listOfRead.addAll()
+        throw new HartesKriteriumException(null,null,null);
+      } catch (HartesKriteriumException e) {
+        this.dataAccessService.removeTeilnehmerkreis(roPruefung, teilnehmerkreis);
+        throw e;
+      }
+    }
+    return listOfRead;
+
+  }
+
+  public List<ReadOnlyPruefung> remmoveTeilnehmerKreis(ReadOnlyPruefung roPruefung,
+      Teilnehmerkreis teilnehmerkreis) throws HartesKriteriumException {
+
+    if (!roPruefung.getTeilnehmerkreise().contains(teilnehmerkreis)) {
+      return new ArrayList<>();
+    }
+    List<ReadOnlyPruefung> listOfRead = new ArrayList<>();
+
+    if (this.dataAccessService.removeTeilnehmerkreis(roPruefung, teilnehmerkreis)) {
+      try {
+       //TODO hier auf HarteRestirktionen testen dann noch auf Weiche und dann Liste zurückgeben
+        //listOfRead = signalHartesKriteriumFailure(null);
+        throw new HartesKriteriumException(null,null,null);
+      } catch (HartesKriteriumException e) {
+        this.dataAccessService.addTeilnehmerkreis(roPruefung, teilnehmerkreis);
+        throw e;
+      }
+    }
+    return listOfRead;
+  }
+
+  private List<ReadOnlyPruefung> testHartKriterium(ReadOnlyPruefung roPruefung)
+      throws HartesKriteriumException {
+
+    throw new IllegalStateException("Not implemented yet!");
+  }
+
+
+  private Set<ReadOnlyPruefung> getPruefungenInvolvedIn(
   private Set<Pruefung> getPruefungenInvolvedIn(
       List<WeichesKriteriumAnalyse> weicheKriterien) {
     Set<Pruefung> result = new HashSet<>();
@@ -215,10 +269,8 @@ public class ScheduleService {
   private void signalHartesKriteriumFailure(List<HartesKriteriumAnalyse> hardRestrictionFailures)
       throws HartesKriteriumException {
     Set<ReadOnlyPruefung> causingPruefungen = getPruefungenInvolvedIn(hardRestrictionFailures);
-    throw new HartesKriteriumException(
-        getPruefungenInvolvedIn(hardRestrictionFailures),
-        getAllTeilnehmerkreiseFrom(hardRestrictionFailures),
-        0);
+    throw new HartesKriteriumException(getPruefungenInvolvedIn(hardRestrictionFailures),
+        getAllTeilnehmerkreiseFrom(hardRestrictionFailures), 0);
     // TODO number of affected students can not be calculated correctly when multiple analyses
     //  affect the same teilnehmerkreise, therefore currently set to 0
   }

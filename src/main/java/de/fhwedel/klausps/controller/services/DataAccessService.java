@@ -551,4 +551,19 @@ public class DataAccessService {
     return allTeilnehmerkreise;
   }
 
+
+  public boolean removeTeilnehmerkreis(ReadOnlyPruefung roPruefung,
+      Teilnehmerkreis teilnehmerkreis) {
+
+    Pruefung pruefung = this.pruefungsperiode.pruefung(roPruefung.getPruefungsnummer());
+
+    return pruefung.removeTeilnehmerkreis(teilnehmerkreis);
+
+  }
+
+  public boolean addTeilnehmerkreis(ReadOnlyPruefung roPruefung, Teilnehmerkreis teilnehmerkreis) {
+    Pruefung pruefung = this.pruefungsperiode.pruefung(roPruefung.getPruefungsnummer());
+
+    return pruefung.addTeilnehmerkreis(teilnehmerkreis);
+  }
 }

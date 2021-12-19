@@ -15,7 +15,7 @@ public class TwoKlausurenSameTime extends HartRestriktion implements Predicate<P
 
   static final long MINUTES_BETWEEN_PRUEFUNGEN = 30;
 
-  TwoKlausurenSameTime(DataAccessService dataAccessService, HartesKriterium kriterium) {
+  public TwoKlausurenSameTime(DataAccessService dataAccessService, HartesKriterium kriterium) {
     super(dataAccessService, kriterium);
   }
 
