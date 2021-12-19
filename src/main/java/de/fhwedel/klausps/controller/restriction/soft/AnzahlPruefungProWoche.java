@@ -1,9 +1,10 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
+import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE;
+
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
-import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Block;
@@ -31,14 +32,14 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
   AnzahlPruefungProWoche(
       DataAccessService dataAccessService,
       final int LIMIT_TEST) {
-    super(dataAccessService, WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE);
+    super(dataAccessService, ANZAHL_PRUEFUNGEN_PRO_WOCHE);
     startPeriode = dataAccessService.getStartOfPeriode();
     weekPruefungMap = weekMapOfPruefung(dataAccessService.getGeplanteModelPruefung(), startPeriode);
     limit = LIMIT_TEST;
   }
 
   public AnzahlPruefungProWoche() {
-    super(ServiceProvider.getDataAccessService(), WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE);
+    super(ServiceProvider.getDataAccessService(), ANZAHL_PRUEFUNGEN_PRO_WOCHE);
     startPeriode = dataAccessService.getStartOfPeriode();
     weekPruefungMap = weekMapOfPruefung(dataAccessService.getGeplanteModelPruefung(), startPeriode);
     limit = LIMIT_DEFAULT;
@@ -101,7 +102,7 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
     int affected = numberAffectedStudents(conflictedPruefungen);
 
     return Optional.of(new KriteriumsAnalyse(conflictedRoPruefungen,
-        WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE, conflictedTeilnehmerkreis, affected));
+        ANZAHL_PRUEFUNGEN_PRO_WOCHE, conflictedTeilnehmerkreis, affected));
   }
 
 }
