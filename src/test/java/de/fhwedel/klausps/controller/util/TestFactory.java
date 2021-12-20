@@ -1,12 +1,18 @@
-package de.fhwedel.klausps.controller;
+package de.fhwedel.klausps.controller.util;
 
 import static org.mockito.Mockito.when;
 
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
+import de.fhwedel.klausps.model.api.Ausbildungsgrad;
+import de.fhwedel.klausps.model.api.Block;
+import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
+import de.fhwedel.klausps.model.api.Teilnehmerkreis;
+import de.fhwedel.klausps.model.impl.BlockImpl;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
+import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -34,6 +40,16 @@ public class TestFactory {
           .withDauer(Duration.ofMinutes(120))
           .build();
 
+
+  public static Teilnehmerkreis bwl = new TeilnehmerkreisImpl("bwl", "1", 1,
+      Ausbildungsgrad.BACHELOR);
+
+  public static Teilnehmerkreis inf = new TeilnehmerkreisImpl("inf", "1", 1,
+      Ausbildungsgrad.BACHELOR);
+
+  public static Teilnehmerkreis wing = new TeilnehmerkreisImpl("wing", "1", 1,
+      Ausbildungsgrad.BACHELOR);
+
   public static Pruefung getPruefungOfReadOnlyPruefung(ReadOnlyPruefung roPruefung) {
     PruefungImpl modelPruefung =
         new PruefungImpl(
@@ -59,12 +75,13 @@ public class TestFactory {
 
   public static void configureMock_getPruefungFromPeriode(final Pruefungsperiode MOCKED_PERIODE,
       Pruefung... pruefung) {
-    for(Pruefung p : pruefung){
-    when(MOCKED_PERIODE.pruefung(p.getPruefungsnummer())).thenReturn(p);
+    for (Pruefung p : pruefung) {
+      when(MOCKED_PERIODE.pruefung(p.getPruefungsnummer())).thenReturn(p);
     }
   }
 
-  public static void configureMock_geplantePruefungenFromPeriode(final Pruefungsperiode MOCKED_PERIODE,
+  public static void configureMock_geplantePruefungenFromPeriode(
+      final Pruefungsperiode MOCKED_PERIODE,
       Set<Pruefung> pruefungen) {
     when(MOCKED_PERIODE.geplantePruefungen()).thenReturn(pruefungen);
   }
@@ -84,4 +101,16 @@ public class TestFactory {
     when(mocked_periode.getEnddatum()).thenReturn(end_periode);
   }
 
+
+  public static Block configureMock_addPruefungToBlockModel(final Pruefungsperiode mocked_periode,
+      String name,
+      LocalDateTime termin, Pruefung... pruefungen) {
+    Block block = new BlockImpl(mocked_periode, name, Blocktyp.SEQUENTIAL);
+    for (Pruefung p : pruefungen) {
+      block.addPruefung(p);
+      block.setStartzeitpunkt(termin);
+      when(mocked_periode.block(p)).thenReturn(block);
+    }
+    return block;
+  }
 }

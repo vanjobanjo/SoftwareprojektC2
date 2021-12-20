@@ -487,6 +487,10 @@ public class DataAccessService {
     return List.copyOf(pruefungsperiode.planungseinheitenBetween(start, end));
   }
 
+  public Optional<Block> getBlockTo(Pruefung pruefung){
+    return Optional.ofNullable(pruefungsperiode.block(pruefung));
+  }
+
   public Set<Teilnehmerkreis> getAllTeilnehmerkreise() {
     Set<Pruefung> allPruefungen = new HashSet<>();
     allPruefungen.addAll(pruefungsperiode.geplantePruefungen());
