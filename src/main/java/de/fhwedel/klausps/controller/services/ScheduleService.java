@@ -193,9 +193,9 @@ public class ScheduleService {
   }
 
 
-  private Set<ReadOnlyPruefung> getPruefungenInvolvedIn(
+  private Set<Pruefung> getPruefungenInvolvedIn(
       List<WeichesKriteriumAnalyse> weicheKriterien) {
-    Set<ReadOnlyPruefung> result = new HashSet<>();
+    Set<Pruefung> result = new HashSet<>();
     for (WeichesKriteriumAnalyse weichesKriteriumAnalyse : weicheKriterien) {
       result.addAll(weichesKriteriumAnalyse.getCausingPruefungen());
     }

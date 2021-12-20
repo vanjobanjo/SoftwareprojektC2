@@ -1,20 +1,11 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
-import de.fhwedel.klausps.model.api.Block;
-import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
-import java.util.HashSet;
-import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 public abstract class WeicheRestriktion {
@@ -36,7 +27,7 @@ public abstract class WeicheRestriktion {
    * @return Either an {@link Optional} containing a {@link KriteriumsAnalyse} for the violated
    * restriction, or an empty Optional in case the Restriction was not violated.
    */
-  public abstract Optional<KriteriumsAnalyse> evaluate(Pruefung pruefung);
+  public abstract Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung);
 
 
 }
