@@ -471,7 +471,11 @@ public class DataAccessService {
     throw new UnsupportedOperationException("Not implemented yet!");
   }
 
-  Set<Planungseinheit> getPlanungseinheitenBetween(LocalDateTime start, LocalDateTime end) {
+  Set<Planungseinheit> getPlanungseinheitenBetween(LocalDateTime start, LocalDateTime end)
+      throws IllegalTimeSpanException {
+    if (start.isAfter(end)) {
+      throw new IllegalTimeSpanException("Der Start liegt nach dem Ende des Zeitslots");
+    }
     return this.pruefungsperiode.planungseinheitenBetween(start, end);
   }
 

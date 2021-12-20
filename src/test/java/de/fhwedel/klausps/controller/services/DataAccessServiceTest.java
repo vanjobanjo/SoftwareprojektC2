@@ -542,7 +542,50 @@ class DataAccessServiceTest {
   @Test
   void getBetween() {
 
- /*   LocalDateTime start = LocalDateTime.of(2021, 8, 11, 9, 0);
+   LocalDateTime start = LocalDateTime.of(2021, 8, 11, 9, 0);
+    LocalDateTime end = LocalDateTime.of(2021, 8, 11, 10, 0);
+
+    Set<Planungseinheit> setPlanung = new HashSet<>();
+    Planungseinheit dmPL = mock(Planungseinheit.class);
+    Planungseinheit haskelPL = mock(Planungseinheit.class);
+    Planungseinheit infotechPL = mock(Planungseinheit.class);
+
+
+    setPlanung.add(dmPL);
+    setPlanung.add(haskelPL);
+    setPlanung.add(infotechPL);
+
+    Pruefung dm = mock(Pruefung.class);
+    Pruefung haskel = mock(Pruefung.class);
+    Pruefung  infotech = mock(Pruefung.class);
+
+    when(dmPL.asPruefung()).thenReturn(dm);
+    when(haskelPL.asPruefung()).thenReturn(haskel);
+    when(infotechPL.asPruefung()).thenReturn(infotech);
+
+
+
+    List<Planungseinheit> listPruefung = new ArrayList<>();
+    listPruefung.add(dmPL);
+    listPruefung.add(haskelPL);
+    listPruefung.add(infotechPL);
+
+    when(this.pruefungsperiode.planungseinheitenBetween(start, end)).thenReturn(setPlanung);
+
+    try {
+
+      assertThat(this.deviceUnderTest.getAllPruefungenBetween(start,end)).containsAll(listPruefung);
+    //  assertEquals(listPruefung, this.deviceUnderTest.getAllPruefungenBetween(start, end));
+    } catch (IllegalTimeSpanException e) {
+      //Per hand getestet sollte nichts schieflaufen
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  void getPruuefungBetween_throwIllegal() {
+
+    LocalDateTime start = LocalDateTime.of(2021, 8, 11, 9, 0);
     LocalDateTime end = LocalDateTime.of(2021, 8, 11, 10, 0);
 
     Set<Planungseinheit> setPlanung = new HashSet<>();
@@ -560,17 +603,55 @@ class DataAccessServiceTest {
     listPruefung.add(infotech.asPruefung());
 
     when(this.pruefungsperiode.planungseinheitenBetween(start, end)).thenReturn(setPlanung);
+    assertThrows(IllegalTimeSpanException.class,
+        () -> this.deviceUnderTest.getAllPruefungenBetween(end, start));
 
-    try {
-      assertEquals(listPruefung, this.deviceUnderTest.getAllPruefungenBetween(start, end));
-    } catch (IllegalTimeSpanException e) {
-      //Per hand getestet sollte nichts schieflaufen
-      e.printStackTrace();
-    }*/
   }
 
   @Test
-  void getBetween_throwIllegal() {
+  void getPlanungseinheitenBetween() {
+
+    LocalDateTime start = LocalDateTime.of(2021, 8, 11, 9, 0);
+    LocalDateTime end = LocalDateTime.of(2021, 8, 11, 10, 0);
+
+    Set<Planungseinheit> setPlanung = new HashSet<>();
+    Planungseinheit dmPL = mock(Planungseinheit.class);
+    Planungseinheit haskelPL = mock(Planungseinheit.class);
+    Planungseinheit infotechPL = mock(Planungseinheit.class);
+
+
+    setPlanung.add(dmPL);
+    setPlanung.add(haskelPL);
+    setPlanung.add(infotechPL);
+
+    Pruefung dm = mock(Pruefung.class);
+    Pruefung haskel = mock(Pruefung.class);
+    Pruefung  infotech = mock(Pruefung.class);
+
+    when(dmPL.asPruefung()).thenReturn(dm);
+    when(haskelPL.asPruefung()).thenReturn(haskel);
+    when(infotechPL.asPruefung()).thenReturn(infotech);
+
+
+
+    Set<Planungseinheit> listPruefung = new HashSet<>();
+    listPruefung.add(dmPL);
+    listPruefung.add(haskelPL);
+    listPruefung.add(infotechPL);
+
+    when(this.pruefungsperiode.planungseinheitenBetween(start, end)).thenReturn(setPlanung);
+
+    try {
+
+      assertEquals(listPruefung, this.deviceUnderTest.getPlanungseinheitenBetween(start, end));
+    } catch (IllegalTimeSpanException e) {
+      //Per hand getestet sollte nichts schieflaufen
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  void getPlanungseinheitenBetween_throwIllegal() {
 
     LocalDateTime start = LocalDateTime.of(2021, 8, 11, 9, 0);
     LocalDateTime end = LocalDateTime.of(2021, 8, 11, 10, 0);
@@ -584,7 +665,7 @@ class DataAccessServiceTest {
     setPlanung.add(haskel);
     setPlanung.add(infotech);
 
-    List<Pruefung> listPruefung = new ArrayList<>();
+    Set<Pruefung> listPruefung = new HashSet<>();
     listPruefung.add(dm.asPruefung());
     listPruefung.add(haskel.asPruefung());
     listPruefung.add(infotech.asPruefung());
