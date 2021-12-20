@@ -2,13 +2,17 @@ package de.fhwedel.klausps.controller.util;
 
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
+import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class TestUtils {
 
@@ -54,11 +58,16 @@ public class TestUtils {
   public static List<Pruefung> getRandomPruefungenAt(long seed, LocalDateTime... schedules) {
     Random random = new Random(seed);
     List<Pruefung> randomPruefungen = new ArrayList<>(schedules.length);
-    for (LocalDateTime schedule: schedules) {
+    for (LocalDateTime schedule : schedules) {
       randomPruefungen.add(new PruefungImpl(getRandomString(random, 5), getRandomString(random, 5),
           getRandomString(random, 5), getRandomDuration(random, 120), schedule));
     }
     return randomPruefungen;
+  }
+
+  public static List<Planungseinheit> convertPruefungenToPlanungseinheiten(
+      List<Pruefung> pruefungen) {
+    return new ArrayList<>(pruefungen);
   }
 
   public static String getRandomString(Random random, int length) {
@@ -75,5 +84,15 @@ public class TestUtils {
 
   public static Duration getRandomDuration(Random random, int maxMinutes) {
     return Duration.ofMinutes(random.nextInt(1, maxMinutes));
+  }
+
+  public static Set<String> getPruefungsnummernFromDTO(Collection<ReadOnlyPruefung> pruefungen) {
+    return pruefungen.stream().map(ReadOnlyPruefung::getPruefungsnummer)
+        .collect(Collectors.toUnmodifiableSet());
+  }
+
+  public static Set<String> getPruefungsnummernFromModel(Collection<Pruefung> pruefungen) {
+    return pruefungen.stream().map(Pruefung::getPruefungsnummer)
+        .collect(Collectors.toUnmodifiableSet());
   }
 }

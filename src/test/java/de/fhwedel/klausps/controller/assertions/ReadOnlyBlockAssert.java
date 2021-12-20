@@ -19,7 +19,6 @@ public class ReadOnlyBlockAssert extends AbstractAssert<ReadOnlyBlockAssert, Rea
 
   public ReadOnlyBlockAssert containsOnlyPruefungen(ReadOnlyPruefung... pruefungen) {
     if (!actual.getROPruefungen().containsAll(List.of(pruefungen))) {
-
       failWithMessage("Block expected: %s but found: %s",
           getPruefungsNames(actual.getROPruefungen()), getPruefungsNames(List.of(pruefungen)));
     }
