@@ -10,7 +10,6 @@ import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.export.ExportTyp;
-import de.fhwedel.klausps.controller.helper.Pair;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.IOService;
@@ -157,7 +156,8 @@ public class Controller implements InterfaceController {
 
   @Override
   public Set<LocalDateTime> getHardConflictedTimes(Set<LocalDateTime> zeitpunkte,
-      ReadOnlyPlanungseinheit planungseinheit) throws IllegalArgumentException {
+      ReadOnlyPlanungseinheit planungseinheit)
+      throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
     throw new IllegalStateException("Not implemented yet!");
   }
 
@@ -254,8 +254,7 @@ public class Controller implements InterfaceController {
     noNullParameters(pruefung);
     checkNoPruefungDefined();
 
-
-   return scheduleService.deletePruefung(pruefung);
+    return scheduleService.deletePruefung(pruefung);
   }
 
   @Override
@@ -274,7 +273,6 @@ public class Controller implements InterfaceController {
     checkNoPruefungDefined();
     return scheduleService.schedulePruefung(pruefung, startTermin);
   }
-
 
 
   @Override
@@ -312,7 +310,7 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public ReadOnlyBlock createBlock(String name, Blocktyp type,  ReadOnlyPruefung... pruefungen)
+  public ReadOnlyBlock createBlock(String name, Blocktyp type, ReadOnlyPruefung... pruefungen)
       throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
     noNullParameters((Object[]) pruefungen);
     noNullParameters(name);
@@ -342,7 +340,7 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public List<ReadOnlyPlanungseinheit> deleteBlock(ReadOnlyBlock block)
+  public List<ReadOnlyPruefung> deleteBlock(ReadOnlyBlock block)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block);
     checkNoPruefungDefined();
@@ -406,7 +404,7 @@ public class Controller implements InterfaceController {
 
   @Override
   public void createEmptyPeriodeWithData(
-    Semester semester, LocalDate start, LocalDate end,
+      Semester semester, LocalDate start, LocalDate end,
       LocalDate ankertag, int kapazitaet,
       Path path) {
     noNullParameters(semester, start, end, kapazitaet, path);

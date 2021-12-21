@@ -142,26 +142,15 @@ public class ScheduleService {
     throw new UnsupportedOperationException("Not implemented yet!");
   }
 
-  public List<ReadOnlyPlanungseinheit> deleteBlock(ReadOnlyBlock block) {
+  public List<ReadOnlyPruefung> deleteBlock(ReadOnlyBlock block) {
     if (!dataAccessService.exists(block)) {
       throw new IllegalArgumentException("Block existiert nicht!");
     }
-
-    Set<ReadOnlyPlanungseinheit> changes = new HashSet<>();
-    if (block.geplant()) {
-      for (ReadOnlyPruefung roPruefung : block.getROPruefungen()) {
-        changes.addAll(unschedulePruefung(roPruefung));
-      }
-      changes.remove(block);
-
-      List<ReadOnlyPlanungseinheit> impact = unscheduleBlock(
-          block);
-      //TODO unscheduleBlock muss das Scoring berechnen.
+    if(block.geplant()){
+      throw new IllegalArgumentException("Block ist geplant!");
     }
-
-    dataAccessService.deleteBlock(block); //scoring must be 0
-
-    return new ArrayList<>(changes);
+    
+    return dataAccessService.deleteBlock(block); //scoring must be 0
   }
 
   public List<ReadOnlyPlanungseinheit> moveBlock(ReadOnlyBlock block,
