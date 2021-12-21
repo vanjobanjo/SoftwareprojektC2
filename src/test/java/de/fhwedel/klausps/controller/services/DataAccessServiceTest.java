@@ -454,8 +454,6 @@ class DataAccessServiceTest {
 
   @Test
   void existsBlockDifferentDates() {
-    //TODO hier läuft bei mir (WINDOWS 10) noch was falsch, wenn alle Tests durch laufen.
-    // Bitte nochmal auf Seiteneffekte achten
     ReadOnlyBlock blockToSchedule = new BlockDTO("Name", LocalDateTime.now(), Duration.ZERO,
         Set.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED), 1,
         Blocktyp.SEQUENTIAL);
@@ -465,24 +463,7 @@ class DataAccessServiceTest {
 
     configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock,
         LocalDateTime.now(), RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED, RO_HASKELL_UNPLANNED);
-  /*
-    Pruefung haskelPruefung = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
 
-    modelBlock.addPruefung(haskelPruefung);
-    when(pruefungsperiode.pruefung(RO_HASKELL_UNPLANNED.getPruefungsnummer())).thenReturn(haskelPruefung);
-    when(pruefungsperiode.block(haskelPruefung)).thenReturn(modelBlock);
-
-
-    Pruefung dmPruefung = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
-    modelBlock.addPruefung(dmPruefung);
-    when(pruefungsperiode.pruefung(RO_DM_UNPLANNED.getPruefungsnummer())).thenReturn(dmPruefung);
-    when(pruefungsperiode.block(dmPruefung)).thenReturn(modelBlock);
-
-    Pruefung analysisPruefung = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    modelBlock.addPruefung(analysisPruefung);
-    when(pruefungsperiode.pruefung(RO_ANALYSIS_UNPLANNED.getPruefungsnummer())).thenReturn(analysisPruefung);
-    when(pruefungsperiode.block(analysisPruefung)).thenReturn(modelBlock);
-    */
     modelBlock.setStartzeitpunkt(LocalDateTime.now());
 
     assertThat(deviceUnderTest.exists(blockToSchedule)).isFalse();
@@ -490,8 +471,6 @@ class DataAccessServiceTest {
 
   @Test
   void existsBlockDifferentDates2() {
-    //TODO hier läuft bei mir (WINDOWS 10) noch was falsch, wenn alle Tests durch laufen.
-    // Bitte nochmal auf Seiteneffekte achten
     ReadOnlyBlock blockToSchedule = new BlockDTO("Name", LocalDateTime.now(), Duration.ZERO,
         Set.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED), 1,
         Blocktyp.SEQUENTIAL);
