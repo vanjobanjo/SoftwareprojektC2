@@ -25,7 +25,7 @@ public class Converter {
 
   private Converter() {
   }
-
+  // todo add scoring to pruefung
 
   public static ReadOnlyBlock convertToROBlock(Block block) {
     Set<ReadOnlyPruefung> pruefungen = new HashSet<>(
