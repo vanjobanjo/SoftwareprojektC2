@@ -22,6 +22,7 @@ import de.fhwedel.klausps.controller.assertions.ReadOnlyBlockAssert;
 import de.fhwedel.klausps.controller.assertions.ReadOnlyPruefungAssert;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
+import de.fhwedel.klausps.controller.util.TestFactory;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Planungseinheit;
@@ -39,6 +40,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -460,7 +462,6 @@ class DataAccessServiceTest {
 
     Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
 
-
     configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock,
         LocalDateTime.now(), RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED, RO_HASKELL_UNPLANNED);
 
@@ -701,6 +702,56 @@ class DataAccessServiceTest {
 
   }
 
+  @Test
+  void getBlockToPruefungOptTest() {
+    //---- Start Configuration//
+    ReadOnlyPruefung analysis = TestFactory.RO_ANALYSIS_UNPLANNED;
+    ReadOnlyPruefung dm = TestFactory.RO_DM_UNPLANNED;
+    Pruefung modelAnalysis = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
+    Pruefung modelDm = TestFactory.getPruefungOfReadOnlyPruefung(dm);
+    LocalDateTime januar = LocalDateTime.of(2021, 1, 1, 1, 1);
+    Block block = TestFactory.configureMock_addPruefungToBlockModel(pruefungsperiode, "Hallo",
+        januar, modelAnalysis, modelDm);
+    TestFactory.configureMock_getPruefungFromPeriode(pruefungsperiode, modelDm, modelAnalysis);
+    //-----//
+    Optional<ReadOnlyBlock> result = deviceUnderTest.getBlockTo(analysis);
+    assertThat(result).isPresent();
+    assertThat(result.get().getROPruefungen()).containsOnly(analysis, dm);
+  }
+
+  @Test
+  void getBlockToPruefungOptIsEmptyTest() {
+    //---- Start Configuration//
+    ReadOnlyPruefung analysis = TestFactory.RO_ANALYSIS_UNPLANNED;
+    ReadOnlyPruefung dm = TestFactory.RO_DM_UNPLANNED;
+    Pruefung modelDm = TestFactory.getPruefungOfReadOnlyPruefung(dm);
+    Pruefung modelAnalysis = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
+    LocalDateTime januar = LocalDateTime.of(2021, 1, 1, 1, 1);
+    TestFactory.configureMock_addPruefungToBlockModel(pruefungsperiode, "Hallo",
+        januar, modelAnalysis);
+    TestFactory.configureMock_getPruefungFromPeriode(pruefungsperiode, modelAnalysis, modelDm);
+
+    Optional<ReadOnlyBlock> result = deviceUnderTest.getBlockTo(dm);
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  void getBlockToPruefungOptTest2() {
+    //---- Start Configuration//
+    ReadOnlyPruefung analysis = TestFactory.RO_ANALYSIS_UNPLANNED;
+    Pruefung modelAnalysis = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
+    ReadOnlyPruefung dm = TestFactory.RO_DM_UNPLANNED;
+    Pruefung modelDm = TestFactory.getPruefungOfReadOnlyPruefung(dm);
+    LocalDateTime januar = LocalDateTime.of(2021, 1, 1, 1, 1);
+    TestFactory.configureMock_addPruefungToBlockModel(pruefungsperiode, "Hallo",
+        januar, modelAnalysis);
+    TestFactory.configureMock_getPruefungFromPeriode(pruefungsperiode, modelAnalysis, modelDm);
+
+    Optional<ReadOnlyBlock> result = deviceUnderTest.getBlockTo(analysis);
+    assertThat(result).isPresent();
+    assertThat(result.get().getROPruefungen()).containsOnly(analysis);
+  }
+
   private void configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(
       Block modelBlock, LocalDateTime termin, ReadOnlyPruefung... pruefungen) {
     for (ReadOnlyPruefung p : pruefungen) {
@@ -761,4 +812,6 @@ class DataAccessServiceTest {
     }
     return pruefung;
   }
+
+
 }

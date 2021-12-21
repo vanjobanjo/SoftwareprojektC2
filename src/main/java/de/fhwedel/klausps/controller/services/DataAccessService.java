@@ -493,6 +493,22 @@ public class DataAccessService {
     return Optional.ofNullable(pruefungsperiode.block(pruefung));
   }
 
+  public Optional<ReadOnlyBlock> getBlockTo(ReadOnlyPruefung pruefung) {
+    String nummer = pruefung.getPruefungsnummer();
+
+    if (existsPruefungWith(nummer)) {
+      Optional<Block> blockOpt =
+          getBlockTo(pruefungsperiode.pruefung(nummer));
+      if (blockOpt.isEmpty()) {
+        return Optional.empty();
+      } else {
+        return Optional.of(fromModelToDTOBlock(blockOpt.get()));
+      }
+    } else {
+      throw new IllegalArgumentException("Pruefungsnummer nicht im System!");
+    }
+  }
+
   public Set<Teilnehmerkreis> getAllTeilnehmerkreise() {
     Set<Pruefung> allPruefungen = new HashSet<>();
     allPruefungen.addAll(pruefungsperiode.geplantePruefungen());
@@ -503,4 +519,5 @@ public class DataAccessService {
     }
     return allTeilnehmerkreise;
   }
+
 }
