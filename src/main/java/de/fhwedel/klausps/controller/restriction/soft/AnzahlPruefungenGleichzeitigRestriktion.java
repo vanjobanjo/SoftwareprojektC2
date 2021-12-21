@@ -2,8 +2,8 @@ package de.fhwedel.klausps.controller.restriction.soft;
 
 import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH;
 
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
-import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
@@ -18,7 +18,7 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
   }
 
   @Override
-  public Optional<KriteriumsAnalyse> evaluate(Pruefung pruefung) {
+  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
     if (pruefung.isGeplant()) {
       LocalDateTime pruefungsEnde = pruefung.getStartzeitpunkt().plus(pruefung.getDauer());
       try {

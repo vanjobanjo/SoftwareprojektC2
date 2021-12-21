@@ -159,7 +159,7 @@ public class DataAccessService {
     return nonNull(pruefungsperiode);
   }
 
-  public List<ReadOnlyPruefung> changeDurationOf(ReadOnlyPruefung pruefung, Duration minutes)
+  public List<ReadOnlyPlanungseinheit> changeDurationOf(ReadOnlyPruefung pruefung, Duration minutes)
       throws HartesKriteriumException, IllegalArgumentException {
 
     if (minutes.isNegative()) {
@@ -171,7 +171,7 @@ public class DataAccessService {
     // Die Änderungen der Pruefungen werden auch im ScheduleService vorgenommen.
     List<Pruefung> resultOfChangingDuration = scheduleService.changeDuration(toChangeDuration,
         minutes);
-    return createListOfPruefungWithScoring(resultOfChangingDuration);
+    return new ArrayList<>(createListOfPruefungWithScoring(resultOfChangingDuration));
   }
 
 
@@ -292,13 +292,14 @@ public class DataAccessService {
     return fromModelToDTOPruefungWithScoring(modelPruefung);
   }
 
-  private ReadOnlyBlock fromModelToDTOBlock(Block block) {
+  public ReadOnlyBlock fromModelToDTOBlock(Block block) {
+    // todo auslagern, wenn Converter implementiert ist
     Set<ReadOnlyPruefung> pruefungen = new HashSet<>();
     for (Pruefung pruefung : block.getPruefungen()) {
       pruefungen.add(fromModelToDTOPruefungWithScoring(pruefung));
     }
     return new BlockDTO(block.getName(), block.getStartzeitpunkt(), block.getDauer(),
-        block.isGeplant(), pruefungen);
+        pruefungen, block.getId(), block.getTyp());
   }
 
   private ReadOnlyPruefung fromModelToDTOPruefungWithScoring(Pruefung pruefung) {
@@ -354,8 +355,9 @@ public class DataAccessService {
     return end.isAfter(termin.toLocalDate()) || end.isEqual(termin.toLocalDate());
   }
 
-  public ReadOnlyPruefung getPruefungWith(String pruefungsNummer) {
-    return fromModelToDTOPruefungWithScoring(getPruefungFromModelOrException(pruefungsNummer));
+  public Pruefung getPruefungWith(String pruefungsNummer) {
+    // todo raus, wenn der Converter implementiert ist
+    return getPruefungFromModelOrException(pruefungsNummer);
   }
 
   public Optional<LocalDateTime> getStartOfPruefungWith(String pruefungsNummer) {
@@ -395,15 +397,15 @@ public class DataAccessService {
       throw new IllegalArgumentException("Doppelte Prüfungen im Block!");
     }
 
-    Block block_model = new BlockImpl(pruefungsperiode, name,
+    Block blockModel = new BlockImpl(pruefungsperiode, name,
         Blocktyp.SEQUENTIAL); // TODO bei Erzeugung Sequential?
-    Arrays.stream(pruefungen).forEach(pruefung -> block_model.addPruefung(
+    Arrays.stream(pruefungen).forEach(pruefung -> blockModel.addPruefung(
         pruefungsperiode.pruefung(pruefung.getPruefungsnummer())));
-    if (!pruefungsperiode.addPlanungseinheit(block_model)) {
+    if (!pruefungsperiode.addPlanungseinheit(blockModel)) {
       throw new IllegalArgumentException("Irgendwas ist schief gelaufen."
           + " Der Block konnte nicht in die Datenbank übertragen werden.");
     }
-    return fromModelToDTOBlock(block_model);
+    return fromModelToDTOBlock(blockModel);
   }
 
   /**
@@ -487,7 +489,7 @@ public class DataAccessService {
     return List.copyOf(pruefungsperiode.planungseinheitenBetween(start, end));
   }
 
-  public Optional<Block> getBlockTo(Pruefung pruefung){
+  public Optional<Block> getBlockTo(Pruefung pruefung) {
     return Optional.ofNullable(pruefungsperiode.block(pruefung));
   }
 

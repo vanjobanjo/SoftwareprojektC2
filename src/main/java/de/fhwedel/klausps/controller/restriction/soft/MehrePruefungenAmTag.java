@@ -1,5 +1,6 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
@@ -23,6 +24,7 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
   Set<ReadOnlyPruefung> setReadyOnly = new HashSet<>();
   Set<Teilnehmerkreis> setTeilnehmer = new HashSet<>();
   int countStudents = 0;
+  int scoring = 0;
   KriteriumsAnalyse kA = new KriteriumsAnalyse(setReadyOnly,
       WeichesKriterium.MEHRERE_PRUEFUNGEN_AM_TAG, setTeilnehmer, countStudents);
 
@@ -31,7 +33,7 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
   }
 
   @Override
-  public Optional<KriteriumsAnalyse> evaluate(Pruefung pruefung) {
+  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
     throw new UnsupportedOperationException("Not implemented yet!");
   }
 
@@ -68,8 +70,10 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
       }
     }
     if (weichesKrierium) {
+      scoring += 10;
       this.setReadyOnly.add(new PruefungDTOBuilder(pruefung).build());
     }
+
     return weichesKrierium;
   }
 

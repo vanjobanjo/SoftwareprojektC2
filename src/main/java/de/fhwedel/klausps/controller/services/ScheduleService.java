@@ -3,9 +3,9 @@ package de.fhwedel.klausps.controller.services;
 import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
-import de.fhwedel.klausps.controller.helper.Pair;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.Duration;
@@ -13,9 +13,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 
@@ -39,7 +39,8 @@ public class ScheduleService {
    * @param termin   Starttermin
    * @return Liste von veränderten Ergebnissen
    */
-  public List<ReadOnlyPruefung> schedulePruefung(ReadOnlyPruefung pruefung, LocalDateTime termin)
+  public List<ReadOnlyPlanungseinheit> schedulePruefung(ReadOnlyPruefung pruefung,
+      LocalDateTime termin)
       throws HartesKriteriumException {
     // todo before any restriction test: unschedule Pruefung
     //  then test restrictions
@@ -56,7 +57,7 @@ public class ScheduleService {
    * @param pruefung Pruefung zum ausplanen
    * @return Liste von veraenderte Pruefungen
    */
-  public List<ReadOnlyPruefung> unschedulePruefung(ReadOnlyPruefung pruefung) {
+  public List<ReadOnlyPlanungseinheit> unschedulePruefung(ReadOnlyPruefung pruefung) {
     // todo before any restriction test: unschedule Pruefung
     //  then test restrictions
     pruefung = dataAccessService.unschedulePruefung(pruefung);
@@ -64,7 +65,7 @@ public class ScheduleService {
   }
 
 
-  public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> scheduleBlock(ReadOnlyBlock block,
+  public List<ReadOnlyPlanungseinheit> scheduleBlock(ReadOnlyBlock block,
       LocalDateTime termin) throws HartesKriteriumException {
     if (!dataAccessService.terminIsInPeriod(termin)) {
       throw new IllegalArgumentException(
@@ -75,18 +76,20 @@ public class ScheduleService {
       throw new IllegalArgumentException("Leere Bloecke duerfen nicht geplant werden.");
     }
     ReadOnlyBlock roBlock = dataAccessService.scheduleBlock(block, termin);
-
-    return new Pair<>(
-        roBlock,
-        new LinkedList<>(roBlock.getROPruefungen())); // TODO return result of test for conflicts
+    List<ReadOnlyPlanungseinheit> returnList = new ArrayList<>();
+    returnList.add(roBlock);
+    returnList.addAll(roBlock.getROPruefungen());
+    return returnList; // TODO return result of test for conflicts
   }
 
-  public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> unscheduleBlock(ReadOnlyBlock block) {
+  public List<ReadOnlyPlanungseinheit> unscheduleBlock(ReadOnlyBlock block) {
     ReadOnlyBlock roBlock = dataAccessService.unscheduleBlock(block);
     //TODO bevor wir diese Methode aufrufen, müssen wir den RestriktionsService mitteilen,
     // wegen der Scoring Berechnung
-    return new Pair<>(roBlock,
-        new LinkedList<>(roBlock.getROPruefungen())); // TODO return result of test for conflicts
+    List<ReadOnlyPlanungseinheit> returnList = new ArrayList<>();
+    returnList.add(roBlock);
+    returnList.addAll(roBlock.getROPruefungen());
+    return returnList;// TODO return result of test for conflicts
   }
 
   /**
@@ -114,18 +117,19 @@ public class ScheduleService {
     return 0; // TODO implement
   }
 
-  public List<ReadOnlyPruefung> deletePruefung(ReadOnlyPruefung pruefung) {
+  public Optional<ReadOnlyBlock> deletePruefung(ReadOnlyPruefung pruefung) {
     dataAccessService.deletePruefung(pruefung);
-    List<WeichesKriteriumAnalyse> analyses = restrictionService.checkWeicheKriterien();
+    Pruefung modelPruefung = dataAccessService.getPruefungWith(pruefung.getPruefungsnummer());
+    List<WeichesKriteriumAnalyse> analyses = restrictionService.checkWeicheKriterien(modelPruefung);
     // calc new score for all pruefungen
+    //TODO keine geplante Klausuren löschen
     Map<String, Integer> scoring = getScoringFrom(analyses);
     applyScoring(scoring);
-    return analyses.stream()
-        // get a stream of all pruefungen
-        .flatMap((WeichesKriteriumAnalyse x) -> x.getCausingPruefungen().stream())
-        // pass each pruefung only once
-        .distinct() // TODO might not work because of missing implementation of .equals()
-        .toList();
+
+    // todo anpassen, wenn Converter implementiert ist
+    return Optional.of(
+        dataAccessService.fromModelToDTOBlock(dataAccessService.getBlockTo(modelPruefung).get()));
+
   }
 
   private Map<String, Integer> getScoringFrom(List<WeichesKriteriumAnalyse> analyses) {
@@ -138,31 +142,29 @@ public class ScheduleService {
     throw new UnsupportedOperationException("Not implemented yet!");
   }
 
-  public List<ReadOnlyPruefung> deleteBlock(ReadOnlyBlock block) {
+  public List<ReadOnlyPlanungseinheit> deleteBlock(ReadOnlyBlock block) {
     if (!dataAccessService.exists(block)) {
       throw new IllegalArgumentException("Block existiert nicht!");
     }
 
-    ReadOnlyBlock unscheduledBlock;
-    List<ReadOnlyPruefung> changes = new LinkedList<>();
-
+    Set<ReadOnlyPlanungseinheit> changes = new HashSet<>();
     if (block.geplant()) {
-      Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> impact = unscheduleBlock(
-          block); //TODO unscheduleBlock muss das Scoring berechnen.
-      unscheduledBlock = impact.left();
-      changes = impact.right();
-    } else {
-      unscheduledBlock = block;
+      for (ReadOnlyPruefung roPruefung : block.getROPruefungen()) {
+        changes.addAll(unschedulePruefung(roPruefung));
+      }
+      changes.remove(block);
+
+      List<ReadOnlyPlanungseinheit> impact = unscheduleBlock(
+          block);
+      //TODO unscheduleBlock muss das Scoring berechnen.
     }
 
-    List<ReadOnlyPruefung> pruefungInBlock = dataAccessService.deleteBlock(
-        unscheduledBlock); //scoring must be 0
-    changes.addAll(pruefungInBlock);
-    changes = changes.stream().distinct().toList(); //delete double
-    return changes;
+    dataAccessService.deleteBlock(block); //scoring must be 0
+
+    return new ArrayList<>(changes);
   }
 
-  public Pair<ReadOnlyBlock, List<ReadOnlyPruefung>> moveBlock(ReadOnlyBlock block,
+  public List<ReadOnlyPlanungseinheit> moveBlock(ReadOnlyBlock block,
       LocalDateTime termin) throws HartesKriteriumException {
     if (block.getTermin().isEmpty()) {
       throw new IllegalArgumentException("Nur geplante Blöcke können verschoben werden!");
@@ -177,6 +179,7 @@ public class ScheduleService {
     }
   }
 
+  /*
   public List<ReadOnlyPruefung> movePruefung(ReadOnlyPruefung pruefung, LocalDateTime expectedStart)
       throws HartesKriteriumException {
     LocalDateTime currentStart =
@@ -190,7 +193,7 @@ public class ScheduleService {
       signalHartesKriteriumFailure(hardRestrictionFailures);
     }
     return new ArrayList<>((getPruefungenInvolvedIn(restrictionService.checkWeicheKriterien())));
-  }
+  }*/
 
 
   private Set<Pruefung> getPruefungenInvolvedIn(
@@ -230,6 +233,5 @@ public class ScheduleService {
     }
     return result;
   }
-
 
 }

@@ -1,5 +1,17 @@
 package de.fhwedel.klausps.controller.services;
 
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungenReadOnly;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.notNull;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import de.fhwedel.klausps.controller.api.BlockDTO;
 import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
@@ -10,24 +22,27 @@ import de.fhwedel.klausps.controller.assertions.ReadOnlyBlockAssert;
 import de.fhwedel.klausps.controller.assertions.ReadOnlyPruefungAssert;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
-import de.fhwedel.klausps.model.api.*;
+import de.fhwedel.klausps.model.api.Block;
+import de.fhwedel.klausps.model.api.Blocktyp;
+import de.fhwedel.klausps.model.api.Planungseinheit;
+import de.fhwedel.klausps.model.api.Pruefung;
+import de.fhwedel.klausps.model.api.Pruefungsperiode;
+import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.BlockImpl;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.*;
-
-import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungenReadOnly;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.notNull;
-import static org.mockito.Mockito.*;
 
 class DataAccessServiceTest {
 
@@ -225,7 +240,7 @@ class DataAccessServiceTest {
     pruefungsperiode.addPlanungseinheit(t);
 
     assertEquals(ro01.getDauer(), Duration.ofMinutes(90));
-    ReadOnlyPruefung roAcc = ro01;
+    ReadOnlyPlanungseinheit roAcc = ro01;
     try {
       when(pruefungsperiode.pruefung(ro01.getPruefungsnummer())).thenReturn(t);
       when(scheduleService.changeDuration(t, Duration.ofMinutes(120))).thenReturn(List.of(t));
@@ -270,8 +285,8 @@ class DataAccessServiceTest {
 
   @Test
   void scheduleBlock_successful() {
-    ReadOnlyBlock blockToSchedule = new BlockDTO("Name", null, Duration.ZERO, false,
-        new HashSet<>(List.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED)));
+    ReadOnlyBlock blockToSchedule = new BlockDTO("Name", null, Duration.ZERO,
+        Set.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED), 1, Blocktyp.PARALLEL);
 
     LocalDateTime termin = LocalDateTime.of(2000, 1, 1, 0, 0);
     Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
@@ -292,8 +307,9 @@ class DataAccessServiceTest {
   @Test
   @DisplayName("cannot schedule block that does not exist in model.")
   void scheduleBlock_different_names() {
-    ReadOnlyBlock blockToSchedule = new BlockDTO("Namme", null, Duration.ZERO, false,
-        new HashSet<>(List.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED)));
+    ReadOnlyBlock blockToSchedule = new BlockDTO("Namme", null, Duration.ZERO,
+        Set.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED), 1,
+        Blocktyp.SEQUENTIAL);
 
     LocalDateTime termin = LocalDateTime.of(2000, 1, 1, 0, 0);
     Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
@@ -316,8 +332,8 @@ class DataAccessServiceTest {
     ReadOnlyPruefung ro_haskell_planned = new PruefungDTOBuilder(
         RO_HASKELL_UNPLANNED).withStartZeitpunkt(termin).build();
 
-    ReadOnlyBlock blockToSchedule = new BlockDTO("Name", termin, Duration.ZERO, true,
-        new HashSet<>(List.of(ro_analysis, ro_dm_planned, ro_haskell_planned)));
+    ReadOnlyBlock blockToSchedule = new BlockDTO("Name", termin, Duration.ZERO,
+        Set.of(ro_analysis, ro_dm_planned, ro_haskell_planned), 1, Blocktyp.SEQUENTIAL);
 
     Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
     configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, termin,
@@ -386,8 +402,9 @@ class DataAccessServiceTest {
 
   @Test
   void existsBlockSuccessful() {
-    ReadOnlyBlock blockToSchedule = new BlockDTO("Name", null, Duration.ZERO, false,
-        new HashSet<>(List.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED)));
+    ReadOnlyBlock blockToSchedule = new BlockDTO("Name", null, Duration.ZERO,
+        Set.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED), 1,
+        Blocktyp.SEQUENTIAL);
     Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
     configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, null,
         RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED, RO_HASKELL_UNPLANNED);
@@ -404,8 +421,8 @@ class DataAccessServiceTest {
     ReadOnlyPruefung ro_haskell = new PruefungDTOBuilder(RO_HASKELL_UNPLANNED).withStartZeitpunkt(
         termin).build();
 
-    ReadOnlyBlock blockToSchedule = new BlockDTO("Name", termin, Duration.ZERO, true,
-        new HashSet<>(List.of(ro_analysis, ro_dm, ro_haskell)));
+    ReadOnlyBlock blockToSchedule = new BlockDTO("Name", termin, Duration.ZERO,
+        Set.of(ro_analysis, ro_dm, ro_haskell), 1, Blocktyp.SEQUENTIAL);
 
     Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
     configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, termin,
@@ -416,8 +433,9 @@ class DataAccessServiceTest {
 
   @Test
   void existsBlockDifferentBlockNames() {
-    ReadOnlyBlock blockToSchedule = new BlockDTO("DifferentName", null, Duration.ZERO, false,
-        new HashSet<>(List.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED)));
+    ReadOnlyBlock blockToSchedule = new BlockDTO("DifferentName", null, Duration.ZERO,
+        Set.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED), 1,
+        Blocktyp.SEQUENTIAL);
 
     Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
     configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, null,
@@ -427,7 +445,8 @@ class DataAccessServiceTest {
 
   @Test
   public void existBlockWithoutPruefungen() {
-    ReadOnlyBlock block = new BlockDTO("name", null, Duration.ZERO, false, new HashSet<>());
+    ReadOnlyBlock block = new BlockDTO("name", null, Duration.ZERO, new HashSet<>(), 1,
+        Blocktyp.SEQUENTIAL);
     Block modelBock = new BlockImpl(pruefungsperiode, 1, "name", Blocktyp.SEQUENTIAL);
     when(pruefungsperiode.ungeplanteBloecke()).thenReturn(new HashSet<>(List.of(modelBock)));
     assertThat(deviceUnderTest.exists(block)).isTrue();
@@ -435,8 +454,9 @@ class DataAccessServiceTest {
 
   @Test
   void existsBlockDifferentDates() {
-    ReadOnlyBlock blockToSchedule = new BlockDTO("Name", LocalDateTime.now(), Duration.ZERO, false,
-        new HashSet<>(List.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED)));
+    ReadOnlyBlock blockToSchedule = new BlockDTO("Name", LocalDateTime.now(), Duration.ZERO,
+        Set.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED), 1,
+        Blocktyp.SEQUENTIAL);
 
     Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
     configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock,
@@ -446,8 +466,9 @@ class DataAccessServiceTest {
 
   @Test
   void existsBlockDifferentDates2() {
-    ReadOnlyBlock blockToSchedule = new BlockDTO("Name", LocalDateTime.now(), Duration.ZERO, false,
-        new HashSet<>(List.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED)));
+    ReadOnlyBlock blockToSchedule = new BlockDTO("Name", LocalDateTime.now(), Duration.ZERO,
+        Set.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED), 1,
+        Blocktyp.SEQUENTIAL);
     LocalDateTime termin = LocalDateTime.of(2000, 1, 1, 0, 0);
     Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
 
@@ -459,8 +480,9 @@ class DataAccessServiceTest {
   @Test
   void existsBlockDifferentDates3() {
     LocalDateTime termin = LocalDateTime.of(2000, 1, 1, 0, 0);
-    ReadOnlyBlock blockToSchedule = new BlockDTO("Name", termin, Duration.ZERO, false,
-        new HashSet<>(List.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED)));
+    ReadOnlyBlock blockToSchedule = new BlockDTO("Name", termin, Duration.ZERO,
+        Set.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED), 1,
+        Blocktyp.SEQUENTIAL);
     Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
     configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, null,
         RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED, RO_HASKELL_UNPLANNED);
@@ -469,8 +491,8 @@ class DataAccessServiceTest {
 
   @Test
   void existsBlockROBlockHasLessPruefungen() {
-    ReadOnlyBlock blockToSchedule = new BlockDTO("Name", null, Duration.ZERO, false,
-        new HashSet<>(List.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED)));
+    ReadOnlyBlock blockToSchedule = new BlockDTO("Name", null, Duration.ZERO,
+        Set.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED), 1, Blocktyp.SEQUENTIAL);
 
     Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
     configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, null,
@@ -480,8 +502,9 @@ class DataAccessServiceTest {
 
   @Test
   void existsBlockROBlockHasMorePruefungen() {
-    ReadOnlyBlock blockToSchedule = new BlockDTO("Name", null, Duration.ZERO, false,
-        new HashSet<>(List.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED)));
+    ReadOnlyBlock blockToSchedule = new BlockDTO("Name", null, Duration.ZERO,
+        Set.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED), 1,
+        Blocktyp.SEQUENTIAL);
 
     Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
     configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, null,
@@ -490,7 +513,7 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void createBlock_Successsful() {
+  void createBlock_Successful() {
     when(pruefungsperiode.addPlanungseinheit(any())).thenReturn(true);
     configureMock_getPruefungToROPruefung(RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
     ReadOnlyBlock ro = deviceUnderTest.createBlock("Hallo", RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
@@ -542,7 +565,7 @@ class DataAccessServiceTest {
   @Test
   void getBetween() {
 
-   LocalDateTime start = LocalDateTime.of(2021, 8, 11, 9, 0);
+    LocalDateTime start = LocalDateTime.of(2021, 8, 11, 9, 0);
     LocalDateTime end = LocalDateTime.of(2021, 8, 11, 10, 0);
 
     Set<Planungseinheit> setPlanung = new HashSet<>();
@@ -550,20 +573,17 @@ class DataAccessServiceTest {
     Planungseinheit haskelPL = mock(Planungseinheit.class);
     Planungseinheit infotechPL = mock(Planungseinheit.class);
 
-
     setPlanung.add(dmPL);
     setPlanung.add(haskelPL);
     setPlanung.add(infotechPL);
 
     Pruefung dm = mock(Pruefung.class);
     Pruefung haskel = mock(Pruefung.class);
-    Pruefung  infotech = mock(Pruefung.class);
+    Pruefung infotech = mock(Pruefung.class);
 
     when(dmPL.asPruefung()).thenReturn(dm);
     when(haskelPL.asPruefung()).thenReturn(haskel);
     when(infotechPL.asPruefung()).thenReturn(infotech);
-
-
 
     List<Planungseinheit> listPruefung = new ArrayList<>();
     listPruefung.add(dmPL);
@@ -574,8 +594,9 @@ class DataAccessServiceTest {
 
     try {
 
-      assertThat(this.deviceUnderTest.getAllPruefungenBetween(start,end)).containsAll(listPruefung);
-    //  assertEquals(listPruefung, this.deviceUnderTest.getAllPruefungenBetween(start, end));
+      assertThat(this.deviceUnderTest.getAllPruefungenBetween(start, end)).containsAll(
+          listPruefung);
+      //  assertEquals(listPruefung, this.deviceUnderTest.getAllPruefungenBetween(start, end));
     } catch (IllegalTimeSpanException e) {
       //Per hand getestet sollte nichts schieflaufen
       e.printStackTrace();
@@ -619,20 +640,17 @@ class DataAccessServiceTest {
     Planungseinheit haskelPL = mock(Planungseinheit.class);
     Planungseinheit infotechPL = mock(Planungseinheit.class);
 
-
     setPlanung.add(dmPL);
     setPlanung.add(haskelPL);
     setPlanung.add(infotechPL);
 
     Pruefung dm = mock(Pruefung.class);
     Pruefung haskel = mock(Pruefung.class);
-    Pruefung  infotech = mock(Pruefung.class);
+    Pruefung infotech = mock(Pruefung.class);
 
     when(dmPL.asPruefung()).thenReturn(dm);
     when(haskelPL.asPruefung()).thenReturn(haskel);
     when(infotechPL.asPruefung()).thenReturn(infotech);
-
-
 
     Set<Planungseinheit> listPruefung = new HashSet<>();
     listPruefung.add(dmPL);

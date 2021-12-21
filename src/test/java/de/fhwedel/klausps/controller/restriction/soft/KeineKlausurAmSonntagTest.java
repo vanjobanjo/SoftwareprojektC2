@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
-import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.controller.util.TestFactory;
@@ -81,11 +81,12 @@ class KeineKlausurAmSonntagTest {
     model_pruefung_so.addTeilnehmerkreis(TestFactory.bwl, 30);
     model_pruefung_so.addTeilnehmerkreis(TestFactory.inf, 50);
     TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, model_pruefung_so);
-    KriteriumsAnalyse result = deviceUnderTest.evaluate(model_pruefung_so)
+    WeichesKriteriumAnalyse result = deviceUnderTest.evaluate(model_pruefung_so)
         .orElseThrow(IllegalArgumentException::new
         );
-    assertThat(result.getBetroffenePruefungen()).containsOnly(roPruefung_sonntag);
-    assertThat(result.getAnzahlBetroffenerStudenten()).isEqualTo(90);
-    assertThat(result.getTeilnehmer()).containsOnly(TestFactory.wing, TestFactory.inf, TestFactory.bwl);
+    assertThat(result.getCausingPruefungen()).containsOnly(model_pruefung_so);
+    assertThat(result.getAmountAffectedStudents()).isEqualTo(90);
+    assertThat(result.getAffectedTeilnehmerKreise()).containsOnly(TestFactory.wing, TestFactory.inf,
+        TestFactory.bwl);
   }
 }

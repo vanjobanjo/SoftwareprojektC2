@@ -1,6 +1,8 @@
 package de.fhwedel.klausps.controller.restriction.hard;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -69,8 +71,6 @@ class TwoKlausurenSameTimeTest {
 
     Pruefung analysis = mock(Pruefung.class);
     Pruefung haskel = mock(Pruefung.class);
-
-
 
     Set<Teilnehmerkreis> teilnehmer = new HashSet<>();
     Teilnehmerkreis informatik = getTeilnehmerKreis("Informatik");

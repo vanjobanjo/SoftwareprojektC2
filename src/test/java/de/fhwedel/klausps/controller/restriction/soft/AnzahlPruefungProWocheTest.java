@@ -3,14 +3,11 @@ package de.fhwedel.klausps.controller.restriction.soft;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
-import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
-import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.controller.util.TestFactory;
-import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import java.time.LocalDate;
@@ -138,18 +135,12 @@ class AnzahlPruefungProWocheTest {
 
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
 
-    KriteriumsAnalyse result = deviceUnderTest.evaluate(dm_0).get();
-
-    ReadOnlyPruefung analysis = new PruefungDTOBuilder(mathe_0).build();
-    ReadOnlyPruefung dm = new PruefungDTOBuilder(dm_0).build();
-    ReadOnlyPruefung haskell = new PruefungDTOBuilder(haskell_1).build();
+    WeichesKriteriumAnalyse result = deviceUnderTest.evaluate(dm_0).get();
 
     assertThat(result).isNotNull();
     assertThat(result.getKriterium()).isEqualTo(WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE);
-    assertThat(result.getAnzahlBetroffenerStudenten()).isNotEqualTo(20); //not 20
-    assertThat(result.getAnzahlBetroffenerStudenten()).isEqualTo(10);
-    assertThat(result.getBetroffenePruefungen()).containsOnly(analysis, dm);
-    assertThat(result.getBetroffenePruefungen()).containsOnly(analysis, dm);
+    assertThat(result.getAmountAffectedStudents()).isEqualTo(10);
+    assertThat(result.getCausingPruefungen()).containsOnly(mathe_0, dm_0);
     assertThat(deviceUnderTest.evaluate(haskell_1)).isEmpty();
   }
 
@@ -179,24 +170,18 @@ class AnzahlPruefungProWocheTest {
 
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
 
-    KriteriumsAnalyse result_dm0 = deviceUnderTest.evaluate(dm_0).get();
-
-    ReadOnlyPruefung analysis = new PruefungDTOBuilder(mathe_0).build();
-    ReadOnlyPruefung dm = new PruefungDTOBuilder(dm_0).build();
-    ReadOnlyPruefung haskell = new PruefungDTOBuilder(haskell_0).build();
+    WeichesKriteriumAnalyse result_dm0 = deviceUnderTest.evaluate(dm_0).get();
 
     assertThat(result_dm0).isNotNull();
     assertThat(result_dm0.getKriterium()).isEqualTo(WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE);
-    assertThat(result_dm0.getAnzahlBetroffenerStudenten()).isNotEqualTo(20); //not 20
-    assertThat(result_dm0.getAnzahlBetroffenerStudenten()).isEqualTo(10);
+    assertThat(result_dm0.getAmountAffectedStudents()).isEqualTo(10);
     // weil Analysis und DM im Block sind, darf Analysis nicht mehr davon betroffen sein.
-    assertThat(result_dm0.getBetroffenePruefungen()).containsOnly(dm, haskell);
-    assertThat(result_dm0.getBetroffenePruefungen()).doesNotContain(analysis);
+    assertThat(result_dm0.getCausingPruefungen()).containsOnly(dm_0, haskell_0);
 
-    //für haskell müssen alle 3 unter betroffen sein, weil alle in der selben woche stattfinden.
-    KriteriumsAnalyse result_haskell0 = deviceUnderTest.evaluate(haskell_0).get();
-    assertThat(result_haskell0.getAnzahlBetroffenerStudenten()).isEqualTo(10);
-    assertThat(result_haskell0.getBetroffenePruefungen()).containsOnly(dm, analysis, haskell);
+    //für haskell müssen alle 3 unter betroffen sein, weil alle in derselben woche stattfinden.
+    WeichesKriteriumAnalyse result_haskell0 = deviceUnderTest.evaluate(haskell_0).get();
+    assertThat(result_haskell0.getAmountAffectedStudents()).isEqualTo(10);
+    assertThat(result_haskell0.getCausingPruefungen()).containsOnly(dm_0, mathe_0, haskell_0);
   }
 
   @DisplayName("DM und Mathe sind im Block. Haskell wird am selben Tag geplant.")
@@ -227,25 +212,18 @@ class AnzahlPruefungProWocheTest {
 
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
 
-    KriteriumsAnalyse result_dm0 = deviceUnderTest.evaluate(dm_0).get();
-
-    ReadOnlyPruefung analysis = new PruefungDTOBuilder(mathe_0).build();
-    ReadOnlyPruefung dm = new PruefungDTOBuilder(dm_0).build();
-    ReadOnlyPruefung haskell = new PruefungDTOBuilder(haskell_0).build();
+    WeichesKriteriumAnalyse result_dm0 = deviceUnderTest.evaluate(dm_0).get();
 
     assertThat(result_dm0).isNotNull();
     assertThat(result_dm0.getKriterium()).isEqualTo(WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE);
-    assertThat(result_dm0.getAnzahlBetroffenerStudenten()).isNotEqualTo(20);
-    assertThat(result_dm0.getAnzahlBetroffenerStudenten()).isEqualTo(30);
+    assertThat(result_dm0.getAmountAffectedStudents()).isEqualTo(30);
     // weil Analysis und DM im Block sind, darf Analysis nicht mehr davon betroffen sein.
-    assertThat(result_dm0.getBetroffenePruefungen()).containsOnly(dm, haskell);
-    assertThat(result_dm0.getBetroffenePruefungen()).doesNotContain(analysis);
+    assertThat(result_dm0.getCausingPruefungen()).containsOnly(dm_0, haskell_0);
 
-    KriteriumsAnalyse result_analysis = deviceUnderTest.evaluate(mathe_0).get();
     //für haskell müssen alle 3 unter betroffen sein, weil alle in der selben woche stattfinden.
-    KriteriumsAnalyse result_haskell0 = deviceUnderTest.evaluate(haskell_0).get();
-    assertThat(result_haskell0.getAnzahlBetroffenerStudenten()).isEqualTo(30);
-    assertThat(result_haskell0.getBetroffenePruefungen()).containsOnly(dm, analysis, haskell);
+    WeichesKriteriumAnalyse result_haskell0 = deviceUnderTest.evaluate(haskell_0).get();
+    assertThat(result_haskell0.getAmountAffectedStudents()).isEqualTo(30);
+    assertThat(result_haskell0.getCausingPruefungen()).containsOnly(dm_0, mathe_0, haskell_0);
   }
 
 
@@ -275,33 +253,28 @@ class AnzahlPruefungProWocheTest {
         Set.of(mathe_0, dm_0, haskell_0));
 
     //Mathe und DM sind innerhalb eines Blockes
-    Block block = TestFactory.configureMock_addPruefungToBlockModel(mocked_periode, "Block",
+    TestFactory.configureMock_addPruefungToBlockModel(mocked_periode, "Block",
         dm_0.getStartzeitpunkt(), dm_0, mathe_0);
 
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
 
-    ReadOnlyPruefung analysis = new PruefungDTOBuilder(mathe_0).build();
-    ReadOnlyPruefung dm = new PruefungDTOBuilder(dm_0).build();
-    ReadOnlyPruefung haskell = new PruefungDTOBuilder(haskell_0).build();
-
     // Die Teilnehmerkreis von Analysis müssen ignoriert werden, da sie in einem Block mit Analysis sind.
-    KriteriumsAnalyse result_dm0 = deviceUnderTest.evaluate(dm_0).get();
+    WeichesKriteriumAnalyse result_dm0 = deviceUnderTest.evaluate(dm_0).get();
 
     assertThat(result_dm0).isNotNull();
     assertThat(result_dm0.getKriterium()).isEqualTo(WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE);
     // wenn es nicht in einem Block wäre, dann wäre die Schätzung 40.
-    assertThat(result_dm0.getAnzahlBetroffenerStudenten()).isNotEqualTo(40);
-    assertThat(result_dm0.getAnzahlBetroffenerStudenten()).isEqualTo(30);
+    assertThat(result_dm0.getAmountAffectedStudents()).isEqualTo(30);
     // weil Analysis und DM im Block sind, darf Analysis nicht mehr davon betroffen sein.
-    assertThat(result_dm0.getBetroffenePruefungen()).containsOnly(dm, haskell);
-    assertThat(result_dm0.getBetroffenePruefungen()).doesNotContain(analysis);
+    assertThat(result_dm0.getCausingPruefungen()).containsOnly(dm_0, haskell_0);
 
     //für haskell müssen alle 3 unter betroffen sein, weil alle in der selben woche stattfinden.
-    KriteriumsAnalyse result_haskell0 = deviceUnderTest.evaluate(haskell_0).get();
+    WeichesKriteriumAnalyse result_haskell0 = deviceUnderTest.evaluate(haskell_0).get();
     //die Summe aller TK die betroffen sind 40.
-    assertThat(result_haskell0.getAnzahlBetroffenerStudenten()).isEqualTo(40);
-    assertThat(result_haskell0.getBetroffenePruefungen()).containsOnly(dm, analysis, haskell);
-    assertThat(result_haskell0.getTeilnehmer()).containsOnly(TestFactory.bwl, TestFactory.wing,
+    assertThat(result_haskell0.getAmountAffectedStudents()).isEqualTo(40);
+    assertThat(result_haskell0.getCausingPruefungen()).containsOnly(dm_0, mathe_0, haskell_0);
+    assertThat(result_haskell0.getAffectedTeilnehmerKreise()).containsOnly(TestFactory.bwl,
+        TestFactory.wing,
         TestFactory.inf);
   }
 
@@ -334,27 +307,23 @@ class AnzahlPruefungProWocheTest {
 
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
 
-    ReadOnlyPruefung analysis = new PruefungDTOBuilder(mathe_0).build();
-    ReadOnlyPruefung dm = new PruefungDTOBuilder(dm_0).build();
-    ReadOnlyPruefung haskell = new PruefungDTOBuilder(haskell_0).build();
-
     // Die Teilnehmerkreis von Analysis müssen ignoriert werden, da sie in einem Block mit Analysis sind.
-    KriteriumsAnalyse result_dm0 = deviceUnderTest.evaluate(dm_0).get();
+    WeichesKriteriumAnalyse result_dm0 = deviceUnderTest.evaluate(dm_0).get();
 
     assertThat(result_dm0).isNotNull();
     assertThat(result_dm0.getKriterium()).isEqualTo(WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE);
-    assertThat(result_dm0.getAnzahlBetroffenerStudenten()).isEqualTo(40);
+    assertThat(result_dm0.getAmountAffectedStudents()).isEqualTo(40);
 
-    assertThat(result_dm0.getBetroffenePruefungen()).containsOnly(dm, haskell, analysis);
+    assertThat(result_dm0.getCausingPruefungen()).containsOnly(dm_0, haskell_0, mathe_0);
 
-    KriteriumsAnalyse result_haskell0 = deviceUnderTest.evaluate(haskell_0).get();
+    WeichesKriteriumAnalyse result_haskell0 = deviceUnderTest.evaluate(haskell_0).get();
 
-    assertThat(result_haskell0.getAnzahlBetroffenerStudenten()).isEqualTo(40);
-    assertThat(result_haskell0.getBetroffenePruefungen()).containsOnly(dm, analysis, haskell);
+    assertThat(result_haskell0.getAmountAffectedStudents()).isEqualTo(40);
+    assertThat(result_haskell0.getCausingPruefungen()).containsOnly(dm_0, mathe_0, haskell_0);
 
-    KriteriumsAnalyse result_analysis = deviceUnderTest.evaluate(mathe_0).get();
-    assertThat(result_analysis.getAnzahlBetroffenerStudenten()).isEqualTo(40);
-    assertThat(result_analysis.getBetroffenePruefungen()).containsOnly(dm, analysis, haskell);
+    WeichesKriteriumAnalyse result_analysis = deviceUnderTest.evaluate(mathe_0).get();
+    assertThat(result_analysis.getAmountAffectedStudents()).isEqualTo(40);
+    assertThat(result_analysis.getCausingPruefungen()).containsOnly(dm_0, mathe_0, haskell_0);
   }
 
   @DisplayName("Keine Konflikte")
@@ -423,32 +392,26 @@ class AnzahlPruefungProWocheTest {
 
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
 
-    KriteriumsAnalyse result_dm0 = deviceUnderTest.evaluate(dm_0).get();
-
-    ReadOnlyPruefung analysis = new PruefungDTOBuilder(mathe_0).build();
-    ReadOnlyPruefung dm = new PruefungDTOBuilder(dm_0).build();
-    ReadOnlyPruefung haskell = new PruefungDTOBuilder(haskell_0).build();
+    WeichesKriteriumAnalyse result_dm0 = deviceUnderTest.evaluate(dm_0).get();
 
     assertThat(result_dm0).isNotNull();
     assertThat(result_dm0.getKriterium()).isEqualTo(WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE);
-    assertThat(result_dm0.getAnzahlBetroffenerStudenten()).isNotEqualTo(20);
-    assertThat(result_dm0.getAnzahlBetroffenerStudenten()).isEqualTo(30);
+    assertThat(result_dm0.getAmountAffectedStudents()).isEqualTo(30);
     // weil Analysis und DM im Block sind, darf Analysis nicht mehr davon betroffen sein.
-    assertThat(result_dm0.getBetroffenePruefungen()).containsOnly(dm, haskell);
-    assertThat(result_dm0.getBetroffenePruefungen()).doesNotContain(analysis);
+    assertThat(result_dm0.getCausingPruefungen()).containsOnly(dm_0, haskell_0);
 
-    KriteriumsAnalyse result_analysis = deviceUnderTest.evaluate(mathe_0).get();
-    assertThat(result_analysis.getAnzahlBetroffenerStudenten()).isEqualTo(10);
+    WeichesKriteriumAnalyse result_analysis = deviceUnderTest.evaluate(mathe_0).get();
+    assertThat(result_analysis.getAmountAffectedStudents()).isEqualTo(10);
 
     //Analysis darf nicht Inf enthalten, da er der TK von BWL ist. Es muss ignoriert werden.
-    assertThat(result_analysis.getTeilnehmer()).doesNotContain(TestFactory.inf);
-    assertThat(result_analysis.getBetroffenePruefungen()).containsOnly(analysis, haskell);
-    assertThat(result_analysis.getTeilnehmer()).containsOnly(TestFactory.bwl);
+    assertThat(result_analysis.getCausingPruefungen()).containsOnly(mathe_0, haskell_0);
+    assertThat(result_analysis.getAffectedTeilnehmerKreise()).containsOnly(TestFactory.bwl);
 
     //für haskell müssen alle 3 unter betroffen sein, weil alle in der selben woche stattfinden.
-    KriteriumsAnalyse result_haskell0 = deviceUnderTest.evaluate(haskell_0).get();
-    assertThat(result_haskell0.getAnzahlBetroffenerStudenten()).isEqualTo(30);
-    assertThat(result_haskell0.getBetroffenePruefungen()).containsOnly(dm, analysis, haskell);
-    assertThat(result_haskell0.getTeilnehmer()).containsOnly(TestFactory.inf, TestFactory.bwl);
+    WeichesKriteriumAnalyse result_haskell0 = deviceUnderTest.evaluate(haskell_0).get();
+    assertThat(result_haskell0.getAmountAffectedStudents()).isEqualTo(30);
+    assertThat(result_haskell0.getCausingPruefungen()).containsOnly(dm_0, mathe_0, haskell_0);
+    assertThat(result_haskell0.getAffectedTeilnehmerKreise()).containsOnly(TestFactory.inf,
+        TestFactory.bwl);
   }
 }

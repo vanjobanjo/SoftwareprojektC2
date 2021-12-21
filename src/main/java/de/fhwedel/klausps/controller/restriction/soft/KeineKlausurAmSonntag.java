@@ -2,8 +2,7 @@ package de.fhwedel.klausps.controller.restriction.soft;
 
 import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.SONNTAG;
 
-import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
-import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Pruefung;
@@ -39,7 +38,7 @@ public class KeineKlausurAmSonntag extends WeicheRestriktion implements Predicat
   }
 
   @Override
-  public Optional<KriteriumsAnalyse> evaluate(Pruefung pruefung) {
+  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
     boolean violationRestriction = test(pruefung);
 
     if (!violationRestriction) {
@@ -47,7 +46,7 @@ public class KeineKlausurAmSonntag extends WeicheRestriktion implements Predicat
     }
 
     return Optional.of(
-        new KriteriumsAnalyse(Set.of(new PruefungDTOBuilder(pruefung).build()), SONNTAG,
+        new WeichesKriteriumAnalyse(Set.of(pruefung), SONNTAG,
             new HashSet<>(pruefung.getTeilnehmerkreise()),
             pruefung.schaetzung()));
   }

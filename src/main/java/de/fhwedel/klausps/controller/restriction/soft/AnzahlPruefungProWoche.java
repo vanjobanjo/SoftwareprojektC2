@@ -2,9 +2,7 @@ package de.fhwedel.klausps.controller.restriction.soft;
 
 import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE;
 
-import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
-import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
-import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Block;
@@ -81,7 +79,7 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
   }
 
   @Override
-  public Optional<KriteriumsAnalyse> evaluate(Pruefung pruefung) {
+  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
     boolean violationRestriction = test(pruefung);
 
     if (!violationRestriction) {
@@ -98,18 +96,13 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
           conflictedPruefungen);
     }
 
-    Set<ReadOnlyPruefung> conflictedRoPruefungen = conflictedPruefungen
-        .stream()
-        .map(prue -> new PruefungDTOBuilder(prue).build()).collect(
-            Collectors.toSet());
-
     Set<Teilnehmerkreis> conflictedTeilnehmerkreis = conflictedPruefungen.stream()
         .flatMap(prue -> prue.getTeilnehmerkreise().stream()).collect(
             Collectors.toSet());
 
     int affected = numberAffectedStudents(conflictedPruefungen);
-    
-    return Optional.of(new KriteriumsAnalyse(conflictedRoPruefungen,
+
+    return Optional.of(new WeichesKriteriumAnalyse(conflictedPruefungen,
         ANZAHL_PRUEFUNGEN_PRO_WOCHE, conflictedTeilnehmerkreis, affected));
   }
 
@@ -146,9 +139,9 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
    *
    * @param pruefung   Pruefung to filter its siblings.
    * @param pruefungen Set with Pruefung to filter.
-   * @return filtered Set without the sibbling of pruefung, but it contains still the passed
+   * @return filtered Set without the sibling of pruefung, but it contains still the passed
    * pruefung.
-   * @assert pruefungen must contains pruefung
+   * @pre pruefungen must contains pruefung
    */
   private Set<Pruefung> filterSiblingsOfPruefung(Pruefung pruefung,
       Set<Pruefung> pruefungen) {

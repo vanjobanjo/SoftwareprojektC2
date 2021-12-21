@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.model.api.Ausbildungsgrad;
+import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -30,7 +31,8 @@ class BlockDTOTest {
     Set<ReadOnlyPruefung> dmana = new HashSet<>(Arrays.asList(dm, analysis));
 
     BlockDTO tester =
-        new BlockDTO("Hallo", LocalDateTime.now(), Duration.ofMinutes(90), false, dmana);
+        new BlockDTO("Hallo", LocalDateTime.now(), Duration.ofMinutes(90), dmana, 1,
+            Blocktyp.PARALLEL);
     assertThat(tester.getTeilnehmerKreisSchaetzung()).containsKey(bwl);
     assertThat(tester.getTeilnehmerKreisSchaetzung()).containsKey(inf);
     assertThat(tester.getTeilnehmerKreisSchaetzung().values()).hasSize(2);

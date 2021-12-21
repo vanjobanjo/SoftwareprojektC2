@@ -61,7 +61,8 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
     LocalDateTime startSecondPruefung = startFirstPruefung.plusMinutes(180);
     LocalDateTime startThirdPruefung = startSecondPruefung.plusMinutes(180);
-    List<Pruefung> pruefungen = getRandomPruefungenAt(5L, startFirstPruefung, startSecondPruefung, startThirdPruefung);
+    List<Pruefung> pruefungen = getRandomPruefungenAt(5L, startFirstPruefung, startSecondPruefung,
+        startThirdPruefung);
 
     when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Collections.emptySet());
 
