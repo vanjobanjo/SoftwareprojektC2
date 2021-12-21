@@ -1,8 +1,11 @@
 package de.fhwedel.klausps.controller.api;
 
+import static de.fhwedel.klausps.model.api.Ausbildungsgrad.BACHELOR;
+import static de.fhwedel.klausps.model.api.Blocktyp.SEQUENTIAL;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.model.api.Ausbildungsgrad;
 import de.fhwedel.klausps.model.api.Blocktyp;
@@ -38,5 +41,20 @@ class BlockDTOTest {
     assertThat(tester.getTeilnehmerKreisSchaetzung().values()).hasSize(2);
     assertThat(tester.getTeilnehmerkreise()).containsOnly(bwl, inf);
     assertThat(tester.getGesamtschaetzung()).isEqualTo(20);
+  }
+
+  @Test
+  void blockIntegrationtest() {
+    TeilnehmerkreisImpl bwl = new TeilnehmerkreisImpl("BWL", "ABC", 4, BACHELOR);
+    ReadOnlyPruefung anylsis = new PruefungDTOBuilder().withPruefungsName("Analysis")
+        .withPruefungsName("1").withAdditionalTeilnehmerkreisSchaetzung(bwl, 10).build();
+
+    ReadOnlyPruefung dm = new PruefungDTOBuilder(anylsis).withPruefungsName("DM")
+        .withPruefungsNummer("2").withAdditionalTeilnehmerkreisSchaetzung(bwl, 10).build();
+    ReadOnlyBlock block = new BlockDTO("Mathe DM", null, Duration.ZERO, Set.of(anylsis, dm), 1,
+        SEQUENTIAL);
+    assertThat(block.getTeilnehmerKreisSchaetzung()).containsKey(bwl);
+    assertThat(block.getTeilnehmerKreisSchaetzung().get(bwl)).isEqualTo(10);
+    assertThat(block.getTeilnehmerKreisSchaetzung()).hasSize(1);
   }
 }
