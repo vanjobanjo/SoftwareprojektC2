@@ -32,6 +32,8 @@ public class PruefungDTOBuilder {
    * Builder Konstruktor
    */
   public PruefungDTOBuilder() {
+    // todo Pruefungsnummer muss eindeutig sein,
+    //  daher sollte kein leerer String vergeben werden können
     this.pruefungsNummer = PRUEUNGS_NUMMER_DEFAULT;
     this.pruefungsName = PRUEFUNGS_NAME_DEFAULT;
     this.teilnehmerkreisSchaetzung = TEILNEHMERKREIS_SCHAETZUNG_DEFAULT;
