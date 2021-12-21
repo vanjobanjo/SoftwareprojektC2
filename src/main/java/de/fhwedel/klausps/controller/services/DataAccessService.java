@@ -159,7 +159,7 @@ public class DataAccessService {
     return nonNull(pruefungsperiode);
   }
 
-  public List<ReadOnlyPruefung> changeDurationOf(ReadOnlyPruefung pruefung, Duration minutes)
+  public List<ReadOnlyPlanungseinheit> changeDurationOf(ReadOnlyPruefung pruefung, Duration minutes)
       throws HartesKriteriumException, IllegalArgumentException {
 
     if (minutes.isNegative()) {
@@ -171,7 +171,7 @@ public class DataAccessService {
     // Die Änderungen der Pruefungen werden auch im ScheduleService vorgenommen.
     List<Pruefung> resultOfChangingDuration = scheduleService.changeDuration(toChangeDuration,
         minutes);
-    return createListOfPruefungWithScoring(resultOfChangingDuration);
+    return new ArrayList<>(createListOfPruefungWithScoring(resultOfChangingDuration));
   }
 
 
