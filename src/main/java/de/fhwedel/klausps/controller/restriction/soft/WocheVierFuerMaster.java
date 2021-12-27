@@ -20,23 +20,23 @@ public class WocheVierFuerMaster extends WeicheRestriktion {
 
   private final static int WEEK_FOUR = 4;
   private final static int DAYS_WEEK = 7;
-  private final LocalDate START_PERIODE;
+  private final LocalDate startPeriode;
 
 
   public WocheVierFuerMaster() {
     super(ServiceProvider.getDataAccessService(), WOCHE_VIER_FUER_MASTER);
-    START_PERIODE = ServiceProvider.getDataAccessService().getStartOfPeriode();
+    startPeriode = ServiceProvider.getDataAccessService().getStartOfPeriode();
   }
 
   //Mock Konstruktor
   WocheVierFuerMaster(DataAccessService dataAccessService, LocalDate start) {
     super(dataAccessService, WOCHE_VIER_FUER_MASTER);
-    START_PERIODE = start;
+    startPeriode = start;
   }
 
   //package private for test
   boolean isWeekFourBachelor(Pruefung pruefung) {
-    return getWeek(START_PERIODE, pruefung) == WEEK_FOUR
+    return getWeek(startPeriode, pruefung) == WEEK_FOUR
         && pruefung.getAusbildungsgrade().contains(BACHELOR);
   }
 
