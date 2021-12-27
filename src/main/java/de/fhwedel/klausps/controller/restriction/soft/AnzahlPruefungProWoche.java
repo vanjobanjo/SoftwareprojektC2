@@ -21,7 +21,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predicate<Pruefung> {
+public class AnzahlPruefungProWoche extends WeicheRestriktion{
 
   // for testing
   public static int LIMIT_DEFAULT = 5;
@@ -60,15 +60,8 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
         / DAYS_WEEK_DEFAULT;
   }
 
-  /**
-   * Test whether the passed pruefung violates the crterium, by checking the Set size of the the
-   * specific Map entry. The Map key is the week of the periode starting with 0.
-   *
-   * @param pruefung Pruefung to check the restriction for.
-   * @return violates the restriction?
-   */
-  @Override
-  public boolean test(Pruefung pruefung) {
+
+  public boolean isAboveTheWeekLimit(Pruefung pruefung) {
     int week = getWeek(startPeriode, pruefung);
     Set<Pruefung> pruefungen = weekPruefungMap.get(week);
     Optional<Block> blockOpt = dataAccessService.getBlockTo(pruefung);
@@ -80,9 +73,8 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion implements Predica
 
   @Override
   public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
-    boolean violationRestriction = test(pruefung);
 
-    if (!violationRestriction) {
+    if (!isAboveTheWeekLimit(pruefung)) {
       return Optional.empty();
     }
 
