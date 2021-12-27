@@ -125,9 +125,9 @@ class AnzahlPruefungProWocheTest {
     Pruefung haskell_1 = TestFactory.getPruefungOfReadOnlyPruefung(
         TestFactory.planRoPruefung(TestFactory.RO_HASKELL_UNPLANNED, week_1.atTime(start)));
 
-    mathe_0.addTeilnehmerkreis(TestFactory.bwl, 10);
-    dm_0.addTeilnehmerkreis(TestFactory.bwl, 10);
-    haskell_1.addTeilnehmerkreis(TestFactory.bwl, 10);
+    mathe_0.addTeilnehmerkreis(TestFactory.bwlBachelor, 10);
+    dm_0.addTeilnehmerkreis(TestFactory.bwlBachelor, 10);
+    haskell_1.addTeilnehmerkreis(TestFactory.bwlBachelor, 10);
 
     TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, mathe_0, dm_0, haskell_1);
     TestFactory.configureMock_geplantePruefungenFromPeriode(mocked_periode,
@@ -157,9 +157,9 @@ class AnzahlPruefungProWocheTest {
     Pruefung haskell_0 = TestFactory.getPruefungOfReadOnlyPruefung(
         TestFactory.planRoPruefung(TestFactory.RO_HASKELL_UNPLANNED, week_0.atTime(start)));
 
-    mathe_0.addTeilnehmerkreis(TestFactory.bwl, 10);
-    dm_0.addTeilnehmerkreis(TestFactory.bwl, 10);
-    haskell_0.addTeilnehmerkreis(TestFactory.bwl, 10);
+    mathe_0.addTeilnehmerkreis(TestFactory.bwlBachelor, 10);
+    dm_0.addTeilnehmerkreis(TestFactory.bwlBachelor, 10);
+    haskell_0.addTeilnehmerkreis(TestFactory.bwlBachelor, 10);
 
     TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, mathe_0, dm_0, haskell_0);
     TestFactory.configureMock_geplantePruefungenFromPeriode(mocked_periode,
@@ -197,11 +197,11 @@ class AnzahlPruefungProWocheTest {
     Pruefung haskell_0 = TestFactory.getPruefungOfReadOnlyPruefung(
         TestFactory.planRoPruefung(TestFactory.RO_HASKELL_UNPLANNED, week_0.atTime(start)));
 
-    mathe_0.addTeilnehmerkreis(TestFactory.bwl, 10);
-    dm_0.addTeilnehmerkreis(TestFactory.bwl, 10);
-    dm_0.addTeilnehmerkreis(TestFactory.inf, 20);
-    haskell_0.addTeilnehmerkreis(TestFactory.bwl, 10);
-    haskell_0.addTeilnehmerkreis(TestFactory.inf, 20);
+    mathe_0.addTeilnehmerkreis(TestFactory.bwlBachelor, 10);
+    dm_0.addTeilnehmerkreis(TestFactory.bwlBachelor, 10);
+    dm_0.addTeilnehmerkreis(TestFactory.infBachelor, 20);
+    haskell_0.addTeilnehmerkreis(TestFactory.bwlBachelor, 10);
+    haskell_0.addTeilnehmerkreis(TestFactory.infBachelor, 20);
 
     TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, mathe_0, dm_0, haskell_0);
     TestFactory.configureMock_geplantePruefungenFromPeriode(mocked_periode,
@@ -239,14 +239,14 @@ class AnzahlPruefungProWocheTest {
     Pruefung haskell_0 = TestFactory.getPruefungOfReadOnlyPruefung(
         TestFactory.planRoPruefung(TestFactory.RO_HASKELL_UNPLANNED, week_0.atTime(start)));
 
-    mathe_0.addTeilnehmerkreis(TestFactory.bwl, 10);
-    mathe_0.addTeilnehmerkreis(TestFactory.wing, 10);
+    mathe_0.addTeilnehmerkreis(TestFactory.bwlBachelor, 10);
+    mathe_0.addTeilnehmerkreis(TestFactory.wingBachelor, 10);
 
-    dm_0.addTeilnehmerkreis(TestFactory.bwl, 10);
-    dm_0.addTeilnehmerkreis(TestFactory.inf, 20);
+    dm_0.addTeilnehmerkreis(TestFactory.bwlBachelor, 10);
+    dm_0.addTeilnehmerkreis(TestFactory.infBachelor, 20);
 
-    haskell_0.addTeilnehmerkreis(TestFactory.bwl, 10);
-    haskell_0.addTeilnehmerkreis(TestFactory.inf, 20);
+    haskell_0.addTeilnehmerkreis(TestFactory.bwlBachelor, 10);
+    haskell_0.addTeilnehmerkreis(TestFactory.infBachelor, 20);
 
     TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, mathe_0, dm_0, haskell_0);
     TestFactory.configureMock_geplantePruefungenFromPeriode(mocked_periode,
@@ -273,9 +273,9 @@ class AnzahlPruefungProWocheTest {
     //die Summe aller TK die betroffen sind 40.
     assertThat(result_haskell0.getAmountAffectedStudents()).isEqualTo(40);
     assertThat(result_haskell0.getCausingPruefungen()).containsOnly(dm_0, mathe_0, haskell_0);
-    assertThat(result_haskell0.getAffectedTeilnehmerKreise()).containsOnly(TestFactory.bwl,
-        TestFactory.wing,
-        TestFactory.inf);
+    assertThat(result_haskell0.getAffectedTeilnehmerKreise()).containsOnly(TestFactory.bwlBachelor,
+        TestFactory.wingBachelor,
+        TestFactory.infBachelor);
   }
 
   @DisplayName("Keine Blöcke viele unterschiedliche Teilnehmerkreise")
@@ -290,16 +290,16 @@ class AnzahlPruefungProWocheTest {
     Pruefung haskell_0 = TestFactory.getPruefungOfReadOnlyPruefung(
         TestFactory.planRoPruefung(TestFactory.RO_HASKELL_UNPLANNED, week_0.atTime(start)));
 
-    mathe_0.addTeilnehmerkreis(TestFactory.bwl, 10);
-    mathe_0.addTeilnehmerkreis(TestFactory.wing, 10);
+    mathe_0.addTeilnehmerkreis(TestFactory.bwlBachelor, 10);
+    mathe_0.addTeilnehmerkreis(TestFactory.wingBachelor, 10);
 
-    dm_0.addTeilnehmerkreis(TestFactory.bwl, 10);
-    dm_0.addTeilnehmerkreis(TestFactory.inf, 20);
-    dm_0.addTeilnehmerkreis(TestFactory.wing, 10);
+    dm_0.addTeilnehmerkreis(TestFactory.bwlBachelor, 10);
+    dm_0.addTeilnehmerkreis(TestFactory.infBachelor, 20);
+    dm_0.addTeilnehmerkreis(TestFactory.wingBachelor, 10);
 
-    haskell_0.addTeilnehmerkreis(TestFactory.bwl, 10);
-    haskell_0.addTeilnehmerkreis(TestFactory.inf, 20);
-    haskell_0.addTeilnehmerkreis(TestFactory.wing, 10);
+    haskell_0.addTeilnehmerkreis(TestFactory.bwlBachelor, 10);
+    haskell_0.addTeilnehmerkreis(TestFactory.infBachelor, 20);
+    haskell_0.addTeilnehmerkreis(TestFactory.wingBachelor, 10);
 
     TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, mathe_0, dm_0, haskell_0);
     TestFactory.configureMock_geplantePruefungenFromPeriode(mocked_periode,
@@ -341,16 +341,16 @@ class AnzahlPruefungProWocheTest {
     Pruefung haskell_2 = TestFactory.getPruefungOfReadOnlyPruefung(
         TestFactory.planRoPruefung(TestFactory.RO_HASKELL_UNPLANNED, week_2.atTime(start)));
 
-    mathe_0.addTeilnehmerkreis(TestFactory.bwl, 10);
-    mathe_0.addTeilnehmerkreis(TestFactory.wing, 10);
+    mathe_0.addTeilnehmerkreis(TestFactory.bwlBachelor, 10);
+    mathe_0.addTeilnehmerkreis(TestFactory.wingBachelor, 10);
 
-    dm_1.addTeilnehmerkreis(TestFactory.bwl, 10);
-    dm_1.addTeilnehmerkreis(TestFactory.inf, 20);
-    dm_1.addTeilnehmerkreis(TestFactory.wing, 10);
+    dm_1.addTeilnehmerkreis(TestFactory.bwlBachelor, 10);
+    dm_1.addTeilnehmerkreis(TestFactory.infBachelor, 20);
+    dm_1.addTeilnehmerkreis(TestFactory.wingBachelor, 10);
 
-    haskell_2.addTeilnehmerkreis(TestFactory.bwl, 10);
-    haskell_2.addTeilnehmerkreis(TestFactory.inf, 20);
-    haskell_2.addTeilnehmerkreis(TestFactory.wing, 10);
+    haskell_2.addTeilnehmerkreis(TestFactory.bwlBachelor, 10);
+    haskell_2.addTeilnehmerkreis(TestFactory.infBachelor, 20);
+    haskell_2.addTeilnehmerkreis(TestFactory.wingBachelor, 10);
 
     TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, mathe_0, dm_1, haskell_2);
     TestFactory.configureMock_geplantePruefungenFromPeriode(mocked_periode,
@@ -377,11 +377,11 @@ class AnzahlPruefungProWocheTest {
     Pruefung haskell_0 = TestFactory.getPruefungOfReadOnlyPruefung(
         TestFactory.planRoPruefung(TestFactory.RO_HASKELL_UNPLANNED, week_0.atTime(start)));
 
-    mathe_0.addTeilnehmerkreis(TestFactory.bwl, 10);
-    dm_0.addTeilnehmerkreis(TestFactory.bwl, 10);
-    dm_0.addTeilnehmerkreis(TestFactory.inf, 20);
+    mathe_0.addTeilnehmerkreis(TestFactory.bwlBachelor, 10);
+    dm_0.addTeilnehmerkreis(TestFactory.bwlBachelor, 10);
+    dm_0.addTeilnehmerkreis(TestFactory.infBachelor, 20);
 
-    haskell_0.addTeilnehmerkreis(TestFactory.bwl, 10);
+    haskell_0.addTeilnehmerkreis(TestFactory.bwlBachelor, 10);
 
     TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, mathe_0, dm_0, haskell_0);
     TestFactory.configureMock_geplantePruefungenFromPeriode(mocked_periode,
@@ -405,13 +405,13 @@ class AnzahlPruefungProWocheTest {
 
     //Analysis darf nicht Inf enthalten, da er der TK von BWL ist. Es muss ignoriert werden.
     assertThat(result_analysis.getCausingPruefungen()).containsOnly(mathe_0, haskell_0);
-    assertThat(result_analysis.getAffectedTeilnehmerKreise()).containsOnly(TestFactory.bwl);
+    assertThat(result_analysis.getAffectedTeilnehmerKreise()).containsOnly(TestFactory.bwlBachelor);
 
     //für haskell müssen alle 3 unter betroffen sein, weil alle in der selben woche stattfinden.
     WeichesKriteriumAnalyse result_haskell0 = deviceUnderTest.evaluate(haskell_0).get();
     assertThat(result_haskell0.getAmountAffectedStudents()).isEqualTo(30);
     assertThat(result_haskell0.getCausingPruefungen()).containsOnly(dm_0, mathe_0, haskell_0);
-    assertThat(result_haskell0.getAffectedTeilnehmerKreise()).containsOnly(TestFactory.inf,
-        TestFactory.bwl);
+    assertThat(result_haskell0.getAffectedTeilnehmerKreise()).containsOnly(TestFactory.infBachelor,
+        TestFactory.bwlBachelor);
   }
 }

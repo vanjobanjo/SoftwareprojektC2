@@ -41,14 +41,32 @@ public class TestFactory {
           .build();
 
 
-  public static Teilnehmerkreis bwl = new TeilnehmerkreisImpl("bwl", "1", 1,
+  public static Teilnehmerkreis bwlBachelor = new TeilnehmerkreisImpl("bwl", "1", 1,
       Ausbildungsgrad.BACHELOR);
 
-  public static Teilnehmerkreis inf = new TeilnehmerkreisImpl("inf", "1", 1,
+  public static Teilnehmerkreis infBachelor = new TeilnehmerkreisImpl("inf", "1", 1,
       Ausbildungsgrad.BACHELOR);
 
-  public static Teilnehmerkreis wing = new TeilnehmerkreisImpl("wing", "1", 1,
+  public static Teilnehmerkreis wingBachelor = new TeilnehmerkreisImpl("wing", "1", 1,
       Ausbildungsgrad.BACHELOR);
+
+  public static Teilnehmerkreis bwlMaster = new TeilnehmerkreisImpl("bwl", "1", 1,
+      Ausbildungsgrad.MASTER);
+
+  public static Teilnehmerkreis infMaster = new TeilnehmerkreisImpl("inf", "1", 1,
+      Ausbildungsgrad.MASTER);
+
+  public static Teilnehmerkreis wingMaster = new TeilnehmerkreisImpl("wing", "1", 1,
+      Ausbildungsgrad.MASTER);
+
+  public static Teilnehmerkreis bwlPtl = new TeilnehmerkreisImpl("bwl", "1", 1,
+      Ausbildungsgrad.AUSBILDUNG);
+
+  public static Teilnehmerkreis infPtl = new TeilnehmerkreisImpl("inf", "1", 1,
+      Ausbildungsgrad.AUSBILDUNG);
+
+  public static Teilnehmerkreis wingPtl = new TeilnehmerkreisImpl("wing", "1", 1,
+      Ausbildungsgrad.AUSBILDUNG);
 
   public static Pruefung getPruefungOfReadOnlyPruefung(ReadOnlyPruefung roPruefung) {
     PruefungImpl modelPruefung =
