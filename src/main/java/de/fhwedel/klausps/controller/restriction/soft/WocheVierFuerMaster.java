@@ -1,6 +1,7 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
 import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.WOCHE_VIER_FUER_MASTER;
+import static de.fhwedel.klausps.model.api.Ausbildungsgrad.AUSBILDUNG;
 import static de.fhwedel.klausps.model.api.Ausbildungsgrad.BACHELOR;
 import static de.fhwedel.klausps.model.api.Ausbildungsgrad.MASTER;
 
@@ -34,10 +35,15 @@ public class WocheVierFuerMaster extends WeicheRestriktion {
     startPeriode = start;
   }
 
-  //package private for test
-  boolean isWeekFourBachelor(Pruefung pruefung) {
+  //if the pruefung is on week 4 and one of the tk is not master, this function returns true.
+  //terminIsInPeriodCheck must be called somewhere else but for software security we can also check it here.
+  boolean isWeekFourContainsNotOnlyMaster(Pruefung pruefung) {
+    if (!dataAccessService.terminIsInPeriod(pruefung.getStartzeitpunkt())) {
+      throw new IllegalArgumentException("Pruefung is not in period");
+    }
     return getWeek(startPeriode, pruefung) == WEEK_FOUR
-        && pruefung.getAusbildungsgrade().contains(BACHELOR);
+        && (pruefung.getAusbildungsgrade().contains(BACHELOR)
+        || pruefung.getAusbildungsgrade().contains(AUSBILDUNG));
   }
 
   /**
@@ -49,15 +55,19 @@ public class WocheVierFuerMaster extends WeicheRestriktion {
    */
   @Override
   public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
-    if (!isWeekFourBachelor(pruefung)) {
+    if (!isWeekFourContainsNotOnlyMaster(pruefung)) {
       return Optional.empty();
     }
 
+    //filter the master tk, because they are not responsible for the violation,
+    //so they are not part of the KriteriumsAnalyse
     Set<Teilnehmerkreis> tkWithoutMaster = pruefung.getTeilnehmerkreise().stream()
         .filter(this::isNotMaster)
         .collect(
             Collectors.toSet());
 
+    //filter the master students, because they are not responsible for the violation and not part
+    // of the KriteriumsAnalyse
     int affectedWithoutMaster = pruefung.getSchaetzungen().entrySet().stream()
         .filter(entry -> isNotMaster(entry.getKey()))
         .mapToInt(Entry::getValue).sum();
