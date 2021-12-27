@@ -103,6 +103,56 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion {
         .count();
   }
 
+  private Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung, Teilnehmerkreis tk,
+      WeichesKriteriumAnalyse analyse) {
+    assert pruefung.getTeilnehmerkreise().contains(tk);
+
+    if (!isAboveLimit(pruefung, tk)) {
+      return Optional.empty();
+    }
+    return concatAnalyse((new WeichesKriteriumAnalyse(Set.of(pruefung),
+            ANZAHL_PRUEFUNGEN_PRO_WOCHE, Set.of(tk), pruefung.getSchaetzungen().get(tk))),
+        analyse);
+  }
+
+  private Optional<WeichesKriteriumAnalyse> concatAnalyse(
+      WeichesKriteriumAnalyse newAnalyse, WeichesKriteriumAnalyse oldAnalyse) {
+    assert newAnalyse != null;
+    if (oldAnalyse == null) {
+      return Optional.of(newAnalyse);
+    }
+    Set<Pruefung> combinedPruefung = new HashSet<>();
+    combinedPruefung.addAll(newAnalyse.getCausingPruefungen());
+    combinedPruefung.addAll(oldAnalyse.getCausingPruefungen());
+
+    Set<Teilnehmerkreis> combinedTk = new HashSet<>();
+    combinedTk.addAll(newAnalyse.getAffectedTeilnehmerKreise());
+    combinedTk.addAll(oldAnalyse.getAffectedTeilnehmerKreise());
+    int sum = newAnalyse.getAmountAffectedStudents() + oldAnalyse.getAmountAffectedStudents();
+    return Optional.of(
+        new WeichesKriteriumAnalyse(new HashSet<>(combinedPruefung), ANZAHL_PRUEFUNGEN_PRO_WOCHE,
+            new HashSet<>(combinedTk), sum));
+
+  }
+
+  Optional<WeichesKriteriumAnalyse> evaluate2(Pruefung pruefung) {
+    Optional<WeichesKriteriumAnalyse> temp = Optional.empty();
+    for (Teilnehmerkreis tk : pruefung.getTeilnehmerkreise()) {
+      temp = evaluate(pruefung, tk, temp.get());
+    }
+    return temp;
+  }
+
+  private boolean isAboveLimit(Pruefung pruefung, Teilnehmerkreis tk) {
+    int week = getWeek(startPeriode, pruefung);
+    Set<Pruefung> pruefungen = weekPruefungMap.get(week);
+    Optional<Block> blockOpt = dataAccessService.getBlockTo(pruefung);
+    if (blockOpt.isPresent()) {
+      pruefungen = filterSiblingsOfPruefung(pruefung, pruefungen);
+    }
+    return countOfTeilnehmerkreis(tk, pruefungen) >= limit;
+  }
+
   /**
    * Calculates the number of students of the passed Set of pruefungen. It considera als the
    * duplicates Teilnehmerkreise.
