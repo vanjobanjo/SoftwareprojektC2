@@ -42,7 +42,7 @@ class WocheVierFuerMasterTest {
     LocalDate week4 = START_PERIODE.plusDays(7 * 4);
     analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
     Pruefung modelanalysis = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
-    assertThat(deviceUnderTest.test(modelanalysis)).isTrue();
+    assertThat(deviceUnderTest.isWeekFour(modelanalysis)).isTrue();
   }
 
 
@@ -53,7 +53,7 @@ class WocheVierFuerMasterTest {
     LocalDate week4 = START_PERIODE.plusDays(7 * 5);
     analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
     Pruefung modelanalysis = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
-    assertThat(deviceUnderTest.test(modelanalysis)).isFalse();
+    assertThat(deviceUnderTest.isWeekFour(modelanalysis)).isFalse();
   }
 
   @Test
@@ -63,7 +63,7 @@ class WocheVierFuerMasterTest {
     LocalDate week4 = START_PERIODE.plusDays(7 * 3);
     analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
     Pruefung modelanalysis = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
-    assertThat(deviceUnderTest.test(modelanalysis)).isFalse();
+    assertThat(deviceUnderTest.isWeekFour(modelanalysis)).isFalse();
   }
 
   @Test
@@ -73,7 +73,7 @@ class WocheVierFuerMasterTest {
     LocalDate week4 = START_PERIODE.plusDays(7 * 2);
     analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
     Pruefung modelanalysis = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
-    assertThat(deviceUnderTest.test(modelanalysis)).isFalse();
+    assertThat(deviceUnderTest.isWeekFour(modelanalysis)).isFalse();
   }
 
   @Test
@@ -83,7 +83,7 @@ class WocheVierFuerMasterTest {
     LocalDate week4 = START_PERIODE.plusDays(7);
     analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
     Pruefung modelanalysis = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
-    assertThat(deviceUnderTest.test(modelanalysis)).isFalse();
+    assertThat(deviceUnderTest.isWeekFour(modelanalysis)).isFalse();
   }
 
   @Test
@@ -93,7 +93,7 @@ class WocheVierFuerMasterTest {
     LocalDate week4 = START_PERIODE;
     analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
     Pruefung modelanalysis = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
-    assertThat(deviceUnderTest.test(modelanalysis)).isFalse();
+    assertThat(deviceUnderTest.isWeekFour(modelanalysis)).isFalse();
   }
 
   @Test

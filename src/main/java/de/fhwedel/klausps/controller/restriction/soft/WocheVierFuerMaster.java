@@ -11,9 +11,8 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 
-public class WocheVierFuerMaster extends WeicheRestriktion implements Predicate<Pruefung> {
+public class WocheVierFuerMaster extends WeicheRestriktion {
 
   private final static int WEEK_FOUR = 4;
   private final int DAYS_WEEK = 7;
@@ -31,30 +30,24 @@ public class WocheVierFuerMaster extends WeicheRestriktion implements Predicate<
     START_PERIODE = start;
   }
 
-  /**
-   * True when the given pruefung starts on week 4.
-   *
-   * @param pruefung the input argument
-   * @return {@code true} if the input argument matches the predicate, otherwise {@code false}
-   */
-  @Override
-  public boolean test(Pruefung pruefung) {
+  //package private for test
+  boolean isWeekFour(Pruefung pruefung) {
     return getWeek(START_PERIODE, pruefung) == WEEK_FOUR;
   }
 
   /**
    * Evaluates for a {@link Pruefung} in which way it violates a restriction.
    *
-   * @param pruefung The pruefung for which to check for violations of a restriction.
+   * @param pruefung The pruefung for which to check the violations of a restriction.
    * @return Either an {@link Optional} containing a {@link KriteriumsAnalyse} for the violated
    * restriction, or an empty Optional in case the Restriction was not violated.
    */
   @Override
   public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
-    boolean violation = test(pruefung);
-    if (!violation) {
+    if (!isWeekFour(pruefung)) {
       return Optional.empty();
     }
+
     return Optional.of(new WeichesKriteriumAnalyse(Set.of(pruefung), WOCHE_VIER_FUER_MASTER,
         new HashSet<>(pruefung.getTeilnehmerkreise()),
         pruefung.schaetzung()));
