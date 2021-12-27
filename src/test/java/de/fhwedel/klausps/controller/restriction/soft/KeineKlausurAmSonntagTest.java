@@ -42,7 +42,7 @@ class KeineKlausurAmSonntagTest {
     Pruefung model_pruefung_so = TestFactory.getPruefungOfReadOnlyPruefung(roPruefung_sonntag);
     TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, model_pruefung_so);
 
-    assertThat(deviceUnderTest.test(model_pruefung_so)).isTrue();
+    assertThat(deviceUnderTest.isScheduledOnSunday(model_pruefung_so)).isTrue();
   }
 
   @Test
@@ -54,7 +54,7 @@ class KeineKlausurAmSonntagTest {
     Pruefung model_pruefung_sa = TestFactory.getPruefungOfReadOnlyPruefung(roPruefung_samstag);
     TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, model_pruefung_sa);
 
-    assertThat(deviceUnderTest.test(model_pruefung_sa)).isFalse();
+    assertThat(deviceUnderTest.isScheduledOnSunday(model_pruefung_sa)).isFalse();
   }
 
   @Test
@@ -67,7 +67,7 @@ class KeineKlausurAmSonntagTest {
         roPruefung_samstag);
     TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, model_pruefung_out);
 
-    assertThrows(IllegalArgumentException.class, () -> deviceUnderTest.test(model_pruefung_out));
+    assertThrows(IllegalArgumentException.class, () -> deviceUnderTest.isScheduledOnSunday(model_pruefung_out));
   }
 
   @Test

@@ -10,9 +10,8 @@ import java.time.DayOfWeek;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 
-public class KeineKlausurAmSonntag extends WeicheRestriktion implements Predicate<Pruefung> {
+public class KeineKlausurAmSonntag extends WeicheRestriktion{
 
   private static final DayOfWeek SUNDAY = DayOfWeek.SUNDAY;
 
@@ -25,8 +24,8 @@ public class KeineKlausurAmSonntag extends WeicheRestriktion implements Predicat
     super(ServiceProvider.getDataAccessService(), SONNTAG);
   }
 
-  @Override
-  public boolean test(Pruefung pruefung) {
+
+  public boolean isScheduledOnSunday(Pruefung pruefung) {
     if (!isInPeriod(pruefung)) {
       throw new IllegalArgumentException("Prüfung liegt nicht im Zeitraum der Periode.");
     }
@@ -39,9 +38,8 @@ public class KeineKlausurAmSonntag extends WeicheRestriktion implements Predicat
 
   @Override
   public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
-    boolean violationRestriction = test(pruefung);
 
-    if (!violationRestriction) {
+    if (!isScheduledOnSunday(pruefung)) {
       return Optional.empty();
     }
 
