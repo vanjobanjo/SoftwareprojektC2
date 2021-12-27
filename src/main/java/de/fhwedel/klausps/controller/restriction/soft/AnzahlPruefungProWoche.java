@@ -21,7 +21,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class AnzahlPruefungProWoche extends WeicheRestriktion{
+public class AnzahlPruefungProWoche extends WeicheRestriktion {
 
   // for testing
   public static final int LIMIT_DEFAULT = 5;
@@ -96,6 +96,11 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion{
 
     return Optional.of(new WeichesKriteriumAnalyse(conflictedPruefungen,
         ANZAHL_PRUEFUNGEN_PRO_WOCHE, conflictedTeilnehmerkreis, affected));
+  }
+
+  private int countOfTeilnehmerkreis(Teilnehmerkreis tk, Set<Pruefung> pruefungen) {
+    return (int) pruefungen.stream().filter(pruefung -> pruefung.getTeilnehmerkreise().contains(tk))
+        .count();
   }
 
   /**
