@@ -36,16 +36,16 @@ public class WocheVierFuerMaster extends WeicheRestriktion {
   }
 
   //if the pruefung is on week 4 and one of the tk is not master, this function returns true.
-  //terminIsInPeriodCheck must be called somewhere else but for software security we can also check it here.
+  //terminIsInPeriodCheck must be called somewhere else but for security we can also check it here.
   boolean isWeekFourContainsNotOnlyMaster(Pruefung pruefung) {
     if (!dataAccessService.terminIsInPeriod(pruefung.getStartzeitpunkt())) {
-      throw new IllegalArgumentException("Pruefung is not in period");
+      throw new IllegalArgumentException("Prüfung ist nicht in Periode.");
     }
-    return getWeek(startPeriode, pruefung) == WEEK_FOUR
+    return getWeek(startPeriode, pruefung.getStartzeitpunkt().toLocalDate()) == WEEK_FOUR
         && (pruefung.getAusbildungsgrade().contains(BACHELOR)
         || pruefung.getAusbildungsgrade().contains(AUSBILDUNG));
   }
-
+  
   /**
    * Evaluates for a {@link Pruefung} in which way it violates a restriction.
    *
@@ -82,8 +82,8 @@ public class WocheVierFuerMaster extends WeicheRestriktion {
     return tk.getAusbildungsgrad() != MASTER;
   }
 
-  private int getWeek(LocalDate startPeriode, Pruefung pruefung) {
-    return (pruefung.getStartzeitpunkt().getDayOfYear() - startPeriode.getDayOfYear())
+  private int getWeek(LocalDate startPeriode, LocalDate termin) {
+    return (termin.getDayOfYear() - startPeriode.getDayOfYear())
         / DAYS_WEEK;
   }
 
