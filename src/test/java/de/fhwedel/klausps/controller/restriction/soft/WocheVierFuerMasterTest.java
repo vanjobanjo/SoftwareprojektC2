@@ -36,74 +36,80 @@ class WocheVierFuerMasterTest {
   }
 
   @Test
-  void predicateAnalysisIsOnWeek4Test() {
+  void analysisIsBachelorAndWeekFourTest() {
     deviceUnderTest = new WocheVierFuerMaster(accessService, START_PERIODE);
     ReadOnlyPruefung analysis = TestFactory.RO_ANALYSIS_UNPLANNED;
     LocalDate week4 = START_PERIODE.plusDays(7 * 4);
     analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
     Pruefung modelanalysis = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
-    assertThat(deviceUnderTest.isWeekFour(modelanalysis)).isTrue();
+    modelanalysis.addTeilnehmerkreis(TestFactory.infBachelor, 20);
+    assertThat(deviceUnderTest.isWeekFourBachelor(modelanalysis)).isTrue();
   }
 
 
   @Test
-  void predicateAnalysisIsOnWeek5Test() {
+  void analysisBachelorIsOnWeek5Test() {
     deviceUnderTest = new WocheVierFuerMaster(accessService, START_PERIODE);
     ReadOnlyPruefung analysis = TestFactory.RO_ANALYSIS_UNPLANNED;
     LocalDate week4 = START_PERIODE.plusDays(7 * 5);
     analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
     Pruefung modelanalysis = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
-    assertThat(deviceUnderTest.isWeekFour(modelanalysis)).isFalse();
+    modelanalysis.addTeilnehmerkreis(TestFactory.infBachelor, 20);
+    assertThat(deviceUnderTest.isWeekFourBachelor(modelanalysis)).isFalse();
   }
 
   @Test
-  void predicateAnalysisIsOnWeek3Test() {
+  void analysisIsOnWeek3Test() {
     deviceUnderTest = new WocheVierFuerMaster(accessService, START_PERIODE);
     ReadOnlyPruefung analysis = TestFactory.RO_ANALYSIS_UNPLANNED;
     LocalDate week4 = START_PERIODE.plusDays(7 * 3);
     analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
     Pruefung modelanalysis = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
-    assertThat(deviceUnderTest.isWeekFour(modelanalysis)).isFalse();
+    modelanalysis.addTeilnehmerkreis(TestFactory.infBachelor, 20);
+    assertThat(deviceUnderTest.isWeekFourBachelor(modelanalysis)).isFalse();
   }
 
   @Test
-  void predicateAnalysisIsOnWeek2Test() {
+  void analysisIsOnWeek2Test() {
     deviceUnderTest = new WocheVierFuerMaster(accessService, START_PERIODE);
     ReadOnlyPruefung analysis = TestFactory.RO_ANALYSIS_UNPLANNED;
     LocalDate week4 = START_PERIODE.plusDays(7 * 2);
     analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
     Pruefung modelanalysis = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
-    assertThat(deviceUnderTest.isWeekFour(modelanalysis)).isFalse();
+    modelanalysis.addTeilnehmerkreis(TestFactory.infBachelor, 20);
+    assertThat(deviceUnderTest.isWeekFourBachelor(modelanalysis)).isFalse();
   }
 
   @Test
-  void predicateAnalysisIsOnWeek1Test() {
+  void analysisIsOnWeek1Test() {
     deviceUnderTest = new WocheVierFuerMaster(accessService, START_PERIODE);
     ReadOnlyPruefung analysis = TestFactory.RO_ANALYSIS_UNPLANNED;
     LocalDate week4 = START_PERIODE.plusDays(7);
     analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
     Pruefung modelanalysis = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
-    assertThat(deviceUnderTest.isWeekFour(modelanalysis)).isFalse();
+    modelanalysis.addTeilnehmerkreis(TestFactory.infBachelor, 20);
+    assertThat(deviceUnderTest.isWeekFourBachelor(modelanalysis)).isFalse();
   }
 
   @Test
-  void predicateAnalysisIsOnWeek0Test() {
+  void analysisIsOnWeek0Test() {
     deviceUnderTest = new WocheVierFuerMaster(accessService, START_PERIODE);
     ReadOnlyPruefung analysis = TestFactory.RO_ANALYSIS_UNPLANNED;
     LocalDate week4 = START_PERIODE;
     analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
     Pruefung modelanalysis = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
-    assertThat(deviceUnderTest.isWeekFour(modelanalysis)).isFalse();
+    modelanalysis.addTeilnehmerkreis(TestFactory.infBachelor, 20);
+    assertThat(deviceUnderTest.isWeekFourBachelor(modelanalysis)).isFalse();
   }
 
   @Test
-  void evaluateAnalysisIsOnWeek4Test() {
+  void analysisIsOnWeek4Test() {
     deviceUnderTest = new WocheVierFuerMaster(accessService, START_PERIODE);
     ReadOnlyPruefung analysis = TestFactory.RO_ANALYSIS_UNPLANNED;
     LocalDate week4 = START_PERIODE.plusDays(7 * 4);
     analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
     Pruefung modelanalysis = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
-    modelanalysis.addTeilnehmerkreis(TestFactory.inf, 20);
+    modelanalysis.addTeilnehmerkreis(TestFactory.infBachelor, 20);
     Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(modelanalysis);
     assertThat(result).isPresent();
     assertThat(result.get().getCausingPruefungen()).containsOnly(modelanalysis);
@@ -114,14 +120,87 @@ class WocheVierFuerMasterTest {
   }
 
   @Test
-  void evaluateAnalysisIsOnWeek5Test() {
+  void analysisIsOnWeek5Test() {
     deviceUnderTest = new WocheVierFuerMaster(accessService, START_PERIODE);
     ReadOnlyPruefung analysis = TestFactory.RO_ANALYSIS_UNPLANNED;
     LocalDate week4 = START_PERIODE.plusDays(7 * 5);
     analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
     Pruefung modelanalysis = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
-    modelanalysis.addTeilnehmerkreis(TestFactory.inf, 20);
+    modelanalysis.addTeilnehmerkreis(TestFactory.infBachelor, 20);
     Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(modelanalysis);
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  void masterPruefungOnWeek4Test() {
+    deviceUnderTest = new WocheVierFuerMaster(accessService, START_PERIODE);
+    ReadOnlyPruefung analysis = TestFactory.RO_ANALYSIS_UNPLANNED;
+    LocalDate week4 = START_PERIODE.plusDays(7 * 4);
+    analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
+    Pruefung modelanalysisMaster = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
+    modelanalysisMaster.addTeilnehmerkreis(TestFactory.infMaster, 20);
+    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(modelanalysisMaster);
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  void mixedTkPruefungOnWeek4Test() {
+    deviceUnderTest = new WocheVierFuerMaster(accessService, START_PERIODE);
+    ReadOnlyPruefung analysis = TestFactory.RO_ANALYSIS_UNPLANNED;
+    LocalDate week4 = START_PERIODE.plusDays(7 * 4);
+    analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
+    Pruefung modelAnalysisMixedTk = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
+    modelAnalysisMixedTk.addTeilnehmerkreis(TestFactory.infMaster, 20);
+    modelAnalysisMixedTk.addTeilnehmerkreis(TestFactory.infBachelor, 20);
+    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(modelAnalysisMixedTk);
+    assertThat(result).isPresent();
+    assertThat(deviceUnderTest.isWeekFourBachelor(modelAnalysisMixedTk)).isTrue();
+
+    //darf nicht Master TK enthalten.
+    assertThat(result.get().getAffectedTeilnehmerKreise()).containsOnly(TestFactory.infBachelor);
+    assertThat(result.get().getAmountAffectedStudents()).isEqualTo(20);
+  }
+
+  @Test
+  void mixedTkPruefungOnWeek5Test() {
+    deviceUnderTest = new WocheVierFuerMaster(accessService, START_PERIODE);
+    ReadOnlyPruefung analysis = TestFactory.RO_ANALYSIS_UNPLANNED;
+    LocalDate week4 = START_PERIODE.plusDays(7 * 5);
+    analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
+    Pruefung modelAnalysisMixedTk = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
+    modelAnalysisMixedTk.addTeilnehmerkreis(TestFactory.infMaster, 20);
+    modelAnalysisMixedTk.addTeilnehmerkreis(TestFactory.infBachelor, 20);
+    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(modelAnalysisMixedTk);
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  void mixedTkWithPtlPruefungOnWeek4Test() {
+    deviceUnderTest = new WocheVierFuerMaster(accessService, START_PERIODE);
+    ReadOnlyPruefung analysis = TestFactory.RO_ANALYSIS_UNPLANNED;
+    LocalDate week4 = START_PERIODE.plusDays(7 * 4);
+    analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
+    Pruefung modelAnalysisMixedTk = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
+    modelAnalysisMixedTk.addTeilnehmerkreis(TestFactory.infMaster, 20);
+    modelAnalysisMixedTk.addTeilnehmerkreis(TestFactory.infBachelor, 20);
+    modelAnalysisMixedTk.addTeilnehmerkreis(TestFactory.infPtl, 20);
+    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(modelAnalysisMixedTk);
+    assertThat(result).isPresent();
+    assertThat(result.get().getAmountAffectedStudents()).isEqualTo(40);
+    assertThat(result.get().getAffectedTeilnehmerKreise()).containsOnly(TestFactory.infBachelor,
+        TestFactory.infPtl);
+    assertThat(result.get().getAffectedTeilnehmerKreise()).doesNotContain(TestFactory.infMaster);
+  }
+
+  @Test
+  void masterTkOnlyWeek4(){
+    deviceUnderTest = new WocheVierFuerMaster(accessService, START_PERIODE);
+    ReadOnlyPruefung analysis = TestFactory.RO_ANALYSIS_UNPLANNED;
+    LocalDate week4 = START_PERIODE.plusDays(7 * 4);
+    analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
+    Pruefung modelAnalysisMasterTk = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
+    modelAnalysisMasterTk.addTeilnehmerkreis(TestFactory.infMaster, 20);
+    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(modelAnalysisMasterTk);
     assertThat(result).isEmpty();
   }
 }

@@ -77,16 +77,16 @@ class KeineKlausurAmSonntagTest {
         TestFactory.RO_ANALYSIS_UNPLANNED,
         sonntag);
     Pruefung model_pruefung_so = TestFactory.getPruefungOfReadOnlyPruefung(roPruefung_sonntag);
-    model_pruefung_so.addTeilnehmerkreis(TestFactory.wing, 10);
-    model_pruefung_so.addTeilnehmerkreis(TestFactory.bwl, 30);
-    model_pruefung_so.addTeilnehmerkreis(TestFactory.inf, 50);
+    model_pruefung_so.addTeilnehmerkreis(TestFactory.wingBachelor, 10);
+    model_pruefung_so.addTeilnehmerkreis(TestFactory.bwlBachelor, 30);
+    model_pruefung_so.addTeilnehmerkreis(TestFactory.infBachelor, 50);
     TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, model_pruefung_so);
     WeichesKriteriumAnalyse result = deviceUnderTest.evaluate(model_pruefung_so)
         .orElseThrow(IllegalArgumentException::new
         );
     assertThat(result.getCausingPruefungen()).containsOnly(model_pruefung_so);
     assertThat(result.getAmountAffectedStudents()).isEqualTo(90);
-    assertThat(result.getAffectedTeilnehmerKreise()).containsOnly(TestFactory.wing, TestFactory.inf,
-        TestFactory.bwl);
+    assertThat(result.getAffectedTeilnehmerKreise()).containsOnly(TestFactory.wingBachelor, TestFactory.infBachelor,
+        TestFactory.bwlBachelor);
   }
 }

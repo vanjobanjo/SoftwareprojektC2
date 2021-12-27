@@ -1,21 +1,25 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
 import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.WOCHE_VIER_FUER_MASTER;
+import static de.fhwedel.klausps.model.api.Ausbildungsgrad.BACHELOR;
+import static de.fhwedel.klausps.model.api.Ausbildungsgrad.MASTER;
 
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Pruefung;
+import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.LocalDate;
-import java.util.HashSet;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class WocheVierFuerMaster extends WeicheRestriktion {
 
   private final static int WEEK_FOUR = 4;
-  private final int DAYS_WEEK = 7;
+  private final static int DAYS_WEEK = 7;
   private final LocalDate START_PERIODE;
 
 
@@ -31,8 +35,9 @@ public class WocheVierFuerMaster extends WeicheRestriktion {
   }
 
   //package private for test
-  boolean isWeekFour(Pruefung pruefung) {
-    return getWeek(START_PERIODE, pruefung) == WEEK_FOUR;
+  boolean isWeekFourBachelor(Pruefung pruefung) {
+    return getWeek(START_PERIODE, pruefung) == WEEK_FOUR
+        && pruefung.getAusbildungsgrade().contains(BACHELOR);
   }
 
   /**
@@ -44,13 +49,27 @@ public class WocheVierFuerMaster extends WeicheRestriktion {
    */
   @Override
   public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
-    if (!isWeekFour(pruefung)) {
+    if (!isWeekFourBachelor(pruefung)) {
       return Optional.empty();
     }
 
+    Set<Teilnehmerkreis> tkWithoutMaster = pruefung.getTeilnehmerkreise().stream()
+        .filter(this::isNotMaster)
+        .collect(
+            Collectors.toSet());
+
+    int affectedWithoutMaster = pruefung.getSchaetzungen().entrySet().stream()
+        .filter(entry -> isNotMaster(entry.getKey()))
+        .mapToInt(Entry::getValue).sum();
+
     return Optional.of(new WeichesKriteriumAnalyse(Set.of(pruefung), WOCHE_VIER_FUER_MASTER,
-        new HashSet<>(pruefung.getTeilnehmerkreise()),
-        pruefung.schaetzung()));
+        tkWithoutMaster,
+        affectedWithoutMaster
+    ));
+  }
+
+  private boolean isNotMaster(Teilnehmerkreis tk) {
+    return tk.getAusbildungsgrad() != MASTER;
   }
 
   private int getWeek(LocalDate startPeriode, Pruefung pruefung) {
