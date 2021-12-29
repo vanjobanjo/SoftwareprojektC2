@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 
@@ -49,7 +50,8 @@ public class DataAccessService {
     this.scheduleService = scheduleService;
   }
 
-  public ReadOnlyPruefung createPruefung(String name, String pruefungsNr, String refVWS, Set<String> pruefer,
+  public ReadOnlyPruefung createPruefung(String name, String pruefungsNr, String refVWS,
+      Set<String> pruefer,
       Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
 
     if (!existsPruefungWith(pruefungsNr)) {
@@ -151,7 +153,8 @@ public class DataAccessService {
     teilnehmerkreise.forEach(pruefungModel::setSchaetzung);
   }
 
-  public ReadOnlyPruefung createPruefung(String name, String pruefungsNr, String refVWS, String pruefer,
+  public ReadOnlyPruefung createPruefung(String name, String pruefungsNr, String refVWS,
+      String pruefer,
       Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
     return createPruefung(name, pruefungsNr, refVWS, Set.of(pruefer), duration, teilnehmerkreise);
   }
@@ -451,7 +454,8 @@ public class DataAccessService {
   }
 
 
-  public Pair<Block, Pruefung> removePruefungFromBlock(ReadOnlyBlock block, ReadOnlyPruefung pruefung) {
+  public Pair<Block, Pruefung> removePruefungFromBlock(ReadOnlyBlock block,
+      ReadOnlyPruefung pruefung) {
     Block modelBlock = getBlockFromModelOrException(block);
     Pruefung modelPruefung = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
 
@@ -463,7 +467,6 @@ public class DataAccessService {
     }
     return new Pair<>(modelBlock, modelPruefung);
   }
-
 
 
   private boolean isAnyInBlock(Collection<ReadOnlyPruefung> pruefungen) {
@@ -551,4 +554,16 @@ public class DataAccessService {
     return allTeilnehmerkreise;
   }
 
+  public Set<ReadOnlyPruefung> getPruefungenInZeitraum(LocalDateTime start, LocalDateTime end) {
+    Predicate<Pruefung> pred = predBetween(start, end);
+    return new HashSet<>(Converter.convertToROPruefungCollection(
+        pruefungsperiode.geplantePruefungen().stream().filter(pred).collect(Collectors.toSet())));
+  }
+
+  private Predicate<Pruefung> predBetween(LocalDateTime start, LocalDateTime end) {
+    return pruefung -> (pruefung.getStartzeitpunkt().isAfter(start)
+        || pruefung.getStartzeitpunkt().equals(start)) &&
+        (pruefung.getStartzeitpunkt().plus(pruefung.getDauer()).isBefore(end)
+            || pruefung.getStartzeitpunkt().plus(pruefung.getDauer()).isEqual(end));
+  }
 }
