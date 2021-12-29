@@ -129,9 +129,8 @@ public class ScheduleService {
     Map<String, Integer> scoring = getScoringFrom(analyses);
     applyScoring(scoring);
 
-    // todo anpassen, wenn Converter implementiert ist
     return Optional.of(
-        dataAccessService.fromModelToDTOBlock(dataAccessService.getBlockTo(modelPruefung).get()));
+        Converter.convertToROBlock(dataAccessService.getBlockTo(modelPruefung).get()));
 
   }
 
