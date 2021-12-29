@@ -8,7 +8,6 @@ import static org.mockito.Mockito.verify;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Semestertyp;
-
 import de.fhwedel.klausps.model.impl.SemesterImpl;
 import java.time.LocalDate;
 import java.time.Year;

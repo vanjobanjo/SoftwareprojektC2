@@ -11,8 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class HartRestriktion  {
-
+public class HartRestriktion {
 
 
   Set<Pruefung> inConflictROPruefung;
@@ -21,7 +20,7 @@ public class HartRestriktion  {
   HartesKriterium hardRestriction;
   DataAccessService dataAccessService;
 
-  HartRestriktion(DataAccessService dataAccessService, HartesKriterium kriterium){
+  HartRestriktion(DataAccessService dataAccessService, HartesKriterium kriterium) {
     this.hardRestriction = kriterium;
     this.dataAccessService = dataAccessService;
     countStudents = 0;
@@ -30,13 +29,10 @@ public class HartRestriktion  {
   }
 
 
-
-
   public List<KriteriumsAnalyse> evaluate() throws HartesKriteriumException {
     throw new UnsupportedOperationException("Not implemented yet!");
 
   }
-
 
 
 }

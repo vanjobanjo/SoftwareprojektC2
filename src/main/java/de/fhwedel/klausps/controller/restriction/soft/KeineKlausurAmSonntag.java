@@ -1,29 +1,31 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
-import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
-import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
+import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.SONNTAG;
+
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Pruefung;
 import java.time.DayOfWeek;
-import java.util.List;
-import java.util.function.Predicate;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
-public class KeineKlausurAmSonntag extends WeicheRestriktion implements Predicate<Pruefung> {
+public class KeineKlausurAmSonntag extends WeicheRestriktion{
 
   private static final DayOfWeek SUNDAY = DayOfWeek.SUNDAY;
 
   //Mock Konstruktor
   KeineKlausurAmSonntag(DataAccessService dataAccessService) {
-    super(dataAccessService, WeichesKriterium.SONNTAG);
+    super(dataAccessService, SONNTAG);
   }
 
   public KeineKlausurAmSonntag() {
-    super(ServiceProvider.getDataAccessService(), WeichesKriterium.SONNTAG);
+    super(ServiceProvider.getDataAccessService(), SONNTAG);
   }
 
-  @Override
-  public boolean test(Pruefung pruefung) {
+
+  public boolean isScheduledOnSunday(Pruefung pruefung) {
     if (!isInPeriod(pruefung)) {
       throw new IllegalArgumentException("Prüfung liegt nicht im Zeitraum der Periode.");
     }
@@ -35,7 +37,15 @@ public class KeineKlausurAmSonntag extends WeicheRestriktion implements Predicat
   }
 
   @Override
-  public List<KriteriumsAnalyse> evaluate() {
-    throw new UnsupportedOperationException("Not implemented yet!");
+  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
+
+    if (!isScheduledOnSunday(pruefung)) {
+      return Optional.empty();
+    }
+
+    return Optional.of(
+        new WeichesKriteriumAnalyse(Set.of(pruefung), SONNTAG,
+            new HashSet<>(pruefung.getTeilnehmerkreise()),
+            pruefung.schaetzung()));
   }
 }

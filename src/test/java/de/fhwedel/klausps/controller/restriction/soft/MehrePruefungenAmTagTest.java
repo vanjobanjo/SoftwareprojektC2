@@ -1,15 +1,14 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
-import de.fhwedel.klausps.controller.assertions.ReadOnlyPruefungAssert;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
@@ -44,8 +43,8 @@ class MehrePruefungenAmTagTest {
     MehrePruefungenAmTag mehrePruefungenAmTag = new MehrePruefungenAmTag(dataAccessService,
         WeichesKriterium.MEHRERE_PRUEFUNGEN_AM_TAG);
 
-    Planungseinheit analysisPL = mock(Planungseinheit.class);
-    Planungseinheit haskelPL = mock(Planungseinheit.class);
+    Pruefung analysisPL = mock(Pruefung.class);
+    Pruefung haskelPL = mock(Pruefung.class);
 
     Pruefung analysis = mock(Pruefung.class);
     Pruefung haskel = mock(Pruefung.class);
