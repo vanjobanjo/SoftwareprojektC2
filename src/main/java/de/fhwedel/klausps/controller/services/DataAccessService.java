@@ -553,7 +553,7 @@ public class DataAccessService {
     }
     return allTeilnehmerkreise;
   }
-
+//TODO write tests.
   public Set<ReadOnlyPruefung> getPruefungenInZeitraum(LocalDateTime start, LocalDateTime end) {
     Predicate<Pruefung> pred = predBetween(start, end);
     return new HashSet<>(Converter.convertToROPruefungCollection(
