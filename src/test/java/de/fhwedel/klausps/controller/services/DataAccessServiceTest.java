@@ -22,6 +22,7 @@ import de.fhwedel.klausps.controller.assertions.ReadOnlyBlockAssert;
 import de.fhwedel.klausps.controller.assertions.ReadOnlyPruefungAssert;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
+import de.fhwedel.klausps.controller.helper.Pair;
 import de.fhwedel.klausps.controller.util.TestFactory;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Blocktyp;
@@ -115,9 +116,10 @@ class DataAccessServiceTest {
         expected.getDauer());
 
     when(pruefungsperiode.pruefung(expected.getPruefungsnummer())).thenReturn(test);
-    assertThat(deviceUnderTest.createPruefung(expected.getName(), expected.getPruefungsnummer(), "ref",
-        expected.getPruefer(), expected.getDauer(),
-        expected.getTeilnehmerKreisSchaetzung())).isNull();
+    assertThat(
+        deviceUnderTest.createPruefung(expected.getName(), expected.getPruefungsnummer(), "ref",
+            expected.getPruefer(), expected.getDauer(),
+            expected.getTeilnehmerKreisSchaetzung())).isNull();
   }
 
   @Test
@@ -752,6 +754,191 @@ class DataAccessServiceTest {
     assertThat(result).isPresent();
     assertThat(result.get().getROPruefungen()).containsOnly(analysis);
   }
+
+  @Test
+  public void removePruefungFromUnplannedBlock() {
+    // set up
+    Block modelBlock = new BlockImpl(pruefungsperiode, "block 1", Blocktyp.SEQUENTIAL);
+    Pruefung modelPruefung = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    modelBlock.addPruefung(modelPruefung);
+    when(pruefungsperiode.pruefung(modelPruefung.getPruefungsnummer())).thenReturn(modelPruefung);
+    when(pruefungsperiode.block(modelPruefung)).thenReturn(modelBlock);
+
+    ReadOnlyBlock block =
+        new BlockDTO(
+            "block 1",
+            null,
+            RO_ANALYSIS_UNPLANNED.getDauer(),
+            new HashSet<>(List.of(RO_ANALYSIS_UNPLANNED)),
+            1, Blocktyp.PARALLEL);
+
+    ReadOnlyBlock expectedBlock = new BlockDTO("block 1", null, Duration.ZERO, new HashSet<>(),
+        1, Blocktyp.PARALLEL);
+
+    // get results
+    Pair<Block, Pruefung> actualResult = deviceUnderTest.removePruefungFromBlock(
+        block, RO_ANALYSIS_UNPLANNED);
+    Block actualBlock = actualResult.left();
+    Pruefung actualPruefung = actualResult.right();
+
+    // assertions
+    ReadOnlyBlockAssert.assertThat(expectedBlock).isSameAs(Converter.convertToROBlock(actualBlock));
+    ReadOnlyPruefungAssert.assertThat(RO_ANALYSIS_UNPLANNED)
+        .isTheSameAs(Converter.convertToReadOnlyPruefung(actualPruefung));
+  }
+
+
+  @Test
+  @DisplayName("successfully remove pruefung from scheduled block, only one pruefung in block")
+  public void removePruefungFromBlockPlannedBlock() {
+
+    // set up
+    Block modelBlock = new BlockImpl(pruefungsperiode, "block", Blocktyp.SEQUENTIAL);
+    modelBlock.setStartzeitpunkt(LocalDateTime.now());
+
+    ReadOnlyPruefung pruefung = new PruefungDTOBuilder().withPruefungsName("Analysis")
+        .withDauer(Duration.ofMinutes(120)).withPruefungsNummer("1")
+        .withStartZeitpunkt(LocalDateTime.now()).build();
+    Pruefung modelPruefung = getPruefungOfReadOnlyPruefung(pruefung);
+    modelBlock.addPruefung(modelPruefung);
+
+    when(pruefungsperiode.pruefung(modelPruefung.getPruefungsnummer())).thenReturn(modelPruefung);
+    when(pruefungsperiode.block(modelPruefung)).thenReturn(modelBlock);
+
+    ReadOnlyBlock expectedBlock = new BlockDTO("block", null, Duration.ZERO, new HashSet<>(), 1,
+        Blocktyp.PARALLEL);
+    ReadOnlyBlock block = new BlockDTO("block",
+        null,
+        RO_ANALYSIS_UNPLANNED.getDauer(),
+        new HashSet<>(List.of(pruefung)),
+        1, Blocktyp.PARALLEL);
+
+    // actual method to test call
+    Pair<Block, Pruefung> actualResult = deviceUnderTest.removePruefungFromBlock(
+        block, pruefung);
+    Block actualBlock = actualResult.left();
+    Pruefung actualPruefung = actualResult.right();
+
+    // assertions
+    ReadOnlyBlockAssert.assertThat(expectedBlock).isSameAs(Converter.convertToROBlock(actualBlock));
+    ReadOnlyPruefungAssert.assertThat(RO_ANALYSIS_UNPLANNED)
+        .isTheSameAs(Converter.convertToReadOnlyPruefung(actualPruefung));
+  }
+
+  @Test
+  @DisplayName("successfully remove pruefung from scheduled block, more than one pruefung in block")
+  public void removePruefungFromBlockPlannedBlock2() {
+    LocalDateTime termin = LocalDateTime.now();
+    // set up
+    Block modelBlock = new BlockImpl(pruefungsperiode, "block", Blocktyp.PARALLEL);
+    modelBlock.setStartzeitpunkt(termin);
+
+    ReadOnlyPruefung pruefung = new PruefungDTOBuilder().withPruefungsName("Analysis")
+        .withDauer(Duration.ofMinutes(120)).withPruefungsNummer("1").build();
+    ReadOnlyPruefung pruefungToRemove = new PruefungDTOBuilder().withPruefungsName("DM")
+        .withDauer(Duration.ofMinutes(120)).withPruefungsNummer("2").build();
+
+    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, termin,
+        RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
+    ReadOnlyBlock expectedBlock = new BlockDTO("block", termin, Duration.ofMinutes(120),
+        new HashSet<>(List.of(pruefung)), 1, Blocktyp.PARALLEL);
+    ReadOnlyBlock block = new BlockDTO("block",
+        termin,
+        RO_ANALYSIS_UNPLANNED.getDauer(),
+        new HashSet<>(List.of(pruefung, pruefungToRemove)),
+        1, Blocktyp.PARALLEL);
+
+    // actual method to test call
+    Pair<Block, Pruefung> actualResult = deviceUnderTest.removePruefungFromBlock(
+        block, pruefungToRemove);
+    Block actualBlock = actualResult.left();
+    Pruefung actualPruefung = actualResult.right();
+
+    // assertions
+    ReadOnlyBlockAssert.assertThat(expectedBlock).isSameAs(Converter.convertToROBlock(actualBlock));
+    ReadOnlyPruefungAssert.assertThat(RO_DM_UNPLANNED)
+        .isTheSameAs(Converter.convertToReadOnlyPruefung(actualPruefung));
+  }
+
+  @Test
+  @DisplayName("successfully remove pruefung from unscheduled block, more than one pruefung in block")
+  public void removePruefungFromBlockNotPlannedBlock2() {
+
+    // set up
+    Block modelBlock = new BlockImpl(pruefungsperiode, "block", Blocktyp.PARALLEL);
+
+    ReadOnlyPruefung pruefung = new PruefungDTOBuilder().withPruefungsName("Analysis")
+        .withDauer(Duration.ofMinutes(120)).withPruefungsNummer("1").build();
+    ReadOnlyPruefung pruefungToRemove = new PruefungDTOBuilder().withPruefungsName("DM")
+        .withDauer(Duration.ofMinutes(120)).withPruefungsNummer("2").build();
+
+    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, null,
+        RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
+    ReadOnlyBlock expectedBlock = new BlockDTO("block", null, Duration.ofMinutes(120),
+        new HashSet<>(List.of(pruefung)), 1, Blocktyp.PARALLEL);
+    ReadOnlyBlock block = new BlockDTO("block",
+        null,
+        RO_ANALYSIS_UNPLANNED.getDauer(),
+        new HashSet<>(List.of(pruefung, pruefungToRemove)),
+        1, Blocktyp.PARALLEL);
+
+    // actual method to test call
+    Pair<Block, Pruefung> actualResult = deviceUnderTest.removePruefungFromBlock(
+        block, pruefungToRemove);
+    Block actualBlock = actualResult.left();
+    Pruefung actualPruefung = actualResult.right();
+
+    // assertions
+    ReadOnlyBlockAssert.assertThat(expectedBlock).isSameAs(Converter.convertToROBlock(actualBlock));
+    ReadOnlyPruefungAssert.assertThat(RO_DM_UNPLANNED)
+        .isTheSameAs(Converter.convertToReadOnlyPruefung(actualPruefung));
+  }
+
+  @Test
+  @DisplayName("successfully remove pruefung from block, pruefung is not in block")
+  public void removePruefungFromBlockNotInBlock() {
+
+    // set up
+    Block modelBlock = new BlockImpl(pruefungsperiode, "block", Blocktyp.PARALLEL);
+
+    ReadOnlyPruefung pruefung = new PruefungDTOBuilder().withPruefungsName("Analysis")
+        .withDauer(Duration.ofMinutes(120)).withPruefungsNummer("1").build();
+    ReadOnlyPruefung pruefungToRemove = new PruefungDTOBuilder().withPruefungsName("DM")
+        .withDauer(Duration.ofMinutes(120)).withPruefungsNummer("2").build();
+
+    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, null,
+        RO_ANALYSIS_UNPLANNED);
+    ReadOnlyBlock block = new BlockDTO("block",
+        null,
+        RO_ANALYSIS_UNPLANNED.getDauer(),
+        new HashSet<>(List.of(pruefung, pruefungToRemove)),
+        1, Blocktyp.PARALLEL);
+
+    // actual method to test call
+    assertThrows(IllegalArgumentException.class, () -> deviceUnderTest.removePruefungFromBlock(
+        block, pruefungToRemove));
+  }
+
+  @Test
+  @DisplayName("unsuccessfully try to remove pruefung from block, block is not in model")
+  public void removePruefungFromNonExistingBlock() {
+
+    ReadOnlyPruefung pruefung = new PruefungDTOBuilder().withPruefungsName("Analysis")
+        .withDauer(Duration.ofMinutes(120)).withPruefungsNummer("1").build();
+    ReadOnlyPruefung pruefungToRemove = new PruefungDTOBuilder().withPruefungsName("DM")
+        .withDauer(Duration.ofMinutes(120)).withPruefungsNummer("2").build();
+
+    configureMock_getPruefungToROPruefung(RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
+    ReadOnlyBlock block = new BlockDTO("block",
+        null,
+        RO_ANALYSIS_UNPLANNED.getDauer(),
+        new HashSet<>(List.of(pruefung, pruefungToRemove)),
+        1, Blocktyp.PARALLEL);
+
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.removePruefungFromBlock(block, pruefungToRemove));
+  }
+
 
   private void configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(
       Block modelBlock, LocalDateTime termin, ReadOnlyPruefung... pruefungen) {

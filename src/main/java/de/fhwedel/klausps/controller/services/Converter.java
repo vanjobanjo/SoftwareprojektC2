@@ -79,4 +79,13 @@ public class Converter {
     }
     return result;
   }
+
+  public static Collection<ReadOnlyPlanungseinheit> convertToROPlanungseinheitCollection(
+      Planungseinheit... planungseinheiten) {
+    Collection<ReadOnlyPlanungseinheit> result = new HashSet<>();
+    for (Planungseinheit planungseinheit : planungseinheiten) {
+      result.add(convertToReadOnlyPlanungseinheit(planungseinheit));
+    }
+    return result;
+  }
 }

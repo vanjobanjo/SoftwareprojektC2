@@ -10,6 +10,7 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
+import de.fhwedel.klausps.controller.helper.Pair;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Planungseinheit;
@@ -434,6 +435,22 @@ public class DataAccessService {
     }
     return amountPruefungen;
   }
+
+
+  public Pair<Block, Pruefung> removePruefungFromBlock(ReadOnlyBlock block, ReadOnlyPruefung pruefung) {
+    Block modelBlock = getBlockFromModelOrException(block);
+    Pruefung modelPruefung = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
+
+    if (!modelBlock.removePruefung(modelPruefung)) {
+      throw new IllegalArgumentException("Pruefung konnte nicht aus dem Block entfernt werden.");
+    }
+    if (modelBlock.getPruefungen().isEmpty()) {
+      modelBlock.setStartzeitpunkt(null);
+    }
+    return new Pair<>(modelBlock, modelPruefung);
+  }
+
+
 
   private boolean isAnyInBlock(Collection<ReadOnlyPruefung> pruefungen) {
     return pruefungen.stream()

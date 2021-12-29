@@ -31,6 +31,30 @@ public class ReadOnlyBlockAssert extends AbstractAssert<ReadOnlyBlockAssert, Rea
     return this;
   }
 
+  public ReadOnlyBlockAssert isSameAs(ReadOnlyBlock other) {
+    if (other.geplant() != actual.geplant()) {
+      failWithMessage("Block was expected to not be planned but was.");
+    }
+
+    if (!other.getName().equals(actual.getName())) {
+      failWithMessage("Expected Name was %s, but was actually %s", actual.getName(),
+          other.getName());
+    }
+    if (!other.getTermin().equals(actual.getTermin())) {
+      failWithMessage("Termin was expected to be %s, but was actually %s",
+          actual.getTermin().toString(), other.getTermin().toString());
+    }
+
+    if (!other.getDauer().equals(actual.getDauer())) {
+      failWithMessage("Dauer was expected to be %s, but was %s", actual.getDauer().toMinutes(),
+          other.getDauer().toMinutes());
+    }
+
+    containsOnlyPruefungen(other.getROPruefungen().toArray(new ReadOnlyPruefung[0]));
+
+    return this;
+  }
+
 
   private String getPruefungsNames(Iterable<ReadOnlyPruefung> pruefungen) {
     StringJoiner stringJoiner = new StringJoiner(",", "[", "]");

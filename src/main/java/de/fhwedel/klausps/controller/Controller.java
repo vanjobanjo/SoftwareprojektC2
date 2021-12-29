@@ -371,7 +371,7 @@ public class Controller implements InterfaceController {
       ReadOnlyBlock block, ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block, pruefung);
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    return scheduleService.removePruefungFromBlock(block, pruefung);
   }
 
   @Override
