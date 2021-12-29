@@ -272,6 +272,20 @@ public class DataAccessService {
     return result;
   }
 
+  public Set<ReadOnlyPruefung> ungeplantePruefungenForTeilnehmerkreis(Teilnehmerkreis tk) {
+    return new HashSet<>(
+        Converter.convertToROPruefungCollection(pruefungsperiode.ungeplantePruefungen().stream()
+            .filter(pruefung -> pruefung.getTeilnehmerkreise().contains(tk))
+            .collect(Collectors.toSet())));
+  }
+
+  public Set<ReadOnlyPruefung> geplantePruefungenForTeilnehmerkreis(Teilnehmerkreis tk) {
+    return new HashSet<>(
+        Converter.convertToROPruefungCollection(pruefungsperiode.geplantePruefungen().stream()
+            .filter(pruefung -> pruefung.getTeilnehmerkreise().contains(tk))
+            .collect(Collectors.toSet())));
+  }
+
   public ReadOnlyPruefung addPruefer(String pruefungsNummer, String pruefer) {
     Pruefung pruefung = getPruefungFromModelOrException(pruefungsNummer);
     pruefung.addPruefer(pruefer);
