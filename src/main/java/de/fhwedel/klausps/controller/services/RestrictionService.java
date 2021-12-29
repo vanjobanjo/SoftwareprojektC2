@@ -51,6 +51,12 @@ public class RestrictionService {
     return pruefung.stream().collect(Collectors.groupingBy(prue -> prue,
         Collectors.flatMapping(prue -> checkHarteKriterien(prue).stream(), Collectors.toList())));
   }
-
-
+  
+  public int getScoringOfPruefung(Pruefung pruefung) {
+    if (!pruefung.isGeplant()) {
+      return 0;
+    }
+    return checkWeicheKriterien(pruefung).stream()
+        .reduce(0, (scoring, analyse) -> scoring + analyse.getDeltaScoring(), Integer::sum);
+  }
 }
