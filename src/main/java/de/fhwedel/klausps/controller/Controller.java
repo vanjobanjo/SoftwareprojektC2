@@ -363,6 +363,8 @@ public class Controller implements InterfaceController {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block, pruefung);
     checkNoPruefungDefined();
+    // todo uncomment, when Exception is in method signature
+    //  return scheduleService.addPruefungToBlock(block, pruefung);
     throw new IllegalStateException("Not implemented yet!");
   }
 

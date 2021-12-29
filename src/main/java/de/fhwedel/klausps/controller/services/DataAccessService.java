@@ -49,7 +49,8 @@ public class DataAccessService {
     this.scheduleService = scheduleService;
   }
 
-  public ReadOnlyPruefung createPruefung(String name, String pruefungsNr, String refVWS, Set<String> pruefer,
+  public ReadOnlyPruefung createPruefung(String name, String pruefungsNr, String refVWS,
+      Set<String> pruefer,
       Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
 
     if (!existsPruefungWith(pruefungsNr)) {
@@ -91,7 +92,7 @@ public class DataAccessService {
   private boolean emptyBlockExists(ReadOnlyBlock block) {
     for (Block modelBlock : pruefungsperiode.ungeplanteBloecke()) {
       // todo add all necessary checks for empty blocks
-      if (modelBlock.getName().equals(block.getName())) {
+      if (modelBlock.getId() == block.getBlockId()) {
         return true;
       }
     }
@@ -151,7 +152,8 @@ public class DataAccessService {
     teilnehmerkreise.forEach(pruefungModel::setSchaetzung);
   }
 
-  public ReadOnlyPruefung createPruefung(String name, String pruefungsNr, String refVWS, String pruefer,
+  public ReadOnlyPruefung createPruefung(String name, String pruefungsNr, String refVWS,
+      String pruefer,
       Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
     return createPruefung(name, pruefungsNr, refVWS, Set.of(pruefer), duration, teilnehmerkreise);
   }
@@ -351,8 +353,7 @@ public class DataAccessService {
           "Der angegebene Block ist in der Datenbank nicht vorhanden.");
     }
     // todo look for model block with same block id, instead of comparing pruefungen
-    return pruefungsperiode.block(pruefungsperiode.pruefung(
-        new LinkedList<>(block.getROPruefungen()).get(0).getPruefungsnummer()));
+    return pruefungsperiode.block(block.getBlockId());
   }
 
 
@@ -451,7 +452,8 @@ public class DataAccessService {
   }
 
 
-  public Pair<Block, Pruefung> removePruefungFromBlock(ReadOnlyBlock block, ReadOnlyPruefung pruefung) {
+  public Pair<Block, Pruefung> removePruefungFromBlock(ReadOnlyBlock block,
+      ReadOnlyPruefung pruefung) {
     Block modelBlock = getBlockFromModelOrException(block);
     Pruefung modelPruefung = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
 
@@ -464,7 +466,23 @@ public class DataAccessService {
     return new Pair<>(modelBlock, modelPruefung);
   }
 
+  public Pair<Block, Pruefung> addPruefungToBlock(ReadOnlyBlock block, ReadOnlyPruefung pruefung) {
+    Block modelBlock = getBlockFromModelOrException(block);
+    Pruefung modelPruefung = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
+    Optional<Block> potentialOldBlock = Optional.ofNullable(pruefungsperiode.block(modelPruefung));
 
+    if (block.getROPruefungen() != null || !modelBlock.getPruefungen().contains(modelPruefung)) {
+      if (potentialOldBlock.isPresent()) {
+        Block oldBlock = potentialOldBlock.get();
+        Pair<Block, Pruefung> unscheduled = removePruefungFromBlock(
+            Converter.convertToROBlock(oldBlock), pruefung);
+        modelPruefung = unscheduled.right();
+      }
+      modelBlock.addPruefung(modelPruefung);
+    }
+
+    return new Pair<>(modelBlock, modelPruefung);
+  }
 
   private boolean isAnyInBlock(Collection<ReadOnlyPruefung> pruefungen) {
     return pruefungen.stream()

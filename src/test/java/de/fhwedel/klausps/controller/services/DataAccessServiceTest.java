@@ -299,6 +299,7 @@ class DataAccessServiceTest {
         RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED, RO_HASKELL_UNPLANNED);
 
     // no consistency check!
+    when(pruefungsperiode.block(modelBlock.getId())).thenReturn(modelBlock);
     ReadOnlyBlock result = deviceUnderTest.scheduleBlock(blockToSchedule, termin);
     ReadOnlyBlockAssert.assertThat(result)
         .containsOnlyPruefungen(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED);
@@ -343,7 +344,7 @@ class DataAccessServiceTest {
     Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
     configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, termin,
         ro_analysis, ro_dm_planned, ro_haskell_planned);
-
+    when(pruefungsperiode.block(modelBlock.getId())).thenReturn(modelBlock);
     ReadOnlyBlock ro_block_result = deviceUnderTest.unscheduleBlock(blockToSchedule);
     assertThat(modelBlock.getStartzeitpunkt()).isNull();
     assertThat(ro_block_result.getTermin()).isEmpty();
@@ -449,7 +450,7 @@ class DataAccessServiceTest {
   }
 
   @Test
-  public void existBlockWithoutPruefungen() {
+  void existBlockWithoutPruefungen() {
     ReadOnlyBlock block = new BlockDTO("name", null, Duration.ZERO, new HashSet<>(), 1,
         Blocktyp.SEQUENTIAL);
     Block modelBock = new BlockImpl(pruefungsperiode, 1, "name", Blocktyp.SEQUENTIAL);
@@ -756,13 +757,14 @@ class DataAccessServiceTest {
   }
 
   @Test
-  public void removePruefungFromUnplannedBlock() {
+  void removePruefungFromUnplannedBlock() {
     // set up
     Block modelBlock = new BlockImpl(pruefungsperiode, "block 1", Blocktyp.SEQUENTIAL);
     Pruefung modelPruefung = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     modelBlock.addPruefung(modelPruefung);
     when(pruefungsperiode.pruefung(modelPruefung.getPruefungsnummer())).thenReturn(modelPruefung);
     when(pruefungsperiode.block(modelPruefung)).thenReturn(modelBlock);
+    when(pruefungsperiode.block(modelBlock.getId())).thenReturn(modelBlock);
 
     ReadOnlyBlock block =
         new BlockDTO(
@@ -770,17 +772,16 @@ class DataAccessServiceTest {
             null,
             RO_ANALYSIS_UNPLANNED.getDauer(),
             new HashSet<>(List.of(RO_ANALYSIS_UNPLANNED)),
-            1, Blocktyp.PARALLEL);
+            modelBlock.getId(), Blocktyp.PARALLEL);
 
     ReadOnlyBlock expectedBlock = new BlockDTO("block 1", null, Duration.ZERO, new HashSet<>(),
-        1, Blocktyp.PARALLEL);
+        modelBlock.getId(), Blocktyp.PARALLEL);
 
     // get results
     Pair<Block, Pruefung> actualResult = deviceUnderTest.removePruefungFromBlock(
         block, RO_ANALYSIS_UNPLANNED);
     Block actualBlock = actualResult.left();
     Pruefung actualPruefung = actualResult.right();
-
     // assertions
     ReadOnlyBlockAssert.assertThat(expectedBlock).isSameAs(Converter.convertToROBlock(actualBlock));
     ReadOnlyPruefungAssert.assertThat(RO_ANALYSIS_UNPLANNED)
@@ -790,7 +791,7 @@ class DataAccessServiceTest {
 
   @Test
   @DisplayName("successfully remove pruefung from scheduled block, only one pruefung in block")
-  public void removePruefungFromBlockPlannedBlock() {
+  void removePruefungFromBlockPlannedBlock() {
 
     // set up
     Block modelBlock = new BlockImpl(pruefungsperiode, "block", Blocktyp.SEQUENTIAL);
@@ -805,14 +806,15 @@ class DataAccessServiceTest {
     when(pruefungsperiode.pruefung(modelPruefung.getPruefungsnummer())).thenReturn(modelPruefung);
     when(pruefungsperiode.block(modelPruefung)).thenReturn(modelBlock);
 
-    ReadOnlyBlock expectedBlock = new BlockDTO("block", null, Duration.ZERO, new HashSet<>(), 1,
+    ReadOnlyBlock expectedBlock = new BlockDTO("block", null, Duration.ZERO, new HashSet<>(),
+        modelBlock.getId(),
         Blocktyp.PARALLEL);
     ReadOnlyBlock block = new BlockDTO("block",
         null,
         RO_ANALYSIS_UNPLANNED.getDauer(),
         new HashSet<>(List.of(pruefung)),
-        1, Blocktyp.PARALLEL);
-
+        modelBlock.getId(), Blocktyp.PARALLEL);
+    when(pruefungsperiode.block(modelBlock.getId())).thenReturn(modelBlock);
     // actual method to test call
     Pair<Block, Pruefung> actualResult = deviceUnderTest.removePruefungFromBlock(
         block, pruefung);
@@ -827,7 +829,7 @@ class DataAccessServiceTest {
 
   @Test
   @DisplayName("successfully remove pruefung from scheduled block, more than one pruefung in block")
-  public void removePruefungFromBlockPlannedBlock2() {
+  void removePruefungFromBlockPlannedBlock2() {
     LocalDateTime termin = LocalDateTime.now();
     // set up
     Block modelBlock = new BlockImpl(pruefungsperiode, "block", Blocktyp.PARALLEL);
@@ -841,13 +843,14 @@ class DataAccessServiceTest {
     configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, termin,
         RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
     ReadOnlyBlock expectedBlock = new BlockDTO("block", termin, Duration.ofMinutes(120),
-        new HashSet<>(List.of(pruefung)), 1, Blocktyp.PARALLEL);
+        new HashSet<>(List.of(pruefung)), modelBlock.getId(), Blocktyp.PARALLEL);
     ReadOnlyBlock block = new BlockDTO("block",
         termin,
         RO_ANALYSIS_UNPLANNED.getDauer(),
         new HashSet<>(List.of(pruefung, pruefungToRemove)),
-        1, Blocktyp.PARALLEL);
+        modelBlock.getId(), Blocktyp.PARALLEL);
 
+    when(pruefungsperiode.block(modelBlock.getId())).thenReturn(modelBlock);
     // actual method to test call
     Pair<Block, Pruefung> actualResult = deviceUnderTest.removePruefungFromBlock(
         block, pruefungToRemove);
@@ -862,7 +865,7 @@ class DataAccessServiceTest {
 
   @Test
   @DisplayName("successfully remove pruefung from unscheduled block, more than one pruefung in block")
-  public void removePruefungFromBlockNotPlannedBlock2() {
+  void removePruefungFromBlockNotPlannedBlock2() {
 
     // set up
     Block modelBlock = new BlockImpl(pruefungsperiode, "block", Blocktyp.PARALLEL);
@@ -875,13 +878,13 @@ class DataAccessServiceTest {
     configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, null,
         RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
     ReadOnlyBlock expectedBlock = new BlockDTO("block", null, Duration.ofMinutes(120),
-        new HashSet<>(List.of(pruefung)), 1, Blocktyp.PARALLEL);
+        new HashSet<>(List.of(pruefung)), modelBlock.getId(), Blocktyp.PARALLEL);
     ReadOnlyBlock block = new BlockDTO("block",
         null,
         RO_ANALYSIS_UNPLANNED.getDauer(),
         new HashSet<>(List.of(pruefung, pruefungToRemove)),
-        1, Blocktyp.PARALLEL);
-
+        modelBlock.getId(), Blocktyp.PARALLEL);
+    when(pruefungsperiode.block(modelBlock.getId())).thenReturn(modelBlock);
     // actual method to test call
     Pair<Block, Pruefung> actualResult = deviceUnderTest.removePruefungFromBlock(
         block, pruefungToRemove);
@@ -896,7 +899,7 @@ class DataAccessServiceTest {
 
   @Test
   @DisplayName("successfully remove pruefung from block, pruefung is not in block")
-  public void removePruefungFromBlockNotInBlock() {
+  void removePruefungFromBlockNotInBlock() {
 
     // set up
     Block modelBlock = new BlockImpl(pruefungsperiode, "block", Blocktyp.PARALLEL);
@@ -921,7 +924,7 @@ class DataAccessServiceTest {
 
   @Test
   @DisplayName("unsuccessfully try to remove pruefung from block, block is not in model")
-  public void removePruefungFromNonExistingBlock() {
+  void removePruefungFromNonExistingBlock() {
 
     ReadOnlyPruefung pruefung = new PruefungDTOBuilder().withPruefungsName("Analysis")
         .withDauer(Duration.ofMinutes(120)).withPruefungsNummer("1").build();
@@ -979,6 +982,162 @@ class DataAccessServiceTest {
     when(pruefungsperiode.geplantePruefungen()).thenReturn(Set.of(analysis));
     assertThat(deviceUnderTest.ungeplantePruefungenForTeilnehmerkreis(TestFactory.bwlBachelor)).isEmpty();
   }
+  @Test
+  void addPruefungToBlock_none_scheduled_successful() {
+
+    Block modelBlock = new BlockImpl(pruefungsperiode, "b1", Blocktyp.PARALLEL);
+    ReadOnlyBlock blockToAddTo = new BlockDTO("b1", null, null,
+        new HashSet<>(), modelBlock.getId(), Blocktyp.PARALLEL);
+    ReadOnlyBlock expectedBlock = new BlockDTO("b1", null, RO_ANALYSIS_UNPLANNED.getDauer(),
+        Set.of(RO_ANALYSIS_UNPLANNED), modelBlock.getId(), Blocktyp.PARALLEL);
+
+    when(pruefungsperiode.ungeplanteBloecke()).thenReturn(Set.of(modelBlock));
+    when(pruefungsperiode.block(modelBlock.getId())).thenReturn(modelBlock);
+    configureMock_getPruefungToROPruefung(RO_ANALYSIS_UNPLANNED);
+    Pair<Block, Pruefung> result = deviceUnderTest.addPruefungToBlock(blockToAddTo,
+        RO_ANALYSIS_UNPLANNED);
+
+    ReadOnlyBlockAssert.assertThat(expectedBlock)
+        .isSameAs(Converter.convertToROBlock(result.left()));
+  }
+
+
+  @Test
+  void addPruefungToBlock_block_scheduled_successful() {
+    // setup termin and read only pruefungen
+    LocalDateTime termin = LocalDateTime.now();
+    ReadOnlyPruefung pruefung = new PruefungDTOBuilder().withPruefungsName("Analysis")
+        .withDauer(Duration.ofMinutes(120)).withPruefungsNummer("1").build();
+    ReadOnlyPruefung pruefungToAdd = new PruefungDTOBuilder().withPruefungsName("DM")
+        .withDauer(Duration.ofMinutes(120)).withPruefungsNummer("2").build();
+    // setup model block
+    Block modelBlock = new BlockImpl(pruefungsperiode, "block", Blocktyp.PARALLEL);
+    Pruefung p_analysis = getPruefungOfReadOnlyPruefung(pruefung);
+    Pruefung p_dm = getPruefungOfReadOnlyPruefung(pruefungToAdd);
+    modelBlock.addPruefung(p_analysis);
+    modelBlock.setStartzeitpunkt(termin);
+    // mock
+    when(pruefungsperiode.pruefung(pruefung.getPruefungsnummer())).thenReturn(p_analysis);
+    when(pruefungsperiode.pruefung(pruefungToAdd.getPruefungsnummer())).thenReturn(p_dm);
+    when(pruefungsperiode.block(p_analysis)).thenReturn(modelBlock);
+    when(pruefungsperiode.block(modelBlock.getId())).thenReturn(modelBlock);
+
+    // setup input and expected blocks
+    ReadOnlyBlock expectedBlock = new BlockDTO("block", termin, Duration.ofMinutes(120),
+        new HashSet<>(List.of(pruefung, pruefungToAdd)), modelBlock.getId(), Blocktyp.PARALLEL);
+    ReadOnlyBlock inputBlock = new BlockDTO("block", termin, Duration.ofMinutes(120),
+        new HashSet<>(List.of(pruefung)), modelBlock.getId(), Blocktyp.PARALLEL);
+
+    // method call
+    Pair<Block, Pruefung> result = deviceUnderTest.addPruefungToBlock(inputBlock,
+        RO_DM_UNPLANNED);
+    // compare results
+    ReadOnlyBlockAssert.assertThat(expectedBlock)
+        .isSameAs(Converter.convertToROBlock(result.left()));
+  }
+
+  @Test
+  void addPruefungToBlock_pruefung_scheduled_successful() {
+    // setup termin and read only pruefungen
+    LocalDateTime termin = LocalDateTime.now();
+    ReadOnlyPruefung analysis = new PruefungDTOBuilder().withPruefungsName("Analysis")
+        .withStartZeitpunkt(termin)
+        .withDauer(Duration.ofMinutes(120)).withPruefungsNummer("1").build();
+
+    Block modelBlock = new BlockImpl(pruefungsperiode, "b1", Blocktyp.PARALLEL);
+    ReadOnlyBlock blockToAddTo = new BlockDTO("b1", null, null,
+        new HashSet<>(), modelBlock.getId(), Blocktyp.PARALLEL);
+    ReadOnlyBlock expectedBlock = new BlockDTO("b1", null, RO_ANALYSIS_UNPLANNED.getDauer(),
+        Set.of(RO_ANALYSIS_UNPLANNED), modelBlock.getId(), Blocktyp.PARALLEL);
+
+    when(pruefungsperiode.ungeplanteBloecke()).thenReturn(Set.of(modelBlock));
+    when(pruefungsperiode.block(modelBlock.getId())).thenReturn(modelBlock);
+    configureMock_getPruefungToROPruefung(RO_ANALYSIS_UNPLANNED);
+    Pair<Block, Pruefung> result = deviceUnderTest.addPruefungToBlock(blockToAddTo,
+        analysis);
+
+    ReadOnlyBlockAssert.assertThat(expectedBlock)
+        .isSameAs(Converter.convertToROBlock(result.left()));
+  }
+
+
+  @Test
+  void addPruefungToBlock_both_scheduled_successful() {
+    // setup termin and read only pruefungen
+    LocalDateTime termin = LocalDateTime.now();
+    LocalDateTime terminLater = termin.plusHours(2);
+
+    ReadOnlyPruefung pruefung = new PruefungDTOBuilder().withPruefungsName("Analysis")
+        .withDauer(Duration.ofMinutes(120)).withPruefungsNummer("1").build();
+    ReadOnlyPruefung pruefungToAdd = new PruefungDTOBuilder().withPruefungsName("DM")
+        .withStartZeitpunkt(terminLater)
+        .withDauer(Duration.ofMinutes(120)).withPruefungsNummer("2").build();
+    // setup model block
+    Block modelBlock = new BlockImpl(pruefungsperiode, "block", Blocktyp.PARALLEL);
+    Pruefung p_analysis = getPruefungOfReadOnlyPruefung(pruefung);
+    Pruefung p_dm = getPruefungOfReadOnlyPruefung(pruefungToAdd);
+    modelBlock.addPruefung(p_analysis);
+    modelBlock.setStartzeitpunkt(termin);
+    // mock
+    when(pruefungsperiode.pruefung(pruefung.getPruefungsnummer())).thenReturn(p_analysis);
+    when(pruefungsperiode.pruefung(pruefungToAdd.getPruefungsnummer())).thenReturn(p_dm);
+    when(pruefungsperiode.block(p_analysis)).thenReturn(modelBlock);
+    when(pruefungsperiode.block(modelBlock.getId())).thenReturn(modelBlock);
+
+    // setup input and expected blocks
+    ReadOnlyBlock expectedBlock = new BlockDTO("block", termin, Duration.ofMinutes(120),
+        new HashSet<>(List.of(pruefung, pruefungToAdd)), modelBlock.getId(), Blocktyp.PARALLEL);
+    ReadOnlyBlock inputBlock = new BlockDTO("block", termin, Duration.ofMinutes(120),
+        new HashSet<>(List.of(pruefung)), modelBlock.getId(), Blocktyp.PARALLEL);
+
+    // method call
+    Pair<Block, Pruefung> result = deviceUnderTest.addPruefungToBlock(inputBlock,
+        pruefungToAdd);
+    // compare results
+    ReadOnlyBlockAssert.assertThat(expectedBlock)
+        .isSameAs(Converter.convertToROBlock(result.left()));
+  }
+
+  @Test
+  void addPruefungToBlock_block_does_not_exist() {
+    ReadOnlyBlock blockToAddTo = new BlockDTO("b1", null, null,
+        new HashSet<>(), 1, Blocktyp.PARALLEL);
+
+    configureMock_getPruefungToROPruefung(RO_DM_UNPLANNED);
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.addPruefungToBlock(blockToAddTo,
+            RO_DM_UNPLANNED));
+  }
+
+
+  @Test
+  void addPruefungToBlock_pruefung_does_not_exist() {
+    Block modelBlock = new BlockImpl(pruefungsperiode, "b1", Blocktyp.PARALLEL);
+    ReadOnlyBlock blockToAddTo = new BlockDTO("b1", null, null,
+        new HashSet<>(), modelBlock.getId(), Blocktyp.PARALLEL);
+
+    when(pruefungsperiode.ungeplanteBloecke()).thenReturn(Set.of(modelBlock));
+    when(pruefungsperiode.block(modelBlock.getId())).thenReturn(modelBlock);
+
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.addPruefungToBlock(blockToAddTo,
+            RO_ANALYSIS_UNPLANNED));
+
+  }
+
+
+  @Test
+  void addPruefungToBlock_neither_block_nor_pruefung_exist() {
+
+    ReadOnlyBlock blockToAddTo = new BlockDTO("b1", null, null,
+        new HashSet<>(), 1, Blocktyp.PARALLEL);
+
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.addPruefungToBlock(blockToAddTo,
+            RO_HASKELL_UNPLANNED));
+
+  }
+
 
   private void configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(
       Block modelBlock, LocalDateTime termin, ReadOnlyPruefung... pruefungen) {

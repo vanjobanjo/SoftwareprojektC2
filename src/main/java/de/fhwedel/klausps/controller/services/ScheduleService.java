@@ -180,17 +180,57 @@ public class ScheduleService {
   public List<ReadOnlyPlanungseinheit> removePruefungFromBlock(ReadOnlyBlock block,
       ReadOnlyPruefung pruefung) {
     List<ReadOnlyPlanungseinheit> result = new LinkedList<>();
+    // todo vorher Analyse
     Pair<Block, Pruefung> separated = dataAccessService.removePruefungFromBlock(block, pruefung);
     if (!block.geplant()) {
       result.addAll(Converter.convertToROPlanungseinheitCollection(separated.left(),
           separated.right()));
     } else {
       // todo update scoring and add changed Planungseinheiten to result
+      // scoring für prüfung wird 0, weil sie ungeplant wird
+      // für alle betroffenen Klausuren aus alter Analyse Scoring neu berechnen und in
+      // Liste hinzufügen
     }
     return result;
   }
 
 
+  public List<ReadOnlyPlanungseinheit> addPruefungToBlock(ReadOnlyBlock block,
+      ReadOnlyPruefung pruefung) throws HartesKriteriumException {
+    List<ReadOnlyPlanungseinheit> result = new LinkedList<>();
+    // todo get analyse before applying any changes
+    Optional<ReadOnlyBlock> oldBlock = dataAccessService.getBlockTo(pruefung);
+    Pair<Block, Pruefung> added = dataAccessService.addPruefungToBlock(block, pruefung);
+
+    if (!block.geplant()) {
+      result.addAll(Converter.convertToROPlanungseinheitCollection(added.left(), added.right()));
+      if (pruefung.geplant()) {
+        // todo analyse scoring for affected Pruefungen
+        //  block is not planned therefore new scorings can only get better (no hard check needed)
+      }
+      return result;
+    }
+    checkHartesKriteriumAddPruefungToBlock(pruefung, block, oldBlock, added.right());
+    // todo check soft criteria
+    return result;
+  }
+
+
+  private void checkHartesKriteriumAddPruefungToBlock(ReadOnlyPruefung pruefung, ReadOnlyBlock block,
+      Optional<ReadOnlyBlock> oldBlock, Pruefung addedPruefung)
+      throws HartesKriteriumException {
+    List<HartesKriteriumAnalyse> hardAnalyses = restrictionService.checkHarteKriterien(
+        addedPruefung);
+    if (!hardAnalyses.isEmpty()) {
+      removePruefungFromBlock(block, pruefung);
+      if (oldBlock.isPresent()) {
+        addPruefungToBlock(oldBlock.get(), pruefung);
+      } else if (pruefung.geplant()) {
+        schedulePruefung(pruefung, pruefung.getTermin().get());
+      }
+      signalHartesKriteriumFailure(hardAnalyses);
+    }
+  }
 
   /*
   public List<ReadOnlyPruefung> movePruefung(ReadOnlyPruefung pruefung, LocalDateTime expectedStart)

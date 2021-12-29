@@ -31,8 +31,11 @@ public class ReadOnlyBlockAssert extends AbstractAssert<ReadOnlyBlockAssert, Rea
   }
 
   public ReadOnlyBlockAssert isSameAs(ReadOnlyBlock other) {
-    if (other.geplant() != actual.geplant()) {
+    if (other.geplant() && actual.ungeplant()) {
       failWithMessage("Block was expected to not be planned but was.");
+    }
+    if (other.ungeplant() && actual.geplant()) {
+      failWithMessage("Block was expected to be planned but was not.");
     }
 
     if (!other.getName().equals(actual.getName())) {
