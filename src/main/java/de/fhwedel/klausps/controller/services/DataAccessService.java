@@ -48,13 +48,13 @@ public class DataAccessService {
     this.scheduleService = scheduleService;
   }
 
-  public ReadOnlyPruefung createPruefung(String name, String pruefungsNr, Set<String> pruefer,
+  public ReadOnlyPruefung createPruefung(String name, String pruefungsNr, String refVWS, Set<String> pruefer,
       Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
 
     if (!existsPruefungWith(pruefungsNr)) {
       // todo contains static values as it is unclear where to retrieve the data from
       //TODO hier die Duration weg machen
-      Pruefung pruefungModel = new PruefungImpl(pruefungsNr, name, "", duration);
+      Pruefung pruefungModel = new PruefungImpl(pruefungsNr, name, refVWS, duration);
       pruefer.forEach(pruefungModel::addPruefer);
       addTeilnehmerKreisSchaetzungToModelPruefung(pruefungModel, teilnehmerkreise);
       pruefungsperiode.addPlanungseinheit(pruefungModel);
@@ -150,9 +150,9 @@ public class DataAccessService {
     teilnehmerkreise.forEach(pruefungModel::setSchaetzung);
   }
 
-  public ReadOnlyPruefung createPruefung(String name, String pruefungsNr, String pruefer,
+  public ReadOnlyPruefung createPruefung(String name, String pruefungsNr, String refVWS, String pruefer,
       Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
-    return createPruefung(name, pruefungsNr, Set.of(pruefer), duration, teilnehmerkreise);
+    return createPruefung(name, pruefungsNr, refVWS, Set.of(pruefer), duration, teilnehmerkreise);
   }
 
   public boolean isPruefungsperiodeSet() {

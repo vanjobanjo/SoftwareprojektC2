@@ -244,8 +244,9 @@ public class Controller implements InterfaceController {
 
     noNullParameters(name, pruefungsNummer, pruefer, duration, teilnehmerkreis);
     checkNoPruefungDefined();
+    // todo exchange refVWS for real parameter
     return dataAccessService.createPruefung(
-        name, pruefungsNummer, pruefer, duration, teilnehmerkreis);
+        name, pruefungsNummer, "", pruefer, duration, teilnehmerkreis);
   }
 
   @Override

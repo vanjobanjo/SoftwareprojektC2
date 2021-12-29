@@ -78,7 +78,8 @@ class DataAccessServiceTest {
   @Test
   @DisplayName("A Pruefung gets created by calling the respective method of the pruefungsPeriode")
   void createPruefungSuccessTest() {
-    ReadOnlyPruefung pruefung = deviceUnderTest.createPruefung("Analysis", "b123", "pruefer 1",
+    ReadOnlyPruefung pruefung = deviceUnderTest.createPruefung("Analysis", "b123", "ref",
+        "pruefer 1",
         Duration.ofMinutes(90), new HashMap<>());
     assertThat(pruefung).isNotNull();
     verify(pruefungsperiode, times(1)).addPlanungseinheit(any());
@@ -89,7 +90,7 @@ class DataAccessServiceTest {
   void createPruefungSuccessRightAttributesTest() {
     ReadOnlyPruefung expected = getReadOnlyPruefung();
     ReadOnlyPruefung actual = deviceUnderTest.createPruefung(expected.getName(),
-        expected.getPruefungsnummer(), expected.getPruefer(), expected.getDauer(),
+        expected.getPruefungsnummer(), "ref", expected.getPruefer(), expected.getDauer(),
         expected.getTeilnehmerKreisSchaetzung());
 
     ReadOnlyPruefungAssert.assertThat(actual).isTheSameAs(getReadOnlyPruefung());
@@ -100,7 +101,7 @@ class DataAccessServiceTest {
   void createPruefungSaveInModelTest() {
     ReadOnlyPruefung expected = getReadOnlyPruefung();
     ReadOnlyPruefung actual = deviceUnderTest.createPruefung(expected.getName(),
-        expected.getPruefungsnummer(), expected.getPruefer(), expected.getDauer(),
+        expected.getPruefungsnummer(), "ref", expected.getPruefer(), expected.getDauer(),
         expected.getTeilnehmerKreisSchaetzung());
     verify(pruefungsperiode, times(1)).addPlanungseinheit(notNull());
     assertThat(actual).isNotNull();
@@ -114,7 +115,7 @@ class DataAccessServiceTest {
         expected.getDauer());
 
     when(pruefungsperiode.pruefung(expected.getPruefungsnummer())).thenReturn(test);
-    assertThat(deviceUnderTest.createPruefung(expected.getName(), expected.getPruefungsnummer(),
+    assertThat(deviceUnderTest.createPruefung(expected.getName(), expected.getPruefungsnummer(), "ref",
         expected.getPruefer(), expected.getDauer(),
         expected.getTeilnehmerKreisSchaetzung())).isNull();
   }
