@@ -756,6 +756,48 @@ class DataAccessServiceTest {
   }
 
   @Test
+  void ungeplantePruefungToTeilnehmerkreisTest() {
+    Teilnehmerkreis bwl = TestFactory.bwlBachelor;
+    Pruefung analysis = TestFactory.getPruefungOfReadOnlyPruefung(
+        TestFactory.RO_ANALYSIS_UNPLANNED);
+    analysis.addTeilnehmerkreis(bwl);
+    when(pruefungsperiode.ungeplantePruefungen()).thenReturn(Set.of(analysis));
+    assertThat(deviceUnderTest.ungeplantePruefungenForTeilnehmerkreis(bwl)).containsOnly(
+        TestFactory.RO_ANALYSIS_UNPLANNED);
+  }
+
+  @Test
+  void geplantePruefungToTeilnehmerkreisTest() {
+    Teilnehmerkreis bwl = TestFactory.bwlBachelor;
+    Pruefung analysis = TestFactory.getPruefungOfReadOnlyPruefung(
+        TestFactory.RO_ANALYSIS_UNPLANNED);
+    analysis.setStartzeitpunkt(LocalDateTime.of(1, 1, 1, 1, 1));
+    analysis.addTeilnehmerkreis(bwl);
+    when(pruefungsperiode.geplantePruefungen()).thenReturn(Set.of(analysis));
+    assertThat(deviceUnderTest.geplantePruefungenForTeilnehmerkreis(bwl)).containsOnly(
+        TestFactory.RO_ANALYSIS_UNPLANNED);
+  }
+
+  @Test
+  void ungeplantePruefungToTeilnehmerkreisEmptyTest() {
+    Pruefung analysis = TestFactory.getPruefungOfReadOnlyPruefung(
+        TestFactory.RO_ANALYSIS_UNPLANNED);
+    analysis.addTeilnehmerkreis(TestFactory.infPtl);
+    when(pruefungsperiode.ungeplantePruefungen()).thenReturn(Set.of(analysis));
+    assertThat(deviceUnderTest.ungeplantePruefungenForTeilnehmerkreis(TestFactory.bwlBachelor)).isEmpty();
+  }
+
+  @Test
+  void geplantePruefungToTeilnehmerkreisEmptyTest() {
+    Pruefung analysis = TestFactory.getPruefungOfReadOnlyPruefung(
+        TestFactory.RO_ANALYSIS_UNPLANNED);
+    analysis.addTeilnehmerkreis(TestFactory.infPtl);
+    analysis.setStartzeitpunkt(LocalDateTime.of(1,1,1,1,1));
+    when(pruefungsperiode.geplantePruefungen()).thenReturn(Set.of(analysis));
+    assertThat(deviceUnderTest.ungeplantePruefungenForTeilnehmerkreis(TestFactory.bwlBachelor)).isEmpty();
+  }
+
+  @Test
   public void removePruefungFromUnplannedBlock() {
     // set up
     Block modelBlock = new BlockImpl(pruefungsperiode, "block 1", Blocktyp.SEQUENTIAL);

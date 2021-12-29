@@ -122,7 +122,7 @@ public class Controller implements InterfaceController {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(teilnehmer);
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    return dataAccessService.geplantePruefungenForTeilnehmerkreis(teilnehmer);
   }
 
   @Override
@@ -130,7 +130,7 @@ public class Controller implements InterfaceController {
       Teilnehmerkreis teilnehmer) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(teilnehmer);
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    return dataAccessService.ungeplantePruefungenForTeilnehmerkreis(teilnehmer);
   }
 
   @Override

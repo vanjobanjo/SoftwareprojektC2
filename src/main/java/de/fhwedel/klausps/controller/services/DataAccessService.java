@@ -370,6 +370,20 @@ public class DataAccessService {
     }
   }
 
+  public Set<ReadOnlyPruefung> ungeplantePruefungenForTeilnehmerkreis(Teilnehmerkreis tk) {
+    return new HashSet<>(
+        Converter.convertToROPruefungCollection(pruefungsperiode.ungeplantePruefungen().stream()
+            .filter(pruefung -> pruefung.getTeilnehmerkreise().contains(tk))
+            .collect(Collectors.toSet())));
+  }
+
+  public Set<ReadOnlyPruefung> geplantePruefungenForTeilnehmerkreis(Teilnehmerkreis tk) {
+    return new HashSet<>(
+        Converter.convertToROPruefungCollection(pruefungsperiode.geplantePruefungen().stream()
+            .filter(pruefung -> pruefung.getTeilnehmerkreise().contains(tk))
+            .collect(Collectors.toSet())));
+  }
+
   // nur fuer ungeplante bloecke aufrufen, wegen SCORING!!!!!
   public List<ReadOnlyPruefung> deleteBlock(ReadOnlyBlock block) {
     if (block.geplant()) {
