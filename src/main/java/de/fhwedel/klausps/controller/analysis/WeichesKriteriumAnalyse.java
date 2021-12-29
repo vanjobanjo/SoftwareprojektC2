@@ -55,4 +55,11 @@ public class WeichesKriteriumAnalyse {
   public Integer getAmountAffectedStudents() {
     return amountAffectedStudents;
   }
+
+  public Integer getDeltaScoring() {
+    if (deltaScoring == null) {
+      throw new UnsupportedOperationException("Es wurde wahrscheinlich der alte Konstruktor benutzt!");
+    }
+    return deltaScoring;
+  }
 }
