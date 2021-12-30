@@ -73,12 +73,12 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
       this.setReadyOnly.add(new PruefungDTOBuilder(pruefung).build());
       this.setPruefung.add(pruefung);
 
-      scoring += WeichesKriterium.MEHRERE_PRUEFUNGEN_AM_TAG.getWert() * (setPruefung.size() - 2 + 1);
+      scoring +=
+          WeichesKriterium.MEHRERE_PRUEFUNGEN_AM_TAG.getWert() * (setPruefung.size() - 2 + 1);
       WeichesKriteriumAnalyse wKA = new WeichesKriteriumAnalyse(this.setPruefung,
           WeichesKriterium.MEHRERE_PRUEFUNGEN_AM_TAG, setTeilnehmer, countStudents);
       return Optional.of(wKA);
-    }
-    else{
+    } else {
       return Optional.empty();
     }
   }
