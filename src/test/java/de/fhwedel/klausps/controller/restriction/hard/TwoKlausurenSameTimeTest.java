@@ -121,7 +121,7 @@ class TwoKlausurenSameTimeTest {
     when(haskel.getDauer()).thenReturn(duration);
 
     TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService,
-        HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG);
+        HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG,haskel);
 
     assertTrue(h.test(haskel));
 
@@ -186,7 +186,7 @@ class TwoKlausurenSameTimeTest {
     when(haskel.getDauer()).thenReturn(duration);
 
     TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService,
-        HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG);
+        HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG, haskel);
     assertFalse(h.test(haskel));
 
     assertEquals(setOfConflictPruefunge, h.inConflictROPruefung);
@@ -264,7 +264,7 @@ class TwoKlausurenSameTimeTest {
 
 
     TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService,
-        HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG);
+        HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG, haskel);
     assertTrue(h.test(haskel));
 
     assertEquals(setOfConflictPruefunge, h.inConflictROPruefung);
@@ -365,7 +365,7 @@ class TwoKlausurenSameTimeTest {
     when(haskel.getDauer()).thenReturn(duration);
 
     TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService,
-        HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG);
+        HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG, haskel);
 
     assertTrue(h.test(haskel));
 
