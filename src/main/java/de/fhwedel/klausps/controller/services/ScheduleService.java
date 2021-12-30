@@ -10,6 +10,9 @@ import de.fhwedel.klausps.controller.helper.Pair;
 import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
 import de.fhwedel.klausps.controller.restriction.hard.TwoKlausurenSameTime;
 import de.fhwedel.klausps.model.api.Block;
+import de.fhwedel.klausps.controller.helper.Pair;
+import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
+import de.fhwedel.klausps.controller.restriction.hard.TwoKlausurenSameTime;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.Duration;
@@ -271,8 +274,6 @@ public class ScheduleService {
   private void signalHartesKriteriumFailure(List<HartesKriteriumAnalyse> hardRestrictionFailures)
       throws HartesKriteriumException {
     Set<ReadOnlyPruefung> causingPruefungen = getPruefungenInvolvedIn(hardRestrictionFailures);
-
-    //TODO entfernen von den zu vielen Teilnehmerkreisen
     throw new HartesKriteriumException(getPruefungenInvolvedIn(hardRestrictionFailures),
         getAllTeilnehmerkreiseFrom(hardRestrictionFailures), 0);
     // TODO number of affected students can not be calculated correctly when multiple analyses

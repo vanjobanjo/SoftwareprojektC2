@@ -14,7 +14,7 @@ import java.util.Set;
 public class HartRestriktion {
 
 
-
+  protected Pruefung pruefung;
   Set<Pruefung> inConflictROPruefung;
   Set<Teilnehmerkreis> inConfilictTeilnehmerkreis;
   int countStudents;
