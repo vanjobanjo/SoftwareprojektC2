@@ -122,7 +122,7 @@ public class Controller implements InterfaceController {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(teilnehmer);
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    return dataAccessService.geplantePruefungenForTeilnehmerkreis(teilnehmer);
   }
 
   @Override
@@ -130,7 +130,7 @@ public class Controller implements InterfaceController {
       Teilnehmerkreis teilnehmer) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(teilnehmer);
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    return dataAccessService.ungeplantePruefungenForTeilnehmerkreis(teilnehmer);
   }
 
   @Override
@@ -244,8 +244,9 @@ public class Controller implements InterfaceController {
 
     noNullParameters(name, pruefungsNummer, pruefer, duration, teilnehmerkreis);
     checkNoPruefungDefined();
+    // todo exchange refVWS for real parameter
     return dataAccessService.createPruefung(
-        name, pruefungsNummer, pruefer, duration, teilnehmerkreis);
+        name, pruefungsNummer, "", pruefer, duration, teilnehmerkreis);
   }
 
   @Override
@@ -370,7 +371,7 @@ public class Controller implements InterfaceController {
       ReadOnlyBlock block, ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block, pruefung);
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    return scheduleService.removePruefungFromBlock(block, pruefung);
   }
 
   @Override

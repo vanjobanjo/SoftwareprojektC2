@@ -1,16 +1,30 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
+import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH;
+import static de.fhwedel.klausps.controller.util.TestUtils.convertPruefungenToPlanungseinheiten;
+import static de.fhwedel.klausps.controller.util.TestUtils.getPruefungsnummernFromModel;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungenAt;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedPruefung;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
+import de.fhwedel.klausps.controller.assertions.WeicheKriteriumsAnalyseAssert;
+import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
+import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
+import de.fhwedel.klausps.model.api.Teilnehmerkreis;
+import de.fhwedel.klausps.model.impl.PruefungImpl;
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,8 +46,8 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
    * x Nur die aufgerufene Klausur ist geplant
    * x Aufruf mit ungeplanter Klausur
    * x Keine gleichzeitigen Klausuren
-   * - Genau so viele Klausuren gleichzeitig wie erlaubt
-   * - Eine Klausur mehr gleichzeitig als erlaubt
+   * p Genau so viele Klausuren gleichzeitig wie erlaubt
+   * x Eine Klausur mehr gleichzeitig als erlaubt
    * - Mehr klausuren gleichzeitig als erlaubt, ohne dass die getestete Pruefung involviert ist (nichts soll angezeigt werden)
    * - Mehr klausuren als erlaubt aber alle in einem Block zusammen
    * - Mehr klausuren als erlaubt aber alle einige zusammen in einem Block (so, dass erlaubt)
@@ -69,6 +83,154 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     assertThat(deviceUnderTest.evaluate(pruefungen.get(0))).isEmpty();
     assertThat(deviceUnderTest.evaluate(pruefungen.get(1))).isEmpty();
     assertThat(deviceUnderTest.evaluate(pruefungen.get(2))).isEmpty();
+  }
+
+  @Test
+  void evaluate_onePruefungMoreAtATimeThanAllowed_getCollision() throws IllegalTimeSpanException {
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2);
+    LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
+    List<Planungseinheit> pruefungen = convertPruefungenToPlanungseinheiten(
+        getRandomPruefungenAt(5L, startFirstPruefung, startFirstPruefung.plusMinutes(15),
+            startFirstPruefung.plusMinutes(30)));
+
+    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(pruefungen);
+
+    assertThat(deviceUnderTest.evaluate(pruefungen.get(0).asPruefung())).isPresent();
+  }
+
+  @Test
+  void evaluate_onePruefungMoreAtATimeThanAllowed_analysisContainsCorrectPruefungen()
+      throws IllegalTimeSpanException {
+    // set the max amount of simultaneous pruefungen to 2
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2);
+    LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
+    List<Pruefung> pruefungen = getRandomPruefungenAt(5L, startFirstPruefung,
+        startFirstPruefung.plusMinutes(15), startFirstPruefung.plusMinutes(30));
+
+    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(pruefungen));
+
+    WeicheKriteriumsAnalyseAssert.assertThat(
+            (deviceUnderTest.evaluate(pruefungen.get(0).asPruefung()).get()))
+        .conflictingPruefungenAreExactly(getPruefungsnummernFromModel(pruefungen));
+  }
+
+  @Test
+  void evaluate_onePruefungMoreAtATimeThanAllowed_analysisContainsCorrectKriterium()
+      throws IllegalTimeSpanException {
+    // set the max amount of simultaneous pruefungen to 2
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2);
+    LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
+    List<Pruefung> pruefungen = getRandomPruefungenAt(5L, startFirstPruefung,
+        startFirstPruefung.plusMinutes(15), startFirstPruefung.plusMinutes(30));
+
+    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(pruefungen));
+
+    assertThat(
+        (deviceUnderTest.evaluate(pruefungen.get(0).asPruefung()).get().getKriterium())).isEqualTo(
+        ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH);
+  }
+
+  @Test
+  void evaluate_onePruefungMoreAtATimeThanAllowed_analysisContainsCorrectTeilnehmerkreise()
+      throws IllegalTimeSpanException {
+    // set the max amount of simultaneous pruefungen to 2
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2);
+    LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
+    List<Pruefung> pruefungen = getRandomPruefungenAt(5L, startFirstPruefung,
+        startFirstPruefung.plusMinutes(15), startFirstPruefung.plusMinutes(30));
+
+    Set<Teilnehmerkreis> expectedTeilnehmerkreise = getAllTeilnehmerKreiseFrom(pruefungen);
+
+    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(pruefungen));
+
+    assertThat(deviceUnderTest.evaluate(pruefungen.get(0).asPruefung()).get()
+        .getAffectedTeilnehmerKreise()).containsExactlyInAnyOrderElementsOf(
+        expectedTeilnehmerkreise);
+  }
+
+  private Set<Teilnehmerkreis> getAllTeilnehmerKreiseFrom(Collection<Pruefung> pruefungen) {
+    return pruefungen.stream().map(Planungseinheit::getTeilnehmerkreise)
+        .reduce(new HashSet<>(), (x, y) -> {
+          x.addAll(y);
+          return x;
+        });
+  }
+
+  @Test
+  void evaluate_asManyPruefungenAtSameTimeAsAllowed_twoDirectlyOverlapping()
+      throws IllegalTimeSpanException {
+    // set the max amount of simultaneous pruefungen to 2
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2);
+    LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
+    List<Pruefung> pruefungen = getRandomPruefungenAt(5L, startFirstPruefung,
+        startFirstPruefung.plusMinutes(15));
+
+    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(pruefungen));
+
+    assertThat((deviceUnderTest.evaluate(pruefungen.get(0).asPruefung()))).isEmpty();
+  }
+
+  @Test
+  void evaluate_asManyPruefungenAtSameTimeAsAllowed_twoAfterEachOtherOverlappingWithThird()
+      throws IllegalTimeSpanException {
+    // aaaa bbbb
+    //   ccccc
+    Duration puffer = Duration.ofMinutes(30);
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2,
+        puffer);
+
+    List<Pruefung> pruefungen = get3PruefungenWith2SequentialOverlappingTheThird();
+    Pruefung pruefungToCheck = pruefungen.get(pruefungen.size() - 1);
+
+    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(pruefungen));
+
+    assertThat((deviceUnderTest.evaluate(pruefungToCheck))).isEmpty();
+  }
+
+  private List<Pruefung> get3PruefungenWith2SequentialOverlappingTheThird() {
+    Duration puffer = Duration.ofMinutes(30);
+    LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
+    Pruefung pruefungA = new PruefungImpl("abcd", "Analysis", "1111", Duration.ofMinutes(45),
+        startFirstPruefung);
+    Pruefung pruefungB = new PruefungImpl("efgh", "DM", "2222", Duration.ofMinutes(45),
+        startFirstPruefung.plus(pruefungA.getDauer()).plus(puffer));
+    Pruefung pruefungC = new PruefungImpl("ijkl", "IT", "3333", pruefungA.getDauer().plus(puffer),
+        startFirstPruefung.plusMinutes(15));
+    return List.of(pruefungA, pruefungB, pruefungC);
+  }
+
+  /*private List*/
+
+  /**
+   * All planungseinheiten have to be pruefungen for this method to be applicable.
+   */
+  private List<Pruefung> convertPlanungseinheitenToPruefungen(
+      Iterable<Planungseinheit> planungseinheiten) {
+    List<Pruefung> result = new ArrayList<>();
+    for (Planungseinheit planungseinheit : planungseinheiten) {
+      result.add(planungseinheit.asPruefung());
+    }
+    return result;
+  }
+
+  private List<Pruefung> convertPruefungenFromReadonlyToModel(
+      Collection<ReadOnlyPruefung> pruefungen) {
+    return pruefungen.stream().map(this::getPruefungOfReadOnlyPruefung).toList();
+  }
+
+  private Pruefung getPruefungOfReadOnlyPruefung(ReadOnlyPruefung roPruefung) {
+    PruefungImpl modelPruefung = new PruefungImpl(roPruefung.getPruefungsnummer(),
+        roPruefung.getName(), "", roPruefung.getDauer(), roPruefung.getTermin().orElse(null));
+    for (String pruefer : roPruefung.getPruefer()) {
+      modelPruefung.addPruefer(pruefer);
+    }
+    roPruefung.getTeilnehmerKreisSchaetzung().forEach(modelPruefung::setSchaetzung);
+    return modelPruefung;
   }
 
 }

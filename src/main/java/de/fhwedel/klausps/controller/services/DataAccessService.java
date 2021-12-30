@@ -10,6 +10,7 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
+import de.fhwedel.klausps.controller.helper.Pair;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Planungseinheit;
@@ -48,13 +49,13 @@ public class DataAccessService {
     this.scheduleService = scheduleService;
   }
 
-  public ReadOnlyPruefung createPruefung(String name, String pruefungsNr, Set<String> pruefer,
+  public ReadOnlyPruefung createPruefung(String name, String pruefungsNr, String refVWS, Set<String> pruefer,
       Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
 
     if (!existsPruefungWith(pruefungsNr)) {
       // todo contains static values as it is unclear where to retrieve the data from
       //TODO hier die Duration weg machen
-      Pruefung pruefungModel = new PruefungImpl(pruefungsNr, name, "", duration);
+      Pruefung pruefungModel = new PruefungImpl(pruefungsNr, name, refVWS, duration);
       pruefer.forEach(pruefungModel::addPruefer);
       addTeilnehmerKreisSchaetzungToModelPruefung(pruefungModel, teilnehmerkreise);
       pruefungsperiode.addPlanungseinheit(pruefungModel);
@@ -150,9 +151,9 @@ public class DataAccessService {
     teilnehmerkreise.forEach(pruefungModel::setSchaetzung);
   }
 
-  public ReadOnlyPruefung createPruefung(String name, String pruefungsNr, String pruefer,
+  public ReadOnlyPruefung createPruefung(String name, String pruefungsNr, String refVWS, String pruefer,
       Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
-    return createPruefung(name, pruefungsNr, Set.of(pruefer), duration, teilnehmerkreise);
+    return createPruefung(name, pruefungsNr, refVWS, Set.of(pruefer), duration, teilnehmerkreise);
   }
 
   public boolean isPruefungsperiodeSet() {
@@ -269,6 +270,20 @@ public class DataAccessService {
       result.add(fromModelToDTOBlock(block));
     }
     return result;
+  }
+
+  public Set<ReadOnlyPruefung> ungeplantePruefungenForTeilnehmerkreis(Teilnehmerkreis tk) {
+    return new HashSet<>(
+        Converter.convertToROPruefungCollection(pruefungsperiode.ungeplantePruefungen().stream()
+            .filter(pruefung -> pruefung.getTeilnehmerkreise().contains(tk))
+            .collect(Collectors.toSet())));
+  }
+
+  public Set<ReadOnlyPruefung> geplantePruefungenForTeilnehmerkreis(Teilnehmerkreis tk) {
+    return new HashSet<>(
+        Converter.convertToROPruefungCollection(pruefungsperiode.geplantePruefungen().stream()
+            .filter(pruefung -> pruefung.getTeilnehmerkreise().contains(tk))
+            .collect(Collectors.toSet())));
   }
 
   public ReadOnlyPruefung addPruefer(String pruefungsNummer, String pruefer) {
@@ -434,6 +449,22 @@ public class DataAccessService {
     }
     return amountPruefungen;
   }
+
+
+  public Pair<Block, Pruefung> removePruefungFromBlock(ReadOnlyBlock block, ReadOnlyPruefung pruefung) {
+    Block modelBlock = getBlockFromModelOrException(block);
+    Pruefung modelPruefung = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
+
+    if (!modelBlock.removePruefung(modelPruefung)) {
+      throw new IllegalArgumentException("Pruefung konnte nicht aus dem Block entfernt werden.");
+    }
+    if (modelBlock.getPruefungen().isEmpty()) {
+      modelBlock.setStartzeitpunkt(null);
+    }
+    return new Pair<>(modelBlock, modelPruefung);
+  }
+
+
 
   private boolean isAnyInBlock(Collection<ReadOnlyPruefung> pruefungen) {
     return pruefungen.stream()

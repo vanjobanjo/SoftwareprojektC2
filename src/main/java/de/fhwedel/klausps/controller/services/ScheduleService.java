@@ -7,6 +7,8 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.helper.Pair;
+import de.fhwedel.klausps.model.api.Block;
+import de.fhwedel.klausps.controller.helper.Pair;
 import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
 import de.fhwedel.klausps.controller.restriction.hard.TwoKlausurenSameTime;
 import de.fhwedel.klausps.model.api.Pruefung;
@@ -16,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -130,9 +133,8 @@ public class ScheduleService {
     Map<String, Integer> scoring = getScoringFrom(analyses);
     applyScoring(scoring);
 
-    // todo anpassen, wenn Converter implementiert ist
     return Optional.of(
-        dataAccessService.fromModelToDTOBlock(dataAccessService.getBlockTo(modelPruefung).get()));
+        Converter.convertToROBlock(dataAccessService.getBlockTo(modelPruefung).get()));
 
   }
 
@@ -150,7 +152,7 @@ public class ScheduleService {
     if (!dataAccessService.exists(block)) {
       throw new IllegalArgumentException("Block existiert nicht!");
     }
-    if(block.geplant()){
+    if (block.geplant()) {
       throw new IllegalArgumentException("Block ist geplant!");
     }
 
@@ -171,6 +173,22 @@ public class ScheduleService {
       throw hardRestrictionViolation;
     }
   }
+
+
+  public List<ReadOnlyPlanungseinheit> removePruefungFromBlock(ReadOnlyBlock block,
+      ReadOnlyPruefung pruefung) {
+    List<ReadOnlyPlanungseinheit> result = new LinkedList<>();
+    Pair<Block, Pruefung> separated = dataAccessService.removePruefungFromBlock(block, pruefung);
+    if (!block.geplant()) {
+      result.addAll(Converter.convertToROPlanungseinheitCollection(separated.left(),
+          separated.right()));
+    } else {
+      // todo update scoring and add changed Planungseinheiten to result
+    }
+    return result;
+  }
+
+
 
   /*
   public List<ReadOnlyPruefung> movePruefung(ReadOnlyPruefung pruefung, LocalDateTime expectedStart)
