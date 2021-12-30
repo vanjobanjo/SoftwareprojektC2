@@ -30,7 +30,7 @@ class IntervalTest {
 
   @DisplayName("Getting the start corresponds with the set value")
   @Test
-  void getStart_returnsSetStart() throws IllegalTimeSpanException {
+  void getStart_returnsSetStart() {
     LocalDateTime start = LocalDateTime.of(2021, 12, 31, 11, 0);
     LocalDateTime end = LocalDateTime.of(2021, 12, 31, 13, 0);
     LocalDateTime expected = LocalDateTime.of(start.getYear(), start.getMonth(),
@@ -42,7 +42,7 @@ class IntervalTest {
 
   @DisplayName("Getting the end corresponds with the set value")
   @Test
-  void getEnd_returnsSetEnd() throws IllegalTimeSpanException {
+  void getEnd_returnsSetEnd() {
     LocalDateTime start = LocalDateTime.of(2021, 12, 31, 11, 0);
     LocalDateTime end = LocalDateTime.of(2021, 12, 31, 13, 0);
     LocalDateTime expected = LocalDateTime.of(end.getYear(), end.getMonth(), end.getDayOfMonth(),
@@ -68,6 +68,45 @@ class IntervalTest {
     LocalDateTime end = null;
 
     Assertions.assertThrows(IllegalArgumentException.class, () -> new Interval(start, end));
+  }
+
+  @DisplayName("Comparison by start time")
+  @Test
+  void compareTo_compareByStart() {
+    LocalDateTime startFirst = LocalDateTime.of(2021, 12, 31, 11, 0);
+    LocalDateTime startSecond = LocalDateTime.of(2021, 12, 31, 11, 1);
+    LocalDateTime end = LocalDateTime.of(2021, 12, 31, 13, 0);
+
+    Interval firstInterval = new Interval(startFirst, end);
+    Interval secondInterval = new Interval(startSecond, end);
+
+    assertThat(firstInterval.compareTo(secondInterval)).isNegative();
+    assertThat(secondInterval.compareTo(firstInterval)).isPositive();
+  }
+
+  @DisplayName("Comparison by end time when start is equal")
+  @Test
+  void compareTo_compareByEnd() {
+    LocalDateTime start = LocalDateTime.of(2021, 12, 31, 11, 0);
+    LocalDateTime firstEnd = LocalDateTime.of(2021, 12, 31, 13, 0);
+    LocalDateTime secondEnd = firstEnd.plusMinutes(1);
+
+    Interval firstInterval = new Interval(start, firstEnd);
+    Interval secondInterval = new Interval(start, secondEnd);
+
+    assertThat(firstInterval.compareTo(secondInterval)).isNegative();
+    assertThat(secondInterval.compareTo(firstInterval)).isPositive();
+  }
+
+  @DisplayName("Equal intervals are equal")
+  @Test
+  void compareTo_sameInterval() {
+    LocalDateTime start = LocalDateTime.of(2021, 12, 31, 11, 0);
+    LocalDateTime end = LocalDateTime.of(2021, 12, 31, 13, 0);
+
+    Interval firstInterval = new Interval(start, end);
+
+    assertThat(firstInterval.compareTo(firstInterval)).isZero();
   }
 
 }
