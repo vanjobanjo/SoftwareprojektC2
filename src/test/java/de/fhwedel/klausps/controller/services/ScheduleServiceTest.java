@@ -292,11 +292,11 @@ class ScheduleServiceTest {
         () -> deviceUnderTest.movePruefung(getRandomPruefung(111L), LocalDateTime.now()));
     verify(dataAccessService, times(2)).schedulePruefung(any(), any());
   }*/
-
+/*
   private List<HartesKriteriumAnalyse> getHartesKriteriumAnalyses() {
     return List.of(new HartesKriteriumAnalyse(Set.copyOf(getRandomPruefungen(342L, 5)),
         Collections.emptySet(), 999));
-  }
+  }*/
 
   private Pruefung getPruefungOfReadOnlyPruefung(ReadOnlyPruefung roPruefung) {
     PruefungImpl modelPruefung =
