@@ -27,6 +27,26 @@ public class TestUtils {
     return randomPruefungen;
   }
 
+  public static String getRandomString(Random random, int length) {
+    // code from https://www.baeldung.com/java-random-string modified
+    int leftLimit = 97; // letter 'a'
+    int rightLimit = 122; // letter 'z'
+    StringBuilder buffer = new StringBuilder(length);
+    for (int i = 0; i < length; i++) {
+      int randomLimitedInt = leftLimit + (int) (random.nextFloat() * (rightLimit - leftLimit + 1));
+      buffer.append((char) randomLimitedInt);
+    }
+    return buffer.toString();
+  }
+
+  public static Duration getRandomDuration(Random random, int maxMinutes) {
+    return Duration.ofMinutes(random.nextInt(1, maxMinutes));
+  }
+
+  public static Pruefung getRandomUnplannedPruefung(long seed) {
+    return getRandomPruefungen(seed, 1).get(0);
+  }
+
   public static List<Pruefung> getRandomPruefungen(long seed, int amount) {
     Random random = new Random(seed);
     List<Pruefung> randomPruefungen = new ArrayList<>(amount);
@@ -37,22 +57,19 @@ public class TestUtils {
     return randomPruefungen;
   }
 
+  public static Pruefung getRandomPlannedPruefung(long seed) {
+    return getRandomPlannedPruefungen(seed, 1).get(0);
+  }
+
   public static List<Pruefung> getRandomPlannedPruefungen(long seed, int amount) {
     Random random = new Random(seed);
     List<Pruefung> randomPruefungen = new ArrayList<>(amount);
     for (int index = 0; index < amount; index++) {
       randomPruefungen.add(new PruefungImpl(getRandomString(random, 5), getRandomString(random, 5),
-          getRandomString(random, 5), getRandomDuration(random, 120), LocalDateTime.now()));
+          getRandomString(random, 5), getRandomDuration(random, 120),
+          LocalDateTime.of(2021, 12, 29, 10, 0)));
     }
     return randomPruefungen;
-  }
-
-  public static Pruefung getRandomUnplannedPruefung(long seed) {
-    return getRandomPruefungen(seed, 1).get(0);
-  }
-
-  public static Pruefung getRandomPlannedPruefung(long seed) {
-    return getRandomPlannedPruefungen(seed, 1).get(0);
   }
 
   public static List<Pruefung> getRandomPruefungenAt(long seed, LocalDateTime... schedules) {
@@ -68,22 +85,6 @@ public class TestUtils {
   public static List<Planungseinheit> convertPruefungenToPlanungseinheiten(
       List<Pruefung> pruefungen) {
     return new ArrayList<>(pruefungen);
-  }
-
-  public static String getRandomString(Random random, int length) {
-    // code from https://www.baeldung.com/java-random-string modified
-    int leftLimit = 97; // letter 'a'
-    int rightLimit = 122; // letter 'z'
-    StringBuilder buffer = new StringBuilder(length);
-    for (int i = 0; i < length; i++) {
-      int randomLimitedInt = leftLimit + (int) (random.nextFloat() * (rightLimit - leftLimit + 1));
-      buffer.append((char) randomLimitedInt);
-    }
-    return buffer.toString();
-  }
-
-  public static Duration getRandomDuration(Random random, int maxMinutes) {
-    return Duration.ofMinutes(random.nextInt(1, maxMinutes));
   }
 
   public static Set<String> getPruefungsnummernFromDTO(Collection<ReadOnlyPruefung> pruefungen) {

@@ -192,6 +192,32 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     assertThat((deviceUnderTest.evaluate(pruefungToCheck))).isEmpty();
   }
 
+/*
+  TODO work in progress, current implementation is faulty and does not allow for a correct usage
+  @Test
+  void evaluate_morePlanungseinheitenThanPermitted_pruefungenCloserThanBuffer()
+      throws IllegalTimeSpanException {
+    Duration puffer = Duration.ofMinutes(10);
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1,
+        puffer);
+
+    List<Pruefung> pruefungen = get2PruefungenCloserToEachOtherThan(puffer);
+
+    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(pruefungen));
+
+    assertThat((deviceUnderTest.evaluate(pruefungen.get(0)))).isPresent();
+    assertThat((deviceUnderTest.evaluate(pruefungen.get(1)))).isPresent();
+  }*/
+
+  private List<Pruefung> get2PruefungenCloserToEachOtherThan(Duration duration) {
+    Pruefung firstPruefung = getRandomPlannedPruefung(1L);
+    firstPruefung.setDauer(Duration.ofHours(1));
+    Pruefung secondPruefung = getRandomPlannedPruefung(2L);
+    secondPruefung.setStartzeitpunkt(firstPruefung.getStartzeitpunkt().plus(firstPruefung.getDauer()).plus(duration.minusMinutes(1)));
+    return List.of(firstPruefung, secondPruefung);
+  }
+
   private List<Pruefung> get3PruefungenWith2SequentialOverlappingTheThird() {
     Duration puffer = Duration.ofMinutes(30);
     LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);

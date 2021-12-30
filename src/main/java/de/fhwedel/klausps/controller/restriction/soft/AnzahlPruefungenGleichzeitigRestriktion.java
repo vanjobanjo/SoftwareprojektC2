@@ -81,7 +81,8 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
     Set<Planungseinheit> conflictingPlanungseinheiten = new HashSet<>();
     LocalDateTime timeToCheck = startOfPruefung;
 
-    while (timeToCheck.isBefore(endOfPruefung)) {
+
+    while (!timeToCheck.isAfter(endOfPruefung)) {
       // get all pruefungen at a point in time
       conflictingPlanungseinheiten.addAll(
           getPlanungseinheitenIfToManyAt(timeToCheck, planungseinheiten));
@@ -97,18 +98,14 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
     return createAnalyse(conflictingPlanungseinheiten);
   }
 
-  private Collection<Planungseinheit> getPlanungseinheitenIfToManyAt(LocalDateTime time,
-      List<Planungseinheit> pruefungen) {
-    Collection<Planungseinheit> tmp = selectPruefungenAt(time, pruefungen);
-    if (tmp.size() > maxPruefungenAtATime) {
-      return tmp;
-    }
-    return Collections.emptySet();
+  private Set<LocalDateTime> getAllTimesToCheck(Iterable<Planungseinheit> planungseinheiten) {
+    Planungseinheit planungseinheit = null;
+
+    return null;
   }
 
   private Optional<WeichesKriteriumAnalyse> createAnalyse(Set<Planungseinheit> planungseinheiten) {
     if (planungseinheiten.size() > maxPruefungenAtATime) {
-      // make result
       return Optional.of(
           new WeichesKriteriumAnalyse(getAllPruefungen(planungseinheiten), this.kriterium,
               getAllTeilnehmerkreiseFrom(planungseinheiten),
@@ -117,18 +114,16 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
     return Optional.empty();
   }
 
-  private Collection<Planungseinheit> selectPruefungenAt(@NotNull LocalDateTime time,
-      @NotNull Iterable<Planungseinheit> planungseinheiten) {
-    // gets all pruefungen at a specific point in time
-    Collection<Planungseinheit> result = new HashSet<>();
+  /*private Set<Planungseinheit> getAllCollidingPlanungseinheitenWith(Planungseinheit toCheck,
+      List<Planungseinheit> planungseinheiten) {
+    Set<Planungseinheit> result = new HashSet<>();
     for (Planungseinheit planungseinheit : planungseinheiten) {
-      if (!planungseinheit.getStartzeitpunkt().minus(puffer).isAfter(time)
-          && planungseinheit.endzeitpunkt().isAfter(time)) {
+      if (overlapsWithBuffer(toCheck, planungseinheit)) {
         result.add(planungseinheit);
       }
     }
     return result;
-  }
+  }*/
 
   private Set<Teilnehmerkreis> getAllTeilnehmerkreiseFrom(
       @NotNull Iterable<Planungseinheit> planungseinheiten) {
@@ -147,6 +142,52 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
   private int calcScoring(Set<Planungseinheit> planungseinheiten) {
     // TODO calculate adequate scoring
     return 0;
+  }
+
+  private Set<Planungseinheit> getPlanungseinheitenAt(LocalDateTime time,
+      Iterable<Planungseinheit> planungseinheiten) {
+    Set<Planungseinheit> result = new HashSet<>();
+    for (Planungseinheit planungseinheit : planungseinheiten) {
+      if (!time.isBefore(planungseinheit.getStartzeitpunkt()) && !time.isAfter(
+          planungseinheit.endzeitpunkt())) {
+        result.add( planungseinheit);
+      }
+    }
+    return result;
+  }
+
+  private boolean overlapsWithBuffer(@NotNull Planungseinheit p1, @NotNull Planungseinheit p2) {
+    LocalDateTime p1StartWithBuffer = p1.getStartzeitpunkt().minus(puffer);
+    LocalDateTime p1EndWithBuffer = p1.endzeitpunkt().plus(puffer);
+    return (p1.isGeplant() && p2.isGeplant()) && (
+        isBetween(p1StartWithBuffer, p2.getStartzeitpunkt(), p2.endzeitpunkt()) || isBetween(
+            p2.getStartzeitpunkt(), p1StartWithBuffer, p1EndWithBuffer));
+  }
+
+  private boolean isBetween(LocalDateTime toCheck, LocalDateTime from, LocalDateTime to) {
+    return !toCheck.isBefore(from) && !toCheck.isAfter(to);
+  }
+
+  private Collection<Planungseinheit> getPlanungseinheitenIfToManyAt(LocalDateTime time,
+      List<Planungseinheit> pruefungen) {
+    Collection<Planungseinheit> tmp = selectPruefungenAt(time, pruefungen);
+    if (tmp.size() > maxPruefungenAtATime) {
+      return tmp;
+    }
+    return Collections.emptySet();
+  }
+
+  private Collection<Planungseinheit> selectPruefungenAt(@NotNull LocalDateTime time,
+      @NotNull Iterable<Planungseinheit> planungseinheiten) {
+    // gets all pruefungen at a specific point in time
+    Collection<Planungseinheit> result = new HashSet<>();
+    for (Planungseinheit planungseinheit : planungseinheiten) {
+      if (!planungseinheit.getStartzeitpunkt().minus(puffer.dividedBy(2)).isAfter(time)
+          && !planungseinheit.endzeitpunkt().plus(puffer.dividedBy(2)).isBefore(time)) {
+        result.add(planungseinheit);
+      }
+    }
+    return result;
   }
 
 }
