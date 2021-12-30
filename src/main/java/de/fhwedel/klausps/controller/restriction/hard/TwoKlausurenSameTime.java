@@ -18,14 +18,13 @@ public class TwoKlausurenSameTime extends HartRestriktion implements Predicate<P
 
   static final long MINUTES_BETWEEN_PRUEFUNGEN = 30;
 
-  public TwoKlausurenSameTime(DataAccessService dataAccessService, HartesKriterium kriterium, Pruefung pruefung) {
+  public TwoKlausurenSameTime(DataAccessService dataAccessService, HartesKriterium kriterium) {
     super(dataAccessService, kriterium);
-    this.pruefung = pruefung;
   }
 
 
   @Override
-  public List<HartesKriteriumAnalyse> evaluate() throws HartesKriteriumException {
+  public List<HartesKriteriumAnalyse> evaluate(Pruefung pruefung) throws HartesKriteriumException {
 
     List<HartesKriteriumAnalyse> returnList = new ArrayList<>();
     boolean hartKriterium = false;

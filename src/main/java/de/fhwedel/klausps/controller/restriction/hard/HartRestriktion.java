@@ -14,7 +14,7 @@ import java.util.Set;
 public class HartRestriktion {
 
 
-  protected Pruefung pruefung;
+
   Set<Pruefung> inConflictROPruefung;
   Set<Teilnehmerkreis> inConfilictTeilnehmerkreis;
   int countStudents;
@@ -30,7 +30,7 @@ public class HartRestriktion {
   }
 
 
-  public List<HartesKriteriumAnalyse> evaluate() throws HartesKriteriumException {
+  public List<HartesKriteriumAnalyse> evaluate(Pruefung pruefung) throws HartesKriteriumException {
     throw new UnsupportedOperationException("Not implemented yet!");
 
   }

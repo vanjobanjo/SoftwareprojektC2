@@ -551,9 +551,8 @@ public class DataAccessService {
     return allTeilnehmerkreise;
   }
 
-  public boolean removeTeilnehmerkreis(Pruefung roPruefung,
 
-  public boolean removeTeilnehmerkreis(ReadOnlyPruefung roPruefung,
+  public boolean removeTeilnehmerkreis(Pruefung roPruefung,
       Teilnehmerkreis teilnehmerkreis) {
     return roPruefung.removeTeilnehmerkreis(teilnehmerkreis);
 
