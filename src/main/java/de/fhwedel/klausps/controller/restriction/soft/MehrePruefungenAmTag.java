@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+import org.jetbrains.annotations.NotNull;
 
 public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate<Pruefung> {
 
@@ -69,12 +70,19 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
       }
     }
 
-    if (weichesKrierium) {
+    return getWeichesKriteriumAnalyse(pruefung, weichesKrierium);
+  }
+
+  @NotNull
+  private Optional<WeichesKriteriumAnalyse> getWeichesKriteriumAnalyse(Pruefung pruefung,
+      boolean conflicted) {
+    if (conflicted) {
       this.setReadyOnly.add(new PruefungDTOBuilder(pruefung).build());
       this.setPruefung.add(pruefung);
 
       scoring +=
           WeichesKriterium.MEHRERE_PRUEFUNGEN_AM_TAG.getWert() * (setPruefung.size() - 2 + 1);
+
       WeichesKriteriumAnalyse wKA = new WeichesKriteriumAnalyse(this.setPruefung,
           WeichesKriterium.MEHRERE_PRUEFUNGEN_AM_TAG, setTeilnehmer, countStudents);
       return Optional.of(wKA);
