@@ -1,6 +1,7 @@
 package de.fhwedel.klausps.controller.structures.interval_tree;
 
 import de.fhwedel.klausps.model.api.Planungseinheit;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
@@ -11,7 +12,7 @@ public class IntervalTree {
   private IntervalTreeNode root = null;
 
   public void add(Interval interval, Planungseinheit... planungseinheiten) {
-    this.root = new IntervalTreeNode(interval, planungseinheiten);
+    root = IntervalTreeNode.addTo(root, interval, planungseinheiten);
     size++;
   }
 
@@ -23,10 +24,7 @@ public class IntervalTree {
     if (root == null) {
       return Collections.emptySet();
     }
-    if (root.getPlanungseinheiten().size() > amount) {
-      return root.getPlanungseinheiten();
-    } else {
-      return Collections.emptySet();
-    }
+    return this.root.getPlanungseinheitenThat(
+        (Collection<Planungseinheit> planungseinheiten) -> planungseinheiten.size() > amount);
   }
 }
