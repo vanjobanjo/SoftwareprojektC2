@@ -1,9 +1,9 @@
 package de.fhwedel.klausps.controller.restriction.hard;
 
 
+import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
-import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
@@ -30,7 +30,7 @@ public class HartRestriktion {
   }
 
 
-  public List<KriteriumsAnalyse> evaluate() throws HartesKriteriumException {
+  public List<HartesKriteriumAnalyse> evaluate() throws HartesKriteriumException {
     throw new UnsupportedOperationException("Not implemented yet!");
 
   }
