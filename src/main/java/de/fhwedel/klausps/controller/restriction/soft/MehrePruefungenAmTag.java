@@ -52,9 +52,12 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
     //  die Methode sorgt ganz explizit dafür, dass die Klausuren in den Blöcken statt der Blöcke
     //  selbst returned werden
     for (Planungseinheit planungseinheit : testList) {
+      //Unterscheidung auf Block
       if (planungseinheit.isBlock()) {
         pruefungenFromBlock = planungseinheit.asBlock().getPruefungen();
+        //Wenn der Block die Pruefung nicht beinhaltet, muss dieser nicht angeguckt werden
         if (!pruefungenFromBlock.contains(pruefung)) {
+          // jede Pruefung im Block überprüfen
           for (Pruefung pruefungBlock : pruefungenFromBlock) {
             weichesKrierium =
                 getTeilnehmerkreisFromPruefung(pruefung, pruefungBlock) || weichesKrierium;
@@ -67,9 +70,10 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
     }
 
     if (weichesKrierium) {
-      scoring += 10;
       this.setReadyOnly.add(new PruefungDTOBuilder(pruefung).build());
       this.setPruefung.add(pruefung);
+
+      scoring += WeichesKriterium.MEHRERE_PRUEFUNGEN_AM_TAG.getWert() * (setPruefung.size() - 2 + 1);
       WeichesKriteriumAnalyse wKA = new WeichesKriteriumAnalyse(this.setPruefung,
           WeichesKriterium.MEHRERE_PRUEFUNGEN_AM_TAG, setTeilnehmer, countStudents);
       return Optional.of(wKA);
