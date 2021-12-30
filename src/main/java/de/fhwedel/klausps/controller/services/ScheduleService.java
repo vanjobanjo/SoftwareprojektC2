@@ -205,7 +205,7 @@ public class ScheduleService {
   }*/
 
 
-  public List<ReadOnlyPruefung> addTeilnehmerKreis(ReadOnlyPruefung roPruefung,
+  public List<ReadOnlyPruefung> addTeilnehmerKreis(Pruefung roPruefung,
       Teilnehmerkreis teilnehmerkreis) throws HartesKriteriumException {
 
     if (roPruefung.getTeilnehmerkreise().contains(teilnehmerkreis)) {
@@ -224,11 +224,12 @@ public class ScheduleService {
         throw e;
       }
     }
+    //TODO weiche KriteriumsAnalysen machen und hinzufügen
     return listOfRead;
 
   }
 
-  public List<ReadOnlyPruefung> remmoveTeilnehmerKreis(ReadOnlyPruefung roPruefung,
+  public List<ReadOnlyPruefung> remmoveTeilnehmerKreis(Pruefung roPruefung,
       Teilnehmerkreis teilnehmerkreis) throws HartesKriteriumException {
 
     if (!roPruefung.getTeilnehmerkreise().contains(teilnehmerkreis)) {
@@ -246,6 +247,7 @@ public class ScheduleService {
         throw e;
       }
     }
+    //TODO weiche KriteriumsAnalysen machen und hinzufügen
     return listOfRead;
   }
 
@@ -256,7 +258,7 @@ public class ScheduleService {
   }
 
 
-  private Set<ReadOnlyPruefung> getPruefungenInvolvedIn(
+
   private Set<Pruefung> getPruefungenInvolvedIn(
       List<WeichesKriteriumAnalyse> weicheKriterien) {
     Set<Pruefung> result = new HashSet<>();
