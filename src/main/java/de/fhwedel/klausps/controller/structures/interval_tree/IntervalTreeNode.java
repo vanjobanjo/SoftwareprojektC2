@@ -7,6 +7,9 @@ import java.util.Optional;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * A node to an {@link IntervalTree}.
+ */
 class IntervalTreeNode {
 
   private final Interval interval;
@@ -14,6 +17,10 @@ class IntervalTreeNode {
   private LocalDateTime max;
   private IntervalTreeNode left;
   private IntervalTreeNode right;
+
+  IntervalTreeNode(@NotNull Interval interval, @NotNull Set<Planungseinheit> planungseinheiten) {
+    this(interval, interval.end(), planungseinheiten, null, null);
+  }
 
   IntervalTreeNode(@NotNull Interval interval, @NotNull LocalDateTime max,
       @NotNull Set<Planungseinheit> planungseinheiten, IntervalTreeNode left,
@@ -23,6 +30,10 @@ class IntervalTreeNode {
     this.planungseinheiten.addAll(planungseinheiten);
     this.left = left;
     this.right = right;
+  }
+
+  IntervalTreeNode(@NotNull Interval interval, @NotNull Planungseinheit... planungseinheiten) {
+    this(interval, interval.end(), Set.of(planungseinheiten), null, null);
   }
 
   Interval getInterval() {
