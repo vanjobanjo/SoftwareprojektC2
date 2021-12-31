@@ -1,9 +1,10 @@
 package de.fhwedel.klausps.controller.structures.interval_tree;
 
+import static java.util.Collections.emptySet;
+
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -94,17 +95,34 @@ class IntervalTreeNode {
     this.planungseinheiten.remove(planungseinheit);
   }
 
-  Set<Planungseinheit> getPlanungseinheitenThat(Predicate<Collection<Planungseinheit>> predicate) {
-    Set<Planungseinheit> result = new HashSet<>();
-    if (predicate.test(this.planungseinheiten)) {
-      result.addAll(this.planungseinheiten);
-    }
-    if (getLeft().isPresent()) {
-      result.addAll(left.getPlanungseinheitenThat(predicate));
-    }
-    if (getRight().isPresent()) {
-      result.addAll(right.getPlanungseinheitenThat(predicate));
-    }
+  Set<Planungseinheit> getPlanungseinheitenThatFulfill(
+      Predicate<Collection<Planungseinheit>> predicate) {
+    Set<Planungseinheit> result = checkLeftFor(predicate);
+    result.addAll(ownPlanungseinheitenThatFullfill(predicate));
+    result.addAll(checkRightFor(predicate));
     return result;
   }
+
+  private Set<Planungseinheit> ownPlanungseinheitenThatFullfill(
+      Predicate<Collection<Planungseinheit>> predicate) {
+    if (predicate.test(this.planungseinheiten)) {
+      return this.planungseinheiten;
+    }
+    return emptySet();
+  }
+
+  private Set<Planungseinheit> checkLeftFor(Predicate<Collection<Planungseinheit>> predicate) {
+    if (getLeft().isPresent()) {
+      return left.getPlanungseinheitenThatFulfill(predicate);
+    }
+    return new HashSet<>();
+  }
+
+  private Set<Planungseinheit> checkRightFor(Predicate<Collection<Planungseinheit>> predicate) {
+    if (getRight().isPresent()) {
+      return right.getPlanungseinheitenThatFulfill(predicate);
+    }
+    return emptySet();
+  }
+
 }

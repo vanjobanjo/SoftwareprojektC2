@@ -24,7 +24,7 @@ public class IntervalTree {
     if (root == null) {
       return Collections.emptySet();
     }
-    return this.root.getPlanungseinheitenThat(
+    return this.root.getPlanungseinheitenThatFulfill(
         (Collection<Planungseinheit> planungseinheiten) -> planungseinheiten.size() > amount);
   }
 }

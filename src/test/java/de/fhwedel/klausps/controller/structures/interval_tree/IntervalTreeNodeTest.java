@@ -50,7 +50,7 @@ class IntervalTreeNodeTest {
     Set<Planungseinheit> planungseinheiten = new HashSet<>(getRandomPruefungen(1L, 4));
     IntervalTreeNode deviceUnderTest = new IntervalTreeNode(interval(1L), planungseinheiten);
     assertThat(
-        deviceUnderTest.getPlanungseinheitenThat(x -> true)).containsExactlyInAnyOrderElementsOf(
+        deviceUnderTest.getPlanungseinheitenThatFulfill(x -> true)).containsExactlyInAnyOrderElementsOf(
         planungseinheiten);
   }
 
@@ -60,15 +60,15 @@ class IntervalTreeNodeTest {
     IntervalTreeNode deviceUnderTest = spy(
         new IntervalTreeNode(interval(1L), interval(1L).end(), new HashSet<>(),
             leftChild, null));
-    deviceUnderTest.getPlanungseinheitenThat(x -> true);
-    verify(leftChild, times(1)).getPlanungseinheitenThat(any());
+    deviceUnderTest.getPlanungseinheitenThatFulfill(x -> true);
+    verify(leftChild, times(1)).getPlanungseinheitenThatFulfill(any());
   }
 
   @Test
   void getPlanungseinheitenThat_checkOnRightChild() {
     IntervalTreeNode deviceUnderTest = spy(new IntervalTreeNode(interval(1L)));
-    deviceUnderTest.getPlanungseinheitenThat(x -> true);
-    verify(deviceUnderTest, times(1)).getPlanungseinheitenThat(any());
+    deviceUnderTest.getPlanungseinheitenThatFulfill(x -> true);
+    verify(deviceUnderTest, times(1)).getPlanungseinheitenThatFulfill(any());
   }
 
 }
