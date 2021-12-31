@@ -49,17 +49,15 @@ class IntervalTreeNodeTest {
   void getPlanungseinheitenThat_onlyNodeSelf_getAllPruefungen() {
     Set<Planungseinheit> planungseinheiten = new HashSet<>(getRandomPruefungen(1L, 4));
     IntervalTreeNode deviceUnderTest = new IntervalTreeNode(interval(1L), planungseinheiten);
-    assertThat(
-        deviceUnderTest.getPlanungseinheitenThatFulfill(x -> true)).containsExactlyInAnyOrderElementsOf(
-        planungseinheiten);
+    assertThat(deviceUnderTest.getPlanungseinheitenThatFulfill(
+        x -> true)).containsExactlyInAnyOrderElementsOf(planungseinheiten);
   }
 
   @Test
   void getPlanungseinheitenThat_checkOnLeftChild() {
     IntervalTreeNode leftChild = spy(new IntervalTreeNode(interval(2L)));
     IntervalTreeNode deviceUnderTest = spy(
-        new IntervalTreeNode(interval(1L), interval(1L).end(), new HashSet<>(),
-            leftChild, null));
+        new IntervalTreeNode(interval(1L), interval(1L).end(), new HashSet<>(), leftChild, null));
     deviceUnderTest.getPlanungseinheitenThatFulfill(x -> true);
     verify(leftChild, times(1)).getPlanungseinheitenThatFulfill(any());
   }
@@ -69,6 +67,24 @@ class IntervalTreeNodeTest {
     IntervalTreeNode deviceUnderTest = spy(new IntervalTreeNode(interval(1L)));
     deviceUnderTest.getPlanungseinheitenThatFulfill(x -> true);
     verify(deviceUnderTest, times(1)).getPlanungseinheitenThatFulfill(any());
+  }
+
+  @Test
+  void addTo_maxIsUpdatedWhenAdding() {
+    IntervalTreeNode deviceUnderTest = new IntervalTreeNode(interval(1L));
+    Interval toAdd = new Interval(deviceUnderTest.getInterval().start().plusHours(5),
+        deviceUnderTest.getInterval().end().plusHours(5));
+    addTo(deviceUnderTest, toAdd);
+    assertThat(deviceUnderTest.getMax()).isEqualTo(toAdd.end());
+  }
+
+  @Test
+  void addTo_maxIsUpdatedWhenAdding_noUpdateWithEarlierEnd() {
+    IntervalTreeNode deviceUnderTest = new IntervalTreeNode(interval(1L));
+    Interval toAdd = new Interval(deviceUnderTest.getInterval().start().minusHours(5),
+        deviceUnderTest.getInterval().end().minusHours(5));
+    addTo(deviceUnderTest, toAdd);
+    assertThat(deviceUnderTest.getMax()).isEqualTo(interval(1L).end());
   }
 
 }

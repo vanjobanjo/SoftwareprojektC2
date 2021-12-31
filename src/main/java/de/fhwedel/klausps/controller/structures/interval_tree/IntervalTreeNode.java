@@ -46,13 +46,20 @@ class IntervalTreeNode {
       // in case there is no node to add to, create new node
       return new IntervalTreeNode(interval, planungseinheiten);
     }
-    if (interval.start().compareTo(node.getInterval().start()) < 0) {
+    if (interval.start().isBefore(node.interval.start())) {
       // in case the interval to add starts before the interval to add to, add as left child
       node.left = addTo(node.left, interval, planungseinheiten);
     } else {
       node.right = addTo(node.right, interval, planungseinheiten);
     }
+    updateMaxWithNewIntervalFor(node, interval);
     return node;
+  }
+
+  private static void updateMaxWithNewIntervalFor(IntervalTreeNode node, Interval addedInterval) {
+    if (addedInterval.end().isAfter(node.max)) {
+      node.max = addedInterval.end();
+    }
   }
 
   Interval getInterval() {
@@ -97,13 +104,13 @@ class IntervalTreeNode {
 
   Set<Planungseinheit> getPlanungseinheitenThatFulfill(
       Predicate<Collection<Planungseinheit>> predicate) {
-    Set<Planungseinheit> result = checkLeftFor(predicate);
-    result.addAll(ownPlanungseinheitenThatFullfill(predicate));
-    result.addAll(checkRightFor(predicate));
+    Set<Planungseinheit> result = leftPlanungseinheitenThatFulFill(predicate);
+    result.addAll(ownPlanungseinheitenThatFulfill(predicate));
+    result.addAll(rightPlanungseinheitenThatFulFill(predicate));
     return result;
   }
 
-  private Set<Planungseinheit> ownPlanungseinheitenThatFullfill(
+  private Set<Planungseinheit> ownPlanungseinheitenThatFulfill(
       Predicate<Collection<Planungseinheit>> predicate) {
     if (predicate.test(this.planungseinheiten)) {
       return this.planungseinheiten;
@@ -111,14 +118,16 @@ class IntervalTreeNode {
     return emptySet();
   }
 
-  private Set<Planungseinheit> checkLeftFor(Predicate<Collection<Planungseinheit>> predicate) {
+  private Set<Planungseinheit> leftPlanungseinheitenThatFulFill(
+      Predicate<Collection<Planungseinheit>> predicate) {
     if (getLeft().isPresent()) {
       return left.getPlanungseinheitenThatFulfill(predicate);
     }
     return new HashSet<>();
   }
 
-  private Set<Planungseinheit> checkRightFor(Predicate<Collection<Planungseinheit>> predicate) {
+  private Set<Planungseinheit> rightPlanungseinheitenThatFulFill(
+      Predicate<Collection<Planungseinheit>> predicate) {
     if (getRight().isPresent()) {
       return right.getPlanungseinheitenThatFulfill(predicate);
     }
