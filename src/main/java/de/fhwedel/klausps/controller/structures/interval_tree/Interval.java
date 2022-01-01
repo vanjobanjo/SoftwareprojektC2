@@ -1,5 +1,6 @@
 package de.fhwedel.klausps.controller.structures.interval_tree;
 
+import de.fhwedel.klausps.model.api.Planungseinheit;
 import java.time.LocalDateTime;
 import org.jetbrains.annotations.NotNull;
 
@@ -8,6 +9,10 @@ import org.jetbrains.annotations.NotNull;
  */
 public record Interval(@NotNull LocalDateTime start, @NotNull LocalDateTime end) implements
     Comparable<Interval> {
+
+  public Interval(@NotNull Planungseinheit planungseinheit) {
+    this(planungseinheit.getStartzeitpunkt(), planungseinheit.endzeitpunkt());
+  }
 
   /**
    * Instantiate an interval.
@@ -24,6 +29,14 @@ public record Interval(@NotNull LocalDateTime start, @NotNull LocalDateTime end)
     }
     this.start = start;
     this.end = end;
+  }
+
+  public static Interval intersect(@NotNull Interval firstInterval,
+      @NotNull Interval secondInterval) {
+    if (secondInterval.start.isBefore(firstInterval.start)) {
+      return intersect(secondInterval, firstInterval);
+    }
+    return new Interval(secondInterval.start, firstInterval.end);
   }
 
   @Override

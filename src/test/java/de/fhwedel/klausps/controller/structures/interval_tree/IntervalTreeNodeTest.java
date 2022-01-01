@@ -1,6 +1,8 @@
 package de.fhwedel.klausps.controller.structures.interval_tree;
 
+import static de.fhwedel.klausps.controller.structures.interval_tree.Interval.intersect;
 import static de.fhwedel.klausps.controller.structures.interval_tree.IntervalTreeNode.addTo;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungen;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -9,8 +11,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import de.fhwedel.klausps.model.api.Planungseinheit;
+import de.fhwedel.klausps.model.api.Pruefung;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -85,6 +89,24 @@ class IntervalTreeNodeTest {
         deviceUnderTest.getInterval().end().minusHours(5));
     addTo(deviceUnderTest, toAdd);
     assertThat(deviceUnderTest.getMax()).isEqualTo(interval(1L).end());
+  }
+
+/*  @Test
+  void addTo_addingOverlapping_creationOfNewIntervalForIntersection_intersectionAsRoot() {
+    Planungseinheit fstPlanungseinheit = getTwoOverlappingPlanungseinheiten().get(0);
+    Planungseinheit sndPlanungseinheit = getTwoOverlappingPlanungseinheiten().get(1);
+    IntervalTreeNode deviceUnderTest = new IntervalTreeNode(new Interval(fstPlanungseinheit),
+        fstPlanungseinheit);
+    addTo(deviceUnderTest, new Interval(sndPlanungseinheit), sndPlanungseinheit);
+    assertThat(deviceUnderTest.getInterval()).isEqualTo(
+        intersect(new Interval(fstPlanungseinheit), new Interval(sndPlanungseinheit)));
+  }*/
+
+  private List<Planungseinheit> getTwoOverlappingPlanungseinheiten() {
+    Pruefung p1 = getRandomPlannedPruefung(1L);
+    Pruefung p2 = getRandomPlannedPruefung(1L);
+    p2.setStartzeitpunkt(p1.getStartzeitpunkt().plusMinutes(15));
+    return List.of(p1, p2);
   }
 
 }

@@ -2,8 +2,8 @@ package de.fhwedel.klausps.controller.structures.interval_tree;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import java.time.LocalDateTime;
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -107,6 +107,54 @@ class IntervalTest {
     Interval firstInterval = new Interval(start, end);
 
     assertThat(firstInterval.compareTo(firstInterval)).isZero();
+  }
+
+  @Test
+  void intersect_normalOverlapping() {
+    Interval firstInterval = get2overlappingIntervals().get(0);
+    Interval secondInterval = get2overlappingIntervals().get(1);
+    Interval expectedIntersection = new Interval(secondInterval.start(), firstInterval.end());
+    assertThat(Interval.intersect(firstInterval, secondInterval)).isEqualTo(expectedIntersection);
+  }
+
+  private List<Interval> get2overlappingIntervals() {
+    LocalDateTime firstSTart = LocalDateTime.of(2021, 12, 31, 5, 15);
+    Interval i1 = new Interval(firstSTart, firstSTart.plusHours(2));
+    Interval i2 = new Interval(i1.start().plusMinutes(30), i1.end().plusHours(1));
+    return List.of(i1, i2);
+  }
+
+  @Test
+  void intersect_normalOverlapping_mixedUpOrder() {
+    Interval firstInterval = get2overlappingIntervals().get(0);
+    Interval secondInterval = get2overlappingIntervals().get(1);
+    Interval expectedIntersection = new Interval(secondInterval.start(), firstInterval.end());
+    assertThat(Interval.intersect(secondInterval, firstInterval)).isEqualTo(expectedIntersection);
+  }
+
+  @Test
+  void intersect_sameInterval() {
+    Interval interval = get2overlappingIntervals().get(0);
+    Interval expectedIntersection = new Interval(interval.start(), interval.end());
+    assertThat(Interval.intersect(interval, interval)).isEqualTo(expectedIntersection);
+  }
+
+  @Test
+  void intersect_oneContainsOther_firstContainsSecond() {
+    Interval firstInterval = get2overlappingIntervals().get(0);
+    Interval secondInterval = new Interval(firstInterval.start().plusMinutes(5),
+        firstInterval.end().minusMinutes(5));
+    Interval expectedIntersection = new Interval(secondInterval.start(), firstInterval.end());
+    assertThat(Interval.intersect(firstInterval, secondInterval)).isEqualTo(expectedIntersection);
+  }
+
+  @Test
+  void intersect_oneContainsOther_secondContainsFirst() {
+    Interval firstInterval = get2overlappingIntervals().get(0);
+    Interval secondInterval = new Interval(firstInterval.start().plusMinutes(5),
+        firstInterval.end().minusMinutes(5));
+    Interval expectedIntersection = new Interval(secondInterval.start(), firstInterval.end());
+    assertThat(Interval.intersect(secondInterval, firstInterval)).isEqualTo(expectedIntersection);
   }
 
 }
