@@ -391,4 +391,35 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     return result;
   }
 
+  @Test
+  void evaluate_sumOfTeilnehmerkreisschaetzungen_onlyCountHighestValueOfTeilnehmerkreis()
+      throws IllegalTimeSpanException {
+    List<Pruefung> pruefungen = get2PruefungenWithSameTeilnehmerkreiseWithSchaetzung(5, 12);
+    int expectedTeilnehmerAmount = 12;
+
+    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(pruefungen));
+
+    assertThat(
+        (deviceUnderTest.evaluate(pruefungen.get(0)).get().getAmountAffectedStudents())).isEqualTo(
+        expectedTeilnehmerAmount);
+  }
+
+  private List<Pruefung> get2PruefungenWithSameTeilnehmerkreiseWithSchaetzung(int s1, int s2) {
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1);
+    List<Pruefung> result = List.of(getRandomPruefungWith(1L, getRandomTeilnehmerkreis(1L)),
+        getRandomPruefungWith(2L, getRandomTeilnehmerkreis(1L)));
+
+    // set all pruefungen to occupy the same time slot
+    for (Pruefung pruefung : result) {
+      pruefung.setStartzeitpunkt(result.get(0).getStartzeitpunkt());
+      pruefung.setDauer(result.get(0).getDauer());
+    }
+
+    result.get(0).setSchaetzung(result.get(0).getTeilnehmerkreise().iterator().next(), s1);
+    result.get(1).setSchaetzung(result.get(1).getTeilnehmerkreise().iterator().next(), s2);
+
+    return result;
+  }
+
 }
