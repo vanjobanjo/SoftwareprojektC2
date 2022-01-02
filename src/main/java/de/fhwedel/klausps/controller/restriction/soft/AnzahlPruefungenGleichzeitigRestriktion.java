@@ -105,12 +105,13 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
 
   @NotNull
   private Optional<WeichesKriteriumAnalyse> createAnalyse(
-      @NotNull Set<Planungseinheit> planungseinheiten) {
-    if (planungseinheiten.size() > maxPruefungenAtATime) {
+      @NotNull Set<Planungseinheit> violatingPlanungseinheiten) {
+    if (violatingPlanungseinheiten.size() > maxPruefungenAtATime) {
       return Optional.of(
-          new WeichesKriteriumAnalyse(getAllPruefungen(planungseinheiten), this.kriterium,
-              getAllTeilnehmerkreiseFrom(planungseinheiten),
-              getAmountAffectedStudents(planungseinheiten), calcScoring(planungseinheiten)));
+          new WeichesKriteriumAnalyse(getAllPruefungen(violatingPlanungseinheiten), this.kriterium,
+              getAllTeilnehmerkreiseFrom(violatingPlanungseinheiten),
+              getAmountAffectedStudents(violatingPlanungseinheiten),
+              calcScoring(violatingPlanungseinheiten)));
     }
     return Optional.empty();
   }
@@ -145,21 +146,11 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
   }
 
   private int calcScoring(@NotNull Set<Planungseinheit> planungseinheiten) {
-    // TODO calculate adequate scoring
-    return 0;
-  }
-
-  private Collection<Planungseinheit> selectPruefungenAt(@NotNull LocalDateTime time,
-      @NotNull Iterable<Planungseinheit> planungseinheiten) {
-    // gets all pruefungen at a specific point in time
-    Collection<Planungseinheit> result = new HashSet<>();
-    for (Planungseinheit planungseinheit : planungseinheiten) {
-      if (!planungseinheit.getStartzeitpunkt().minus(puffer.dividedBy(2)).isAfter(time)
-          && !planungseinheit.endzeitpunkt().plus(puffer.dividedBy(2)).isBefore(time)) {
-        result.add(planungseinheit);
-      }
+    int scoring = 0;
+    if (planungseinheiten.size() > maxPruefungenAtATime) {
+      scoring = planungseinheiten.size() - maxPruefungenAtATime;
+      scoring *= this.kriterium.getWert();
     }
-    return result;
+    return scoring;
   }
-
 }

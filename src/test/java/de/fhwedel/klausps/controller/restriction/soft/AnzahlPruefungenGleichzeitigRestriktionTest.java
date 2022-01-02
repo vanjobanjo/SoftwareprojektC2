@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.assertions.WeicheKriteriumsAnalyseAssert;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
+import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
@@ -349,6 +350,23 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     }
     roPruefung.getTeilnehmerKreisSchaetzung().forEach(modelPruefung::setSchaetzung);
     return modelPruefung;
+  }
+
+  @Test
+  void evaluate_scoringForMinimalViolation() throws IllegalTimeSpanException {
+    Duration buffer = Duration.ofMinutes(30);
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1,
+        buffer);
+
+    List<Pruefung> pruefungen = get2PruefungenWithOneOverlappingTheOther();
+
+    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(pruefungen));
+
+    int expectedScoring = WeichesKriterium.ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH.getWert();
+
+    assertThat((deviceUnderTest.evaluate(pruefungen.get(0)).get().getDeltaScoring())).isEqualTo(expectedScoring);
+    assertThat((deviceUnderTest.evaluate(pruefungen.get(1)).get().getDeltaScoring())).isEqualTo(expectedScoring);
   }
 
 }
