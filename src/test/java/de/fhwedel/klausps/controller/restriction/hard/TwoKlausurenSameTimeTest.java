@@ -107,7 +107,7 @@ class TwoKlausurenSameTimeTest {
     // when(pruefungsperiode.planungseinheitenBetween(start, start.plusMinutes(120))).thenReturn(setOfPruefungen);
 
     try {
-      when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(listOfPruefungen);
+      when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(listOfPruefungen);
     } catch (IllegalTimeSpanException e) {
 
       //start kann nicht vor ende liegen, da ich das berechne
@@ -172,7 +172,7 @@ class TwoKlausurenSameTimeTest {
     // when(pruefungsperiode.planungseinheitenBetween(start, start.plusMinutes(120))).thenReturn(setOfPruefungen);
 
     try {
-      when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(listOfPruefungen);
+      when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(listOfPruefungen);
     } catch (IllegalTimeSpanException e) {
 
       //start kann nicht vor ende liegen, da ich das berechne
@@ -250,7 +250,7 @@ class TwoKlausurenSameTimeTest {
     // when(pruefungsperiode.planungseinheitenBetween(start, start.plusMinutes(120))).thenReturn(setOfPruefungen);
 
     try {
-      when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(listOfPruefungen);
+      when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(listOfPruefungen);
     } catch (IllegalTimeSpanException e) {
       //start kann nicht vor ende liegen, da ich das berechne
       e.printStackTrace();
@@ -353,7 +353,7 @@ class TwoKlausurenSameTimeTest {
     listOfPruefungen.add(analysisPL);
 
     try {
-      when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(listOfPruefungen);
+      when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(listOfPruefungen);
     } catch (IllegalTimeSpanException e) {
       //start kann nicht vor ende liegen, da ich das berechne
       e.printStackTrace();

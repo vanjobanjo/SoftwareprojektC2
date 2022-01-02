@@ -606,7 +606,7 @@ class DataAccessServiceTest {
 
     try {
 
-      assertThat(this.deviceUnderTest.getAllPruefungenBetween(start, end)).containsAll(
+      assertThat(this.deviceUnderTest.getAllPlanungseinheitenBetween(start, end)).containsAll(
           listPruefung);
       //  assertEquals(listPruefung, this.deviceUnderTest.getAllPruefungenBetween(start, end));
     } catch (IllegalTimeSpanException e) {
@@ -637,12 +637,12 @@ class DataAccessServiceTest {
 
     when(this.pruefungsperiode.planungseinheitenBetween(start, end)).thenReturn(setPlanung);
     assertThrows(IllegalTimeSpanException.class,
-        () -> this.deviceUnderTest.getAllPruefungenBetween(end, start));
+        () -> this.deviceUnderTest.getAllPlanungseinheitenBetween(end, start));
 
   }
 
   @Test
-  void getPlanungseinheitenBetween() {
+  void getPlanungseinheitenBetween() throws IllegalTimeSpanException {
 
     LocalDateTime start = LocalDateTime.of(2021, 8, 11, 9, 0);
     LocalDateTime end = LocalDateTime.of(2021, 8, 11, 10, 0);
@@ -664,20 +664,15 @@ class DataAccessServiceTest {
     when(haskelPL.asPruefung()).thenReturn(haskel);
     when(infotechPL.asPruefung()).thenReturn(infotech);
 
-    Set<Planungseinheit> listPruefung = new HashSet<>();
+    List<Planungseinheit> listPruefung = new ArrayList<>(3);
     listPruefung.add(dmPL);
     listPruefung.add(haskelPL);
     listPruefung.add(infotechPL);
 
     when(this.pruefungsperiode.planungseinheitenBetween(start, end)).thenReturn(setPlanung);
 
-    try {
-
-      assertEquals(listPruefung, this.deviceUnderTest.getPlanungseinheitenBetween(start, end));
-    } catch (IllegalTimeSpanException e) {
-      //Per hand getestet sollte nichts schieflaufen
-      e.printStackTrace();
-    }
+    assertThat(this.deviceUnderTest.getAllPlanungseinheitenBetween(start, end))
+          .containsExactlyInAnyOrderElementsOf(listPruefung);
   }
 
   @Test
@@ -702,7 +697,7 @@ class DataAccessServiceTest {
 
     when(this.pruefungsperiode.planungseinheitenBetween(start, end)).thenReturn(setPlanung);
     assertThrows(IllegalTimeSpanException.class,
-        () -> this.deviceUnderTest.getAllPruefungenBetween(end, start));
+        () -> this.deviceUnderTest.getAllPlanungseinheitenBetween(end, start));
 
   }
 

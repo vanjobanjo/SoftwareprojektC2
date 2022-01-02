@@ -99,7 +99,7 @@ class MehrePruefungenAmTagTest {
     listOfPruefungen.add(analysisPL);
 
     try {
-      when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(listOfPruefungen);
+      when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(listOfPruefungen);
     } catch (IllegalTimeSpanException e) {
 
       //Kann nicht davor liegen, da ich den Morgen und den Abend nehme

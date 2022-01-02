@@ -44,7 +44,7 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
 
     List<Planungseinheit> testList = null;
     try {
-      testList = dataAccessService.getAllPruefungenBetween(start, end);
+      testList = dataAccessService.getAllPlanungseinheitenBetween(start, end);
     } catch (IllegalTimeSpanException e) {
       //Kann nicht davor liegen, da ich den Morgen und den Abend nehme
       e.printStackTrace();
@@ -103,7 +103,7 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
 
     List<Planungseinheit> testList = null;
     try {
-      testList = dataAccessService.getAllPruefungenBetween(start, end);
+      testList = dataAccessService.getAllPlanungseinheitenBetween(start, end);
     } catch (IllegalTimeSpanException e) {
       //Kann nicht davor liegen, da ich den Morgen und den Abend nehme
       e.printStackTrace();

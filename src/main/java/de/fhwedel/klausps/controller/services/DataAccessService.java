@@ -1,5 +1,6 @@
 package de.fhwedel.klausps.controller.services;
 
+import static de.fhwedel.klausps.controller.PlanungseinheitUtil.getAllPruefungen;
 import static java.util.Objects.nonNull;
 
 import de.fhwedel.klausps.controller.api.BlockDTO;
@@ -28,7 +29,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -47,6 +47,12 @@ public class DataAccessService {
 
   public void setScheduleService(ScheduleService scheduleService) {
     this.scheduleService = scheduleService;
+  }
+
+  public ReadOnlyPruefung createPruefung(String name, String pruefungsNr, String refVWS,
+      String pruefer,
+      Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
+    return createPruefung(name, pruefungsNr, refVWS, Set.of(pruefer), duration, teilnehmerkreise);
   }
 
   public ReadOnlyPruefung createPruefung(String name, String pruefungsNr, String refVWS,
@@ -70,6 +76,99 @@ public class DataAccessService {
     return pruefungsperiode.pruefung(pruefungsNummer) != null;
   }
 
+  private void addTeilnehmerKreisSchaetzungToModelPruefung(Pruefung pruefungModel,
+      Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
+    teilnehmerkreise.forEach(pruefungModel::setSchaetzung);
+  }
+
+  public boolean isPruefungsperiodeSet() {
+    return nonNull(pruefungsperiode);
+  }
+
+  public List<ReadOnlyPlanungseinheit> changeDurationOf(ReadOnlyPruefung pruefung, Duration minutes)
+      throws HartesKriteriumException, IllegalArgumentException {
+
+    if (minutes.isNegative()) {
+      throw new IllegalArgumentException("Die Dauer der Pruefung muss positiv sein.");
+    }
+
+    Pruefung toChangeDuration = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
+    // Hartes Kriterium wird in ScheduleService geprüft.
+    // Die Änderungen der Pruefungen werden auch im ScheduleService vorgenommen.
+    List<Pruefung> resultOfChangingDuration = scheduleService.changeDuration(toChangeDuration,
+        minutes);
+    return new ArrayList<>(createListOfPruefungWithScoring(resultOfChangingDuration));
+  }
+
+  private Pruefung getPruefungFromModelOrException(String pruefungsNr)
+      throws IllegalArgumentException {
+    if (!existsPruefungWith(pruefungsNr)) {
+      throw new IllegalArgumentException(
+          "Pruefung mit Pruefungsnummer " + pruefungsNr + " ist in der Datenbank nicht vorhanden.");
+    }
+    return pruefungsperiode.pruefung(pruefungsNr);
+  }
+
+  private List<ReadOnlyPruefung> createListOfPruefungWithScoring(List<Pruefung> pruefungen) {
+    List<ReadOnlyPruefung> result = new ArrayList<>();
+    for (Pruefung pruefung : pruefungen) {
+      PruefungDTO build = new PruefungDTOBuilder(pruefung).withScoring(
+          scheduleService.scoringOfPruefung(pruefung)).build();
+      result.add(build);
+    }
+    return result;
+  }
+
+  /**
+   * Schedules a pruefung without any consistency checks.
+   *
+   * @param pruefung    The pruefung to schedule.
+   * @param startTermin The time to schedule the pruefung to.
+   */
+  public ReadOnlyPruefung schedulePruefung(ReadOnlyPruefung pruefung, LocalDateTime startTermin) {
+    Pruefung pruefungFromModel = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
+    if (pruefungsperiode.block(pruefungFromModel) != null) {
+      throw new IllegalArgumentException("Prüfung befindet sich innerhalb eines Blockes");
+    } else {
+      pruefungFromModel.setStartzeitpunkt(startTermin);
+      return new PruefungDTOBuilder(pruefungFromModel).build();
+    }
+  }
+
+  /**
+   * Schedules a block without any consistency checks. The passed block is consistent and has
+   * pruefungen inside.
+   *
+   * @param block  The block to schedule
+   * @param termin The time to schedule the pruefung to.
+   */
+  ReadOnlyBlock scheduleBlock(ReadOnlyBlock block, LocalDateTime termin) {
+    // todo look for model block with same block id, instead of comparing pruefungen
+    Block blockFromModel = getBlockFromModelOrException(block);
+    blockFromModel.setStartzeitpunkt(termin);
+
+    return fromModelToDTOBlock(blockFromModel);
+  }
+
+  private Block getBlockFromModelOrException(ReadOnlyBlock block) throws IllegalArgumentException {
+    if (!exists(block)) {
+      throw new IllegalArgumentException(
+          "Der angegebene Block ist in der Datenbank nicht vorhanden.");
+    }
+    // todo look for model block with same block id, instead of comparing pruefungen
+    return pruefungsperiode.block(block.getBlockId());
+  }
+
+  public ReadOnlyBlock fromModelToDTOBlock(Block block) {
+    // todo auslagern, wenn Converter implementiert ist
+    Set<ReadOnlyPruefung> pruefungen = new HashSet<>();
+    for (Pruefung pruefung : block.getPruefungen()) {
+      pruefungen.add(fromModelToDTOPruefungWithScoring(pruefung));
+    }
+    return new BlockDTO(block.getName(), block.getStartzeitpunkt(), block.getDauer(),
+        pruefungen, block.getId(), block.getTyp());
+  }
+
   /**
    * Checks the consistency of a ReadOnlyBlock
    *
@@ -89,6 +188,12 @@ public class DataAccessService {
     //  und der Termin zu überprüfen.
   }
 
+  private ReadOnlyPruefung fromModelToDTOPruefungWithScoring(Pruefung pruefung) {
+    // TODO extract into appropriate class
+    return new PruefungDTOBuilder(pruefung).withScoring(scheduleService.scoringOfPruefung(pruefung))
+        .build();
+  }
+
   private boolean emptyBlockExists(ReadOnlyBlock block) {
     for (Block modelBlock : pruefungsperiode.ungeplanteBloecke()) {
       // todo add all necessary checks for empty blocks
@@ -97,25 +202,6 @@ public class DataAccessService {
       }
     }
     return false;
-  }
-
-  private boolean haveSamePruefungen(ReadOnlyBlock readOnlyBlock, Block modelBlock) {
-    Set<Pruefung> modelPruefungen = modelBlock.getPruefungen();
-    if (modelPruefungen.size() != readOnlyBlock.getROPruefungen().size()) {
-      return false;
-    }
-    for (ReadOnlyPruefung pruefung : readOnlyBlock.getROPruefungen()) {
-      Pruefung pruefungFromModel = pruefungsperiode.pruefung(pruefung.getPruefungsnummer());
-      if (!existsPruefungWith(pruefung.getPruefungsnummer()) || modelPruefungen.stream().noneMatch(
-          (Pruefung p) -> hasPruefungsnummer(p, pruefungFromModel.getPruefungsnummer()))) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  private boolean hasPruefungsnummer(Pruefung pruefung, String pruefungsnummer) {
-    return pruefung.getPruefungsnummer().equals(pruefungsnummer);
   }
 
   private Optional<Block> searchInModel(ReadOnlyBlock block) {
@@ -147,87 +233,23 @@ public class DataAccessService {
     return false;
   }
 
-  private void addTeilnehmerKreisSchaetzungToModelPruefung(Pruefung pruefungModel,
-      Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
-    teilnehmerkreise.forEach(pruefungModel::setSchaetzung);
-  }
-
-  public ReadOnlyPruefung createPruefung(String name, String pruefungsNr, String refVWS,
-      String pruefer,
-      Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
-    return createPruefung(name, pruefungsNr, refVWS, Set.of(pruefer), duration, teilnehmerkreise);
-  }
-
-  public boolean isPruefungsperiodeSet() {
-    return nonNull(pruefungsperiode);
-  }
-
-  public List<ReadOnlyPlanungseinheit> changeDurationOf(ReadOnlyPruefung pruefung, Duration minutes)
-      throws HartesKriteriumException, IllegalArgumentException {
-
-    if (minutes.isNegative()) {
-      throw new IllegalArgumentException("Die Dauer der Pruefung muss positiv sein.");
+  private boolean haveSamePruefungen(ReadOnlyBlock readOnlyBlock, Block modelBlock) {
+    Set<Pruefung> modelPruefungen = modelBlock.getPruefungen();
+    if (modelPruefungen.size() != readOnlyBlock.getROPruefungen().size()) {
+      return false;
     }
-
-    Pruefung toChangeDuration = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
-    // Hartes Kriterium wird in ScheduleService geprüft.
-    // Die Änderungen der Pruefungen werden auch im ScheduleService vorgenommen.
-    List<Pruefung> resultOfChangingDuration = scheduleService.changeDuration(toChangeDuration,
-        minutes);
-    return new ArrayList<>(createListOfPruefungWithScoring(resultOfChangingDuration));
-  }
-
-
-  private List<ReadOnlyPruefung> createListOfPruefungWithScoring(List<Pruefung> pruefungen) {
-    List<ReadOnlyPruefung> result = new ArrayList<>();
-    for (Pruefung pruefung : pruefungen) {
-      PruefungDTO build = new PruefungDTOBuilder(pruefung).withScoring(
-          scheduleService.scoringOfPruefung(pruefung)).build();
-      result.add(build);
+    for (ReadOnlyPruefung pruefung : readOnlyBlock.getROPruefungen()) {
+      Pruefung pruefungFromModel = pruefungsperiode.pruefung(pruefung.getPruefungsnummer());
+      if (!existsPruefungWith(pruefung.getPruefungsnummer()) || modelPruefungen.stream().noneMatch(
+          (Pruefung p) -> hasPruefungsnummer(p, pruefungFromModel.getPruefungsnummer()))) {
+        return false;
+      }
     }
-    return result;
+    return true;
   }
 
-  /**
-   * Schedules a pruefung without any consistency checks.
-   *
-   * @param pruefung    The pruefung to schedule.
-   * @param startTermin The time to schedule the pruefung to.
-   */
-  public ReadOnlyPruefung schedulePruefung(ReadOnlyPruefung pruefung, LocalDateTime startTermin) {
-    Pruefung pruefungFromModel = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
-    if (pruefungsperiode.block(pruefungFromModel) != null) {
-      throw new IllegalArgumentException("Prüfung befindet sich innerhalb eines Blockes");
-    } else {
-      pruefungFromModel.setStartzeitpunkt(startTermin);
-      return new PruefungDTOBuilder(pruefungFromModel).build();
-    }
-  }
-
-  /**
-   * Unschedules a pruefung without any consistency checks.
-   *
-   * @param pruefung The pruefung to schedule.
-   */
-  public ReadOnlyPruefung unschedulePruefung(ReadOnlyPruefung pruefung) {
-    Pruefung pruefungFromModel = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
-    pruefungFromModel.setStartzeitpunkt(null);
-    return new PruefungDTOBuilder(pruefungFromModel).build();
-  }
-
-  /**
-   * Schedules a block without any consistency checks. The passed block is consistent and has
-   * pruefungen inside.
-   *
-   * @param block  The block to schedule
-   * @param termin The time to schedule the pruefung to.
-   */
-  ReadOnlyBlock scheduleBlock(ReadOnlyBlock block, LocalDateTime termin) {
-    // todo look for model block with same block id, instead of comparing pruefungen
-    Block blockFromModel = getBlockFromModelOrException(block);
-    blockFromModel.setStartzeitpunkt(termin);
-
-    return fromModelToDTOBlock(blockFromModel);
+  private boolean hasPruefungsnummer(Pruefung pruefung, String pruefungsnummer) {
+    return pruefung.getPruefungsnummer().equals(pruefungsnummer);
   }
 
   public ReadOnlyBlock unscheduleBlock(ReadOnlyBlock block) {
@@ -247,7 +269,6 @@ public class DataAccessService {
     return pruefungsperiode.geplantePruefungen().stream()
         .map(this::fromModelToDTOPruefungWithScoring).collect(Collectors.toSet());
   }
-
 
   public Set<Pruefung> getGeplanteModelPruefung() {
     return pruefungsperiode.geplantePruefungen();
@@ -309,53 +330,22 @@ public class DataAccessService {
     return fromModelToDTOPruefungWithScoring(modelPruefung);
   }
 
-  public ReadOnlyBlock fromModelToDTOBlock(Block block) {
-    // todo auslagern, wenn Converter implementiert ist
-    Set<ReadOnlyPruefung> pruefungen = new HashSet<>();
-    for (Pruefung pruefung : block.getPruefungen()) {
-      pruefungen.add(fromModelToDTOPruefungWithScoring(pruefung));
-    }
-    return new BlockDTO(block.getName(), block.getStartzeitpunkt(), block.getDauer(),
-        pruefungen, block.getId(), block.getTyp());
-  }
-
-  private ReadOnlyPruefung fromModelToDTOPruefungWithScoring(Pruefung pruefung) {
-    // TODO extract into appropriate class
-    return new PruefungDTOBuilder(pruefung).withScoring(scheduleService.scoringOfPruefung(pruefung))
-        .build();
-  }
-
-  private ReadOnlyPruefung fromModelToDTOPruefungWithoutScoring(Pruefung pruefung) {
-    // TODO extract into appropriate class
-    return new PruefungDTOBuilder(pruefung)
-        .build();
-  }
-
-
   public boolean deletePruefung(ReadOnlyPruefung roPruefung) throws IllegalArgumentException {
     Pruefung pruefung = getPruefungFromModelOrException(roPruefung.getPruefungsnummer());
     this.unschedulePruefung(roPruefung);
     return this.pruefungsperiode.removePlanungseinheit(pruefung);
   }
 
-  private Pruefung getPruefungFromModelOrException(String pruefungsNr)
-      throws IllegalArgumentException {
-    if (!existsPruefungWith(pruefungsNr)) {
-      throw new IllegalArgumentException(
-          "Pruefung mit Pruefungsnummer " + pruefungsNr + " ist in der Datenbank nicht vorhanden.");
-    }
-    return pruefungsperiode.pruefung(pruefungsNr);
+  /**
+   * Unschedules a pruefung without any consistency checks.
+   *
+   * @param pruefung The pruefung to schedule.
+   */
+  public ReadOnlyPruefung unschedulePruefung(ReadOnlyPruefung pruefung) {
+    Pruefung pruefungFromModel = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
+    pruefungFromModel.setStartzeitpunkt(null);
+    return new PruefungDTOBuilder(pruefungFromModel).build();
   }
-
-  private Block getBlockFromModelOrException(ReadOnlyBlock block) throws IllegalArgumentException {
-    if (!exists(block)) {
-      throw new IllegalArgumentException(
-          "Der angegebene Block ist in der Datenbank nicht vorhanden.");
-    }
-    // todo look for model block with same block id, instead of comparing pruefungen
-    return pruefungsperiode.block(block.getBlockId());
-  }
-
 
   public boolean terminIsInPeriod(LocalDateTime termin) {
     return terminIsSameDayOrAfterPeriodStart(termin) && terminIsSameDayOrBeforePeriodEnd(termin);
@@ -424,6 +414,23 @@ public class DataAccessService {
     return fromModelToDTOBlock(blockModel);
   }
 
+  private boolean isAnyInBlock(Collection<ReadOnlyPruefung> pruefungen) {
+    return pruefungen.stream()
+        .anyMatch((pruefung) -> this.pruefungIsInBlock(pruefung.getPruefungsnummer()));
+  }
+
+  private boolean contaisDuplicatePruefung(ReadOnlyPruefung[] pruefungen) {
+    return pruefungen.length != Arrays.stream(pruefungen).distinct().count();
+  }
+
+  private boolean pruefungIsInBlock(String pruefungsNummer) {
+    if (existsPruefungWith(pruefungsNummer)) {
+      return Optional.ofNullable(pruefungsperiode.block(pruefungsperiode.pruefung(pruefungsNummer)))
+          .isPresent();
+    }
+    throw new IllegalArgumentException("Pruefung existiert nicht.");
+  }
+
   /**
    * Gets the amount of pruefungen taking place at a specified time. Multiple pruefungen that are
    * planned as one block only count as one.
@@ -450,7 +457,6 @@ public class DataAccessService {
     }
     return amountPruefungen;
   }
-
 
   public Pair<Block, Pruefung> removePruefungFromBlock(ReadOnlyBlock block,
       ReadOnlyPruefung pruefung) {
@@ -484,23 +490,6 @@ public class DataAccessService {
     return new Pair<>(modelBlock, modelPruefung);
   }
 
-  private boolean isAnyInBlock(Collection<ReadOnlyPruefung> pruefungen) {
-    return pruefungen.stream()
-        .anyMatch((pruefung) -> this.pruefungIsInBlock(pruefung.getPruefungsnummer()));
-  }
-
-  private boolean pruefungIsInBlock(String pruefungsNummer) {
-    if (existsPruefungWith(pruefungsNummer)) {
-      return Optional.ofNullable(pruefungsperiode.block(pruefungsperiode.pruefung(pruefungsNummer)))
-          .isPresent();
-    }
-    throw new IllegalArgumentException("Pruefung existiert nicht.");
-  }
-
-  private boolean contaisDuplicatePruefung(ReadOnlyPruefung[] pruefungen) {
-    return pruefungen.length != Arrays.stream(pruefungen).distinct().count();
-  }
-
   public LocalDate getStartOfPeriode() {
     return pruefungsperiode.getStartdatum();
   }
@@ -522,15 +511,8 @@ public class DataAccessService {
     throw new UnsupportedOperationException("Not implemented yet!");
   }
 
-  Set<Planungseinheit> getPlanungseinheitenBetween(LocalDateTime start, LocalDateTime end)
-      throws IllegalTimeSpanException {
-    if (start.isAfter(end)) {
-      throw new IllegalTimeSpanException("Der Start liegt nach dem Ende des Zeitslots");
-    }
-    return this.pruefungsperiode.planungseinheitenBetween(start, end);
-  }
-
-  public List<Planungseinheit> getAllPruefungenBetween(LocalDateTime start, LocalDateTime end)
+  public List<Planungseinheit> getAllPlanungseinheitenBetween(LocalDateTime start,
+      LocalDateTime end)
       throws IllegalTimeSpanException {
     if (start.isAfter(end)) {
       throw new IllegalTimeSpanException("Der Start liegt nach dem Ende des Zeitslots");
@@ -538,8 +520,16 @@ public class DataAccessService {
     return List.copyOf(pruefungsperiode.planungseinheitenBetween(start, end));
   }
 
-  public Optional<Block> getBlockTo(Pruefung pruefung) {
-    return Optional.ofNullable(pruefungsperiode.block(pruefung));
+  @NotNull
+  public Set<Pruefung> getAllPruefungenBetween(@NotNull LocalDateTime start,
+      @NotNull LocalDateTime end)
+      throws IllegalTimeSpanException {
+    if (start.isAfter(end)) {
+      throw new IllegalTimeSpanException("Der Start liegt nach dem Ende des Zeitslots");
+    }
+    Set<Planungseinheit> planungseinheitenBetween = pruefungsperiode.planungseinheitenBetween(start,
+        end);
+    return getAllPruefungen(planungseinheitenBetween);
   }
 
   public Optional<ReadOnlyBlock> getBlockTo(ReadOnlyPruefung pruefung) {
@@ -556,6 +546,10 @@ public class DataAccessService {
     } else {
       throw new IllegalArgumentException("Pruefungsnummer nicht im System!");
     }
+  }
+
+  public Optional<Block> getBlockTo(Pruefung pruefung) {
+    return Optional.ofNullable(pruefungsperiode.block(pruefung));
   }
 
   public Set<Teilnehmerkreis> getAllTeilnehmerkreise() {

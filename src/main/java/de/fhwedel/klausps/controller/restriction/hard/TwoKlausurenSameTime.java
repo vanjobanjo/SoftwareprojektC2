@@ -35,7 +35,7 @@ public class TwoKlausurenSameTime extends HartRestriktion implements Predicate<P
         .plusMinutes(MINUTES_BETWEEN_PRUEFUNGEN);
     List<Planungseinheit> testList = null;
     try {
-      testList = dataAccessService.getAllPruefungenBetween(start, end);
+      testList = dataAccessService.getAllPlanungseinheitenBetween(start, end);
     } catch (IllegalTimeSpanException e) {
       //start kann nicht vor ende liegen, da ich das berechne
       e.printStackTrace();
@@ -93,7 +93,7 @@ public class TwoKlausurenSameTime extends HartRestriktion implements Predicate<P
         .plusMinutes(MINUTES_BETWEEN_PRUEFUNGEN);
     List<Planungseinheit> testList = null;
     try {
-      testList = dataAccessService.getAllPruefungenBetween(start, end);
+      testList = dataAccessService.getAllPlanungseinheitenBetween(start, end);
     } catch (IllegalTimeSpanException e) {
       //start kann nicht vor ende liegen, da ich das berechne
       e.printStackTrace();
