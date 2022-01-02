@@ -305,8 +305,6 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     return result;
   }
 
-  /*private List*/
-
   /**
    * All planungseinheiten have to be pruefungen for this method to be applicable.
    */
