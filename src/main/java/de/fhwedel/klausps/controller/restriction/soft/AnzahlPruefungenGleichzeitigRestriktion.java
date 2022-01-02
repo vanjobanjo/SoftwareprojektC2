@@ -47,6 +47,7 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
   }
 
   @Override
+  @NotNull
   public Optional<WeichesKriteriumAnalyse> evaluate(@NotNull Pruefung pruefung) {
     Duration bufferPerSide = puffer.dividedBy(2);
     if (pruefung.isGeplant()) {
@@ -54,13 +55,12 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
       LocalDateTime endOfPruefung = pruefung.getStartzeitpunkt().plus(pruefung.getDauer())
           .plus(bufferPerSide);
 
-      List<Planungseinheit> pruefungenDuringCheck = tryToGetAllPlanungseinheitenBetween(
+      List<Planungseinheit> planungseinheitenOverlappingTheOneToCheck = tryToGetAllPlanungseinheitenBetween(
           startOfPruefung, endOfPruefung);
 
-      if (pruefungenDuringCheck.size() > maxPruefungenAtATime) {
+      if (planungseinheitenOverlappingTheOneToCheck.size() > maxPruefungenAtATime) {
         // find overlapping pruefungen
-        return findTooManyOverlappingPlanungseinheiten(startOfPruefung, endOfPruefung,
-            pruefungenDuringCheck);
+        return findTooManyOverlappingPlanungseinheiten(planungseinheitenOverlappingTheOneToCheck);
       }
     }
     return Optional.empty();
@@ -78,14 +78,12 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
 
   @NotNull
   private Optional<WeichesKriteriumAnalyse> findTooManyOverlappingPlanungseinheiten(
-      @NotNull LocalDateTime startOfPruefung, @NotNull LocalDateTime endOfPruefung,
       @NotNull List<Planungseinheit> planungseinheiten) {
-    List<Planungseinheit> planungseinheitenInTimeslot = tryToGetAllPlanungseinheitenBetween(
-        startOfPruefung, endOfPruefung);
     Set<Planungseinheit> conflictingPlanungseinheiten = new HashSet<>();
     // O(n^2) with n = amount of Planungseinheiten overlapping the given time interval
-    for (Planungseinheit planungseinheit : planungseinheitenInTimeslot) {
-      LocalDateTime startOfPlanungseinheit = planungseinheit.getStartzeitpunkt();
+    for (Planungseinheit planungseinheit : planungseinheiten) {
+      LocalDateTime startOfPlanungseinheit = planungseinheit.getStartzeitpunkt()
+          .minus(puffer.dividedBy(2));
       Collection<Planungseinheit> planungseinheitenAtSameTime = selectAllPlanungseinheitenContaining(
           startOfPlanungseinheit, planungseinheiten);
       if (planungseinheitenAtSameTime.size() > maxPruefungenAtATime) {
@@ -101,8 +99,8 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
     // O(n) with n = amount of Planungseinheiten to check
     Set<Planungseinheit> result = new HashSet<>();
     for (Planungseinheit planungseinheit : planungseinheiten) {
-      if (!time.isBefore(planungseinheit.getStartzeitpunkt()) && time.isBefore(
-          planungseinheit.endzeitpunkt())) {
+      if (!time.isBefore(planungseinheit.getStartzeitpunkt().minus(puffer.dividedBy(2))) && time.isBefore(
+          planungseinheit.endzeitpunkt().plus(puffer.dividedBy(2)))) {
         result.add(planungseinheit);
       }
     }

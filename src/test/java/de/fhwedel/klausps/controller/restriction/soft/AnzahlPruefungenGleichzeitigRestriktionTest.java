@@ -116,8 +116,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
   }
 
   @Test
-  void evaluate_onePruefungMoreAtATimeThanAllowed_equalIntervals()
-      throws IllegalTimeSpanException {
+  void evaluate_onePruefungMoreAtATimeThanAllowed_equalIntervals() throws IllegalTimeSpanException {
     // set the max amount of simultaneous pruefungen to 1
     this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1);
     List<Pruefung> pruefungen = get2PruefungenOnSameInterval();
@@ -157,8 +156,31 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
 
   private List<Pruefung> get2PruefungenWithOneOverlappingTheOther() {
     LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
-    return getRandomPruefungenAt(5L, startFirstPruefung,
+    return getRandomPruefungenAt(5L, startFirstPruefung, startFirstPruefung.plusMinutes(15));
+  }
+
+  @Test
+  void evaluate_onePruefungMoreAtATimeThanAllowed_intervalContainingOtherInterval()
+      throws IllegalTimeSpanException {
+    // set the max amount of simultaneous pruefungen to 1
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1);
+    List<Pruefung> pruefungen = get2PruefungenWithOneContainedByOther();
+
+    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(pruefungen));
+
+    WeicheKriteriumsAnalyseAssert.assertThat(deviceUnderTest.evaluate(pruefungen.get(0)).get())
+        .conflictingPruefungenAreExactly(getPruefungsnummernFromModel(pruefungen));
+    WeicheKriteriumsAnalyseAssert.assertThat(deviceUnderTest.evaluate(pruefungen.get(1)).get())
+        .conflictingPruefungenAreExactly(getPruefungsnummernFromModel(pruefungen));
+  }
+
+  private List<Pruefung> get2PruefungenWithOneContainedByOther() {
+    LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
+    List<Pruefung> result = getRandomPruefungenAt(5L, startFirstPruefung,
         startFirstPruefung.plusMinutes(15));
+    result.get(1).setDauer(result.get(0).getDauer().minusMinutes(30));
+    return result;
   }
 
   @Test
@@ -221,24 +243,6 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     assertThat((deviceUnderTest.evaluate(pruefungToCheck))).isEmpty();
   }
 
-/*
-  TODO work in progress, current implementation is faulty and does not allow for a correct usage
-  @Test
-  void evaluate_morePlanungseinheitenThanPermitted_pruefungenCloserThanBuffer()
-      throws IllegalTimeSpanException {
-    Duration puffer = Duration.ofMinutes(10);
-    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1,
-        puffer);
-
-    List<Pruefung> pruefungen = get2PruefungenCloserToEachOtherThan(puffer);
-
-    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
-        convertPruefungenToPlanungseinheiten(pruefungen));
-
-    assertThat((deviceUnderTest.evaluate(pruefungen.get(0)))).isPresent();
-    assertThat((deviceUnderTest.evaluate(pruefungen.get(1)))).isPresent();
-  }*/
-
   private List<Pruefung> get3PruefungenWith2SequentialOverlappingTheThird() {
     Duration puffer = Duration.ofMinutes(30);
     LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
@@ -251,6 +255,22 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     return List.of(pruefungA, pruefungB, pruefungC);
   }
 
+  @Test
+  void evaluate_morePlanungseinheitenThanPermitted_pruefungenCloserThanBufferButNotOverlapping()
+      throws IllegalTimeSpanException {
+    Duration puffer = Duration.ofMinutes(10);
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1,
+        puffer);
+
+    List<Pruefung> pruefungen = get2PruefungenCloserToEachOtherThan(puffer);
+
+    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(pruefungen));
+
+    assertThat((deviceUnderTest.evaluate(pruefungen.get(0)))).isPresent();
+    assertThat((deviceUnderTest.evaluate(pruefungen.get(1)))).isPresent();
+  }
+
   private List<Pruefung> get2PruefungenCloserToEachOtherThan(Duration duration) {
     Pruefung firstPruefung = getRandomPlannedPruefung(1L);
     firstPruefung.setDauer(Duration.ofHours(1));
@@ -259,6 +279,30 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
         firstPruefung.getStartzeitpunkt().plus(firstPruefung.getDauer())
             .plus(duration.minusMinutes(1)));
     return List.of(firstPruefung, secondPruefung);
+  }
+
+  @Test
+  void evaluate_morePlanungseinheitenThanPermitted_noBufferPlanungseinheitenAdjacent()
+      throws IllegalTimeSpanException {
+    Duration puffer = Duration.ZERO;
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1,
+        puffer);
+
+    List<Pruefung> pruefungen = get2adjacentPruefungen();
+
+    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(pruefungen));
+
+    assertThat((deviceUnderTest.evaluate(pruefungen.get(0)))).isNotPresent();
+    assertThat((deviceUnderTest.evaluate(pruefungen.get(1)))).isNotPresent();
+  }
+
+  private List<Pruefung> get2adjacentPruefungen() {
+    LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
+    List<Pruefung> result = new ArrayList<>(2);
+    result.add(getRandomPlannedPruefung(22L));
+    result.addAll(getRandomPruefungenAt(23L, result.get(0).endzeitpunkt()));
+    return result;
   }
 
   /*private List*/
