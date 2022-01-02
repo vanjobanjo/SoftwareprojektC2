@@ -72,6 +72,12 @@ public class TestUtils {
     return randomPruefungen;
   }
 
+  public static Pruefung getRandomPruefung(LocalDateTime from, LocalDateTime to, long seed) {
+    Random random = new Random(seed);
+    return new PruefungImpl(getRandomString(random, 5), getRandomString(random, 5),
+        getRandomString(random, 5), Duration.between(from, to), from);
+  }
+
   public static List<Pruefung> getRandomPruefungenAt(long seed, LocalDateTime... schedules) {
     Random random = new Random(seed);
     List<Pruefung> randomPruefungen = new ArrayList<>(schedules.length);
