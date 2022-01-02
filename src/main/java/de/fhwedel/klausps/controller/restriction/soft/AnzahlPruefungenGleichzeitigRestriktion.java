@@ -11,6 +11,7 @@ import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -67,7 +68,8 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
   private List<Planungseinheit> tryToGetAllPlanungseinheitenBetween(@NotNull LocalDateTime from,
       @NotNull LocalDateTime to) {
     try {
-      return dataAccessService.getAllPlanungseinheitenBetween(from, to);
+      // TODO refactor to return set of pruefung
+      return new ArrayList<>(dataAccessService.getAllPruefungenBetween(from, to));
     } catch (IllegalTimeSpanException e) {
       // can never happen, as the duration of a pruefung is checked to be > 0
       throw new IllegalStateException("A Pruefung with a negative duration can not exist.", e);
