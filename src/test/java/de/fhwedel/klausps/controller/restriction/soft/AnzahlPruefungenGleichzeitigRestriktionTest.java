@@ -298,11 +298,30 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
   }
 
   private List<Pruefung> get2adjacentPruefungen() {
-    LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
+    return get2adjacentPruefungen(Duration.ZERO);
+  }
+
+  private List<Pruefung> get2adjacentPruefungen(Duration buffer) {
     List<Pruefung> result = new ArrayList<>(2);
     result.add(getRandomPlannedPruefung(22L));
-    result.addAll(getRandomPruefungenAt(23L, result.get(0).endzeitpunkt()));
+    result.addAll(getRandomPruefungenAt(23L, result.get(0).endzeitpunkt().plus(buffer)));
     return result;
+  }
+
+  @Test
+  void evaluate_morePlanungseinheitenThanPermitted_planungseinheitenAdjacent()
+      throws IllegalTimeSpanException {
+    Duration buffer = Duration.ofMinutes(30);
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1,
+        buffer);
+
+    List<Pruefung> pruefungen = get2adjacentPruefungen(buffer);
+
+    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(pruefungen));
+
+    assertThat((deviceUnderTest.evaluate(pruefungen.get(0)))).isNotPresent();
+    assertThat((deviceUnderTest.evaluate(pruefungen.get(1)))).isNotPresent();
   }
 
   /**
