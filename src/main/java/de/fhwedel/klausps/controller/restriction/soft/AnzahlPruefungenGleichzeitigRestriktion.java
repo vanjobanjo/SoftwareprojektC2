@@ -165,7 +165,7 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
     return scoring;
   }
 
-  private int getSumm(Iterable<Integer> values) {
+  private int getSumm(@NotNull Iterable<Integer> values) {
     int result = 0;
     for (Integer value : values) {
       result += value;
