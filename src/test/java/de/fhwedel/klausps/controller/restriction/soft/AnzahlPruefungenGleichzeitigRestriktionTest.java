@@ -27,6 +27,7 @@ import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.BlockImpl;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
+import io.cucumber.messages.internal.com.google.common.collect.Sets;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -59,7 +60,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
    * x Eine Klausur mehr gleichzeitig als erlaubt
    * x Mehr klausuren gleichzeitig als erlaubt, ohne dass die getestete Pruefung involviert ist (nichts soll angezeigt werden)
    * x Mehr klausuren als erlaubt aber alle in einem Block zusammen
-   * - Mehr klausuren als erlaubt aber alle einige zusammen in einem Block (so, dass erlaubt)
+   * x Mehr klausuren als erlaubt aber einige zusammen in einem Block (so, dass erlaubt)
    * - Mehr klausuren als erlaubt aber in 2 Blöcken, sodass insgesamt erlaubt
    */
 
@@ -465,7 +466,6 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1,
         Duration.ZERO);
     Block block = getBlockWith3Pruefungen().asBlock();
-    block.setStartzeitpunkt(LocalDateTime.of(1998, 1, 2, 21, 39));
     List<Pruefung> pruefungenInBlock = new ArrayList<>(block.getPruefungen());
 
     when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(block.getPruefungen());
@@ -483,7 +483,26 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     for (Pruefung pruefung : getRandomPlannedPruefungen(2L, 3)) {
       result.addPruefung(pruefung);
     }
+    result.setStartzeitpunkt(LocalDateTime.of(1998, 1, 2, 21, 39));
     return result;
+  }
+
+  @Test
+  void evaluate_morePruefungenThanAllowed_validAsSomePruefungenAreTogetherInABlock()
+      throws IllegalTimeSpanException {
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2,
+        Duration.ZERO);
+    Block block = getBlockWith3Pruefungen().asBlock();
+    Pruefung pruefung = getRandomPruefung(block.getStartzeitpunkt(), block.endzeitpunkt(), 22L);
+    List<Pruefung> pruefungenInBlock = new ArrayList<>(block.getPruefungen());
+
+    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
+        Sets.union(block.getPruefungen(), Set.of(pruefung)));
+
+    when(dataAccessService.getBlockTo(any(Pruefung.class))).thenReturn(Optional.of(block));
+
+    assertThat((deviceUnderTest.evaluate(pruefungenInBlock.get(0)))).isNotPresent();
+    assertThat((deviceUnderTest.evaluate(pruefung))).isNotPresent();
   }
 
 }
