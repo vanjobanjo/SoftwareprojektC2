@@ -51,7 +51,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
    * x Keine gleichzeitigen Klausuren
    * x Genau so viele Klausuren gleichzeitig wie erlaubt
    * x Eine Klausur mehr gleichzeitig als erlaubt
-   * - Mehr klausuren gleichzeitig als erlaubt, ohne dass die getestete Pruefung involviert ist (nichts soll angezeigt werden)
+   * x Mehr klausuren gleichzeitig als erlaubt, ohne dass die getestete Pruefung involviert ist (nichts soll angezeigt werden)
    * - Mehr klausuren als erlaubt aber alle in einem Block zusammen
    * - Mehr klausuren als erlaubt aber alle einige zusammen in einem Block (so, dass erlaubt)
    * - Mehr klausuren als erlaubt aber in 2 Blöcken, sodass insgesamt erlaubt
@@ -135,7 +135,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
 
   private List<Pruefung> get2PruefungenOnSameInterval() {
     List<Pruefung> result = new ArrayList<>(2);
-    result.add(getRandomPlannedPruefung(10L));
+    result.add(getRandomPlannedPruefung(12L));
     result.add(
         getRandomPruefung(result.get(0).getStartzeitpunkt(), result.get(0).endzeitpunkt(), 11L));
     return result;
@@ -394,6 +394,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
   @Test
   void evaluate_sumOfTeilnehmerkreisschaetzungen_onlyCountHighestValueOfTeilnehmerkreis()
       throws IllegalTimeSpanException {
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1);
     List<Pruefung> pruefungen = get2PruefungenWithSameTeilnehmerkreiseWithSchaetzung(5, 12);
     int expectedTeilnehmerAmount = 12;
 
@@ -406,7 +407,6 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
   }
 
   private List<Pruefung> get2PruefungenWithSameTeilnehmerkreiseWithSchaetzung(int s1, int s2) {
-    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1);
     List<Pruefung> result = List.of(getRandomPruefungWith(1L, getRandomTeilnehmerkreis(1L)),
         getRandomPruefungWith(2L, getRandomTeilnehmerkreis(1L)));
 
@@ -419,6 +419,38 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     result.get(0).setSchaetzung(result.get(0).getTeilnehmerkreise().iterator().next(), s1);
     result.get(1).setSchaetzung(result.get(1).getTeilnehmerkreise().iterator().next(), s2);
 
+    return result;
+  }
+
+  @Test
+  void evaluate_moreAtSameTimeThatAllowedButRequestedNotInvolvedInConflict()
+      throws IllegalTimeSpanException {
+    // max 2 pruefungen at a time and no buffer
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2,
+        Duration.ZERO);
+    List<Pruefung> pruefungen = get3PruefungenOverlappingAndOneJustOverlappingWithOneOfThem();
+
+    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(List.of(pruefungen.get(0), pruefungen.get(3))));
+
+    assertThat((deviceUnderTest.evaluate(pruefungen.get(0)))).isNotPresent();
+  }
+
+  /**
+   * The one not violating the restriction is the first in the list.
+   *
+   * @return A list of pruefungen.
+   */
+  private List<Pruefung> get3PruefungenOverlappingAndOneJustOverlappingWithOneOfThem() {
+    List<Pruefung> result = new ArrayList<>(4);
+    result.addAll(get2PruefungenOnSameInterval());
+    // add the one to check for
+    result.add(0,
+        getRandomPruefung(result.get(1).endzeitpunkt(), result.get(1).endzeitpunkt().plusHours(1),
+            3L));
+    // add the one bridging between the one to test and the ones causing the violation
+    result.add(getRandomPruefung(result.get(1).endzeitpunkt().minusMinutes(15),
+        result.get(0).getStartzeitpunkt().plusMinutes(15), 4L));
     return result;
   }
 
