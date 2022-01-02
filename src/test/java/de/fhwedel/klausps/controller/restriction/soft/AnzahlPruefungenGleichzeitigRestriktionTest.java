@@ -34,6 +34,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,7 +58,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
    * x Genau so viele Klausuren gleichzeitig wie erlaubt
    * x Eine Klausur mehr gleichzeitig als erlaubt
    * x Mehr klausuren gleichzeitig als erlaubt, ohne dass die getestete Pruefung involviert ist (nichts soll angezeigt werden)
-   * p Mehr klausuren als erlaubt aber alle in einem Block zusammen
+   * x Mehr klausuren als erlaubt aber alle in einem Block zusammen
    * - Mehr klausuren als erlaubt aber alle einige zusammen in einem Block (so, dass erlaubt)
    * - Mehr klausuren als erlaubt aber in 2 Blöcken, sodass insgesamt erlaubt
    */
@@ -463,12 +464,17 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
   void evaluate_morePruefungenThanAllowedButAllInSameBlock() throws IllegalTimeSpanException {
     this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1,
         Duration.ZERO);
-    List<Planungseinheit> planungseinheiten = List.of(getBlockWith3Pruefungen());
+    Block block = getBlockWith3Pruefungen().asBlock();
+    block.setStartzeitpunkt(LocalDateTime.of(1998, 1, 2, 21, 39));
+    List<Pruefung> pruefungenInBlock = new ArrayList<>(block.getPruefungen());
 
-    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        planungseinheiten);
+    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(block.getPruefungen());
 
-    /*assertThat((deviceUnderTest.evaluate(planungseinheiten.get(0)))).isNotPresent();*/
+    when(dataAccessService.getBlockTo(any(Pruefung.class))).thenReturn(Optional.of(block));
+
+    assertThat((deviceUnderTest.evaluate(pruefungenInBlock.get(0)))).isNotPresent();
+    assertThat((deviceUnderTest.evaluate(pruefungenInBlock.get(1)))).isNotPresent();
+    assertThat((deviceUnderTest.evaluate(pruefungenInBlock.get(2)))).isNotPresent();
   }
 
   private Planungseinheit getBlockWith3Pruefungen() {

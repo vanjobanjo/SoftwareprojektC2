@@ -6,6 +6,7 @@ import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.ANZAHL_PR
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
+import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
@@ -58,6 +59,7 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
 
       List<Planungseinheit> planungseinheitenOverlappingTheOneToCheck = tryToGetAllPlanungseinheitenBetween(
           startOfPruefung, endOfPruefung);
+      ignorePruefungenInSameBlockOf(planungseinheitenOverlappingTheOneToCheck, pruefung);
 
       return getAnalyseIfRestrictionViolated(planungseinheitenOverlappingTheOneToCheck);
     }
@@ -73,6 +75,16 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
     } catch (IllegalTimeSpanException e) {
       // can never happen, as the duration of a pruefung is checked to be > 0
       throw new IllegalStateException("A Pruefung with a negative duration can not exist.", e);
+    }
+  }
+
+  private void ignorePruefungenInSameBlockOf(List<Planungseinheit> planungseinheiten,
+      Pruefung toFilterFor) {
+    Pruefung pruefung = toFilterFor.asPruefung();
+    Optional<Block> block = dataAccessService.getBlockTo(pruefung);
+    if (block.isPresent()) {
+      planungseinheiten.removeAll(block.get().getPruefungen());
+      planungseinheiten.add(toFilterFor);
     }
   }
 
