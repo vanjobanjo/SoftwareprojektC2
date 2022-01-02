@@ -2,9 +2,12 @@ package de.fhwedel.klausps.controller.util;
 
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
+import de.fhwedel.klausps.model.api.Ausbildungsgrad;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
+import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
+import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -102,4 +105,21 @@ public class TestUtils {
     return pruefungen.stream().map(Pruefung::getPruefungsnummer)
         .collect(Collectors.toUnmodifiableSet());
   }
+
+  public static Teilnehmerkreis getRandomTeilnehmerkreis(long seed) {
+    Random random = new Random(seed);
+    return new TeilnehmerkreisImpl(getRandomString(random, 10), getRandomString(random, 5),
+        random.nextInt(11),
+        Ausbildungsgrad.values()[random.nextInt(Ausbildungsgrad.values().length)]);
+  }
+
+  public static Pruefung getRandomPruefungWith(long seed, Teilnehmerkreis... teilnehmerkreise) {
+    Random random = new Random(seed);
+    Pruefung result = getRandomPlannedPruefung(seed);
+    for (Teilnehmerkreis teilnehmerkreis : teilnehmerkreise) {
+      result.addTeilnehmerkreis(teilnehmerkreis, random.nextInt(1, Integer.MAX_VALUE));
+    }
+    return result;
+  }
+
 }

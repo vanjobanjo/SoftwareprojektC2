@@ -12,8 +12,10 @@ import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
@@ -141,8 +143,17 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
   }
 
   private int getAmountAffectedStudents(@NotNull Iterable<Planungseinheit> planungseinheiten) {
-    // TODO calculate affected students
-    return 0;
+    HashMap<Teilnehmerkreis, Integer> maxTeilnehmerPerTeilnehmerkreis = new HashMap<>();
+    for (Planungseinheit planungseinheit : planungseinheiten) {
+      for (Map.Entry<Teilnehmerkreis, Integer> entry : planungseinheit.getSchaetzungen()
+          .entrySet()) {
+        if (!maxTeilnehmerPerTeilnehmerkreis.containsKey(entry.getKey())
+            || maxTeilnehmerPerTeilnehmerkreis.get(entry.getKey()) <= entry.getValue()) {
+          maxTeilnehmerPerTeilnehmerkreis.put(entry.getKey(), entry.getValue());
+        }
+      }
+    }
+    return getSumm(maxTeilnehmerPerTeilnehmerkreis.values());
   }
 
   private int calcScoring(@NotNull Set<Planungseinheit> planungseinheiten) {
@@ -152,5 +163,13 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
       scoring *= this.kriterium.getWert();
     }
     return scoring;
+  }
+
+  private int getSumm(Iterable<Integer> values) {
+    int result = 0;
+    for (Integer value : values) {
+      result += value;
+    }
+    return result;
   }
 }

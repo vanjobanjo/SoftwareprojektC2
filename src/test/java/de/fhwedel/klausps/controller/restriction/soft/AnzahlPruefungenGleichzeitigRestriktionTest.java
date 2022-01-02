@@ -4,7 +4,9 @@ import static de.fhwedel.klausps.controller.util.TestUtils.convertPruefungenToPl
 import static de.fhwedel.klausps.controller.util.TestUtils.getPruefungsnummernFromModel;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefung;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungWith;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungenAt;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTeilnehmerkreis;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedPruefung;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -47,7 +49,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
    * x Nur die aufgerufene Klausur ist geplant
    * x Aufruf mit ungeplanter Klausur
    * x Keine gleichzeitigen Klausuren
-   * p Genau so viele Klausuren gleichzeitig wie erlaubt
+   * x Genau so viele Klausuren gleichzeitig wie erlaubt
    * x Eine Klausur mehr gleichzeitig als erlaubt
    * - Mehr klausuren gleichzeitig als erlaubt, ohne dass die getestete Pruefung involviert ist (nichts soll angezeigt werden)
    * - Mehr klausuren als erlaubt aber alle in einem Block zusammen
@@ -325,18 +327,6 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     assertThat((deviceUnderTest.evaluate(pruefungen.get(1)))).isNotPresent();
   }
 
-  /**
-   * All planungseinheiten have to be pruefungen for this method to be applicable.
-   */
-  private List<Pruefung> convertPlanungseinheitenToPruefungen(
-      Iterable<Planungseinheit> planungseinheiten) {
-    List<Pruefung> result = new ArrayList<>();
-    for (Planungseinheit planungseinheit : planungseinheiten) {
-      result.add(planungseinheit.asPruefung());
-    }
-    return result;
-  }
-
   private List<Pruefung> convertPruefungenFromReadonlyToModel(
       Collection<ReadOnlyPruefung> pruefungen) {
     return pruefungen.stream().map(this::getPruefungOfReadOnlyPruefung).toList();
@@ -365,8 +355,40 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
 
     int expectedScoring = WeichesKriterium.ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH.getWert();
 
-    assertThat((deviceUnderTest.evaluate(pruefungen.get(0)).get().getDeltaScoring())).isEqualTo(expectedScoring);
-    assertThat((deviceUnderTest.evaluate(pruefungen.get(1)).get().getDeltaScoring())).isEqualTo(expectedScoring);
+    assertThat((deviceUnderTest.evaluate(pruefungen.get(0)).get().getDeltaScoring())).isEqualTo(
+        expectedScoring);
+    assertThat((deviceUnderTest.evaluate(pruefungen.get(1)).get().getDeltaScoring())).isEqualTo(
+        expectedScoring);
+  }
+
+  @Test
+  void evaluate_sumOfTeilnehmerkreisschaetzungen() throws IllegalTimeSpanException {
+    List<Pruefung> pruefungen = get2PruefungenWithDistinctTeilnehmerkreiseWithSchaetzung(5, 12);
+    int expectedTeilnehmerAmount = 5 + 12;
+
+    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(pruefungen));
+
+    assertThat(
+        (deviceUnderTest.evaluate(pruefungen.get(0)).get().getAmountAffectedStudents())).isEqualTo(
+        expectedTeilnehmerAmount);
+  }
+
+  private List<Pruefung> get2PruefungenWithDistinctTeilnehmerkreiseWithSchaetzung(int s1, int s2) {
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1);
+    List<Pruefung> result = List.of(getRandomPruefungWith(1L, getRandomTeilnehmerkreis(1L)),
+        getRandomPruefungWith(2L, getRandomTeilnehmerkreis(2L)));
+
+    // set all pruefungen to occupy the same time slot
+    for (Pruefung pruefung : result) {
+      pruefung.setStartzeitpunkt(result.get(0).getStartzeitpunkt());
+      pruefung.setDauer(result.get(0).getDauer());
+    }
+
+    result.get(0).setSchaetzung(result.get(0).getTeilnehmerkreise().iterator().next(), s1);
+    result.get(1).setSchaetzung(result.get(1).getTeilnehmerkreise().iterator().next(), s2);
+
+    return result;
   }
 
 }
