@@ -6,7 +6,6 @@ import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
-import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
@@ -46,7 +45,7 @@ public abstract class AtSameTimeRestriction extends WeicheRestriktion {
 
     List<Planungseinheit> planungseinheitenOverlappingTheOneToCheck = tryToGetAllPlanungseinheitenBetween(
         startOfPruefung, endOfPruefung);
-    ignorePruefungenInSameBlockOf(planungseinheitenOverlappingTheOneToCheck, pruefung);
+    ignorePruefungenOf(planungseinheitenOverlappingTheOneToCheck, pruefung);
 
     return getAnalyseIfRestrictionViolated(planungseinheitenOverlappingTheOneToCheck);
   }
@@ -62,15 +61,8 @@ public abstract class AtSameTimeRestriction extends WeicheRestriktion {
     }
   }
 
-  private void ignorePruefungenInSameBlockOf(@NotNull List<Planungseinheit> planungseinheiten,
-      @NotNull Pruefung toFilterFor) {
-    Pruefung pruefung = toFilterFor.asPruefung();
-    Optional<Block> block = dataAccessService.getBlockTo(pruefung);
-    if (block.isPresent()) {
-      planungseinheiten.removeAll(block.get().getPruefungen());
-      planungseinheiten.add(toFilterFor);
-    }
-  }
+  protected abstract void ignorePruefungenOf(@NotNull List<Planungseinheit> planungseinheiten,
+      @NotNull Pruefung toFilterFor);
 
   @NotNull
   private Optional<WeichesKriteriumAnalyse> getAnalyseIfRestrictionViolated(
