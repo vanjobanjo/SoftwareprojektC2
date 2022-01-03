@@ -360,12 +360,11 @@ public class Controller implements InterfaceController {
   @Override
   public List<ReadOnlyPlanungseinheit> addPruefungToBlock(ReadOnlyBlock block,
       ReadOnlyPruefung pruefung)
-      throws NoPruefungsPeriodeDefinedException {
+      throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
     noNullParameters(block, pruefung);
     checkNoPruefungDefined();
-    // todo uncomment, when Exception is in method signature
-    //  return scheduleService.addPruefungToBlock(block, pruefung);
-    throw new IllegalStateException("Not implemented yet!");
+    return scheduleService.addPruefungToBlock(block, pruefung);
+
   }
 
   @Override
