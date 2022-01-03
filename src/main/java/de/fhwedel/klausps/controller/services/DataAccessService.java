@@ -40,6 +40,7 @@ public class DataAccessService {
 
   private Pruefungsperiode pruefungsperiode;
   private ScheduleService scheduleService; // TODO ScheduleService muss hier noch raus.
+  private Converter converter; //TODO where does it come from
 
   public void setPruefungsperiode(Pruefungsperiode pruefungsperiode) {
     this.pruefungsperiode = pruefungsperiode;
@@ -47,6 +48,10 @@ public class DataAccessService {
 
   public void setScheduleService(ScheduleService scheduleService) {
     this.scheduleService = scheduleService;
+  }
+
+  public void setConverter(Converter converter) {
+    this.converter = converter;
   }
 
   public ReadOnlyPruefung createPruefung(String name, String pruefungsNr, String refVWS,
@@ -297,14 +302,14 @@ public class DataAccessService {
 
   public Set<ReadOnlyPruefung> ungeplantePruefungenForTeilnehmerkreis(Teilnehmerkreis tk) {
     return new HashSet<>(
-        Converter.convertToROPruefungCollection(pruefungsperiode.ungeplantePruefungen().stream()
+        converter.convertToROPruefungCollection(pruefungsperiode.ungeplantePruefungen().stream()
             .filter(pruefung -> pruefung.getTeilnehmerkreise().contains(tk))
             .collect(Collectors.toSet())));
   }
 
   public Set<ReadOnlyPruefung> geplantePruefungenForTeilnehmerkreis(Teilnehmerkreis tk) {
     return new HashSet<>(
-        Converter.convertToROPruefungCollection(pruefungsperiode.geplantePruefungen().stream()
+        converter.convertToROPruefungCollection(pruefungsperiode.geplantePruefungen().stream()
             .filter(pruefung -> pruefung.getTeilnehmerkreise().contains(tk))
             .collect(Collectors.toSet())));
   }
@@ -481,7 +486,7 @@ public class DataAccessService {
       if (potentialOldBlock.isPresent()) {
         Block oldBlock = potentialOldBlock.get();
         Pair<Block, Pruefung> unscheduled = removePruefungFromBlock(
-            Converter.convertToROBlock(oldBlock), pruefung);
+            converter.convertToROBlock(oldBlock), pruefung);
         modelPruefung = unscheduled.right();
       }
       modelBlock.addPruefung(modelPruefung);

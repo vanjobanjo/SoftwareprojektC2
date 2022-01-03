@@ -65,6 +65,7 @@ class DataAccessServiceTest {
   private Pruefungsperiode pruefungsperiode;
   private DataAccessService deviceUnderTest;
   private ScheduleService scheduleService;
+  private Converter converter;
 
   @BeforeEach
   void setUp() {
@@ -74,6 +75,9 @@ class DataAccessServiceTest {
     this.scheduleService = mock(ScheduleService.class);
     deviceUnderTest.setPruefungsperiode(pruefungsperiode);
     deviceUnderTest.setScheduleService(this.scheduleService);
+    this.converter = new Converter();
+    converter.setScheduleService(this.scheduleService); //TODO
+    deviceUnderTest.setConverter(converter);
   }
 
   @Test
@@ -461,7 +465,7 @@ class DataAccessServiceTest {
   @Test
   void existsBlockDifferentDates() {
     LocalDateTime now = LocalDateTime.now();
-    ReadOnlyBlock blockToSchedule = new BlockDTO("Name",now, Duration.ZERO,
+    ReadOnlyBlock blockToSchedule = new BlockDTO("Name", now, Duration.ZERO,
         Set.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED), 1,
         Blocktyp.SEQUENTIAL);
 
@@ -673,7 +677,7 @@ class DataAccessServiceTest {
     when(this.pruefungsperiode.planungseinheitenBetween(start, end)).thenReturn(setPlanung);
 
     assertThat(this.deviceUnderTest.getAllPlanungseinheitenBetween(start, end))
-          .containsExactlyInAnyOrderElementsOf(listPruefung);
+        .containsExactlyInAnyOrderElementsOf(listPruefung);
   }
 
   @Test
@@ -779,9 +783,9 @@ class DataAccessServiceTest {
     Block actualBlock = actualResult.left();
     Pruefung actualPruefung = actualResult.right();
     // assertions
-    ReadOnlyBlockAssert.assertThat(expectedBlock).isSameAs(Converter.convertToROBlock(actualBlock));
+    ReadOnlyBlockAssert.assertThat(expectedBlock).isSameAs(converter.convertToROBlock(actualBlock));
     ReadOnlyPruefungAssert.assertThat(RO_ANALYSIS_UNPLANNED)
-        .isTheSameAs(Converter.convertToReadOnlyPruefung(actualPruefung));
+        .isTheSameAs(converter.convertToReadOnlyPruefung(actualPruefung));
   }
 
 
@@ -818,9 +822,9 @@ class DataAccessServiceTest {
     Pruefung actualPruefung = actualResult.right();
 
     // assertions
-    ReadOnlyBlockAssert.assertThat(expectedBlock).isSameAs(Converter.convertToROBlock(actualBlock));
+    ReadOnlyBlockAssert.assertThat(expectedBlock).isSameAs(converter.convertToROBlock(actualBlock));
     ReadOnlyPruefungAssert.assertThat(RO_ANALYSIS_UNPLANNED)
-        .isTheSameAs(Converter.convertToReadOnlyPruefung(actualPruefung));
+        .isTheSameAs(converter.convertToReadOnlyPruefung(actualPruefung));
   }
 
   @Test
@@ -854,9 +858,9 @@ class DataAccessServiceTest {
     Pruefung actualPruefung = actualResult.right();
 
     // assertions
-    ReadOnlyBlockAssert.assertThat(expectedBlock).isSameAs(Converter.convertToROBlock(actualBlock));
+    ReadOnlyBlockAssert.assertThat(expectedBlock).isSameAs(converter.convertToROBlock(actualBlock));
     ReadOnlyPruefungAssert.assertThat(RO_DM_UNPLANNED)
-        .isTheSameAs(Converter.convertToReadOnlyPruefung(actualPruefung));
+        .isTheSameAs(converter.convertToReadOnlyPruefung(actualPruefung));
   }
 
   @Test
@@ -888,9 +892,9 @@ class DataAccessServiceTest {
     Pruefung actualPruefung = actualResult.right();
 
     // assertions
-    ReadOnlyBlockAssert.assertThat(expectedBlock).isSameAs(Converter.convertToROBlock(actualBlock));
+    ReadOnlyBlockAssert.assertThat(expectedBlock).isSameAs(converter.convertToROBlock(actualBlock));
     ReadOnlyPruefungAssert.assertThat(RO_DM_UNPLANNED)
-        .isTheSameAs(Converter.convertToReadOnlyPruefung(actualPruefung));
+        .isTheSameAs(converter.convertToReadOnlyPruefung(actualPruefung));
   }
 
   @Test
@@ -937,6 +941,7 @@ class DataAccessServiceTest {
     assertThrows(IllegalArgumentException.class,
         () -> deviceUnderTest.removePruefungFromBlock(block, pruefungToRemove));
   }
+
   @Test
   void ungeplantePruefungToTeilnehmerkreisTest() {
     Teilnehmerkreis bwl = TestFactory.bwlBachelor;
@@ -966,7 +971,8 @@ class DataAccessServiceTest {
         TestFactory.RO_ANALYSIS_UNPLANNED);
     analysis.addTeilnehmerkreis(TestFactory.infPtl);
     when(pruefungsperiode.ungeplantePruefungen()).thenReturn(Set.of(analysis));
-    assertThat(deviceUnderTest.ungeplantePruefungenForTeilnehmerkreis(TestFactory.bwlBachelor)).isEmpty();
+    assertThat(
+        deviceUnderTest.ungeplantePruefungenForTeilnehmerkreis(TestFactory.bwlBachelor)).isEmpty();
   }
 
   @Test
@@ -974,10 +980,12 @@ class DataAccessServiceTest {
     Pruefung analysis = TestFactory.getPruefungOfReadOnlyPruefung(
         TestFactory.RO_ANALYSIS_UNPLANNED);
     analysis.addTeilnehmerkreis(TestFactory.infPtl);
-    analysis.setStartzeitpunkt(LocalDateTime.of(1,1,1,1,1));
+    analysis.setStartzeitpunkt(LocalDateTime.of(1, 1, 1, 1, 1));
     when(pruefungsperiode.geplantePruefungen()).thenReturn(Set.of(analysis));
-    assertThat(deviceUnderTest.ungeplantePruefungenForTeilnehmerkreis(TestFactory.bwlBachelor)).isEmpty();
+    assertThat(
+        deviceUnderTest.ungeplantePruefungenForTeilnehmerkreis(TestFactory.bwlBachelor)).isEmpty();
   }
+
   @Test
   void addPruefungToBlock_none_scheduled_successful() {
 
@@ -994,7 +1002,7 @@ class DataAccessServiceTest {
         RO_ANALYSIS_UNPLANNED);
 
     ReadOnlyBlockAssert.assertThat(expectedBlock)
-        .isSameAs(Converter.convertToROBlock(result.left()));
+        .isSameAs(converter.convertToROBlock(result.left()));
   }
 
 
@@ -1029,7 +1037,7 @@ class DataAccessServiceTest {
         RO_DM_UNPLANNED);
     // compare results
     ReadOnlyBlockAssert.assertThat(expectedBlock)
-        .isSameAs(Converter.convertToROBlock(result.left()));
+        .isSameAs(converter.convertToROBlock(result.left()));
   }
 
   @Test
@@ -1053,7 +1061,7 @@ class DataAccessServiceTest {
         analysis);
 
     ReadOnlyBlockAssert.assertThat(expectedBlock)
-        .isSameAs(Converter.convertToROBlock(result.left()));
+        .isSameAs(converter.convertToROBlock(result.left()));
   }
 
 
@@ -1091,7 +1099,7 @@ class DataAccessServiceTest {
         pruefungToAdd);
     // compare results
     ReadOnlyBlockAssert.assertThat(expectedBlock)
-        .isSameAs(Converter.convertToROBlock(result.left()));
+        .isSameAs(converter.convertToROBlock(result.left()));
   }
 
   @Test

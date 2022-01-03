@@ -3,6 +3,7 @@ package de.fhwedel.klausps.controller.services;
 import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.model.api.Pruefung;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,6 +20,14 @@ public class RestrictionService {
   public List<WeichesKriteriumAnalyse> checkWeicheKriterien(
       Pruefung pruefung) {
     throw new IllegalStateException("Not implemented yet!");
+  }
+
+  public Set<Pruefung> getAffectedPruefungen(Pruefung pruefung) {
+    Set<Pruefung> result = new HashSet<>();
+    for (WeichesKriteriumAnalyse w : checkWeicheKriterien(pruefung)) {
+      result.addAll(w.getCausingPruefungen());
+    }
+    return result;
   }
 
   /**
@@ -51,7 +60,7 @@ public class RestrictionService {
     return pruefung.stream().collect(Collectors.groupingBy(prue -> prue,
         Collectors.flatMapping(prue -> checkHarteKriterien(prue).stream(), Collectors.toList())));
   }
-  
+
   public int getScoringOfPruefung(Pruefung pruefung) {
     if (!pruefung.isGeplant()) {
       return 0;

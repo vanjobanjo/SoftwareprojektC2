@@ -1,16 +1,20 @@
 package de.fhwedel.klausps.controller.services;
 
 
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.api.BlockDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
+import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -23,11 +27,14 @@ import java.util.Set;
  */
 public class Converter {
 
-  private Converter() {
-  }
-  // todo add scoring to pruefung
+  //TODO von wo?
+  private ScheduleService scheduleService;
 
-  public static ReadOnlyBlock convertToROBlock(Block block) {
+  public void setScheduleService(ScheduleService service) {
+    scheduleService = service;
+  }
+  
+  public ReadOnlyBlock convertToROBlock(Block block) {
     Set<ReadOnlyPruefung> pruefungen = new HashSet<>(
         convertToROPruefungCollection(block.getPruefungen()));
 
@@ -39,11 +46,12 @@ public class Converter {
         block.getTyp());
   }
 
-  public static ReadOnlyPruefung convertToReadOnlyPruefung(Pruefung pruefung) {
-    return new PruefungDTOBuilder(pruefung).build();
+  public ReadOnlyPruefung convertToReadOnlyPruefung(Pruefung pruefung) {
+    return new PruefungDTOBuilder(pruefung).withScoring(scheduleService.scoringOfPruefung(pruefung))
+        .build();
   }
 
-  public static ReadOnlyPlanungseinheit convertToReadOnlyPlanungseinheit(
+  public ReadOnlyPlanungseinheit convertToReadOnlyPlanungseinheit(
       Planungseinheit planungseinheit) {
     if (planungseinheit.isBlock()) {
       return convertToROBlock(planungseinheit.asBlock());
@@ -52,8 +60,7 @@ public class Converter {
     }
   }
 
-
-  public static Collection<ReadOnlyPruefung> convertToROPruefungCollection(
+  public Collection<ReadOnlyPruefung> convertToROPruefungCollection(
       Collection<Pruefung> collection) {
     Collection<ReadOnlyPruefung> result = new HashSet<>();
     for (Pruefung pruefung : collection) {
@@ -62,7 +69,7 @@ public class Converter {
     return result;
   }
 
-  public static Collection<ReadOnlyBlock> convertToROBlockCollection(
+  public Collection<ReadOnlyBlock> convertToROBlockCollection(
       Collection<Block> collection) {
     Collection<ReadOnlyBlock> result = new HashSet<>();
     for (Block block : collection) {
@@ -71,7 +78,7 @@ public class Converter {
     return result;
   }
 
-  public static Collection<ReadOnlyPlanungseinheit> convertToROPlanungseinheitCollection(
+  public Collection<ReadOnlyPlanungseinheit> convertToROPlanungseinheitCollection(
       Collection<Planungseinheit> collection) {
     Collection<ReadOnlyPlanungseinheit> result = new HashSet<>();
     for (Planungseinheit planungseinheit : collection) {
@@ -80,7 +87,7 @@ public class Converter {
     return result;
   }
 
-  public static Collection<ReadOnlyPlanungseinheit> convertToROPlanungseinheitCollection(
+  public Collection<ReadOnlyPlanungseinheit> convertToROPlanungseinheitCollection(
       Planungseinheit... planungseinheiten) {
     Collection<ReadOnlyPlanungseinheit> result = new HashSet<>();
     for (Planungseinheit planungseinheit : planungseinheiten) {
@@ -88,4 +95,22 @@ public class Converter {
     }
     return result;
   }
+
+  public List<KriteriumsAnalyse> convertAnalyseScoring(
+      List<WeichesKriteriumAnalyse> analysen) {
+
+    List<KriteriumsAnalyse> list = new LinkedList<>();
+    for (WeichesKriteriumAnalyse a : analysen) {
+      list.add(convertAnalyse(a));
+    }
+    return list;
+  }
+
+  public KriteriumsAnalyse convertAnalyse(WeichesKriteriumAnalyse analyse) {
+    return new KriteriumsAnalyse(
+        new HashSet<>(convertToROPruefungCollection(analyse.getCausingPruefungen())),
+        analyse.getKriterium(), analyse.getAffectedTeilnehmerKreise(),
+        analyse.getAmountAffectedStudents());
+  }
+
 }

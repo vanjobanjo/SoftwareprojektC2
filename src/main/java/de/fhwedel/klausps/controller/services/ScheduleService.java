@@ -7,12 +7,7 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.helper.Pair;
-import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
-import de.fhwedel.klausps.controller.restriction.hard.TwoKlausurenSameTime;
 import de.fhwedel.klausps.model.api.Block;
-import de.fhwedel.klausps.controller.helper.Pair;
-import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
-import de.fhwedel.klausps.controller.restriction.hard.TwoKlausurenSameTime;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.Duration;
@@ -25,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import jdk.jshell.spi.ExecutionControl.NotImplementedException;
 
 
 public class ScheduleService {
@@ -33,6 +27,8 @@ public class ScheduleService {
   private final DataAccessService dataAccessService;
 
   private final RestrictionService restrictionService;
+
+  private final Converter converter = new Converter();
 
   public ScheduleService(DataAccessService dataAccessService,
       RestrictionService restrictionService) {
@@ -136,7 +132,7 @@ public class ScheduleService {
     applyScoring(scoring);
 
     return Optional.of(
-        Converter.convertToROBlock(dataAccessService.getBlockTo(modelPruefung).get()));
+        converter.convertToROBlock(dataAccessService.getBlockTo(modelPruefung).get()));
 
   }
 
@@ -183,7 +179,7 @@ public class ScheduleService {
     // todo vorher Analyse
     Pair<Block, Pruefung> separated = dataAccessService.removePruefungFromBlock(block, pruefung);
     if (!block.geplant()) {
-      result.addAll(Converter.convertToROPlanungseinheitCollection(separated.left(),
+      result.addAll(converter.convertToROPlanungseinheitCollection(separated.left(),
           separated.right()));
     } else {
       // todo update scoring and add changed Planungseinheiten to result
@@ -203,7 +199,7 @@ public class ScheduleService {
     Pair<Block, Pruefung> added = dataAccessService.addPruefungToBlock(block, pruefung);
 
     if (!block.geplant()) {
-      result.addAll(Converter.convertToROPlanungseinheitCollection(added.left(), added.right()));
+      result.addAll(converter.convertToROPlanungseinheitCollection(added.left(), added.right()));
       if (pruefung.geplant()) {
         // todo analyse scoring for affected Pruefungen
         //  block is not planned therefore new scorings can only get better (no hard check needed)
@@ -216,7 +212,8 @@ public class ScheduleService {
   }
 
 
-  private void checkHartesKriteriumAddPruefungToBlock(ReadOnlyPruefung pruefung, ReadOnlyBlock block,
+  private void checkHartesKriteriumAddPruefungToBlock(ReadOnlyPruefung pruefung,
+      ReadOnlyBlock block,
       Optional<ReadOnlyBlock> oldBlock, Pruefung addedPruefung)
       throws HartesKriteriumException {
     List<HartesKriteriumAnalyse> hardAnalyses = restrictionService.checkHarteKriterien(
@@ -259,9 +256,9 @@ public class ScheduleService {
     if (this.dataAccessService.addTeilnehmerkreis(roPruefung, teilnehmerkreis)) {
       try {
         //TODO hier auf HarteRestirktionen testen dann noch auf Weiche und dann Liste zurückgeben
-     //   listOfRead = testHartKriterium(roPruefung);
-     //   listOfRead.addAll()
-        throw new HartesKriteriumException(null,null,null);
+        //   listOfRead = testHartKriterium(roPruefung);
+        //   listOfRead.addAll()
+        throw new HartesKriteriumException(null, null, null);
       } catch (HartesKriteriumException e) {
         this.dataAccessService.removeTeilnehmerkreis(roPruefung, teilnehmerkreis);
         throw e;
@@ -282,9 +279,9 @@ public class ScheduleService {
 
     if (this.dataAccessService.removeTeilnehmerkreis(roPruefung, teilnehmerkreis)) {
       try {
-       //TODO hier auf HarteRestirktionen testen dann noch auf Weiche und dann Liste zurückgeben
+        //TODO hier auf HarteRestirktionen testen dann noch auf Weiche und dann Liste zurückgeben
         //listOfRead = signalHartesKriteriumFailure(null);
-        throw new HartesKriteriumException(null,null,null);
+        throw new HartesKriteriumException(null, null, null);
       } catch (HartesKriteriumException e) {
         this.dataAccessService.addTeilnehmerkreis(roPruefung, teilnehmerkreis);
         throw e;
@@ -299,7 +296,6 @@ public class ScheduleService {
 
     throw new IllegalStateException("Not implemented yet!");
   }
-
 
 
   private Set<Pruefung> getPruefungenInvolvedIn(
