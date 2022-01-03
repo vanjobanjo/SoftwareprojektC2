@@ -461,7 +461,6 @@ class DataAccessServiceTest {
   @Test
   void existsBlockDifferentDates() {
     LocalDateTime now = LocalDateTime.now();
-
     ReadOnlyBlock blockToSchedule = new BlockDTO("Name",now, Duration.ZERO,
         Set.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED), 1,
         Blocktyp.SEQUENTIAL);
