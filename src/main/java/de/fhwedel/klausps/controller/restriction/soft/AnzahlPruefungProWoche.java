@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 public class AnzahlPruefungProWoche extends WeicheRestriktion{
 
   // for testing
-  public static int LIMIT_DEFAULT = 5;
+  public static final int LIMIT_DEFAULT = 5;
   private static final int DAYS_WEEK_DEFAULT = 7;
   private final int limit;
 
@@ -190,6 +190,11 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion{
       }
     }
     return planungseinheiten;
+  }
+
+  @Override
+  protected int addDeltaScoring(Set<Pruefung> affectedPruefungen) {
+    throw new UnsupportedOperationException("not implemented");
   }
 
 }

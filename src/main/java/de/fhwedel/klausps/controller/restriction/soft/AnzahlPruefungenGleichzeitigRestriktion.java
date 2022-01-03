@@ -106,4 +106,9 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends AtSameTimeRestricti
     return !maxTeilnehmerPerTeilnehmerkreis.containsKey(entry.getKey())
         || maxTeilnehmerPerTeilnehmerkreis.get(entry.getKey()) <= entry.getValue();
   }
+
+  @Override
+  protected int addDeltaScoring(Set<Pruefung> affectedPruefungen) {
+    throw new UnsupportedOperationException("not implemented");
+  }
 }

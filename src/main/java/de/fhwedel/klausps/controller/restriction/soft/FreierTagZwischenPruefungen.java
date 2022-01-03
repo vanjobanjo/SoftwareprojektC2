@@ -7,7 +7,6 @@ import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Pruefung;
-import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -74,22 +73,6 @@ public class FreierTagZwischenPruefungen extends WeicheRestriktion {
       return false;
     }
     return pruefungBlock.equals(otherBlock);
-  }
-
-  private WeichesKriteriumAnalyse buildAnalysis(Set<Pruefung> affectedPruefungen) {
-    int scoring = 0;
-    Set<Teilnehmerkreis> affectedTeilnehmerkreise = new HashSet<>();
-    int affectedStudents = 0;
-    for (Pruefung pruefung : affectedPruefungen) {
-      // todo get scoring right
-      scoring += FREIER_TAG_ZWISCHEN_PRUEFUNGEN.getWert();
-      affectedTeilnehmerkreise.addAll(pruefung.getTeilnehmerkreise());
-      // todo get Schaetzungen right
-      affectedStudents += pruefung.schaetzung();
-    }
-
-    return new WeichesKriteriumAnalyse(affectedPruefungen, FREIER_TAG_ZWISCHEN_PRUEFUNGEN,
-        affectedTeilnehmerkreise, affectedStudents, scoring);
   }
 
 }

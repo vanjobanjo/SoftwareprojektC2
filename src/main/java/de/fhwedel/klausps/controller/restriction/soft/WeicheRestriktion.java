@@ -5,7 +5,11 @@ import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Pruefung;
+import de.fhwedel.klausps.model.api.Teilnehmerkreis;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 
 public abstract class WeicheRestriktion {
@@ -29,5 +33,49 @@ public abstract class WeicheRestriktion {
    */
   public abstract Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung);
 
+
+  protected WeichesKriteriumAnalyse buildAnalysis(Set<Pruefung> affectedPruefungen) {
+    int scoring;
+    Map<Teilnehmerkreis, Integer> affectedTeilnehmerkreise = new HashMap<>();
+    for (Pruefung pruefung : affectedPruefungen) {
+      addTeilnehmerkreis(affectedTeilnehmerkreise, pruefung.getSchaetzungen());
+    }
+    scoring = addDeltaScoring(affectedPruefungen);
+
+    return new WeichesKriteriumAnalyse(affectedPruefungen, this.kriterium,
+        affectedTeilnehmerkreise.keySet(), getAffectedStudents(affectedTeilnehmerkreise), scoring);
+  }
+
+  protected void addTeilnehmerkreis(
+      Map<Teilnehmerkreis, Integer> affectedTeilnehmerkreise,
+      Map<Teilnehmerkreis, Integer> teilnehmerkreiseToAdd) {
+    for (Map.Entry<Teilnehmerkreis, Integer> schaetzung : teilnehmerkreiseToAdd.entrySet()) {
+      Integer foundSchaetzung = affectedTeilnehmerkreise.getOrDefault(schaetzung.getKey(), null);
+      Integer newSchaetzung = schaetzung.getValue();
+      if (foundSchaetzung == null) {
+        affectedTeilnehmerkreise.put(schaetzung.getKey(), newSchaetzung);
+      } else if (foundSchaetzung < newSchaetzung) {
+        affectedTeilnehmerkreise.replace(schaetzung.getKey(), foundSchaetzung, newSchaetzung);
+      }
+    }
+  }
+
+
+  protected int getAffectedStudents(Map<Teilnehmerkreis, Integer> affectedTeilnehmerkreise) {
+    int result = 0;
+    for (Integer schaetzung : affectedTeilnehmerkreise.values()) {
+      result += schaetzung;
+    }
+    return result;
+  }
+
+  /**
+   * default approach
+   * @param affectedPruefungen pruefungen that violate restriction
+   * @return the scoring
+   */
+  protected int addDeltaScoring(Set<Pruefung> affectedPruefungen) {
+    return affectedPruefungen.size() * this.kriterium.getWert();
+  }
 
 }

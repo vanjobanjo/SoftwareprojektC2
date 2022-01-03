@@ -11,7 +11,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-public class KeineKlausurAmSonntag extends WeicheRestriktion{
+public class KeineKlausurAmSonntag extends WeicheRestriktion {
 
   private static final DayOfWeek SUNDAY = DayOfWeek.SUNDAY;
 
@@ -47,5 +47,11 @@ public class KeineKlausurAmSonntag extends WeicheRestriktion{
         new WeichesKriteriumAnalyse(Set.of(pruefung), SONNTAG,
             new HashSet<>(pruefung.getTeilnehmerkreise()),
             pruefung.schaetzung()));
+  }
+
+
+  @Override
+  protected int addDeltaScoring(Set<Pruefung> affectedPruefungen) {
+    throw new UnsupportedOperationException("not implemented");
   }
 }

@@ -161,4 +161,9 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
     return LocalDateTime.of(time.getYear(), time.getMonth(), time.getDayOfMonth(), END_ZEIT, 0);
   }
 
+  @Override
+  protected int addDeltaScoring(Set<Pruefung> affectedPruefungen) {
+    throw new UnsupportedOperationException("not implemented");
+  }
+
 }

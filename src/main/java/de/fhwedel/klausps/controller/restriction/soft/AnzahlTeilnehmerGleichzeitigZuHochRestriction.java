@@ -71,4 +71,9 @@ public class AnzahlTeilnehmerGleichzeitigZuHochRestriction extends AtSameTimeRes
   protected int calcScoringFor(Set<Planungseinheit> violatingPlanungseinheiten) {
     return 0;
   }
+
+  @Override
+  protected int addDeltaScoring(Set<Pruefung> affectedPruefungen) {
+    throw new UnsupportedOperationException("not implemented");
+  }
 }

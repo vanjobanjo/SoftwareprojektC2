@@ -8,10 +8,7 @@ import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Pruefung;
-import de.fhwedel.klausps.model.api.Teilnehmerkreis;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -69,40 +66,9 @@ public class UniformeZeitslots extends WeicheRestriktion {
     return pruefung.getDauer().equals(other.getDauer());
   }
 
-
-  private WeichesKriteriumAnalyse buildAnalysis(Set<Pruefung> affectedPruefungen) {
-    int scoring = 0;
-    Map<Teilnehmerkreis, Integer> affectedTeilnehmerkreise = new HashMap<>();
-    for (Pruefung pruefung : affectedPruefungen) {
-      addTeilnehmerkreisAndGetSchaetzung(affectedTeilnehmerkreise, pruefung.getSchaetzungen());
-      scoring += this.kriterium.getWert();
-
-    }
-
-    return new WeichesKriteriumAnalyse(affectedPruefungen, this.kriterium,
-        affectedTeilnehmerkreise.keySet(), getAffectedStudents(affectedTeilnehmerkreise), scoring);
-  }
-
-  private void addTeilnehmerkreisAndGetSchaetzung(
-      Map<Teilnehmerkreis, Integer> affectedTeilnehmerkreise,
-      Map<Teilnehmerkreis, Integer> teilnehmerkreiseToAdd) {
-    for (Map.Entry<Teilnehmerkreis, Integer> schaetzung : teilnehmerkreiseToAdd.entrySet()) {
-      Integer foundSchaetzung = affectedTeilnehmerkreise.getOrDefault(schaetzung.getKey(), null);
-      Integer newSchaetzung = schaetzung.getValue();
-      if (foundSchaetzung == null) {
-        affectedTeilnehmerkreise.put(schaetzung.getKey(), newSchaetzung);
-      } else if (foundSchaetzung < newSchaetzung) {
-        affectedTeilnehmerkreise.replace(schaetzung.getKey(), foundSchaetzung, newSchaetzung);
-      }
-    }
-  }
-
-  private int getAffectedStudents(Map<Teilnehmerkreis, Integer> affectedTeilnehmerkreise) {
-    int result = 0;
-    for (Integer schaetzung : affectedTeilnehmerkreise.values()) {
-      result += schaetzung;
-    }
-    return result;
+  @Override
+  protected int addDeltaScoring(Set<Pruefung> affectedPruefungen) {
+    return affectedPruefungen.size() * this.kriterium.getWert();
   }
 
 

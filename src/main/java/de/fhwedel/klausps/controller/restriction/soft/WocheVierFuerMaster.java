@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
 
 public class WocheVierFuerMaster extends WeicheRestriktion {
 
-  private final static int WEEK_FOUR = 4;
-  private final static int DAYS_WEEK = 7;
+  private static final int WEEK_FOUR = 4;
+  private static final int DAYS_WEEK = 7;
   private final LocalDate startPeriode;
 
 
@@ -45,7 +45,7 @@ public class WocheVierFuerMaster extends WeicheRestriktion {
         && (pruefung.getAusbildungsgrade().contains(BACHELOR)
         || pruefung.getAusbildungsgrade().contains(AUSBILDUNG));
   }
-  
+
   /**
    * Evaluates for a {@link Pruefung} in which way it violates a restriction.
    *
@@ -85,6 +85,11 @@ public class WocheVierFuerMaster extends WeicheRestriktion {
   private int getWeek(LocalDate startPeriode, LocalDate termin) {
     return (termin.getDayOfYear() - startPeriode.getDayOfYear())
         / DAYS_WEEK;
+  }
+
+  @Override
+  protected int addDeltaScoring(Set<Pruefung> affectedPruefungen) {
+    throw new UnsupportedOperationException("not implemented");
   }
 
 }
