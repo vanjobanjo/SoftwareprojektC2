@@ -1,12 +1,14 @@
 package de.fhwedel.klausps.controller.services;
 
 
+import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.api.BlockDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
+import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Planungseinheit;
@@ -33,7 +35,7 @@ public class Converter {
   public void setScheduleService(ScheduleService service) {
     scheduleService = service;
   }
-  
+
   public ReadOnlyBlock convertToROBlock(Block block) {
     Set<ReadOnlyPruefung> pruefungen = new HashSet<>(
         convertToROPruefungCollection(block.getPruefungen()));
@@ -113,4 +115,8 @@ public class Converter {
         analyse.getAmountAffectedStudents());
   }
 
+  public HartesKriteriumException convertHardException(List<HartesKriteriumAnalyse> hard) {
+    return new HartesKriteriumException(null, null, null);
+    //TODO #172
+  }
 }

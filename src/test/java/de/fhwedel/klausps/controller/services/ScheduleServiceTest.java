@@ -9,7 +9,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.api.BlockDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
@@ -27,7 +26,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -77,6 +75,8 @@ class ScheduleServiceTest {
     when(pruefungsperiode.getEnddatum()).thenReturn(END_PERIOD);
     dataAccessService.setPruefungsperiode(this.pruefungsperiode);
     dataAccessService.setScheduleService(this.deviceUnderTest);
+
+
   }
 
   @Test
@@ -112,13 +112,13 @@ class ScheduleServiceTest {
 
     LocalDateTime time = START_PERIOD.atTime(_1000);
 
-    ReadOnlyBlock expectedBlock =
-        getROBlockFromROPruefungen("AnalysisAndDm", time, RO_DM, RO_ANALYSIS);
+    Block model = new BlockImpl(pruefungsperiode, "AnalysisAndDm", Blocktyp.SEQUENTIAL);
+    model.addPruefung(getPruefungOfReadOnlyPruefung(RO_DM));
+    model.addPruefung(getPruefungOfReadOnlyPruefung(RO_ANALYSIS));
+    model.setStartzeitpunkt(time);
 
     when(dataAccessService.terminIsInPeriod(any())).thenReturn(true);
-    when(dataAccessService.scheduleBlock(any(), any())).thenReturn(expectedBlock);
-    Block blockWithAnalysisDM =
-        getModelBlockFromROPruefungen("AnalysisAndDm", null, RO_ANALYSIS, RO_DM);
+    when(dataAccessService.scheduleBlock(any(), any())).thenReturn(model);
 
     ReadOnlyBlock consistentBlock =
         getROBlockFromROPruefungen("AnalysisAndDm", null, RO_DM, RO_ANALYSIS);
@@ -268,7 +268,9 @@ class ScheduleServiceTest {
     ReadOnlyBlock block =
         getROBlockFromROPruefungen("AnalysisAndDm", now, ro_analysis, ro_dm);
 
-    when(dataAccessService.unscheduleBlock(any())).thenReturn(block);
+    when(dataAccessService.unscheduleBlock(any())).thenReturn(blockWithAnalysisDM);
+    when(restrictionService.getAffectedPruefungen(any())).thenReturn(
+        Set.of(model_analysis, model_dm));
 
     List<ReadOnlyPlanungseinheit> result = deviceUnderTest.unscheduleBlock(block);
     assertThat(result).contains(ro_analysis, ro_dm);

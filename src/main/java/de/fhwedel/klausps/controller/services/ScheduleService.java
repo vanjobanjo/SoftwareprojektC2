@@ -8,18 +8,19 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.helper.Pair;
 import de.fhwedel.klausps.model.api.Block;
+import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import org.jetbrains.annotations.NotNull;
 
 
 public class ScheduleService {
@@ -34,6 +35,7 @@ public class ScheduleService {
       RestrictionService restrictionService) {
     this.dataAccessService = dataAccessService;
     this.restrictionService = restrictionService;
+    this.converter.setScheduleService(this);
   }
 
   /**
@@ -47,12 +49,52 @@ public class ScheduleService {
   public List<ReadOnlyPlanungseinheit> schedulePruefung(ReadOnlyPruefung pruefung,
       LocalDateTime termin)
       throws HartesKriteriumException {
-    // todo before any restriction test: unschedule Pruefung
-    //  then test restrictions
-    //  if hard restriction violated, reschedule at previous position else schedule at new position
-    // no check if pruefung exists needed, because DataAccessService already does it
-    dataAccessService.schedulePruefung(pruefung, termin);
-    return Collections.emptyList(); // TODO return result of test for conflicts
+
+    Pruefung pruefungModel = dataAccessService.schedulePruefung(pruefung, termin);
+    checkHardCriteriaUndo(pruefung, pruefungModel);
+    return checkSoftCriteria(pruefungModel);
+  }
+
+  @NotNull
+  private List<ReadOnlyPlanungseinheit> checkSoftCriteria(Pruefung pruefungModel) {
+    Set<Pruefung> changedScoring = restrictionService.getAffectedPruefungen(pruefungModel);
+    return new LinkedList<>(
+        converter.convertToROPlanungseinheitCollection(getPlanungseinheitenWithBlock(
+            changedScoring)));
+  }
+
+  @NotNull
+  private List<ReadOnlyPlanungseinheit> checkSoftCriteria(Block blockModel) {
+    Set<Pruefung> changedScoring = new HashSet<>();
+    for (Pruefung p : blockModel.getPruefungen()) {
+      changedScoring.addAll(restrictionService.getAffectedPruefungen(p));
+    }
+    return new LinkedList<>(
+        converter.convertToROPlanungseinheitCollection(getPlanungseinheitenWithBlock(
+            changedScoring)));
+  }
+
+  private void checkHardCriteriaUndo(ReadOnlyPruefung pruefung, Pruefung pruefungModel)
+      throws HartesKriteriumException {
+    List<HartesKriteriumAnalyse> hard = restrictionService.checkHarteKriterien(
+        pruefungModel);
+
+    if (!hard.isEmpty()) {
+      // reverse
+      dataAccessService.schedulePruefung(pruefung, pruefung.getTermin().get());
+      HartesKriteriumException exHard = converter.convertHardException(hard); //TODO #172
+      throw exHard;
+    }
+  }
+
+  private Set<Planungseinheit> getPlanungseinheitenWithBlock(Set<Pruefung> pruefungen) {
+    Set<Planungseinheit> planungseinheiten = new HashSet<>();
+    for (Pruefung p : pruefungen) {
+      Optional<Block> blockOpt = dataAccessService.getBlockTo(p);
+      blockOpt.ifPresent(planungseinheiten::add);
+      planungseinheiten.add(p);
+    }
+    return planungseinheiten;
   }
 
   /**
@@ -63,38 +105,44 @@ public class ScheduleService {
    * @return Liste von veraenderte Pruefungen
    */
   public List<ReadOnlyPlanungseinheit> unschedulePruefung(ReadOnlyPruefung pruefung) {
-    // todo before any restriction test: unschedule Pruefung
-    //  then test restrictions
-    pruefung = dataAccessService.unschedulePruefung(pruefung);
-    return List.of(pruefung); // TODO return result of test for conflicts
+    Pruefung pruefungModel = dataAccessService.unschedulePruefung(pruefung);
+    return checkSoftCriteria(pruefungModel);
   }
 
 
-  public List<ReadOnlyPlanungseinheit> scheduleBlock(ReadOnlyBlock block,
+  public List<ReadOnlyPlanungseinheit> scheduleBlock(ReadOnlyBlock roBlock,
       LocalDateTime termin) throws HartesKriteriumException {
     if (!dataAccessService.terminIsInPeriod(termin)) {
       throw new IllegalArgumentException(
           "Der angegebene Termin liegt ausserhalb der Pruefungsperiode.");
     }
 
-    if (block.getROPruefungen().isEmpty()) {
+    if (roBlock.getROPruefungen().isEmpty()) {
       throw new IllegalArgumentException("Leere Bloecke duerfen nicht geplant werden.");
     }
-    ReadOnlyBlock roBlock = dataAccessService.scheduleBlock(block, termin);
-    List<ReadOnlyPlanungseinheit> returnList = new ArrayList<>();
-    returnList.add(roBlock);
-    returnList.addAll(roBlock.getROPruefungen());
-    return returnList; // TODO return result of test for conflicts
+    Block blockModel = dataAccessService.scheduleBlock(roBlock, termin);
+
+    checkHardCriteriaUndo(roBlock, blockModel);
+
+    return checkSoftCriteria(blockModel);
+  }
+
+  private void checkHardCriteriaUndo(ReadOnlyBlock roBlock, Block modelBlock)
+      throws HartesKriteriumException {
+    List<HartesKriteriumAnalyse> list = new LinkedList<>();
+    for (Pruefung p : modelBlock.getPruefungen()) {
+      list.addAll(restrictionService.checkHarteKriterien(p));
+    }
+    if (!list.isEmpty()) {
+      dataAccessService.scheduleBlock(roBlock, roBlock.getTermin().get());
+      HartesKriteriumException exHard = converter.convertHardException(list);
+      throw exHard;
+    }
   }
 
   public List<ReadOnlyPlanungseinheit> unscheduleBlock(ReadOnlyBlock block) {
-    ReadOnlyBlock roBlock = dataAccessService.unscheduleBlock(block);
-    //TODO bevor wir diese Methode aufrufen, müssen wir den RestriktionsService mitteilen,
-    // wegen der Scoring Berechnung
-    List<ReadOnlyPlanungseinheit> returnList = new ArrayList<>();
-    returnList.add(roBlock);
-    returnList.addAll(roBlock.getROPruefungen());
-    return returnList;// TODO return result of test for conflicts
+    Block blockModel = dataAccessService.unscheduleBlock(block);
+    return checkSoftCriteria(blockModel);// TODO return result of test for conflicts
   }
 
   /**
@@ -155,21 +203,6 @@ public class ScheduleService {
     }
 
     return dataAccessService.deleteBlock(block); //scoring must be 0
-  }
-
-  public List<ReadOnlyPlanungseinheit> moveBlock(ReadOnlyBlock block,
-      LocalDateTime termin) throws HartesKriteriumException {
-    if (block.getTermin().isEmpty()) {
-      throw new IllegalArgumentException("Nur geplante Blöcke können verschoben werden!");
-    }
-    LocalDateTime oldTermin = block.getTermin().get();
-    ReadOnlyBlock removedBlock = dataAccessService.unscheduleBlock(block);
-    try {
-      return scheduleBlock(block, termin);
-    } catch (HartesKriteriumException hardRestrictionViolation) {
-      dataAccessService.scheduleBlock(removedBlock, oldTermin);
-      throw hardRestrictionViolation;
-    }
   }
 
 

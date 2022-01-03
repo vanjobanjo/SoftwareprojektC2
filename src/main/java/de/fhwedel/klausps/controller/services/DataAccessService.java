@@ -130,13 +130,13 @@ public class DataAccessService {
    * @param pruefung    The pruefung to schedule.
    * @param startTermin The time to schedule the pruefung to.
    */
-  public ReadOnlyPruefung schedulePruefung(ReadOnlyPruefung pruefung, LocalDateTime startTermin) {
+  public Pruefung schedulePruefung(ReadOnlyPruefung pruefung, LocalDateTime startTermin) {
     Pruefung pruefungFromModel = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
     if (pruefungsperiode.block(pruefungFromModel) != null) {
       throw new IllegalArgumentException("Prüfung befindet sich innerhalb eines Blockes");
     } else {
       pruefungFromModel.setStartzeitpunkt(startTermin);
-      return new PruefungDTOBuilder(pruefungFromModel).build();
+      return pruefungFromModel;
     }
   }
 
@@ -147,12 +147,11 @@ public class DataAccessService {
    * @param block  The block to schedule
    * @param termin The time to schedule the pruefung to.
    */
-  ReadOnlyBlock scheduleBlock(ReadOnlyBlock block, LocalDateTime termin) {
-    // todo look for model block with same block id, instead of comparing pruefungen
+  Block scheduleBlock(ReadOnlyBlock block, LocalDateTime termin) {
     Block blockFromModel = getBlockFromModelOrException(block);
     blockFromModel.setStartzeitpunkt(termin);
 
-    return fromModelToDTOBlock(blockFromModel);
+    return blockFromModel;
   }
 
   private Block getBlockFromModelOrException(ReadOnlyBlock block) throws IllegalArgumentException {
@@ -160,7 +159,6 @@ public class DataAccessService {
       throw new IllegalArgumentException(
           "Der angegebene Block ist in der Datenbank nicht vorhanden.");
     }
-    // todo look for model block with same block id, instead of comparing pruefungen
     return pruefungsperiode.block(block.getBlockId());
   }
 
@@ -257,10 +255,10 @@ public class DataAccessService {
     return pruefung.getPruefungsnummer().equals(pruefungsnummer);
   }
 
-  public ReadOnlyBlock unscheduleBlock(ReadOnlyBlock block) {
+  public Block unscheduleBlock(ReadOnlyBlock block) {
     Block blockModel = getBlockFromModelOrException(block);
     blockModel.setStartzeitpunkt(null);
-    return fromModelToDTOBlock(blockModel);
+    return blockModel;
   }
 
   public ReadOnlyPruefung changeNameOfPruefung(ReadOnlyPruefung toChange, String name) {
@@ -346,10 +344,10 @@ public class DataAccessService {
    *
    * @param pruefung The pruefung to schedule.
    */
-  public ReadOnlyPruefung unschedulePruefung(ReadOnlyPruefung pruefung) {
+  public Pruefung unschedulePruefung(ReadOnlyPruefung pruefung) {
     Pruefung pruefungFromModel = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
     pruefungFromModel.setStartzeitpunkt(null);
-    return new PruefungDTOBuilder(pruefungFromModel).build();
+    return pruefungFromModel;
   }
 
   public boolean terminIsInPeriod(LocalDateTime termin) {

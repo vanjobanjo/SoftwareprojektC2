@@ -280,8 +280,8 @@ class DataAccessServiceTest {
     when(pruefungsperiode.pruefung(anyString())).thenReturn(
         new PruefungImpl("Pruefungsnummer", "name", "nbr", Duration.ofMinutes(90),
             initialSchedule));
-    ReadOnlyPruefungAssert.assertThat(deviceUnderTest.unschedulePruefung(getReadOnlyPruefung()))
-        .isNotScheduled();
+    assertThat(deviceUnderTest.unschedulePruefung(getReadOnlyPruefung()).getStartzeitpunkt())
+        .isNull();
   }
 
   @Test
@@ -295,21 +295,33 @@ class DataAccessServiceTest {
   @Test
   void scheduleBlock_successful() {
     ReadOnlyBlock blockToSchedule = new BlockDTO("Name", null, Duration.ZERO,
-        Set.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED), 1, Blocktyp.PARALLEL);
+        Set.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED), 1, Blocktyp.SEQUENTIAL);
 
     LocalDateTime termin = LocalDateTime.of(2000, 1, 1, 0, 0);
     Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
-    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, null,
-        RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED, RO_HASKELL_UNPLANNED);
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+    modelBlock.addPruefung(analysis);
+    modelBlock.addPruefung(dm);
+    modelBlock.addPruefung(haskell);
 
     // no consistency check!
     when(pruefungsperiode.block(modelBlock.getId())).thenReturn(modelBlock);
-    ReadOnlyBlock result = deviceUnderTest.scheduleBlock(blockToSchedule, termin);
-    ReadOnlyBlockAssert.assertThat(result)
-        .containsOnlyPruefungen(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED);
-    assertThat(result.getTermin()).hasValue(termin);
-    for (ReadOnlyPruefung p : result.getROPruefungen()) {
-      ReadOnlyPruefungAssert.assertThat(p).isScheduledAt(termin);
+    when(pruefungsperiode.block(analysis)).thenReturn(modelBlock);
+    when(pruefungsperiode.block(haskell)).thenReturn(modelBlock);
+    when(pruefungsperiode.block(dm)).thenReturn(modelBlock);
+    when(pruefungsperiode.pruefung(analysis.getPruefungsnummer())).thenReturn(analysis);
+    when(pruefungsperiode.pruefung(dm.getPruefungsnummer())).thenReturn(dm);
+    when(pruefungsperiode.pruefung(haskell.getPruefungsnummer())).thenReturn(haskell);
+
+    Block result = deviceUnderTest.scheduleBlock(blockToSchedule, termin);
+
+    assertThat(result.getPruefungen()).containsOnly(analysis, haskell, dm);
+
+    assertThat(result.getStartzeitpunkt()).isEqualTo(termin);
+    for (Pruefung p : result.getPruefungen()) {
+      assertThat(p.getStartzeitpunkt()).isEqualTo(termin);
     }
     assertThat(modelBlock.getStartzeitpunkt()).isEqualTo(termin);
   }
@@ -349,11 +361,11 @@ class DataAccessServiceTest {
     configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, termin,
         ro_analysis, ro_dm_planned, ro_haskell_planned);
     when(pruefungsperiode.block(modelBlock.getId())).thenReturn(modelBlock);
-    ReadOnlyBlock ro_block_result = deviceUnderTest.unscheduleBlock(blockToSchedule);
+    Block ro_block_result = deviceUnderTest.unscheduleBlock(blockToSchedule);
     assertThat(modelBlock.getStartzeitpunkt()).isNull();
-    assertThat(ro_block_result.getTermin()).isEmpty();
-    assertThat(ro_block_result.getROPruefungen().stream()
-        .allMatch(ReadOnlyPlanungseinheit::ungeplant)).isTrue();
+    assertThat(ro_block_result.getStartzeitpunkt()).isNull();
+    assertThat(ro_block_result.getPruefungen().stream()
+        .noneMatch(Planungseinheit::isGeplant)).isTrue();
   }
 
   @Test
@@ -379,9 +391,9 @@ class DataAccessServiceTest {
     LocalDateTime expectedSchedule = LocalDateTime.of(2022, 1, 1, 10, 30);
     when(pruefungsperiode.pruefung(anyString())).thenReturn(
         new PruefungImpl("Pruefungsnummer", "name", "nbr", Duration.ofMinutes(90)));
-    ReadOnlyPruefungAssert.assertThat(
-            deviceUnderTest.schedulePruefung(getReadOnlyPruefung(), expectedSchedule))
-        .isScheduledAt(expectedSchedule);
+    assertThat(
+        deviceUnderTest.schedulePruefung(getReadOnlyPruefung(), expectedSchedule)
+            .getStartzeitpunkt()).isEqualTo(expectedSchedule);
   }
 
   @Test
