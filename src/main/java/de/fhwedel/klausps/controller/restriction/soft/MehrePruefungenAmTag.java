@@ -42,36 +42,35 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
       LocalDateTime start = startDay(pruefung.getStartzeitpunkt());
       LocalDateTime end = endDay(pruefung.getStartzeitpunkt());
 
-    List<Planungseinheit> testList = null;
-    try {
-      testList = dataAccessService.getAllPlanungseinheitenBetween(start, end);
-    } catch (IllegalTimeSpanException e) {
-      //Kann nicht davor liegen, da ich den Morgen und den Abend nehme
-      e.printStackTrace();
-    }
-    Set<Pruefung> pruefungenFromBlock;
-    // TODO wieso wird überprüft, ob ein Ergebnis von "getAllPruefungenBetween" ein Block ist,
-    //  die Methode sorgt ganz explizit dafür, dass die Klausuren in den Blöcken statt der Blöcke
-    //  selbst returned werden
-    for (Planungseinheit planungseinheit : testList) {
-      //Unterscheidung auf Block
-      if (planungseinheit.isBlock()) {
-        pruefungenFromBlock = planungseinheit.asBlock().getPruefungen();
-        //Wenn der Block die Pruefung nicht beinhaltet, muss dieser nicht angeguckt werden
-        if (!pruefungenFromBlock.contains(pruefung)) {
-          // jede Pruefung im Block überprüfen
-          for (Pruefung pruefungBlock : pruefungenFromBlock) {
-            weichesKrierium =
-                getTeilnehmerkreisFromPruefung(pruefung, pruefungBlock) || weichesKrierium;
+      List<Planungseinheit> testList = null;
+      try {
+        testList = dataAccessService.getAllPlanungseinheitenBetween(start, end);
+      } catch (IllegalTimeSpanException e) {
+        //Kann nicht davor liegen, da ich den Morgen und den Abend nehme
+        e.printStackTrace();
+      }
+      Set<Pruefung> pruefungenFromBlock;
+      // TODO wieso wird überprüft, ob ein Ergebnis von "getAllPruefungenBetween" ein Block ist,
+      //  die Methode sorgt ganz explizit dafür, dass die Klausuren in den Blöcken statt der Blöcke
+      //  selbst returned werden
+      for (Planungseinheit planungseinheit : testList) {
+        //Unterscheidung auf Block
+        if (planungseinheit.isBlock()) {
+          pruefungenFromBlock = planungseinheit.asBlock().getPruefungen();
+          //Wenn der Block die Pruefung nicht beinhaltet, muss dieser nicht angeguckt werden
+          if (!pruefungenFromBlock.contains(pruefung)) {
+            // jede Pruefung im Block überprüfen
+            for (Pruefung pruefungBlock : pruefungenFromBlock) {
+              weichesKrierium =
+                  getTeilnehmerkreisFromPruefung(pruefung, pruefungBlock) || weichesKrierium;
+            }
           }
+        } else {
+          weichesKrierium = getTeilnehmerkreisFromPruefung(pruefung, planungseinheit.asPruefung())
+              || weichesKrierium;
         }
-      } else {
-        weichesKrierium = getTeilnehmerkreisFromPruefung(pruefung, planungseinheit.asPruefung())
-            || weichesKrierium;
       }
     }
-    return getWeichesKriteriumAnalyse(pruefung, weichesKrierium);
-  }
 
     return getWeichesKriteriumAnalyse(pruefung, weichesKrierium);
   }

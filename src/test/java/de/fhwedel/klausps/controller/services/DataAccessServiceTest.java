@@ -460,7 +460,9 @@ class DataAccessServiceTest {
 
   @Test
   void existsBlockDifferentDates() {
-    ReadOnlyBlock blockToSchedule = new BlockDTO("Name", LocalDateTime.now(), Duration.ZERO,
+    LocalDateTime now = LocalDateTime.now();
+
+    ReadOnlyBlock blockToSchedule = new BlockDTO("Name",now, Duration.ZERO,
         Set.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED), 1,
         Blocktyp.SEQUENTIAL);
 
@@ -469,7 +471,7 @@ class DataAccessServiceTest {
     configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock,
         LocalDateTime.now(), RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED, RO_HASKELL_UNPLANNED);
 
-    modelBlock.setStartzeitpunkt(LocalDateTime.now());
+    modelBlock.setStartzeitpunkt(now.plusMinutes(120));
 
     assertThat(deviceUnderTest.exists(blockToSchedule)).isFalse();
   }
