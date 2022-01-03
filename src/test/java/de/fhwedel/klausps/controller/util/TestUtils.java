@@ -60,21 +60,6 @@ public class TestUtils {
     return randomPruefungen;
   }
 
-  public static Pruefung getRandomPlannedPruefung(long seed) {
-    return getRandomPlannedPruefungen(seed, 1).get(0);
-  }
-
-  public static List<Pruefung> getRandomPlannedPruefungen(long seed, int amount) {
-    Random random = new Random(seed);
-    List<Pruefung> randomPruefungen = new ArrayList<>(amount);
-    for (int index = 0; index < amount; index++) {
-      randomPruefungen.add(new PruefungImpl(getRandomString(random, 5), getRandomString(random, 5),
-          getRandomString(random, 5), getRandomDuration(random, 120),
-          LocalDateTime.of(2021, 12, 29, 10, 0)));
-    }
-    return randomPruefungen;
-  }
-
   public static Pruefung getRandomPruefung(LocalDateTime from, LocalDateTime to, long seed) {
     Random random = new Random(seed);
     return new PruefungImpl(getRandomString(random, 5), getRandomString(random, 5),
@@ -120,6 +105,27 @@ public class TestUtils {
       result.addTeilnehmerkreis(teilnehmerkreis, random.nextInt(1, Integer.MAX_VALUE));
     }
     return result;
+  }
+
+  public static Pruefung getRandomPlannedPruefung(long seed) {
+    return getRandomPlannedPruefungen(seed, 1).get(0);
+  }
+
+  public static List<Pruefung> getRandomPlannedPruefungen(long seed, int amount) {
+    Random random = new Random(seed);
+    List<Pruefung> randomPruefungen = new ArrayList<>(amount);
+    for (int index = 0; index < amount; index++) {
+      randomPruefungen.add(new PruefungImpl(getRandomString(random, 5), getRandomString(random, 5),
+          getRandomString(random, 5), getRandomDuration(random, 120),
+          LocalDateTime.of(2021, 12, 29, 10, 0)));
+    }
+    return randomPruefungen;
+  }
+
+  public static LocalDateTime getRandomDate(long seed) {
+    Random random = new Random(seed);
+    return LocalDateTime.of(random.nextInt(2000, 2030), random.nextInt(1, 12),
+        random.nextInt(1, 28), random.nextInt(0, 20), random.nextInt(0, 60));
   }
 
 }

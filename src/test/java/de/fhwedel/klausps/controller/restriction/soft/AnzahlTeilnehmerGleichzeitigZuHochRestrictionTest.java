@@ -1,18 +1,22 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
 import static de.fhwedel.klausps.controller.util.TestUtils.convertPruefungenToPlanungseinheiten;
+import static de.fhwedel.klausps.controller.util.TestUtils.getPruefungsnummernFromModel;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomDate;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefungen;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungenAt;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTeilnehmerkreis;
+import static de.fhwedel.klausps.model.api.Blocktyp.PARALLEL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import de.fhwedel.klausps.controller.assertions.WeicheKriteriumsAnalyseAssert;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Block;
-import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
@@ -43,7 +47,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
    *   Grenzfälle:
    * x Grade so viele Personen, dass die Restriktion nicht verletzt wird (Klausur / Block)
    * x Genau so viele Personen, dass die Restriktion minimal verletzt wird (Klausur / Block)
-   * O Genau die betroffenen Teilnehmerkreise sind enthalten (Klausur / Block)
+   * x Genau die betroffenen Teilnehmerkreise sind enthalten (Klausur / Block)
    * O Die Anzahl der betroffenen Studenten ist korrekt (Klausur / Block)
    * O Das minimal moegliche scoring
    * O Naechst hoeheres scoring, ...
@@ -113,7 +117,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
   }
 
   private Block getBlockWith(Iterable<Pruefung> pruefungen) {
-    Block block = new BlockImpl(mock(Pruefungsperiode.class), "name", Blocktyp.PARALLEL);
+    Block block = new BlockImpl(mock(Pruefungsperiode.class), "name", PARALLEL);
     for (Pruefung pruefung : pruefungen) {
       block.addPruefung(pruefung);
     }
@@ -186,6 +190,53 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
         convertPruefungenToPlanungseinheiten(pruefungen));
 
     assertThat(deviceUnderTest.evaluate(pruefungen.get(0))).isPresent();
+  }
+
+  @Test
+  void oneTeilnehmerMoreAtATimeThanAllowed_analysisContainsCorrectPruefungen()
+      throws IllegalTimeSpanException {
+    List<Pruefung> pruefungen = get3OverlappingPruefungenWith2001Teilnehmer();
+
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(pruefungen));
+
+    WeicheKriteriumsAnalyseAssert.assertThat(
+            (deviceUnderTest.evaluate(pruefungen.get(0).asPruefung()).get()))
+        .conflictingPruefungenAreExactly(getPruefungsnummernFromModel(pruefungen));
+  }
+
+  private List<Pruefung> get3OverlappingPruefungenWith2001Teilnehmer() {
+    LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
+    List<Pruefung> pruefungen = getRandomPruefungenAt(5L, startFirstPruefung,
+        startFirstPruefung.plusMinutes(15), startFirstPruefung.plusMinutes(30));
+    pruefungen.get(0).addTeilnehmerkreis(getRandomTeilnehmerkreis(1L), 150);
+    pruefungen.get(1).addTeilnehmerkreis(getRandomTeilnehmerkreis(2L), 50);
+    pruefungen.get(2).addTeilnehmerkreis(getRandomTeilnehmerkreis(3L), 1);
+    return pruefungen;
+  }
+
+  @Test
+  void oneTeilnehmerMoreAtATimeThanAllowed_analysisContainsCorrectPruefungen_fromBlock()
+      throws IllegalTimeSpanException {
+    Block block = getBlockWithPlanungseinheitenWithMoreThan200Teilnehmer();
+    Pruefung pruefungToTest = block.getPruefungen().iterator().next();
+
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(new ArrayList<>(block.getPruefungen())));
+
+    WeicheKriteriumsAnalyseAssert.assertThat(
+            (deviceUnderTest.evaluate(pruefungToTest).get()))
+        .conflictingPruefungenAreExactly(getPruefungsnummernFromModel(block.getPruefungen()));
+  }
+
+  private Block getBlockWithPlanungseinheitenWithMoreThan200Teilnehmer() {
+    List<Pruefung> pruefungen = get3OverlappingPruefungenWith2001Teilnehmer();
+    Block block = new BlockImpl(mock(Pruefungsperiode.class), "name", PARALLEL);
+    for (Pruefung pruefung : pruefungen) {
+      block.addPruefung(pruefung);
+    }
+    block.setStartzeitpunkt(getRandomDate(1L));
+    return block;
   }
 
 }
