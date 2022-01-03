@@ -142,7 +142,7 @@ public class ScheduleService {
 
   public List<ReadOnlyPlanungseinheit> unscheduleBlock(ReadOnlyBlock block) {
     Block blockModel = dataAccessService.unscheduleBlock(block);
-    return checkSoftCriteria(blockModel);// TODO return result of test for conflicts
+    return checkSoftCriteria(blockModel);
   }
 
   /**
@@ -171,27 +171,8 @@ public class ScheduleService {
   }
 
   public Optional<ReadOnlyBlock> deletePruefung(ReadOnlyPruefung pruefung) {
-    dataAccessService.deletePruefung(pruefung);
-    Pruefung modelPruefung = dataAccessService.getPruefungWith(pruefung.getPruefungsnummer());
-    List<WeichesKriteriumAnalyse> analyses = restrictionService.checkWeicheKriterien(modelPruefung);
-    // calc new score for all pruefungen
-    //TODO keine geplante Klausuren löschen
-    Map<String, Integer> scoring = getScoringFrom(analyses);
-    applyScoring(scoring);
-
-    return Optional.of(
-        converter.convertToROBlock(dataAccessService.getBlockTo(modelPruefung).get()));
-
-  }
-
-  private Map<String, Integer> getScoringFrom(List<WeichesKriteriumAnalyse> analyses) {
-    // TODO extract into adequate class
-    throw new UnsupportedOperationException("Not implemented yet!");
-  }
-
-  private void applyScoring(Map<String, Integer> scoring) {
-    // TODO extract into adequate class
-    throw new UnsupportedOperationException("Not implemented yet!");
+    Block block = dataAccessService.deletePruefung(pruefung);
+    return block == null ? Optional.empty() : Optional.of(converter.convertToROBlock(block));
   }
 
   public List<ReadOnlyPruefung> deleteBlock(ReadOnlyBlock block) {

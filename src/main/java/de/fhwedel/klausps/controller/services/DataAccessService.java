@@ -333,10 +333,11 @@ public class DataAccessService {
     return fromModelToDTOPruefungWithScoring(modelPruefung);
   }
 
-  public boolean deletePruefung(ReadOnlyPruefung roPruefung) throws IllegalArgumentException {
+  public Block deletePruefung(ReadOnlyPruefung roPruefung) throws IllegalArgumentException {
     Pruefung pruefung = getPruefungFromModelOrException(roPruefung.getPruefungsnummer());
-    this.unschedulePruefung(roPruefung);
-    return this.pruefungsperiode.removePlanungseinheit(pruefung);
+    Block block = pruefungsperiode.block(pruefung);
+    pruefungsperiode.removePlanungseinheit(pruefung);
+    return block;
   }
 
   /**
