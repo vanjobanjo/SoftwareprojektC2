@@ -31,10 +31,13 @@ import org.junit.jupiter.api.Test;
 /**
  * Testfälle
  * <ol>
+ *   <li>{@link FreierTagZwischenPruefungenTest#not_planned() Prüfung ist nicht geplant} </li>
+ *   <br>
  *   <li>{@link FreierTagZwischenPruefungenTest#same_day_no_overlap() gleicher Tag  + keine Überschneidungen} </li>
  *   <li>{@link FreierTagZwischenPruefungenTest#same_day_overlap() gleicher Tag  + Überschneidung}</li>
  *   <li>{@link FreierTagZwischenPruefungenTest#same_day_overlap_multiple() gleicher Tag  + mehrere Überschneidungen}</li>
  *   <li>{@link FreierTagZwischenPruefungenTest#same_day_overlap_block()  gleicher Tag  + Überschneidungen  + im Block}</li>
+ *   <li>{@link FreierTagZwischenPruefungenTest#same_day_overlap_one_in_block()  gleicher Tag  + Überschneidungen  + eine Block}</li>
  *   <li>{@link FreierTagZwischenPruefungenTest#same_day_overlap_different_blocks() gleicher Tag  + Überschneidungen  + unterschiedliche Blöcke}</li>
  *   <br>
  *   <li>{@link FreierTagZwischenPruefungenTest#day_before_no_overlap()  ein Tag davor + keine Überschneidungen}</li>
@@ -76,6 +79,22 @@ class FreierTagZwischenPruefungenTest {
   public void setUp() {
     this.dataAccessService = mock(DataAccessService.class);
     this.deviceUnderTest = new FreierTagZwischenPruefungen(dataAccessService);
+  }
+
+  @Test
+  @DisplayName("Prüfung ist nicht geplant")
+  void not_planned() {
+    LocalDateTime date = LocalDateTime.of(2022, 1, 1, 8, 0);
+    Pruefung modelAnalysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    modelAnalysis.addTeilnehmerkreis(bwlBachelor);
+
+    Pruefung modelDM = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+    modelDM.addTeilnehmerkreis(infBachelor);
+    modelDM.setStartzeitpunkt(date);
+
+    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(modelDM));
+
+    assertThat(deviceUnderTest.evaluate(modelAnalysis)).isEmpty();
   }
 
   // ----------------------------------------------------------------------------
@@ -171,6 +190,24 @@ class FreierTagZwischenPruefungenTest {
     getBlockWithPruefungen(pruefungsperiode, "b", date, analysis);
     getBlockWithPruefungen(pruefungsperiode, "b2", date, dm);
 
+    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
+
+    testKriterium(analysis, dm, infBachelor);
+  }
+
+@Test
+  @DisplayName("gleicher Tag + Überschneidungen + ein Block")
+  void same_day_overlap_one_in_block() {
+    Pruefungsperiode pruefungsperiode = mock(Pruefungsperiode.class);
+    LocalDateTime date = LocalDateTime.of(2022, 1, 1, 8, 0);
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    analysis.addTeilnehmerkreis(bwlBachelor);
+    analysis.addTeilnehmerkreis(infBachelor);
+    analysis.setStartzeitpunkt(date);
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+    dm.addTeilnehmerkreis(infBachelor);
+    dm.setStartzeitpunkt(date);
+    getBlockWithPruefungen(pruefungsperiode, "b", date, analysis);
     when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
 
     testKriterium(analysis, dm, infBachelor);
