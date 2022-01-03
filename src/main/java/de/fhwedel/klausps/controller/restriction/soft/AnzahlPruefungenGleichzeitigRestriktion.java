@@ -12,12 +12,12 @@ import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
@@ -52,34 +52,33 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
   @Override
   @NotNull
   public Optional<WeichesKriteriumAnalyse> evaluate(@NotNull Pruefung pruefung) {
-    Duration bufferPerSide = puffer.dividedBy(2);
-    if (pruefung.isGeplant()) {
-      LocalDateTime startOfPruefung = pruefung.getStartzeitpunkt().minus(bufferPerSide);
-      LocalDateTime endOfPruefung = pruefung.endzeitpunkt().plus(bufferPerSide);
-
-      List<Planungseinheit> planungseinheitenOverlappingTheOneToCheck = tryToGetAllPlanungseinheitenBetween(
-          startOfPruefung, endOfPruefung);
-      ignorePruefungenInSameBlockOf(planungseinheitenOverlappingTheOneToCheck, pruefung);
-
-      return getAnalyseIfRestrictionViolated(planungseinheitenOverlappingTheOneToCheck);
+    if (!pruefung.isGeplant()) {
+      return Optional.empty();
     }
-    return Optional.empty();
+    Duration bufferPerSide = puffer.dividedBy(2);
+    LocalDateTime startOfPruefung = pruefung.getStartzeitpunkt().minus(bufferPerSide);
+    LocalDateTime endOfPruefung = pruefung.endzeitpunkt().plus(bufferPerSide);
+
+    List<Planungseinheit> planungseinheitenOverlappingTheOneToCheck = tryToGetAllPlanungseinheitenBetween(
+        startOfPruefung, endOfPruefung);
+    ignorePruefungenInSameBlockOf(planungseinheitenOverlappingTheOneToCheck, pruefung);
+
+    return getAnalyseIfRestrictionViolated(planungseinheitenOverlappingTheOneToCheck);
   }
 
   @NotNull
   private List<Planungseinheit> tryToGetAllPlanungseinheitenBetween(@NotNull LocalDateTime from,
       @NotNull LocalDateTime to) {
     try {
-      // TODO refactor to return set of pruefung
-      return new ArrayList<>(dataAccessService.getAllPlanungseinheitenBetween(from, to));
+      return dataAccessService.getAllPlanungseinheitenBetween(from, to);
     } catch (IllegalTimeSpanException e) {
       // can never happen, as the duration of a pruefung is checked to be > 0
       throw new IllegalStateException("A Pruefung with a negative duration can not exist.", e);
     }
   }
 
-  private void ignorePruefungenInSameBlockOf(List<Planungseinheit> planungseinheiten,
-      Pruefung toFilterFor) {
+  private void ignorePruefungenInSameBlockOf(@NotNull List<Planungseinheit> planungseinheiten,
+      @NotNull Pruefung toFilterFor) {
     Pruefung pruefung = toFilterFor.asPruefung();
     Optional<Block> block = dataAccessService.getBlockTo(pruefung);
     if (block.isPresent()) {
@@ -90,14 +89,15 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
 
   @NotNull
   private Optional<WeichesKriteriumAnalyse> getAnalyseIfRestrictionViolated(
-      List<Planungseinheit> planungseinheitenOverlappingTheOneToCheck) {
-    if (planungseinheitenOverlappingTheOneToCheck.size() > maxPruefungenAtATime) {
-      // find overlapping pruefungen
-      Set<Planungseinheit> conflictingPlanungseinheiten = findTooManyOverlappingPlanungseinheiten(
-          planungseinheitenOverlappingTheOneToCheck);
-      if (!conflictingPlanungseinheiten.isEmpty()) {
-        return createAnalyse(conflictingPlanungseinheiten);
-      }
+      @NotNull List<Planungseinheit> planungseinheitenOverlappingTheOneToCheck) {
+    if (planungseinheitenOverlappingTheOneToCheck.size() <= maxPruefungenAtATime) {
+      return Optional.empty();
+    }
+    // find overlapping pruefungen
+    Set<Planungseinheit> conflictingPlanungseinheiten = findTooManyOverlappingPlanungseinheiten(
+        planungseinheitenOverlappingTheOneToCheck);
+    if (!conflictingPlanungseinheiten.isEmpty()) {
+      return Optional.of(createAnalyse(conflictingPlanungseinheiten));
     }
     return Optional.empty();
   }
@@ -105,6 +105,10 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
   @NotNull
   private Set<Planungseinheit> findTooManyOverlappingPlanungseinheiten(
       @NotNull List<Planungseinheit> planungseinheiten) {
+    // might be possible to implement more efficient for the suspected most common use case of many
+    // pruefungen starting at the same time and only few variations in the length of pruefung
+    // with usage of interval-tree. Although such a structure would perform way worse in the worst
+    // case and costs a lot of time to implement.
     Set<Planungseinheit> conflictingPlanungseinheiten = new HashSet<>();
     // O(n^2) with n = amount of Planungseinheiten overlapping the given time interval
     for (Planungseinheit planungseinheit : planungseinheiten) {
@@ -120,16 +124,12 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
   }
 
   @NotNull
-  private Optional<WeichesKriteriumAnalyse> createAnalyse(
+  private WeichesKriteriumAnalyse createAnalyse(
       @NotNull Set<Planungseinheit> violatingPlanungseinheiten) {
-    if (violatingPlanungseinheiten.size() > maxPruefungenAtATime) {
-      return Optional.of(
-          new WeichesKriteriumAnalyse(getAllPruefungen(violatingPlanungseinheiten), this.kriterium,
-              getAllTeilnehmerkreiseFrom(violatingPlanungseinheiten),
-              getAmountAffectedStudents(violatingPlanungseinheiten),
-              calcScoring(violatingPlanungseinheiten)));
-    }
-    return Optional.empty();
+    return new WeichesKriteriumAnalyse(getAllPruefungen(violatingPlanungseinheiten), this.kriterium,
+        getAllTeilnehmerkreiseFrom(violatingPlanungseinheiten),
+        getAmountAffectedStudents(violatingPlanungseinheiten),
+        calcScoring(violatingPlanungseinheiten));
   }
 
   @NotNull
@@ -159,15 +159,25 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
   private int getAmountAffectedStudents(@NotNull Iterable<Planungseinheit> planungseinheiten) {
     HashMap<Teilnehmerkreis, Integer> maxTeilnehmerPerTeilnehmerkreis = new HashMap<>();
     for (Planungseinheit planungseinheit : planungseinheiten) {
-      for (Map.Entry<Teilnehmerkreis, Integer> entry : planungseinheit.getSchaetzungen()
-          .entrySet()) {
-        if (!maxTeilnehmerPerTeilnehmerkreis.containsKey(entry.getKey())
-            || maxTeilnehmerPerTeilnehmerkreis.get(entry.getKey()) <= entry.getValue()) {
-          maxTeilnehmerPerTeilnehmerkreis.put(entry.getKey(), entry.getValue());
-        }
-      }
+      collectMaxMountOfStudentsInFor(maxTeilnehmerPerTeilnehmerkreis, planungseinheit);
     }
     return getSumm(maxTeilnehmerPerTeilnehmerkreis.values());
+  }
+
+  private void collectMaxMountOfStudentsInFor(HashMap<Teilnehmerkreis, Integer> maxTeilnehmerPerTeilnehmerkreis,
+      Planungseinheit planungseinheit) {
+    for (Map.Entry<Teilnehmerkreis, Integer> entry : planungseinheit.getSchaetzungen()
+        .entrySet()) {
+      if (isNotContainedWithHigherValueIn(maxTeilnehmerPerTeilnehmerkreis, entry)) {
+        maxTeilnehmerPerTeilnehmerkreis.put(entry.getKey(), entry.getValue());
+      }
+    }
+  }
+
+  private boolean isNotContainedWithHigherValueIn(HashMap<Teilnehmerkreis, Integer> maxTeilnehmerPerTeilnehmerkreis,
+      Entry<Teilnehmerkreis, Integer> entry) {
+    return !maxTeilnehmerPerTeilnehmerkreis.containsKey(entry.getKey())
+        || maxTeilnehmerPerTeilnehmerkreis.get(entry.getKey()) <= entry.getValue();
   }
 
   private int calcScoring(@NotNull Set<Planungseinheit> planungseinheiten) {
