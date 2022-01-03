@@ -14,6 +14,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import de.fhwedel.klausps.controller.answers.BlockFromPruefungAnswer;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.assertions.WeicheKriteriumsAnalyseAssert;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
@@ -99,11 +100,11 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
   void evaluate_onePruefungMoreAtATimeThanAllowed_getCollision() throws IllegalTimeSpanException {
     this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2);
     LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
-    List<Pruefung> pruefungen = getRandomPruefungenAt(5L, startFirstPruefung,
-        startFirstPruefung.plusMinutes(15), startFirstPruefung.plusMinutes(30));
+    List<Planungseinheit> pruefungen = convertPruefungenToPlanungseinheiten(
+        getRandomPruefungenAt(5L, startFirstPruefung, startFirstPruefung.plusMinutes(15),
+            startFirstPruefung.plusMinutes(30)));
 
-    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
-        new HashSet<>(pruefungen));
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(pruefungen);
 
     assertThat(deviceUnderTest.evaluate(pruefungen.get(0).asPruefung())).isPresent();
   }
@@ -117,8 +118,8 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     List<Pruefung> pruefungen = getRandomPruefungenAt(5L, startFirstPruefung,
         startFirstPruefung.plusMinutes(15), startFirstPruefung.plusMinutes(30));
 
-    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
-        new HashSet<>(pruefungen));
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(pruefungen));
 
     WeicheKriteriumsAnalyseAssert.assertThat(
             (deviceUnderTest.evaluate(pruefungen.get(0).asPruefung()).get()))
@@ -131,8 +132,8 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1);
     List<Pruefung> pruefungen = get2PruefungenOnSameInterval();
 
-    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
-        new HashSet<>(pruefungen));
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(pruefungen));
 
     WeicheKriteriumsAnalyseAssert.assertThat(deviceUnderTest.evaluate(pruefungen.get(0)).get())
         .conflictingPruefungenAreExactly(getPruefungsnummernFromModel(pruefungen));
@@ -155,8 +156,8 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1);
     List<Pruefung> pruefungen = get2PruefungenWithOneOverlappingTheOther();
 
-    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
-        new HashSet<>(pruefungen));
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(pruefungen));
 
     WeicheKriteriumsAnalyseAssert.assertThat(deviceUnderTest.evaluate(pruefungen.get(0)).get())
         .conflictingPruefungenAreExactly(getPruefungsnummernFromModel(pruefungen));
@@ -176,8 +177,8 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1);
     List<Pruefung> pruefungen = get2PruefungenWithOneContainedByOther();
 
-    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
-        new HashSet<>(pruefungen));
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(pruefungen));
 
     WeicheKriteriumsAnalyseAssert.assertThat(deviceUnderTest.evaluate(pruefungen.get(0)).get())
         .conflictingPruefungenAreExactly(getPruefungsnummernFromModel(pruefungen));
@@ -204,8 +205,8 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
 
     Set<Teilnehmerkreis> expectedTeilnehmerkreise = getAllTeilnehmerKreiseFrom(pruefungen);
 
-    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
-        new HashSet<>(pruefungen));
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(pruefungen));
 
     assertThat(deviceUnderTest.evaluate(pruefungen.get(0).asPruefung()).get()
         .getAffectedTeilnehmerKreise()).containsExactlyInAnyOrderElementsOf(
@@ -274,8 +275,8 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
 
     List<Pruefung> pruefungen = get2PruefungenCloserToEachOtherThan(puffer);
 
-    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
-        new HashSet<>(pruefungen));
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(pruefungen));
 
     assertThat((deviceUnderTest.evaluate(pruefungen.get(0)))).isPresent();
     assertThat((deviceUnderTest.evaluate(pruefungen.get(1)))).isPresent();
@@ -357,8 +358,8 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
 
     List<Pruefung> pruefungen = get2PruefungenWithOneOverlappingTheOther();
 
-    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
-        new HashSet<>(pruefungen));
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(pruefungen));
 
     int expectedScoring = WeichesKriterium.ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH.getWert();
 
@@ -373,8 +374,8 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     List<Pruefung> pruefungen = get2PruefungenWithDistinctTeilnehmerkreiseWithSchaetzung(5, 12);
     int expectedTeilnehmerAmount = 5 + 12;
 
-    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
-        new HashSet<>(pruefungen));
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(pruefungen));
 
     assertThat(
         (deviceUnderTest.evaluate(pruefungen.get(0)).get().getAmountAffectedStudents())).isEqualTo(
@@ -405,8 +406,8 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     List<Pruefung> pruefungen = get2PruefungenWithSameTeilnehmerkreiseWithSchaetzung(5, 12);
     int expectedTeilnehmerAmount = 12;
 
-    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
-        new HashSet<>(pruefungen));
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(pruefungen));
 
     assertThat(
         (deviceUnderTest.evaluate(pruefungen.get(0)).get().getAmountAffectedStudents())).isEqualTo(
@@ -503,6 +504,39 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
 
     assertThat((deviceUnderTest.evaluate(pruefungenInBlock.get(0)))).isNotPresent();
     assertThat((deviceUnderTest.evaluate(pruefung))).isNotPresent();
+  }
+
+  @Test
+  void evaluate_morePruefungenThanAllowed_twoOverlappingBlocks() throws IllegalTimeSpanException {
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2,
+        Duration.ZERO);
+    List<Block> planungseinheiten = get2OverlappingBloecke();
+    Pruefung pruefungToCheck = new ArrayList<Planungseinheit>(
+        planungseinheiten.get(0).asBlock().getPruefungen()).get(0).asPruefung();
+
+    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
+        Sets.union(planungseinheiten.get(0).asBlock().getPruefungen(),
+            planungseinheiten.get(1).asBlock().getPruefungen()));
+
+    // answer with correct block for each pruefung
+    when(dataAccessService.getBlockTo(any(Pruefung.class))).thenAnswer(
+        new BlockFromPruefungAnswer(planungseinheiten));
+
+    assertThat((deviceUnderTest.evaluate(pruefungToCheck))).isNotPresent();
+  }
+
+  private List<Block> get2OverlappingBloecke() {
+    Pruefungsperiode pruefungsperiode = mock(Pruefungsperiode.class);
+    List<Block> result = new ArrayList<>(2);
+    for (int i = 0; i < 2; i++) {
+      Block block = new BlockImpl(pruefungsperiode, "name", Blocktyp.PARALLEL);
+      for (Pruefung pruefung : getRandomPlannedPruefungen(i, 2)) {
+        block.addPruefung(pruefung);
+      }
+      block.setStartzeitpunkt(LocalDateTime.of(1998, 1, 2, 21, 39));
+      result.add(block);
+    }
+    return result;
   }
 
 }

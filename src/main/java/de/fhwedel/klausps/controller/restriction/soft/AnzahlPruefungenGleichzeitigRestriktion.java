@@ -71,7 +71,7 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends WeicheRestriktion {
       @NotNull LocalDateTime to) {
     try {
       // TODO refactor to return set of pruefung
-      return new ArrayList<>(dataAccessService.getAllPruefungenBetween(from, to));
+      return new ArrayList<>(dataAccessService.getAllPlanungseinheitenBetween(from, to));
     } catch (IllegalTimeSpanException e) {
       // can never happen, as the duration of a pruefung is checked to be > 0
       throw new IllegalStateException("A Pruefung with a negative duration can not exist.", e);
