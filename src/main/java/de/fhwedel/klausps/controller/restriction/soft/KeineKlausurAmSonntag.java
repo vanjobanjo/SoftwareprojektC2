@@ -43,15 +43,12 @@ public class KeineKlausurAmSonntag extends WeicheRestriktion {
       return Optional.empty();
     }
 
-    return Optional.of(
-        new WeichesKriteriumAnalyse(Set.of(pruefung), SONNTAG,
-            new HashSet<>(pruefung.getTeilnehmerkreise()),
-            pruefung.schaetzung()));
+    return Optional.of(super.buildAnalysis(Set.of(pruefung)));
   }
 
 
   @Override
   protected int addDeltaScoring(Set<Pruefung> affectedPruefungen) {
-    throw new UnsupportedOperationException("not implemented");
+    return kriterium.getWert();
   }
 }

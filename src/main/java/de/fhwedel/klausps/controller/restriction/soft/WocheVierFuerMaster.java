@@ -72,9 +72,11 @@ public class WocheVierFuerMaster extends WeicheRestriktion {
         .filter(entry -> isNotMaster(entry.getKey()))
         .mapToInt(Entry::getValue).sum();
 
+    int scoring = kriterium.getWert() * tkWithoutMaster.size();
+
     return Optional.of(new WeichesKriteriumAnalyse(Set.of(pruefung), WOCHE_VIER_FUER_MASTER,
         tkWithoutMaster,
-        affectedWithoutMaster
+        affectedWithoutMaster, scoring
     ));
   }
 
