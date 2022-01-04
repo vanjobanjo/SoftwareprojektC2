@@ -228,6 +228,22 @@ class DataAccessServiceTest {
   }
 
   @Test
+  void removePrueferBlock_successTest() {
+    Pruefung modelDm = TestFactory.getPruefungOfReadOnlyPruefung(TestFactory.RO_DM_UNPLANNED);
+    TestFactory.configureMock_addPruefungToBlockModel(pruefungsperiode,
+        "Hallo", null, modelDm);
+    modelDm.addPruefer("Cohen");
+    when(pruefungsperiode.pruefung(anyString())).thenReturn(modelDm);
+    ReadOnlyPlanungseinheit result = deviceUnderTest.removePruefer("2", "Cohen");
+    assertThat(result.getPruefer()).doesNotContain("Cohen");
+    assertThat(result.isBlock()).isTrue();
+    assertThat(result.asBlock().getROPruefungen()).contains(TestFactory.RO_DM_UNPLANNED);
+    assertThat(result.asBlock().getROPruefungen().stream()
+        .noneMatch(x -> x.getPruefer().contains("Cohen"))).isTrue();
+
+  }
+
+  @Test
   void addPruefer_unknownPruefungTest() {
     when(pruefungsperiode.pruefung(anyString())).thenReturn(null);
     assertThrows(IllegalArgumentException.class, () -> deviceUnderTest.addPruefer("b110", "Gödel"));
@@ -236,7 +252,7 @@ class DataAccessServiceTest {
   @Test
   void removePruefer_successTest() {
     when(pruefungsperiode.pruefung(anyString())).thenReturn(getPruefungWithPruefer("Cohen"));
-    ReadOnlyPruefungAssert.assertThat(deviceUnderTest.removePruefer("b321", "Cohen"))
+    ReadOnlyPruefungAssert.assertThat(deviceUnderTest.removePruefer("b321", "Cohen").asPruefung())
         .hasNotPruefer("Cohen");
   }
 
@@ -251,7 +267,7 @@ class DataAccessServiceTest {
   void removePruefer_otherPrueferStayTest() {
     when(pruefungsperiode.pruefung(anyString())).thenReturn(
         getPruefungWithPruefer("Hilbert", "Einstein"));
-    ReadOnlyPruefungAssert.assertThat(deviceUnderTest.removePruefer("b321", "Hilbert"))
+    ReadOnlyPruefungAssert.assertThat(deviceUnderTest.removePruefer("b321", "Hilbert").asPruefung())
         .hasPruefer("Einstein").hasNotPruefer("Cohen");
   }
 
