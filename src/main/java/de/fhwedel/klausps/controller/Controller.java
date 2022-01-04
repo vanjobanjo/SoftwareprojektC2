@@ -237,7 +237,7 @@ public class Controller implements InterfaceController {
   public ReadOnlyPruefung createPruefung(
       String name,
       String pruefungsNummer,
-      String pruefer,
+      String pruefer, //TODO muss hier kein Set rein?
       Duration duration,
       Map<Teilnehmerkreis, Integer> teilnehmerkreis)
       throws NoPruefungsPeriodeDefinedException {

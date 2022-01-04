@@ -3,7 +3,6 @@ package de.fhwedel.klausps.controller.services;
 import static de.fhwedel.klausps.controller.PlanungseinheitUtil.getAllPruefungen;
 import static java.util.Objects.nonNull;
 
-import de.fhwedel.klausps.controller.api.BlockDTO;
 import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
@@ -29,6 +28,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -64,17 +64,16 @@ public class DataAccessService {
       Set<String> pruefer,
       Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
 
-    if (!existsPruefungWith(pruefungsNr)) {
-      // todo contains static values as it is unclear where to retrieve the data from
-      //TODO hier die Duration weg machen
-      Pruefung pruefungModel = new PruefungImpl(pruefungsNr, name, refVWS, duration);
-      pruefer.forEach(pruefungModel::addPruefer);
-      addTeilnehmerKreisSchaetzungToModelPruefung(pruefungModel, teilnehmerkreise);
-      pruefungsperiode.addPlanungseinheit(pruefungModel);
-      return new PruefungDTOBuilder(
-          pruefungModel).build(); // Scoring ist 0, da Pruefung beim Erstellen ungeplant.
+    if (existsPruefungWith(pruefungsNr)) {
+      return null;
     }
-    return null;
+
+    Pruefung pruefungModel = new PruefungImpl(pruefungsNr, name, refVWS, duration);
+    pruefer.forEach(pruefungModel::addPruefer);
+    addTeilnehmerKreisSchaetzungToModelPruefung(pruefungModel, teilnehmerkreise);
+    pruefungsperiode.addPlanungseinheit(pruefungModel);
+    return converter.convertToReadOnlyPruefung(pruefungModel);
+
   }
 
   public boolean existsPruefungWith(String pruefungsNummer) {
@@ -90,6 +89,7 @@ public class DataAccessService {
     return nonNull(pruefungsperiode);
   }
 
+  //TODO diese Methode muss in ScheduleService ?
   public List<ReadOnlyPlanungseinheit> changeDurationOf(ReadOnlyPruefung pruefung, Duration minutes)
       throws HartesKriteriumException, IllegalArgumentException {
 
@@ -114,6 +114,7 @@ public class DataAccessService {
     return pruefungsperiode.pruefung(pruefungsNr);
   }
 
+  //TODO kann weg, scheduleservice oder converter!
   private List<ReadOnlyPruefung> createListOfPruefungWithScoring(List<Pruefung> pruefungen) {
     List<ReadOnlyPruefung> result = new ArrayList<>();
     for (Pruefung pruefung : pruefungen) {
@@ -162,15 +163,6 @@ public class DataAccessService {
     return pruefungsperiode.block(block.getBlockId());
   }
 
-  public ReadOnlyBlock fromModelToDTOBlock(Block block) {
-    // todo auslagern, wenn Converter implementiert ist
-    Set<ReadOnlyPruefung> pruefungen = new HashSet<>();
-    for (Pruefung pruefung : block.getPruefungen()) {
-      pruefungen.add(fromModelToDTOPruefungWithScoring(pruefung));
-    }
-    return new BlockDTO(block.getName(), block.getStartzeitpunkt(), block.getDauer(),
-        pruefungen, block.getId(), block.getTyp());
-  }
 
   /**
    * Checks the consistency of a ReadOnlyBlock
@@ -191,11 +183,6 @@ public class DataAccessService {
     //  und der Termin zu überprüfen.
   }
 
-  private ReadOnlyPruefung fromModelToDTOPruefungWithScoring(Pruefung pruefung) {
-    // TODO extract into appropriate class
-    return new PruefungDTOBuilder(pruefung).withScoring(scheduleService.scoringOfPruefung(pruefung))
-        .build();
-  }
 
   private boolean emptyBlockExists(ReadOnlyBlock block) {
     for (Block modelBlock : pruefungsperiode.ungeplanteBloecke()) {
@@ -391,13 +378,13 @@ public class DataAccessService {
       throw new IllegalArgumentException("Nur für ungeplante Blöcke möglich!");
     }
     Block model = getBlockFromModelOrException(block);
-    Set<Pruefung> modelPruefung = new HashSet<>(
+    Set<Pruefung> modelPruefungen = new HashSet<>(
         model.getPruefungen()); // very important, when we call
     // de.fhwedel.klausps.model.api.Block.removeAllPruefungen it
     // removes also the set, so we need a deep copy of the set
     model.removeAllPruefungen();
     pruefungsperiode.removePlanungseinheit(model);
-    return modelPruefung.stream().map(this::fromModelToDTOPruefungWithScoring).toList();
+    return new LinkedList<>(converter.convertToROPruefungCollection(modelPruefungen));
   }
 
   public ReadOnlyBlock createBlock(String name, ReadOnlyPruefung... pruefungen) {
@@ -421,7 +408,7 @@ public class DataAccessService {
       throw new IllegalArgumentException("Irgendwas ist schief gelaufen."
           + " Der Block konnte nicht in die Datenbank übertragen werden.");
     }
-    return fromModelToDTOBlock(blockModel);
+    return converter.convertToROBlock(blockModel);
   }
 
   private boolean isAnyInBlock(Collection<ReadOnlyPruefung> pruefungen) {
@@ -542,6 +529,7 @@ public class DataAccessService {
     return getAllPruefungen(planungseinheitenBetween);
   }
 
+  //TODO kann das hier raus? Evtl? Weil hier an dieser Stelle der Converter genutzt wird.
   public Optional<ReadOnlyBlock> getBlockTo(ReadOnlyPruefung pruefung) {
     String nummer = pruefung.getPruefungsnummer();
 
@@ -551,7 +539,7 @@ public class DataAccessService {
       if (blockOpt.isEmpty()) {
         return Optional.empty();
       } else {
-        return Optional.of(fromModelToDTOBlock(blockOpt.get()));
+        return Optional.of(converter.convertToROBlock(blockOpt.get()));
       }
     } else {
       throw new IllegalArgumentException("Pruefungsnummer nicht im System!");
