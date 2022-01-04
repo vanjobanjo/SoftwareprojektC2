@@ -21,10 +21,10 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class AnzahlPruefungProWoche2Test {
+class AnzahlPruefungProWocheTeilnehmerkreisTest {
 
   private Pruefungsperiode mocked_periode;
-  private AnzahlPruefungProWoche2 deviceUnderTest;
+  private AnzahlPruefungProWocheTeilnehmerkreis deviceUnderTest;
   private DataAccessService accessService;
   private final LocalDate START_PERIODE = LocalDate.of(2021, 1, 1);
   private final LocalDate END_PERIODE = LocalDate.of(2021, 12, 31);
@@ -56,7 +56,7 @@ class AnzahlPruefungProWoche2Test {
         Set.of(mathe_0, dm_0));
 
     //mock must be configured before constructor call
-    this.deviceUnderTest = new AnzahlPruefungProWoche2(accessService, LIMIT_PER_WEEK);
+    this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreis(accessService, LIMIT_PER_WEEK);
 
     assertThat(deviceUnderTest.isAboveLimit(mathe_0, bwl)).isTrue();
   }
@@ -78,7 +78,7 @@ class AnzahlPruefungProWoche2Test {
         Set.of(mathe_0, dm_0));
 
     //mock must be configured before constructor call
-    this.deviceUnderTest = new AnzahlPruefungProWoche2(accessService, LIMIT_PER_WEEK);
+    this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreis(accessService, LIMIT_PER_WEEK);
     WeichesKriteriumAnalyse ev = deviceUnderTest.evaluate(mathe_0).get();
     assertThat(ev.getCausingPruefungen()).containsOnly(mathe_0, dm_0);
   }
@@ -103,7 +103,7 @@ class AnzahlPruefungProWoche2Test {
         Set.of(mathe_0, dm_0));
 
     //mock must be configured before constructor call
-    this.deviceUnderTest = new AnzahlPruefungProWoche2(accessService, LIMIT_PER_WEEK);
+    this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreis(accessService, LIMIT_PER_WEEK);
     WeichesKriteriumAnalyse ev = deviceUnderTest.evaluate(mathe_0).get();
     assertThat(ev.getCausingPruefungen()).containsOnly(mathe_0, dm_0);
     assertThat(ev.getAffectedTeilnehmerKreise()).containsOnly(bwl, inf);
@@ -138,7 +138,7 @@ class AnzahlPruefungProWoche2Test {
         Set.of(mathe_0, dm_0));
 
     //mock must be configured before constructor call
-    this.deviceUnderTest = new AnzahlPruefungProWoche2(accessService, 2);
+    this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreis(accessService, 2);
     assertThat(deviceUnderTest.evaluate(mathe_0)).isEmpty();
     assertThat(deviceUnderTest.evaluate(dm_0)).isEmpty();
   }
@@ -173,7 +173,7 @@ class AnzahlPruefungProWoche2Test {
         Set.of(mathe_0, dm_0, haskell_0));
 
     //mock must be configured before constructor call
-    this.deviceUnderTest = new AnzahlPruefungProWoche2(accessService, LIMIT_PER_WEEK);
+    this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreis(accessService, LIMIT_PER_WEEK);
     assertThat(deviceUnderTest.evaluate(mathe_0)).isPresent();
     assertThat(deviceUnderTest.evaluate(mathe_0).get().getCausingPruefungen()).containsOnly(mathe_0,
         haskell_0);

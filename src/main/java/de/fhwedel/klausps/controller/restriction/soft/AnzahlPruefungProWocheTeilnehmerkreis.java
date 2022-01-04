@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class AnzahlPruefungProWoche2 extends WeicheRestriktion {
+public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
 
   // for testing
   public static int LIMIT_DEFAULT = 5;
@@ -29,7 +29,7 @@ public class AnzahlPruefungProWoche2 extends WeicheRestriktion {
   private final Map<Integer, Set<Pruefung>> weekPruefungMap;
 
   //Mock Konstruktor
-  AnzahlPruefungProWoche2(
+  AnzahlPruefungProWocheTeilnehmerkreis(
       DataAccessService dataAccessService,
       final int LIMIT_TEST) {
     super(dataAccessService, ANZAHL_PRUEFUNGEN_PRO_WOCHE);
@@ -38,7 +38,7 @@ public class AnzahlPruefungProWoche2 extends WeicheRestriktion {
     limit = LIMIT_TEST;
   }
 
-  public AnzahlPruefungProWoche2() {
+  public AnzahlPruefungProWocheTeilnehmerkreis() {
     super(ServiceProvider.getDataAccessService(), ANZAHL_PRUEFUNGEN_PRO_WOCHE);
     startPeriode = dataAccessService.getStartOfPeriode();
     weekPruefungMap = weekMapOfPruefung(dataAccessService.getGeplanteModelPruefung(), startPeriode);
