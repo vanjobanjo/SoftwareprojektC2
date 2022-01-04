@@ -12,12 +12,8 @@ import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -65,36 +61,50 @@ public class AnzahlPruefungProWoche2 extends WeicheRestriktion {
         .count();
   }
 
-  private Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung, Teilnehmerkreis tk,
-      WeichesKriteriumAnalyse analyse) {
+  private Optional<WeichesKriteriumAnalyse> evaluateForTkConcat(Pruefung pruefung,
+      Teilnehmerkreis tk,
+      Optional<WeichesKriteriumAnalyse> analyse) {
     assert pruefung.getTeilnehmerkreise().contains(tk);
 
-    if (!isAboveLimit(pruefung, tk)) {
-      return Optional.of(analyse);
+    int week = getWeek(startPeriode, pruefung);
+    Set<Pruefung> pruefungenSameWeek = weekPruefungMap.get(week);
+    Optional<Block> blockOpt = dataAccessService.getBlockTo(pruefung);
+    if (blockOpt.isPresent()) {
+      pruefungenSameWeek = filterSiblingsOfPruefung(pruefung, pruefungenSameWeek);
     }
 
-    return concatAnalyse((new WeichesKriteriumAnalyse(Set.of(pruefung),
-            ANZAHL_PRUEFUNGEN_PRO_WOCHE, Set.of(tk), pruefung.getSchaetzungen().get(tk))),
+    if (countOfTeilnehmerkreis(tk, pruefungenSameWeek) < limit) {
+      return analyse;
+    }
+
+    Set<Pruefung> pruefungenSameTk = pruefungenSameWeek.stream()
+        .filter(pr -> pr.getTeilnehmerkreise().contains(tk)).collect(
+            Collectors.toSet());
+
+    return concatAnalyse((new WeichesKriteriumAnalyse(pruefungenSameTk,
+            ANZAHL_PRUEFUNGEN_PRO_WOCHE, Set.of(tk), pruefung.getSchaetzungen().get(tk),
+            ANZAHL_PRUEFUNGEN_PRO_WOCHE.getWert())),
         analyse);
   }
 
   private Optional<WeichesKriteriumAnalyse> concatAnalyse(
-      WeichesKriteriumAnalyse newAnalyse, WeichesKriteriumAnalyse oldAnalyse) {
+      WeichesKriteriumAnalyse newAnalyse, Optional<WeichesKriteriumAnalyse> oldAnalyse) {
     assert newAnalyse != null;
-    if (oldAnalyse == null) {
+    if (oldAnalyse.isEmpty()) {
       return Optional.of(newAnalyse);
     }
     Set<Pruefung> combinedPruefung = new HashSet<>();
     combinedPruefung.addAll(newAnalyse.getCausingPruefungen());
-    combinedPruefung.addAll(oldAnalyse.getCausingPruefungen());
+    combinedPruefung.addAll(oldAnalyse.get().getCausingPruefungen());
 
     Set<Teilnehmerkreis> combinedTk = new HashSet<>();
     combinedTk.addAll(newAnalyse.getAffectedTeilnehmerKreise());
-    combinedTk.addAll(oldAnalyse.getAffectedTeilnehmerKreise());
-    int sum = newAnalyse.getAmountAffectedStudents() + oldAnalyse.getAmountAffectedStudents();
+    combinedTk.addAll(oldAnalyse.get().getAffectedTeilnehmerKreise());
+    int sum = newAnalyse.getAmountAffectedStudents() + oldAnalyse.get().getAmountAffectedStudents();
+    int deltaScoring = oldAnalyse.get().getDeltaScoring() + newAnalyse.getDeltaScoring();
     return Optional.of(
         new WeichesKriteriumAnalyse(new HashSet<>(combinedPruefung), ANZAHL_PRUEFUNGEN_PRO_WOCHE,
-            new HashSet<>(combinedTk), sum));
+            new HashSet<>(combinedTk), sum, deltaScoring));
 
   }
 
@@ -102,12 +112,12 @@ public class AnzahlPruefungProWoche2 extends WeicheRestriktion {
   public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
     Optional<WeichesKriteriumAnalyse> temp = Optional.empty();
     for (Teilnehmerkreis tk : pruefung.getTeilnehmerkreise()) {
-      temp = evaluate(pruefung, tk, temp.get());
+      temp = evaluateForTkConcat(pruefung, tk, temp);
     }
     return temp;
   }
 
-  private boolean isAboveLimit(Pruefung pruefung, Teilnehmerkreis tk) {
+  boolean isAboveLimit(Pruefung pruefung, Teilnehmerkreis tk) {
     int week = getWeek(startPeriode, pruefung);
     Set<Pruefung> pruefungen = weekPruefungMap.get(week);
     Optional<Block> blockOpt = dataAccessService.getBlockTo(pruefung);
