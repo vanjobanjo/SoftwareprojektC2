@@ -277,9 +277,10 @@ public class DataAccessService {
     return pruefungsperiode.geplantePruefungen();
   }
 
+
   public Set<ReadOnlyPruefung> getUngeplantePruefungen() {
-    return pruefungsperiode.ungeplantePruefungen().stream()
-        .map(this::fromModelToDTOPruefungWithScoring).collect(Collectors.toSet());
+    return new HashSet<>(
+        converter.convertToROPruefungCollection(pruefungsperiode.ungeplantePruefungen()));
   }
 
   public Set<ReadOnlyBlock> getGeplanteBloecke() {
