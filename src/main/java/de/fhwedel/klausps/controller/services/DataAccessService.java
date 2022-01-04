@@ -187,6 +187,7 @@ public class DataAccessService {
   private boolean emptyBlockExists(ReadOnlyBlock block) {
     for (Block modelBlock : pruefungsperiode.ungeplanteBloecke()) {
       // todo add all necessary checks for empty blocks
+      //TODO pruefungsperiode.block(int number); nutzen?
       if (modelBlock.getId() == block.getBlockId()) {
         return true;
       }
@@ -214,6 +215,7 @@ public class DataAccessService {
     if (readOnlyBlock != null) {
       Optional<LocalDateTime> readOnlyTermin = readOnlyBlock.getTermin();
       return modelBlock != null
+          && readOnlyBlock.getBlockId() == modelBlock.getId()
           && readOnlyBlock.getROPruefungen().size() == modelBlock.getPruefungen().size()
           && readOnlyBlock.getName().equals(modelBlock.getName()) && (
           (readOnlyBlock.getTermin().isEmpty() && modelBlock.getStartzeitpunkt() == null) || (
@@ -570,6 +572,12 @@ public class DataAccessService {
 
   public boolean addTeilnehmerkreis(Pruefung roPruefung, Teilnehmerkreis teilnehmerkreis) {
     return roPruefung.addTeilnehmerkreis(teilnehmerkreis);
+  }
+
+  public ReadOnlyBlock setNameOfBlock(ReadOnlyBlock block, String name) {
+    Block model = getBlockFromModelOrException(block);
+    model.setName(name);
+    return converter.convertToROBlock(model);
   }
 
 }

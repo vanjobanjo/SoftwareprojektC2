@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
@@ -414,7 +415,8 @@ class DataAccessServiceTest {
 
     Pruefung modelAnalysis = getPruefungOfReadOnlyPruefung(analysis);
     when(pruefungsperiode.pruefung(oldNumber)).thenReturn(modelAnalysis);
-    ReadOnlyPruefung analysisNewNumber = deviceUnderTest.setPruefungsnummer(analysis, newNumber).asPruefung();
+    ReadOnlyPruefung analysisNewNumber = deviceUnderTest.setPruefungsnummer(analysis, newNumber)
+        .asPruefung();
     assertThat(analysisNewNumber.getPruefungsnummer()).isEqualTo(newNumber);
     assertThat(analysisNewNumber).isNotEqualTo(analysis); // Equal arbeitet prüft die Nummern
     assertThat(analysisNewNumber.getDauer()).isEqualTo(analysis.getDauer());
@@ -1112,6 +1114,20 @@ class DataAccessServiceTest {
 
 
   @Test
+  void setNameOfBlockTest() {
+
+    Pruefung analysis = TestFactory.getPruefungOfReadOnlyPruefung(TestFactory.RO_DM_UNPLANNED);
+    Block model = TestFactory.configureMock_addPruefungToBlockModel(pruefungsperiode, "Hallo",
+        LocalDateTime.MIN, analysis);
+    TestFactory.configureMock_getPruefungFromPeriode(pruefungsperiode, analysis);
+
+    when(pruefungsperiode.block(anyInt())).thenReturn(model);
+    deviceUnderTest.setNameOfBlock(converter.convertToROBlock(model), "Ciao");
+
+    assertThat(model.getName()).isEqualTo("Ciao");
+  }
+
+  @Test
   void addPruefungToBlock_both_scheduled_successful() {
     // setup termin and read only pruefungen
     LocalDateTime termin = LocalDateTime.now();
@@ -1249,6 +1265,4 @@ class DataAccessServiceTest {
     }
     return pruefung;
   }
-
-
 }
