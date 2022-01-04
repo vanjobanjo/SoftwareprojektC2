@@ -284,11 +284,9 @@ public class DataAccessService {
   }
 
   public Set<ReadOnlyBlock> getGeplanteBloecke() {
-    Set<ReadOnlyBlock> result = new HashSet<>();
-    for (Block block : pruefungsperiode.geplanteBloecke()) {
-      result.add(fromModelToDTOBlock(block));
-    }
-    return result;
+
+    return new HashSet<>(
+        converter.convertToROBlockCollection(pruefungsperiode.geplanteBloecke()));
   }
 
   public Set<ReadOnlyBlock> getUngeplanteBloecke() {
