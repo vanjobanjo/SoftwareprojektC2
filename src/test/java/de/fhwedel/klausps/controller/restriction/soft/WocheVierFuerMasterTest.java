@@ -189,6 +189,7 @@ class WocheVierFuerMasterTest {
     assertThat(result.get().getAmountAffectedStudents()).isEqualTo(40);
     assertThat(result.get().getAffectedTeilnehmerKreise()).containsOnly(TestFactory.infBachelor,
         TestFactory.infPtl);
+    assertThat(result.get().getDeltaScoring()).isEqualTo(2 * WeichesKriterium.WOCHE_VIER_FUER_MASTER.getWert());
     assertThat(result.get().getAffectedTeilnehmerKreise()).doesNotContain(TestFactory.infMaster);
   }
 
@@ -216,5 +217,6 @@ class WocheVierFuerMasterTest {
     assertThat(result).isPresent();
     assertThat(result.get().getAffectedTeilnehmerKreise()).containsOnly(TestFactory.infPtl);
     assertThat(result.get().getAmountAffectedStudents()).isEqualTo(20);
+    assertThat(result.get().getDeltaScoring()).isEqualTo(WeichesKriterium.WOCHE_VIER_FUER_MASTER.getWert());
   }
 }

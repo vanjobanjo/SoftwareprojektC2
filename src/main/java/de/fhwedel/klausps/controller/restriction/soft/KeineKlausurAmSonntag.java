@@ -43,7 +43,7 @@ public class KeineKlausurAmSonntag extends WeicheRestriktion {
       return Optional.empty();
     }
 
-    return Optional.of(super.buildAnalysis(Set.of(pruefung)));
+    return Optional.of(buildAnalysis(Set.of(pruefung)));
   }
 
 

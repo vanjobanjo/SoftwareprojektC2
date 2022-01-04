@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
+import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.controller.util.TestFactory;
@@ -88,5 +89,6 @@ class KeineKlausurAmSonntagTest {
     assertThat(result.getAmountAffectedStudents()).isEqualTo(90);
     assertThat(result.getAffectedTeilnehmerKreise()).containsOnly(TestFactory.wingBachelor, TestFactory.infBachelor,
         TestFactory.bwlBachelor);
+    assertThat(result.getDeltaScoring()).isEqualTo(WeichesKriterium.SONNTAG.getWert());
   }
 }
