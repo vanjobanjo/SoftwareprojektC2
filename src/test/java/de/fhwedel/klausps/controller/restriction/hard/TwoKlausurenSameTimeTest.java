@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -63,13 +65,17 @@ class TwoKlausurenSameTimeTest {
   @Test
   void twoKlausurenSameTimeTest_twoSameTime() {
 
-
-
-    Pruefung analysisPL = mock(Pruefung.class);
-    Pruefung haskelPL = mock(Pruefung.class);
+    Planungseinheit analysisPL = mock(Pruefung.class);
+    Planungseinheit haskelPL = mock(Pruefung.class);
 
     Pruefung analysis = mock(Pruefung.class);
     Pruefung haskel = mock(Pruefung.class);
+
+    setNameAndNummer(analysis, "analysis");
+    setNameAndNummer(haskel, "haskel");
+
+    when(analysis.isGeplant()).thenReturn(true);
+    when(haskel.isGeplant()).thenReturn(true);
 
     Set<Teilnehmerkreis> teilnehmer = new HashSet<>();
     Teilnehmerkreis informatik = getTeilnehmerKreis("Informatik");
@@ -107,7 +113,8 @@ class TwoKlausurenSameTimeTest {
     // when(pruefungsperiode.planungseinheitenBetween(start, start.plusMinutes(120))).thenReturn(setOfPruefungen);
 
     try {
-      when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(listOfPruefungen);
+      when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+          listOfPruefungen);
     } catch (IllegalTimeSpanException e) {
 
       //start kann nicht vor ende liegen, da ich das berechne
@@ -122,7 +129,7 @@ class TwoKlausurenSameTimeTest {
 
     TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
 
-    assertTrue(h.test(haskel));
+    h.evaluate(haskel).get();
 
     assertEquals(setOfConflictPruefunge, h.inConflictROPruefung);
     assertEquals(setOfConflictTeilnehmer, h.inConfilictTeilnehmerkreis);
@@ -133,12 +140,15 @@ class TwoKlausurenSameTimeTest {
   @Test
   void twoKlausurenSameTime_NotSameTime() {
 
-
     Planungseinheit analysisPL = mock(Planungseinheit.class);
     Planungseinheit haskelPL = mock(Planungseinheit.class);
 
     Pruefung analysis = mock(Pruefung.class);
     Pruefung haskel = mock(Pruefung.class);
+
+    setNameAndNummer(analysis,"analysis");
+    setNameAndNummer(haskel, "haskel");
+
 
     Set<Teilnehmerkreis> teilnehmer = new HashSet<>();
     Teilnehmerkreis informatik = getTeilnehmerKreis("Informatik");
@@ -171,7 +181,8 @@ class TwoKlausurenSameTimeTest {
     // when(pruefungsperiode.planungseinheitenBetween(start, start.plusMinutes(120))).thenReturn(setOfPruefungen);
 
     try {
-      when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(listOfPruefungen);
+      when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+          listOfPruefungen);
     } catch (IllegalTimeSpanException e) {
 
       //start kann nicht vor ende liegen, da ich das berechne
@@ -185,7 +196,9 @@ class TwoKlausurenSameTimeTest {
     when(haskel.getDauer()).thenReturn(duration);
 
     TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
-    assertFalse(h.test(haskel));
+
+    Optional<HartesKriteriumAnalyse> should = Optional.empty();
+    assertEquals(should, h.evaluate(haskel));
 
     assertEquals(setOfConflictPruefunge, h.inConflictROPruefung);
     assertEquals(setOfConflictTeilnehmer, h.inConfilictTeilnehmerkreis);
@@ -195,15 +208,17 @@ class TwoKlausurenSameTimeTest {
   @Test
   void twoKlausurenSameTime_ThreeSameTime() {
 
-
-
-    Pruefung analysisPL = mock(Pruefung.class);
-    Pruefung haskelPL = mock(Pruefung.class);
-    Pruefung dmPL = mock(Pruefung.class);
+    Planungseinheit analysisPL = mock(Pruefung.class);
+    Planungseinheit haskelPL = mock(Pruefung.class);
+    Planungseinheit dmPL = mock(Pruefung.class);
 
     Pruefung analysis = mock(Pruefung.class);
     Pruefung haskel = mock(Pruefung.class);
     Pruefung dm = mock(Pruefung.class);
+
+    setNameAndNummer(analysis,"analysis");
+    setNameAndNummer(haskel, "haskel");
+    setNameAndNummer(dm, "dm");
 
     Set<Teilnehmerkreis> teilnehmer = new HashSet<>();
     Teilnehmerkreis informatik = getTeilnehmerKreis("Informatik");
@@ -248,7 +263,8 @@ class TwoKlausurenSameTimeTest {
     // when(pruefungsperiode.planungseinheitenBetween(start, start.plusMinutes(120))).thenReturn(setOfPruefungen);
 
     try {
-      when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(listOfPruefungen);
+      when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+          listOfPruefungen);
     } catch (IllegalTimeSpanException e) {
       //start kann nicht vor ende liegen, da ich das berechne
       e.printStackTrace();
@@ -260,9 +276,9 @@ class TwoKlausurenSameTimeTest {
     when(haskel.getStartzeitpunkt()).thenReturn(start);
     when(haskel.getDauer()).thenReturn(duration);
 
-
     TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
-    assertTrue(h.test(haskel));
+    ;
+    h.evaluate(haskel);
 
     assertEquals(setOfConflictPruefunge, h.inConflictROPruefung);
     assertEquals(setOfConflictTeilnehmer, h.inConfilictTeilnehmerkreis);
@@ -273,13 +289,17 @@ class TwoKlausurenSameTimeTest {
   @Test
   void twoKlausurenSameTime_ThreeSameTime_two_DiffrentTeilnehmerkreis() {
 
-    Pruefung analysisPL = mock(Pruefung.class);
-    Pruefung haskelPL = mock(Pruefung.class);
-    Pruefung dmPL = mock(Pruefung.class);
+    Planungseinheit analysisPL = mock(Pruefung.class);
+    Planungseinheit haskelPL = mock(Pruefung.class);
+    Planungseinheit dmPL = mock(Pruefung.class);
 
     Pruefung analysis = mock(Pruefung.class);
     Pruefung haskel = mock(Pruefung.class);
     Pruefung dm = mock(Pruefung.class);
+
+    setNameAndNummer(analysis,"analysis");
+    setNameAndNummer(haskel, "haskel");
+    setNameAndNummer(dm, "dm");
 
     Set<Teilnehmerkreis> teilnehmer1 = new HashSet<>();
     Teilnehmerkreis informatik = getTeilnehmerKreis("Informatik");
@@ -350,7 +370,8 @@ class TwoKlausurenSameTimeTest {
     listOfPruefungen.add(analysisPL);
 
     try {
-      when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(listOfPruefungen);
+      when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+          listOfPruefungen);
     } catch (IllegalTimeSpanException e) {
       //start kann nicht vor ende liegen, da ich das berechne
       e.printStackTrace();
@@ -363,13 +384,17 @@ class TwoKlausurenSameTimeTest {
 
     TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
 
-    assertTrue(h.test(haskel));
+
+   h.evaluate(haskel);
 
     assertEquals(setOfConflictPruefunge, h.inConflictROPruefung);
     assertEquals(setOfConflictTeilnehmerkreis, h.inConfilictTeilnehmerkreis);
     assertEquals(studends, h.countStudents);
   }
 
-
-
+  private void setNameAndNummer(Pruefung analysis, String name) {
+    when(analysis.getPruefungsnummer()).thenReturn(name);
+    when(analysis.getName()).thenReturn(name);
+    when(analysis.isGeplant()).thenReturn(true);
+  }
 }

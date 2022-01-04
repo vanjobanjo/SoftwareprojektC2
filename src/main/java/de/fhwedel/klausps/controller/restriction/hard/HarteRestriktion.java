@@ -14,11 +14,11 @@ public abstract class HarteRestriktion {
 
 
   protected Pruefung pruefung;
-  Set<Pruefung> inConflictROPruefung;
-  Set<Teilnehmerkreis> inConfilictTeilnehmerkreis;
-  int countStudents;
-  HartesKriterium hardRestriction;
-  DataAccessService dataAccessService;
+  protected Set<Pruefung> inConflictROPruefung;
+  protected Set<Teilnehmerkreis> inConfilictTeilnehmerkreis;
+  protected int countStudents;
+  private HartesKriterium hardRestriction;
+  protected DataAccessService dataAccessService;
 
   HarteRestriktion(DataAccessService dataAccessService, HartesKriterium kriterium) {
     this.hardRestriction = kriterium;
