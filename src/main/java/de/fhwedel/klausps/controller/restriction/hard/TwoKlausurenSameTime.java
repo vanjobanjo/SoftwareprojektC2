@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
-public class TwoKlausurenSameTime extends HartRestriktion implements Predicate<Pruefung> {
+public class TwoKlausurenSameTime extends HarteRestriktion implements Predicate<Pruefung> {
 
   static final long MINUTES_BETWEEN_PRUEFUNGEN = 30;
 

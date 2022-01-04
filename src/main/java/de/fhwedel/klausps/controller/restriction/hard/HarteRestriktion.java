@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-public abstract class HartRestriktion {
+public abstract class HarteRestriktion {
 
 
   protected Pruefung pruefung;
@@ -20,7 +20,7 @@ public abstract class HartRestriktion {
   HartesKriterium hardRestriction;
   DataAccessService dataAccessService;
 
-  HartRestriktion(DataAccessService dataAccessService, HartesKriterium kriterium) {
+  HarteRestriktion(DataAccessService dataAccessService, HartesKriterium kriterium) {
     this.hardRestriction = kriterium;
     this.dataAccessService = dataAccessService;
     countStudents = 0;
