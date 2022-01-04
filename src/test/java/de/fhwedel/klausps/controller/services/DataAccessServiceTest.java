@@ -205,9 +205,26 @@ class DataAccessServiceTest {
 
   @Test
   void addPruefer_successTest() {
-    when(pruefungsperiode.pruefung(anyString())).thenReturn(getPruefungWithPruefer("Cohen"));
-    ReadOnlyPruefungAssert.assertThat(deviceUnderTest.addPruefer("b321", "Cohen"))
-        .hasPruefer("Cohen");
+    when(pruefungsperiode.pruefung(anyString())).thenReturn(
+        TestFactory.getPruefungOfReadOnlyPruefung(TestFactory.RO_DM_UNPLANNED));
+    ReadOnlyPlanungseinheit result = deviceUnderTest.addPruefer("2", "Cohen");
+    assertThat(result.getPruefer()).contains("Cohen");
+    assertThat(result.isBlock()).isFalse();
+  }
+
+  @Test
+  void addPrueferBlock_successTest() {
+    Pruefung modelDm = TestFactory.getPruefungOfReadOnlyPruefung(TestFactory.RO_DM_UNPLANNED);
+    TestFactory.configureMock_addPruefungToBlockModel(pruefungsperiode,
+        "Hallo", null, modelDm);
+    when(pruefungsperiode.pruefung(anyString())).thenReturn(modelDm);
+    ReadOnlyPlanungseinheit result = deviceUnderTest.addPruefer("2", "Cohen");
+    assertThat(result.getPruefer()).contains("Cohen");
+    assertThat(result.isBlock()).isTrue();
+    assertThat(result.asBlock().getROPruefungen()).contains(TestFactory.RO_DM_UNPLANNED);
+    assertThat(result.asBlock().getROPruefungen().stream()
+        .anyMatch(x -> x.getPruefer().contains("Cohen"))).isTrue();
+
   }
 
   @Test
@@ -295,7 +312,8 @@ class DataAccessServiceTest {
   @Test
   void scheduleBlock_successful() {
     ReadOnlyBlock blockToSchedule = new BlockDTO("Name", null, Duration.ZERO,
-        Set.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED), 1, Blocktyp.SEQUENTIAL);
+        Set.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED), 1,
+        Blocktyp.SEQUENTIAL);
 
     LocalDateTime termin = LocalDateTime.of(2000, 1, 1, 0, 0);
     Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);

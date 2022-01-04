@@ -277,7 +277,7 @@ public class Controller implements InterfaceController {
 
 
   @Override
-  public ReadOnlyPruefung addPruefer(ReadOnlyPruefung pruefung, String kuerzel)
+  public ReadOnlyPlanungseinheit addPruefer(ReadOnlyPruefung pruefung, String kuerzel)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, kuerzel);
     checkNoPruefungDefined();
@@ -285,7 +285,7 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public ReadOnlyPruefung removePruefer(ReadOnlyPruefung pruefung, String kuerzel)
+  public ReadOnlyPlanungseinheit removePruefer(ReadOnlyPruefung pruefung, String kuerzel)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, kuerzel);
     checkNoPruefungDefined();

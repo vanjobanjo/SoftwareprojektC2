@@ -308,10 +308,11 @@ public class DataAccessService {
             .collect(Collectors.toSet())));
   }
 
-  public ReadOnlyPruefung addPruefer(String pruefungsNummer, String pruefer) {
+  public ReadOnlyPlanungseinheit addPruefer(String pruefungsNummer, String pruefer) {
     Pruefung pruefung = getPruefungFromModelOrException(pruefungsNummer);
     pruefung.addPruefer(pruefer);
-    return fromModelToDTOPruefungWithScoring(pruefung);
+    Block block = pruefungsperiode.block(pruefung);
+    return block != null ? converter.convertToROBlock(block) : converter.convertToReadOnlyPruefung(pruefung);
   }
 
   public ReadOnlyPruefung removePruefer(String pruefungsNummer, String pruefer) {
