@@ -5,6 +5,7 @@ import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.restriction.hard.HartRestriktion;
 import de.fhwedel.klausps.controller.restriction.hard.TwoKlausurenSameTime;
 import de.fhwedel.klausps.controller.restriction.soft.AnzahlPruefungProWoche;
+import de.fhwedel.klausps.controller.restriction.soft.AnzahlPruefungProWocheTeilnehmerkreis;
 import de.fhwedel.klausps.controller.restriction.soft.AnzahlPruefungenGleichzeitigRestriktion;
 import de.fhwedel.klausps.controller.restriction.soft.AnzahlTeilnehmerGleichzeitigZuHochRestriction;
 import de.fhwedel.klausps.controller.restriction.soft.FreierTagZwischenPruefungen;
@@ -39,7 +40,8 @@ public class RestrictionService {
 
   private void registerSoftCriteria() {
     softRestrictions.addAll(Set.of(
-        new AnzahlPruefungProWoche(),
+        //new AnzahlPruefungProWoche(),
+        new AnzahlPruefungProWocheTeilnehmerkreis(),
         new AnzahlPruefungenGleichzeitigRestriktion(),
         new AnzahlTeilnehmerGleichzeitigZuHochRestriction(),
         new FreierTagZwischenPruefungen(),
