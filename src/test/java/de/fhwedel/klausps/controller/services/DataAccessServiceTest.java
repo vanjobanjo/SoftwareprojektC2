@@ -1128,6 +1128,24 @@ class DataAccessServiceTest {
   }
 
   @Test
+  void setNameOfBlockWithScoringTest() {
+
+    Pruefung analysis = TestFactory.getPruefungOfReadOnlyPruefung(TestFactory.RO_DM_UNPLANNED);
+    Block model = TestFactory.configureMock_addPruefungToBlockModel(pruefungsperiode, "Hallo",
+        LocalDateTime.MIN, analysis);
+    TestFactory.configureMock_getPruefungFromPeriode(pruefungsperiode, analysis);
+
+    when(pruefungsperiode.block(anyInt())).thenReturn(model);
+    when(scheduleService.scoringOfPruefung(analysis)).thenReturn(20);
+    deviceUnderTest.setNameOfBlock(converter.convertToROBlock(model), "Ciao");
+    assertThat(model.getName()).isEqualTo("Ciao");
+    assertThat(model.getPruefungen()).containsOnly(analysis);
+    assertThat(converter.convertToReadOnlyPruefung(analysis).getScoring()).isEqualTo(20);
+
+
+  }
+
+  @Test
   void addPruefungToBlock_both_scheduled_successful() {
     // setup termin and read only pruefungen
     LocalDateTime termin = LocalDateTime.now();
