@@ -12,19 +12,15 @@ import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class AnzahlPruefungProWoche extends WeicheRestriktion {
+public class AnzahlPruefungProWoche2 extends WeicheRestriktion {
 
   // for testing
-  public static final int LIMIT_DEFAULT = 5;
+  public static int LIMIT_DEFAULT = 5;
   private static final int DAYS_WEEK_DEFAULT = 7;
   private final int limit;
 
@@ -33,7 +29,7 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion {
   private final Map<Integer, Set<Pruefung>> weekPruefungMap;
 
   //Mock Konstruktor
-  AnzahlPruefungProWoche(
+  AnzahlPruefungProWoche2(
       DataAccessService dataAccessService,
       final int LIMIT_TEST) {
     super(dataAccessService, ANZAHL_PRUEFUNGEN_PRO_WOCHE);
@@ -42,7 +38,7 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion {
     limit = LIMIT_TEST;
   }
 
-  public AnzahlPruefungProWoche() {
+  public AnzahlPruefungProWoche2() {
     super(ServiceProvider.getDataAccessService(), ANZAHL_PRUEFUNGEN_PRO_WOCHE);
     startPeriode = dataAccessService.getStartOfPeriode();
     weekPruefungMap = weekMapOfPruefung(dataAccessService.getGeplanteModelPruefung(), startPeriode);
@@ -60,68 +56,75 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion {
         / DAYS_WEEK_DEFAULT;
   }
 
+  private int countOfTeilnehmerkreis(Teilnehmerkreis tk, Set<Pruefung> pruefungen) {
+    return (int) pruefungen.stream().filter(pruefung -> pruefung.getTeilnehmerkreise().contains(tk))
+        .count();
+  }
 
-  public boolean isAboveTheWeekLimit(Pruefung pruefung) {
+  private Optional<WeichesKriteriumAnalyse> evaluateForTkConcat(Pruefung pruefung,
+      Teilnehmerkreis tk,
+      Optional<WeichesKriteriumAnalyse> analyse) {
+    assert pruefung.getTeilnehmerkreise().contains(tk);
+
     int week = getWeek(startPeriode, pruefung);
-    Set<Pruefung> pruefungen = weekPruefungMap.get(week);
+    Set<Pruefung> pruefungenSameWeek = weekPruefungMap.get(week);
     Optional<Block> blockOpt = dataAccessService.getBlockTo(pruefung);
+    if (blockOpt.isPresent()) {
+      pruefungenSameWeek = filterSiblingsOfPruefung(pruefung, pruefungenSameWeek);
+    }
 
-    return blockOpt.isEmpty() ? pruefungen.size() >= limit
-        : (pruefungen.size() - blockOpt.get().getPruefungen().size()) + 1 >= limit;
-    //ignore the exams in the block of pruefung.
+    if (countOfTeilnehmerkreis(tk, pruefungenSameWeek) < limit) {
+      return analyse;
+    }
+
+    Set<Pruefung> pruefungenSameTk = pruefungenSameWeek.stream()
+        .filter(pr -> pr.getTeilnehmerkreise().contains(tk)).collect(
+            Collectors.toSet());
+
+    return concatAnalyse((new WeichesKriteriumAnalyse(pruefungenSameTk,
+            ANZAHL_PRUEFUNGEN_PRO_WOCHE, Set.of(tk), pruefung.getSchaetzungen().get(tk),
+            ANZAHL_PRUEFUNGEN_PRO_WOCHE.getWert())),
+        analyse);
+  }
+
+  private Optional<WeichesKriteriumAnalyse> concatAnalyse(
+      WeichesKriteriumAnalyse newAnalyse, Optional<WeichesKriteriumAnalyse> oldAnalyse) {
+    assert newAnalyse != null;
+    if (oldAnalyse.isEmpty()) {
+      return Optional.of(newAnalyse);
+    }
+    Set<Pruefung> combinedPruefung = new HashSet<>();
+    combinedPruefung.addAll(newAnalyse.getCausingPruefungen());
+    combinedPruefung.addAll(oldAnalyse.get().getCausingPruefungen());
+
+    Set<Teilnehmerkreis> combinedTk = new HashSet<>();
+    combinedTk.addAll(newAnalyse.getAffectedTeilnehmerKreise());
+    combinedTk.addAll(oldAnalyse.get().getAffectedTeilnehmerKreise());
+    int sum = newAnalyse.getAmountAffectedStudents() + oldAnalyse.get().getAmountAffectedStudents();
+    int deltaScoring = oldAnalyse.get().getDeltaScoring() + newAnalyse.getDeltaScoring();
+    return Optional.of(
+        new WeichesKriteriumAnalyse(new HashSet<>(combinedPruefung), ANZAHL_PRUEFUNGEN_PRO_WOCHE,
+            new HashSet<>(combinedTk), sum, deltaScoring));
+
   }
 
   @Override
   public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
-
-    if (!isAboveTheWeekLimit(pruefung)) {
-      return Optional.empty();
+    Optional<WeichesKriteriumAnalyse> temp = Optional.empty();
+    for (Teilnehmerkreis tk : pruefung.getTeilnehmerkreise()) {
+      temp = evaluateForTkConcat(pruefung, tk, temp);
     }
+    return temp;
+  }
 
-    Optional<Block>
-        blockOpt = dataAccessService.getBlockTo(pruefung);
-    Set<Pruefung> conflictedPruefungen = weekPruefungMap.get(getWeek(startPeriode, pruefung));
-
-    //when pruefung is in block, don't add the sibblings into the conflicted exams
+  boolean isAboveLimit(Pruefung pruefung, Teilnehmerkreis tk) {
+    int week = getWeek(startPeriode, pruefung);
+    Set<Pruefung> pruefungen = weekPruefungMap.get(week);
+    Optional<Block> blockOpt = dataAccessService.getBlockTo(pruefung);
     if (blockOpt.isPresent()) {
-      conflictedPruefungen = filterSiblingsOfPruefung(pruefung,
-          conflictedPruefungen);
+      pruefungen = filterSiblingsOfPruefung(pruefung, pruefungen);
     }
-
-    Set<Teilnehmerkreis> conflictedTeilnehmerkreis = conflictedPruefungen.stream()
-        .flatMap(prue -> prue.getTeilnehmerkreise().stream()).collect(
-            Collectors.toSet());
-
-    int affected = numberAffectedStudents(conflictedPruefungen);
-
-    return Optional.of(new WeichesKriteriumAnalyse(conflictedPruefungen,
-        ANZAHL_PRUEFUNGEN_PRO_WOCHE, conflictedTeilnehmerkreis, affected));
-  }
-
-  /**
-   * Calculates the number of students of the passed Set of pruefungen. It considera als the
-   * duplicates Teilnehmerkreise.
-   *
-   * @param pruefungen Set of Pruefung.
-   * @return number of affected students.
-   */
-  private int numberAffectedStudents(Set<Pruefung> pruefungen) {
-    return pruefungen.stream()
-        .flatMap(pruefung -> pruefung.getSchaetzungen().entrySet().stream())
-        .filter(distinctByKey(Entry::getKey)).mapToInt(Entry::getValue).sum();
-  }
-
-  /**
-   * Can't use normal distinct, when there are different Teilnhmerkreis with different Schätzung.
-   * https://stackoverflow.com/questions/23699371/java-8-distinct-by-property
-   *
-   * @param keyExtractor filter
-   * @param <T>          Type.
-   * @return Predicate.
-   */
-  private static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
-    Set<Object> seen = ConcurrentHashMap.newKeySet();
-    return t -> seen.add(keyExtractor.apply(t));
+    return countOfTeilnehmerkreis(tk, pruefungen) >= limit;
   }
 
 
@@ -190,11 +193,6 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion {
       }
     }
     return planungseinheiten;
-  }
-
-  @Override
-  protected int addDeltaScoring(Set<Pruefung> affectedPruefungen) {
-    throw new UnsupportedOperationException("not implemented");
   }
 
 }
