@@ -134,7 +134,7 @@ class DataAccessServiceTest {
     String newName = "NoNameNeeded";
 
     when(pruefungsperiode.pruefung(before.getPruefungsnummer())).thenReturn(model);
-    ReadOnlyPruefung after = deviceUnderTest.changeNameOfPruefung(before, newName);
+    ReadOnlyPruefung after = deviceUnderTest.changeNameOfPruefung(before, newName).asPruefung();
     ReadOnlyPruefungAssert.assertThat(after).differsOnlyInNameFrom(before).hasName(newName);
   }
 

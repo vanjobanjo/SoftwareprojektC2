@@ -261,11 +261,11 @@ public class DataAccessService {
     return blockModel;
   }
 
-  public ReadOnlyPruefung changeNameOfPruefung(ReadOnlyPruefung toChange, String name) {
+  public ReadOnlyPlanungseinheit changeNameOfPruefung(ReadOnlyPruefung toChange, String name) {
     Pruefung pruefung = getPruefungFromModelOrException(toChange.getPruefungsnummer());
     pruefung.setName(name);
-    int scoring = toChange.getScoring();
-    return new PruefungDTOBuilder(pruefung).withScoring(scoring).build();
+
+    return getROPlanungseinheitToPrufung(pruefung);
   }
 
   public Set<ReadOnlyPruefung> getGeplantePruefungen() {
