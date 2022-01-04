@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
@@ -166,8 +165,7 @@ public class ScheduleService {
    * @return Scoring ungeplant ? 0 : scoring
    */
   public int scoringOfPruefung(Pruefung pruefung) {
-    // TODO get scoring from some kind of cache
-    return 0; // TODO implement
+    return restrictionService.getScoringOfPruefung(pruefung);
   }
 
   public Optional<ReadOnlyBlock> deletePruefung(ReadOnlyPruefung pruefung) {
