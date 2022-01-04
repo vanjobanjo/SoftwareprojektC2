@@ -269,8 +269,8 @@ public class DataAccessService {
   }
 
   public Set<ReadOnlyPruefung> getGeplantePruefungen() {
-    return pruefungsperiode.geplantePruefungen().stream()
-        .map(this::fromModelToDTOPruefungWithScoring).collect(Collectors.toSet());
+    return new HashSet<>(
+        converter.convertToROPruefungCollection(pruefungsperiode.geplantePruefungen()));
   }
 
   public Set<Pruefung> getGeplanteModelPruefung() {
