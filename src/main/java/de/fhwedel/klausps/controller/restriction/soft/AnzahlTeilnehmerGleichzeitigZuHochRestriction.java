@@ -3,6 +3,7 @@ package de.fhwedel.klausps.controller.restriction.soft;
 import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.ANZAHL_TEILNEHMER_GLEICHZEITIG_ZU_HOCH;
 
 import de.fhwedel.klausps.controller.services.DataAccessService;
+import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
@@ -32,6 +33,10 @@ public class AnzahlTeilnehmerGleichzeitigZuHochRestriction extends AtSameTimeRes
 
   public AnzahlTeilnehmerGleichzeitigZuHochRestriction(DataAccessService dataAccessService) {
     this(dataAccessService, DEFAULT_BUFFER, DEFAULT_MAX_TEILNEHMER_AT_A_TIME);
+  }
+
+  public AnzahlTeilnehmerGleichzeitigZuHochRestriction() {
+    this(ServiceProvider.getDataAccessService());
   }
 
   @Override

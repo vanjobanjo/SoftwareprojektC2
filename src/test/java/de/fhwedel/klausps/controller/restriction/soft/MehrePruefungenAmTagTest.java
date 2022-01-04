@@ -40,8 +40,7 @@ class MehrePruefungenAmTagTest {
   @Test
   void klausurSameDay() {
 
-    MehrePruefungenAmTag mehrePruefungenAmTag = new MehrePruefungenAmTag(dataAccessService,
-        WeichesKriterium.MEHRERE_PRUEFUNGEN_AM_TAG);
+    MehrePruefungenAmTag mehrePruefungenAmTag = new MehrePruefungenAmTag(dataAccessService);
 
     Pruefung analysisPL = mock(Pruefung.class);
     Pruefung haskelPL = mock(Pruefung.class);

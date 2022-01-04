@@ -1,16 +1,17 @@
 package de.fhwedel.klausps.controller.restriction.hard;
 
+import static de.fhwedel.klausps.controller.kriterium.HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG;
+
 import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
-import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
-import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
+import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -18,16 +19,18 @@ public class TwoKlausurenSameTime extends HartRestriktion implements Predicate<P
 
   static final long MINUTES_BETWEEN_PRUEFUNGEN = 30;
 
-  public TwoKlausurenSameTime(DataAccessService dataAccessService, HartesKriterium kriterium,
-      Pruefung pruefung) {
-    super(dataAccessService, kriterium);
-    this.pruefung = pruefung;
+
+  public TwoKlausurenSameTime() {
+    this(ServiceProvider.getDataAccessService());
+  }
+
+  protected TwoKlausurenSameTime(DataAccessService dataAccessService) {
+    super(dataAccessService, ZWEI_KLAUSUREN_GLEICHZEITIG);
   }
 
   @Override
-  public List<HartesKriteriumAnalyse> evaluate(Pruefung pruefung) throws HartesKriteriumException {
+  public Optional<HartesKriteriumAnalyse> evaluate(Pruefung pruefung) {
 
-    List<HartesKriteriumAnalyse> returnList = new ArrayList<>();
     boolean hartKriterium = false;
 
     LocalDateTime start = pruefung.getStartzeitpunkt().minusMinutes(MINUTES_BETWEEN_PRUEFUNGEN);
@@ -58,11 +61,10 @@ public class TwoKlausurenSameTime extends HartRestriktion implements Predicate<P
     }
     if (hartKriterium) {
       this.inConflictROPruefung.add(pruefung);
-      HartesKriteriumAnalyse hKA = new HartesKriteriumAnalyse(this.inConflictROPruefung,
-          this.inConfilictTeilnehmerkreis, this.countStudents);
-      returnList.add(hKA);
+      return Optional.of(new HartesKriteriumAnalyse(this.inConflictROPruefung,
+          this.inConfilictTeilnehmerkreis, this.countStudents));
     }
-    return returnList;
+    return Optional.empty();
   }
 
   private boolean getTeilnehmerkreisFromPruefung(Pruefung pruefung, Pruefung toCheck) {

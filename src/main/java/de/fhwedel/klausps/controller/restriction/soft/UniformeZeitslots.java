@@ -14,14 +14,13 @@ import java.util.Set;
 
 public class UniformeZeitslots extends WeicheRestriktion {
 
-
+public UniformeZeitslots() {
+  this(ServiceProvider.getDataAccessService());
+}
   protected UniformeZeitslots(DataAccessService dataAccessService) {
     super(dataAccessService, UNIFORME_ZEITSLOTS);
   }
 
-  protected UniformeZeitslots() {
-    super(ServiceProvider.getDataAccessService(), UNIFORME_ZEITSLOTS);
-  }
 
   @Override
   public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {

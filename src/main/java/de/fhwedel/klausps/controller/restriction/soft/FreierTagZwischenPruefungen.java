@@ -16,8 +16,8 @@ public class FreierTagZwischenPruefungen extends WeicheRestriktion {
 
   static final int MAX_DAY = 365;
 
-  protected FreierTagZwischenPruefungen() {
-    super(ServiceProvider.getDataAccessService(), FREIER_TAG_ZWISCHEN_PRUEFUNGEN);
+  public FreierTagZwischenPruefungen() {
+    this(ServiceProvider.getDataAccessService());
   }
 
   protected FreierTagZwischenPruefungen(@NotNull DataAccessService dataAccessService) {

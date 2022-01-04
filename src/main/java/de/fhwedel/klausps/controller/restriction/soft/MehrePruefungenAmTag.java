@@ -1,12 +1,14 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
+import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.MEHRERE_PRUEFUNGEN_AM_TAG;
+
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
-import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
+import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
@@ -28,10 +30,14 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
   int countStudents = 0;
   int scoring = 0;
   KriteriumsAnalyse kA = new KriteriumsAnalyse(setReadyOnly,
-      WeichesKriterium.MEHRERE_PRUEFUNGEN_AM_TAG, setTeilnehmer, countStudents);
+      MEHRERE_PRUEFUNGEN_AM_TAG, setTeilnehmer, countStudents);
 
-  protected MehrePruefungenAmTag(DataAccessService dataAccessService, WeichesKriterium kriterium) {
-    super(dataAccessService, kriterium);
+  protected MehrePruefungenAmTag(DataAccessService dataAccessService) {
+    super(dataAccessService, MEHRERE_PRUEFUNGEN_AM_TAG);
+  }
+
+  public MehrePruefungenAmTag() {
+    this(ServiceProvider.getDataAccessService());
   }
 
   @Override
@@ -83,10 +89,10 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
       this.setPruefung.add(pruefung);
 
       scoring +=
-          WeichesKriterium.MEHRERE_PRUEFUNGEN_AM_TAG.getWert() * (setPruefung.size() - 2 + 1);
+          MEHRERE_PRUEFUNGEN_AM_TAG.getWert() * (setPruefung.size() - 2 + 1);
 
       WeichesKriteriumAnalyse wKA = new WeichesKriteriumAnalyse(this.setPruefung,
-          WeichesKriterium.MEHRERE_PRUEFUNGEN_AM_TAG, setTeilnehmer, countStudents);
+          MEHRERE_PRUEFUNGEN_AM_TAG, setTeilnehmer, countStudents);
       return Optional.of(wKA);
     } else {
       return Optional.empty();

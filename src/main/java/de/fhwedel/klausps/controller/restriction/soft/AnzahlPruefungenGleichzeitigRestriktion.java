@@ -3,6 +3,7 @@ package de.fhwedel.klausps.controller.restriction.soft;
 import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH;
 
 import de.fhwedel.klausps.controller.services.DataAccessService;
+import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
@@ -22,9 +23,15 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends AtSameTimeRestricti
 
   private final int maxPruefungenAtATime;
 
+
+  public AnzahlPruefungenGleichzeitigRestriktion() {
+    this(ServiceProvider.getDataAccessService());
+  }
+
   protected AnzahlPruefungenGleichzeitigRestriktion(@NotNull DataAccessService dataAccessService) {
     this(dataAccessService, DEFAULT_MAX_PRUEFUNGEN_AT_A_TIME, DEFAULT_BUFFER);
   }
+
 
   protected AnzahlPruefungenGleichzeitigRestriktion(@NotNull DataAccessService dataAccessService,
       int maxPruefungenAtATime, @NotNull Duration puffer) {
