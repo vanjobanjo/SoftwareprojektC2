@@ -414,7 +414,7 @@ class DataAccessServiceTest {
 
     Pruefung modelAnalysis = getPruefungOfReadOnlyPruefung(analysis);
     when(pruefungsperiode.pruefung(oldNumber)).thenReturn(modelAnalysis);
-    ReadOnlyPruefung analysisNewNumber = deviceUnderTest.setPruefungsnummer(analysis, newNumber);
+    ReadOnlyPruefung analysisNewNumber = deviceUnderTest.setPruefungsnummer(analysis, newNumber).asPruefung();
     assertThat(analysisNewNumber.getPruefungsnummer()).isEqualTo(newNumber);
     assertThat(analysisNewNumber).isNotEqualTo(analysis); // Equal arbeitet prüft die Nummern
     assertThat(analysisNewNumber.getDauer()).isEqualTo(analysis.getDauer());

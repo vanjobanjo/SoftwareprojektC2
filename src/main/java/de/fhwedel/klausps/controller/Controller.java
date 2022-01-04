@@ -201,7 +201,7 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public ReadOnlyPruefung setPruefungsnummer(ReadOnlyPruefung pruefung, String pruefungsnummer)
+  public ReadOnlyPlanungseinheit setPruefungsnummer(ReadOnlyPruefung pruefung, String pruefungsnummer)
       throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, pruefungsnummer);
     checkNoPruefungDefined();
@@ -209,7 +209,7 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public ReadOnlyPruefung setName(ReadOnlyPruefung pruefung, String name)
+  public ReadOnlyPlanungseinheit setName(ReadOnlyPruefung pruefung, String name)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, name);
     checkNoPruefungDefined();

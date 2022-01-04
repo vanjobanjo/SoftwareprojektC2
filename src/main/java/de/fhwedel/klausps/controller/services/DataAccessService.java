@@ -311,26 +311,32 @@ public class DataAccessService {
   public ReadOnlyPlanungseinheit addPruefer(String pruefungsNummer, String pruefer) {
     Pruefung pruefung = getPruefungFromModelOrException(pruefungsNummer);
     pruefung.addPruefer(pruefer);
-    Block block = pruefungsperiode.block(pruefung);
-    return block != null ? converter.convertToROBlock(block)
-        : converter.convertToReadOnlyPruefung(pruefung);
+    return getROPlanungseinheitToPrufung(pruefung);
   }
-  
+
   public ReadOnlyPlanungseinheit removePruefer(String pruefungsNummer, String pruefer) {
     Pruefung pruefung = getPruefungFromModelOrException(pruefungsNummer);
     pruefung.removePruefer(pruefer);
-    Block block = pruefungsperiode.block(pruefung);
-    return block != null ? converter.convertToROBlock(block)
-        : converter.convertToReadOnlyPruefung(pruefung);
+    return getROPlanungseinheitToPrufung(pruefung);
   }
 
-  public ReadOnlyPruefung setPruefungsnummer(ReadOnlyPruefung pruefung, String pruefungsnummer) {
+  public ReadOnlyPlanungseinheit setPruefungsnummer(ReadOnlyPruefung pruefung,
+      String pruefungsnummer) {
     Pruefung modelPruefung = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
     if (existsPruefungWith(pruefungsnummer)) {
       throw new IllegalArgumentException("Die angegebene Pruefungsnummer ist bereits vergeben.");
     }
     modelPruefung.setPruefungsnummer(pruefungsnummer);
-    return fromModelToDTOPruefungWithScoring(modelPruefung);
+    return getROPlanungseinheitToPrufung(modelPruefung);
+  }
+
+  /*
+  Gibt übergeordneten Block oder Pruefung zurück.
+   */
+  private ReadOnlyPlanungseinheit getROPlanungseinheitToPrufung(Pruefung pruefung) {
+    Block block = pruefungsperiode.block(pruefung);
+    return block != null ? converter.convertToROBlock(block)
+        : converter.convertToReadOnlyPruefung(pruefung);
   }
 
   public Block deletePruefung(ReadOnlyPruefung roPruefung) throws IllegalArgumentException {
