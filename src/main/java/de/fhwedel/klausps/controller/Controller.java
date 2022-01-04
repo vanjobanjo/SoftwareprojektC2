@@ -345,7 +345,7 @@ public class Controller implements InterfaceController {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block);
     checkNoPruefungDefined();
-    return scheduleService.deleteBlock(block);
+    return dataAccessService.deleteBlock(block);
   }
 
   @Override

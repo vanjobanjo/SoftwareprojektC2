@@ -173,18 +173,6 @@ public class ScheduleService {
     return block == null ? Optional.empty() : Optional.of(converter.convertToROBlock(block));
   }
 
-  public List<ReadOnlyPruefung> deleteBlock(ReadOnlyBlock block) {
-    if (!dataAccessService.exists(block)) {
-      throw new IllegalArgumentException("Block existiert nicht!");
-    }
-    if (block.geplant()) {
-      throw new IllegalArgumentException("Block ist geplant!");
-    }
-
-    return dataAccessService.deleteBlock(block); //scoring must be 0
-  }
-
-
   public List<ReadOnlyPlanungseinheit> removePruefungFromBlock(ReadOnlyBlock block,
       ReadOnlyPruefung pruefung) {
     List<ReadOnlyPlanungseinheit> result = new LinkedList<>();
