@@ -30,7 +30,7 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion {
 
   private final LocalDate startPeriode;
   // the set contains all pruefungen of the week, also the sibblings in the block
-  private final Map<Integer, Set<Pruefung>> weekPruefungMap;
+  private Map<Integer, Set<Pruefung>> weekPruefungMap;
 
   //Mock Konstruktor
   AnzahlPruefungProWoche(
@@ -45,7 +45,6 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion {
   public AnzahlPruefungProWoche() {
     super(ServiceProvider.getDataAccessService(), ANZAHL_PRUEFUNGEN_PRO_WOCHE);
     startPeriode = dataAccessService.getStartOfPeriode();
-    weekPruefungMap = weekMapOfPruefung(dataAccessService.getGeplanteModelPruefung(), startPeriode);
     limit = LIMIT_DEFAULT;
   }
 
@@ -73,7 +72,7 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion {
 
   @Override
   public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
-
+    weekPruefungMap = weekMapOfPruefung(dataAccessService.getGeplanteModelPruefung(), startPeriode);
     if (!isAboveTheWeekLimit(pruefung)) {
       return Optional.empty();
     }
