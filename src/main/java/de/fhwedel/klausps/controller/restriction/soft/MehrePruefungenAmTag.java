@@ -113,6 +113,8 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
       //Kann nicht davor liegen, da ich den Morgen und den Abend nehme
       e.printStackTrace();
     }
+    //Damit die Pruefung nicht mit sich selbst in Konflict steht
+    testList.remove(pruefung);
     Set<Pruefung> pruefungenFromBlock;
     // TODO wieso wird überprüft, ob ein Ergebnis von "getAllPruefungenBetween" ein Block ist,
     //  die Methode sorgt ganz explizit dafür, dass die Klausuren in den Blöcken statt der Blöcke

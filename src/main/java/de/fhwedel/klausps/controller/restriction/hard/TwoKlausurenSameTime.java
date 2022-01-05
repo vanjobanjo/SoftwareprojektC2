@@ -45,6 +45,8 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
         //start kann nicht vor ende liegen, da ich das berechne
         e.printStackTrace();
       }
+      //Damit die Pruefung nicht mit sich selbst in Konflict steht
+      testList.remove(pruefung);
 
       Set<Pruefung> pruefungenFromBlock;
       for (Planungseinheit planungseinheit : testList) {
