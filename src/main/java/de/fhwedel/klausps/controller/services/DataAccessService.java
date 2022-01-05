@@ -570,8 +570,8 @@ public class DataAccessService {
 
   }
 
-  public boolean addTeilnehmerkreis(Pruefung roPruefung, Teilnehmerkreis teilnehmerkreis) {
-    return roPruefung.addTeilnehmerkreis(teilnehmerkreis);
+  public boolean addTeilnehmerkreis(Pruefung pruefung, Teilnehmerkreis teilnehmerkreis, int schaetzung) {
+    return pruefung.addTeilnehmerkreis(teilnehmerkreis,schaetzung);
   }
 
   public ReadOnlyBlock setNameOfBlock(ReadOnlyBlock block, String name) {
@@ -579,5 +579,6 @@ public class DataAccessService {
     model.setName(name);
     return converter.convertToROBlock(model);
   }
+
 
 }

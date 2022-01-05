@@ -22,7 +22,6 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
   static final long MINUTES_BETWEEN_PRUEFUNGEN = 30;
 
 
-
   public TwoKlausurenSameTime() {
     this(ServiceProvider.getDataAccessService());
   }
@@ -46,29 +45,32 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
         e.printStackTrace();
       }
       //Damit die Pruefung nicht mit sich selbst in Konflict steht
-      testList.remove(pruefung);
 
-      Set<Pruefung> pruefungenFromBlock;
-      for (Planungseinheit planungseinheit : testList) {
-        if (planungseinheit.isBlock()) {
-          pruefungenFromBlock = planungseinheit.asBlock().getPruefungen();
-          if (!pruefungenFromBlock.contains(pruefung)) {
-            for (Pruefung pruefungBlock : pruefungenFromBlock) {
-              hartKriterium =
-                  getTeilnehmerkreisFromPruefung(pruefung, pruefungBlock) || hartKriterium;
+      if (testList != null) {
+        testList.remove(pruefung);
+
+        Set<Pruefung> pruefungenFromBlock;
+        for (Planungseinheit planungseinheit : testList) {
+          if (planungseinheit.isBlock()) {
+            pruefungenFromBlock = planungseinheit.asBlock().getPruefungen();
+            if (!pruefungenFromBlock.contains(pruefung)) {
+              for (Pruefung pruefungBlock : pruefungenFromBlock) {
+                hartKriterium =
+                    getTeilnehmerkreisFromPruefung(pruefung, pruefungBlock) || hartKriterium;
+              }
             }
+          } else {
+            hartKriterium =
+                getTeilnehmerkreisFromPruefung(pruefung, planungseinheit.asPruefung())
+                    || hartKriterium;
           }
-        } else {
-          hartKriterium =
-              getTeilnehmerkreisFromPruefung(pruefung, planungseinheit.asPruefung())
-                  || hartKriterium;
         }
-      }
-      if (hartKriterium) {
-        this.inConflictROPruefung.add(pruefung);
-        HartesKriteriumAnalyse hKA = new HartesKriteriumAnalyse(this.inConflictROPruefung,
-            this.inConfilictTeilnehmerkreis, this.countStudents);
-        return Optional.of(hKA);
+        if (hartKriterium) {
+          this.inConflictROPruefung.add(pruefung);
+          HartesKriteriumAnalyse hKA = new HartesKriteriumAnalyse(this.inConflictROPruefung,
+              this.inConfilictTeilnehmerkreis, this.countStudents);
+          return Optional.of(hKA);
+        }
       }
     }
     return Optional.empty();

@@ -114,29 +114,32 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
       e.printStackTrace();
     }
     //Damit die Pruefung nicht mit sich selbst in Konflict steht
-    testList.remove(pruefung);
-    Set<Pruefung> pruefungenFromBlock;
-    // TODO wieso wird überprüft, ob ein Ergebnis von "getAllPruefungenBetween" ein Block ist,
-    //  die Methode sorgt ganz explizit dafür, dass die Klausuren in den Blöcken statt der Blöcke
-    //  selbst returned werden
-    for (Planungseinheit planungseinheit : testList) {
-      if (planungseinheit.isBlock()) {
-        pruefungenFromBlock = planungseinheit.asBlock().getPruefungen();
-        if (!pruefungenFromBlock.contains(pruefung)) {
-          for (Pruefung pruefungBlock : pruefungenFromBlock) {
-            weichesKrierium =
-                getTeilnehmerkreisFromPruefung(pruefung, pruefungBlock) || weichesKrierium;
+    if (testList != null) {
+      testList.remove(pruefung);
+
+      Set<Pruefung> pruefungenFromBlock;
+      // TODO wieso wird überprüft, ob ein Ergebnis von "getAllPruefungenBetween" ein Block ist,
+      //  die Methode sorgt ganz explizit dafür, dass die Klausuren in den Blöcken statt der Blöcke
+      //  selbst returned werden
+      for (Planungseinheit planungseinheit : testList) {
+        if (planungseinheit.isBlock()) {
+          pruefungenFromBlock = planungseinheit.asBlock().getPruefungen();
+          if (!pruefungenFromBlock.contains(pruefung)) {
+            for (Pruefung pruefungBlock : pruefungenFromBlock) {
+              weichesKrierium =
+                  getTeilnehmerkreisFromPruefung(pruefung, pruefungBlock) || weichesKrierium;
+            }
           }
+        } else {
+          weichesKrierium = getTeilnehmerkreisFromPruefung(pruefung, planungseinheit.asPruefung())
+              || weichesKrierium;
         }
-      } else {
-        weichesKrierium = getTeilnehmerkreisFromPruefung(pruefung, planungseinheit.asPruefung())
-            || weichesKrierium;
       }
-    }
-    if (weichesKrierium) {
-      scoring += 10;
-      this.setPruefung.add(pruefung);
-      this.setReadyOnly.add(new PruefungDTOBuilder(pruefung).build());
+      if (weichesKrierium) {
+        scoring += 10;
+        this.setPruefung.add(pruefung);
+        this.setReadyOnly.add(new PruefungDTOBuilder(pruefung).build());
+      }
     }
 
     return weichesKrierium;

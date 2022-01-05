@@ -245,52 +245,6 @@ public class ScheduleService {
   }*/
 
 
-  public List<ReadOnlyPruefung> addTeilnehmerKreis(Pruefung roPruefung,
-      Teilnehmerkreis teilnehmerkreis) throws HartesKriteriumException {
-
-    if (roPruefung.getTeilnehmerkreise().contains(teilnehmerkreis)) {
-      return new ArrayList<>();
-    }
-    List<ReadOnlyPruefung> listOfRead = new ArrayList<>();
-
-    if (this.dataAccessService.addTeilnehmerkreis(roPruefung, teilnehmerkreis)) {
-      try {
-        //TODO hier auf HarteRestirktionen testen dann noch auf Weiche und dann Liste zurückgeben
-        //   listOfRead = testHartKriterium(roPruefung);
-        //   listOfRead.addAll()
-        throw new HartesKriteriumException(null, null, null);
-      } catch (HartesKriteriumException e) {
-        this.dataAccessService.removeTeilnehmerkreis(roPruefung, teilnehmerkreis);
-        throw e;
-      }
-    }
-    //TODO weiche KriteriumsAnalysen machen und hinzufügen
-    return listOfRead;
-
-  }
-
-  public List<ReadOnlyPruefung> remmoveTeilnehmerKreis(Pruefung roPruefung,
-      Teilnehmerkreis teilnehmerkreis) throws HartesKriteriumException {
-
-    if (!roPruefung.getTeilnehmerkreise().contains(teilnehmerkreis)) {
-      return new ArrayList<>();
-    }
-    List<ReadOnlyPruefung> listOfRead = new ArrayList<>();
-
-    if (this.dataAccessService.removeTeilnehmerkreis(roPruefung, teilnehmerkreis)) {
-      try {
-        //TODO hier auf HarteRestirktionen testen dann noch auf Weiche und dann Liste zurückgeben
-        //listOfRead = signalHartesKriteriumFailure(null);
-        throw new HartesKriteriumException(null, null, null);
-      } catch (HartesKriteriumException e) {
-        this.dataAccessService.addTeilnehmerkreis(roPruefung, teilnehmerkreis);
-        throw e;
-      }
-    }
-    //TODO weiche KriteriumsAnalysen machen und hinzufügen
-    return listOfRead;
-  }
-
   private List<ReadOnlyPruefung> testHartKriterium(ReadOnlyPruefung roPruefung)
       throws HartesKriteriumException {
 
@@ -334,4 +288,49 @@ public class ScheduleService {
     return result;
   }
 
+
+  public List<ReadOnlyPlanungseinheit> removeTeilnehmerKreis(ReadOnlyPruefung roPruefung,
+      Teilnehmerkreis teilnehmerkreis) {
+
+    List<ReadOnlyPlanungseinheit> listOfRead = new ArrayList<>();
+    if (!roPruefung.getTeilnehmerkreise().contains(teilnehmerkreis)) {
+      return listOfRead;
+    }
+
+    Pruefung pruefungModel = this.dataAccessService.getPruefungWith(
+        roPruefung.getPruefungsnummer());
+
+    //Damit man eine Liste hat, wo sich das Scoring ändert
+    listOfRead = checkSoftCriteria(pruefungModel);
+
+    //Hier muss ja nicht auf HarteKriteren gecheckt werden.
+    this.dataAccessService.removeTeilnehmerkreis(pruefungModel, teilnehmerkreis);
+
+    return listOfRead;
+  }
+
+  public List<ReadOnlyPlanungseinheit> addTeilnehmerkreis(ReadOnlyPruefung roPruefung,
+      Teilnehmerkreis teilnehmerkreis, int schaetzung) throws HartesKriteriumException {
+
+    List<ReadOnlyPlanungseinheit> listOfRead = new ArrayList<>();
+
+    if (roPruefung.getTeilnehmerkreise().contains(teilnehmerkreis)) {
+      return listOfRead;
+    }
+    Pruefung pruefungModel = this.dataAccessService.getPruefungWith(
+        roPruefung.getPruefungsnummer());
+
+    if (this.dataAccessService.addTeilnehmerkreis(pruefungModel, teilnehmerkreis, schaetzung)) {
+      List<HartesKriteriumAnalyse> hard = restrictionService.checkHarteKriterien(
+          pruefungModel);
+      if (!hard.isEmpty()) {
+        this.dataAccessService.removeTeilnehmerkreis(pruefungModel, teilnehmerkreis);
+        HartesKriteriumException exHard = converter.convertHardException(hard); //TODO #172
+        throw exHard;
+      }
+    }
+    listOfRead = checkSoftCriteria(pruefungModel);
+
+    return listOfRead;
+  }
 }

@@ -3,29 +3,36 @@ package de.fhwedel.klausps.controller.services;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomDuration;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomString;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.in;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.api.BlockDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
+import de.fhwedel.klausps.controller.restriction.hard.TwoKlausurenSameTime;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Blocktyp;
+import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
+import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.BlockImpl;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
+import io.cucumber.java.hu.Ha.Has;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -276,6 +283,141 @@ class ScheduleServiceTest {
     assertThat(result).contains(ro_analysis, ro_dm);
   }
 
+
+  @Test
+  void removeTeilnehmerkreis() {
+
+    Teilnehmerkreis informatik = mock(Teilnehmerkreis.class);
+
+    ReadOnlyPruefung roHaskel = new PruefungDTOBuilder()
+        .withPruefungsName("Haskel")
+        .withDauer(Duration.ofMinutes(120))
+        .withPruefungsNummer("haskel")
+        .withAdditionalTeilnehmerkreis(informatik)
+        .build();
+
+    Set<Teilnehmerkreis> haskelTeilnehmrekeis = new HashSet<>();
+    haskelTeilnehmrekeis.add(informatik);
+
+    when(this.dataAccessService.removeTeilnehmerkreis(any(), any())).thenReturn(true);
+
+    assertThat(deviceUnderTest.removeTeilnehmerKreis(roHaskel, informatik)).contains();
+
+  }
+
+  @Test
+  void addTeilnehmerkreis_successful_withSoft() {
+    Teilnehmerkreis informatik = mock(Teilnehmerkreis.class);
+
+    LocalDateTime date = LocalDateTime.of(2021, 8, 11, 9, 0);
+
+    ReadOnlyPruefung roHaskel = new PruefungDTOBuilder()
+        .withPruefungsName("Haskel")
+        .withDauer(Duration.ofMinutes(120))
+        .withPruefungsNummer("haskel")
+        .withStartZeitpunkt(date)
+        .withAdditionalPruefer("Schmidt")
+        .build();
+
+    ReadOnlyPruefung roDM = new PruefungDTOBuilder()
+        .withPruefungsName("roDM")
+        .withDauer(Duration.ofMinutes(120))
+        .withPruefungsNummer("roDM")
+        //Hiermit sollte dann aufjedenfall mehrePruefunganeinemTag verletzt werden
+        .withAdditionalTeilnehmerkreis(informatik)
+        .withStartZeitpunkt(date.plusMinutes(180))
+        .withAdditionalPruefer("Schmidt")
+        .build();
+
+    Pruefung haskel = getPruefungOfReadOnlyPruefung(roHaskel);
+    Pruefung dm = getPruefungOfReadOnlyPruefung(roDM);
+
+    List<ReadOnlyPlanungseinheit> listPlanungseinheit = new ArrayList<>();
+    listPlanungseinheit.add(roHaskel);
+    listPlanungseinheit.add(roDM);
+
+    Set<Teilnehmerkreis> haskelTeilnehmrekeis = new HashSet<>();
+    haskelTeilnehmrekeis.add(informatik);
+    int schaetzungInformatik = 8;
+
+    Set<Pruefung> conflictedPruefung = new HashSet<>();
+    conflictedPruefung.add(haskel);
+    conflictedPruefung.add(dm);
+
+
+    when(restrictionService.getAffectedPruefungen(haskel)).thenReturn(conflictedPruefung);
+    when(this.dataAccessService.getPruefungWith(roHaskel.getPruefungsnummer())).thenReturn(haskel);
+    when(this.dataAccessService.addTeilnehmerkreis(haskel, informatik,
+        schaetzungInformatik)).thenReturn(true);
+
+    try {
+      assertThat(deviceUnderTest.addTeilnehmerkreis(roHaskel, informatik,
+          schaetzungInformatik)).containsAll(listPlanungseinheit);
+    } catch (HartesKriteriumException e) {
+      //Sollte hier nicht passieren, deshalb wird sie hier verworfen
+      e.printStackTrace();
+    }
+
+
+  }
+
+  @Test
+  void addTeilnehmerkreis_hart() {
+    Teilnehmerkreis informatik = mock(Teilnehmerkreis.class);
+
+    LocalDateTime date = LocalDateTime.of(2021, 8, 11, 9, 0);
+
+    ReadOnlyPruefung roHaskel = new PruefungDTOBuilder()
+        .withPruefungsName("Haskel")
+        .withDauer(Duration.ofMinutes(120))
+        .withPruefungsNummer("haskel")
+        .withStartZeitpunkt(date)
+        .withAdditionalPruefer("Schmidt")
+        .build();
+
+    ReadOnlyPruefung roDM = new PruefungDTOBuilder()
+        .withPruefungsName("roDM")
+        .withDauer(Duration.ofMinutes(120))
+        .withPruefungsNummer("roDM")
+        //Hiermit sollte dann aufjedenfall mehrePruefunganeinemTag verletzt werden
+        .withAdditionalTeilnehmerkreis(informatik)
+        .withStartZeitpunkt(date)
+        .withAdditionalPruefer("Schmidt")
+        .build();
+
+    Pruefung haskel = getPruefungOfReadOnlyPruefung(roHaskel);
+    Pruefung dm = getPruefungOfReadOnlyPruefung(roDM);
+
+    List<ReadOnlyPlanungseinheit> listPlanungseinheit = new ArrayList<>();
+    listPlanungseinheit.add(roHaskel);
+    listPlanungseinheit.add(roDM);
+
+    Set<Teilnehmerkreis> haskelTeilnehmrekeis = new HashSet<>();
+    haskelTeilnehmrekeis.add(informatik);
+    int schaetzungInformatik = 8;
+
+    Set<Pruefung> conflictedPruefung = new HashSet<>();
+    conflictedPruefung.add(haskel);
+    conflictedPruefung.add(dm);
+
+    HartesKriteriumAnalyse hKA = new HartesKriteriumAnalyse(conflictedPruefung,
+        haskelTeilnehmrekeis, schaetzungInformatik);
+
+    List<HartesKriteriumAnalyse> listHard = new ArrayList<>();
+    listHard.add(hKA);
+    when(restrictionService.checkHarteKriterien(haskel)).thenReturn(listHard);
+    when(restrictionService.getAffectedPruefungen(haskel)).thenReturn(conflictedPruefung);
+    when(this.dataAccessService.getPruefungWith(roHaskel.getPruefungsnummer())).thenReturn(haskel);
+    when(this.dataAccessService.addTeilnehmerkreis(haskel, informatik,
+        schaetzungInformatik)).thenReturn(true);
+
+    assertThrows(HartesKriteriumException.class,
+        () -> deviceUnderTest.addTeilnehmerkreis(roHaskel, informatik,
+            schaetzungInformatik));
+    assertThat(haskel.getTeilnehmerkreise()).isEmpty();
+  }
+
+
   /*
   //TODO movePruefung umschreiben
   @Test
@@ -349,5 +491,6 @@ class ScheduleServiceTest {
     }
     return randomPruefungen;
   }
+
 
 }

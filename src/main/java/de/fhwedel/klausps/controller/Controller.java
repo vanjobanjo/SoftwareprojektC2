@@ -298,7 +298,9 @@ public class Controller implements InterfaceController {
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, teilnehmerkreis, schaetzung);
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+
+    return this.scheduleService.addTeilnehmerkreis(pruefung,teilnehmerkreis,schaetzung);
+
   }
 
   @Override
@@ -307,7 +309,7 @@ public class Controller implements InterfaceController {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, teilnehmerkreis);
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+  return this.scheduleService.removeTeilnehmerKreis(pruefung,teilnehmerkreis);
   }
 
   @Override
