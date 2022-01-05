@@ -605,5 +605,22 @@ public class DataAccessService {
     return pruefungsperiode.getAnkertag();
   }
 
+  public int getAnzahlStudentenZeitpunkt(LocalDateTime zeitpunkt) {
+    int res = 0;
+    for (Pruefung pruefung : pruefungsperiode.geplantePruefungen()) {
+      LocalDateTime start = pruefung.getStartzeitpunkt();
+      LocalDateTime end = pruefung.endzeitpunkt();
+      if ((start.equals(zeitpunkt) || start.isBefore(zeitpunkt))
+          && (end.equals(zeitpunkt) || end.isAfter(zeitpunkt))) {
+
+        // no check if teilnehmerkreis is already in result needed
+        // that would violate hard restriction and can therefore never be planned
+        for (Integer schaetzung : pruefung.getSchaetzungen().values()) {
+          res += schaetzung;
+        }
+      }
+    }
+    return res;
+  }
 
 }

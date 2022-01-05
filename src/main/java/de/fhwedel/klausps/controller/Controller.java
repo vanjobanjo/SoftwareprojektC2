@@ -108,6 +108,7 @@ public class Controller implements InterfaceController {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefer);
     checkNoPruefungDefined();
+    // todo Methode ist doppelt (hier ist lediglich der Name falsch geschrieben)
     throw new IllegalStateException("Not implemented yet!");
   }
 
@@ -138,7 +139,9 @@ public class Controller implements InterfaceController {
   @Override
   public int getAnzahlStudentenZeitpunkt(LocalDateTime zeitpunkt)
       throws NoPruefungsPeriodeDefinedException {
-    throw new IllegalStateException("Not implemented yet!");
+    noNullParameters(zeitpunkt);
+    checkNoPruefungDefined();
+    return dataAccessService.getAnzahlStudentenZeitpunkt(zeitpunkt);
   }
 
 

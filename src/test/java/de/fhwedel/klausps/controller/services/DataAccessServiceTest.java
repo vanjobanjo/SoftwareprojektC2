@@ -1,5 +1,8 @@
 package de.fhwedel.klausps.controller.services;
 
+import static de.fhwedel.klausps.controller.util.TestFactory.bwlBachelor;
+import static de.fhwedel.klausps.controller.util.TestFactory.infBachelor;
+import static de.fhwedel.klausps.controller.util.TestFactory.infMaster;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungenReadOnly;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -1276,6 +1279,7 @@ class DataAccessServiceTest {
     assertThat(deviceUnderTest.getAllKlausurenFromPruefer("test")).contains(RO_ANALYSIS_UNPLANNED,
         RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED);
   }
+
   @Test
   void getAllKlausurenFromPruefer_more_than_one_pruefer_block() {
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
@@ -1322,7 +1326,8 @@ class DataAccessServiceTest {
     block.addPruefung(dm);
     block.setStartzeitpunkt(LocalDateTime.of(2022, 1, 2, 12, 1));
     when(pruefungsperiode.getPlanungseinheiten()).thenReturn(Set.of(analysis, haskell, dm));
-    assertThat(deviceUnderTest.getAllKlausurenFromPruefer("pruefer")).contains(RO_ANALYSIS_UNPLANNED,
+    assertThat(deviceUnderTest.getAllKlausurenFromPruefer("pruefer")).contains(
+        RO_ANALYSIS_UNPLANNED,
         RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED);
   }
 
@@ -1332,6 +1337,92 @@ class DataAccessServiceTest {
     LocalDate ankertag = LocalDate.of(2022, 2, 2);
     when(pruefungsperiode.getAnkertag()).thenReturn(ankertag);
     assertThat(deviceUnderTest.getAnkerPeriode()).isEqualTo(ankertag);
+  }
+
+  @Test
+  void getAnzahlStudentenZeitpunkt_no_exam_at_zeitpunkt() {
+    LocalDateTime termin = LocalDateTime.of(2022, 1, 1, 0, 0);
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    analysis.setSchaetzung(infBachelor, 20);
+    analysis.setSchaetzung(infMaster, 10);
+    analysis.setSchaetzung(bwlBachelor, 40);
+    analysis.setStartzeitpunkt(LocalDateTime.of(2022, 2, 2, 2, 2));
+    when(pruefungsperiode.geplantePruefungen()).thenReturn(Set.of(analysis));
+    assertThat(deviceUnderTest.getAnzahlStudentenZeitpunkt(termin)).isZero();
+
+  }
+
+  @Test
+  void getAnzahlStudentenZeitpunkt_one_exam_at_time_multiple_teilnehmerkreise() {
+    LocalDateTime termin = LocalDateTime.of(2022, 2, 2, 2, 2);
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    int infB = 20;
+    int infM = 10;
+    int bwlB = 40;
+    int expectedResult = infB + infM + bwlB;
+    analysis.addTeilnehmerkreis(infBachelor, infB);
+    analysis.addTeilnehmerkreis(infMaster, infM);
+    analysis.addTeilnehmerkreis(bwlBachelor, bwlB);
+    analysis.setStartzeitpunkt(termin);
+    when(pruefungsperiode.geplantePruefungen()).thenReturn(Set.of(analysis));
+    assertThat(deviceUnderTest.getAnzahlStudentenZeitpunkt(termin)).isEqualTo(expectedResult);
+
+  }
+
+
+  @Test
+  void getAnzahlStudentenZeitpunkt_different_exams() {
+    LocalDateTime termin = LocalDateTime.of(2022, 2, 2, 2, 2);
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    int infB_haskell = 20;
+    int infB_analysis = 10;
+    int offset = 5;
+    analysis.addTeilnehmerkreis(infBachelor, infB_analysis);
+    haskell.addTeilnehmerkreis(infMaster, infB_haskell);
+
+    analysis.setStartzeitpunkt(termin);
+    haskell.setStartzeitpunkt(termin.plusMinutes(offset));
+
+    when(pruefungsperiode.geplantePruefungen()).thenReturn(Set.of(analysis, haskell));
+    assertThat(deviceUnderTest.getAnzahlStudentenZeitpunkt(termin.plusMinutes(2 * offset)))
+        .isEqualTo(infB_analysis + infB_haskell);
+
+  }
+
+  @Test
+  void getAnzahlStudentenZeitpunkt_different_exams_second_has_not_started_yet() {
+    LocalDateTime termin = LocalDateTime.of(2022, 2, 2, 2, 2);
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    int infB_haskell = 20;
+    int infB_analysis = 10;
+    int offset = 10;
+    analysis.addTeilnehmerkreis(infBachelor, infB_analysis);
+    haskell.addTeilnehmerkreis(infMaster, infB_haskell);
+
+    analysis.setStartzeitpunkt(termin);
+    haskell.setStartzeitpunkt(termin.plusMinutes(offset));
+
+    when(pruefungsperiode.geplantePruefungen()).thenReturn(Set.of(analysis, haskell));
+    assertThat(deviceUnderTest.getAnzahlStudentenZeitpunkt(termin.plusMinutes(offset / 2)))
+        .isEqualTo(infB_analysis);
+
+  }
+
+  @Test
+  void getAnzahlStudentenZeitpunkt_on_endzeitpunkt() {
+    LocalDateTime termin = LocalDateTime.of(2022, 2, 2, 2, 2);
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    int infB_analysis = 10;
+    analysis.addTeilnehmerkreis(infBachelor, infB_analysis);
+
+    analysis.setStartzeitpunkt(termin);
+
+    when(pruefungsperiode.geplantePruefungen()).thenReturn(Set.of(analysis));
+    assertThat(deviceUnderTest.getAnzahlStudentenZeitpunkt(analysis.endzeitpunkt()))
+        .isEqualTo(infB_analysis);
+
   }
 
   // ------------------------------------------------------------------------------
