@@ -31,12 +31,12 @@ public class AnzahlTeilnehmerGleichzeitigZuHochRestriction extends AtSameTimeRes
     this.maxTeilnehmer = maxTeilnehmerAtSameTime;
   }
 
-  public AnzahlTeilnehmerGleichzeitigZuHochRestriction(DataAccessService dataAccessService) {
-    this(dataAccessService, DEFAULT_BUFFER, DEFAULT_MAX_TEILNEHMER_AT_A_TIME);
-  }
-
   public AnzahlTeilnehmerGleichzeitigZuHochRestriction() {
     this(ServiceProvider.getDataAccessService());
+  }
+
+  public AnzahlTeilnehmerGleichzeitigZuHochRestriction(DataAccessService dataAccessService) {
+    this(dataAccessService, DEFAULT_BUFFER, DEFAULT_MAX_TEILNEHMER_AT_A_TIME);
   }
 
   @Override
@@ -69,7 +69,11 @@ public class AnzahlTeilnehmerGleichzeitigZuHochRestriction extends AtSameTimeRes
 
   @Override
   protected int getAffectedStudentsFrom(Set<Planungseinheit> violatingPlanungseinheiten) {
-    return 0;
+    int amount = 0;
+    for (Planungseinheit planungseinheit : violatingPlanungseinheiten) {
+      amount += planungseinheit.schaetzung();
+    }
+    return amount;
   }
 
   @Override

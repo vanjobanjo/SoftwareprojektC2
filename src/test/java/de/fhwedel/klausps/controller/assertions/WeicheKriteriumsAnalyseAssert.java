@@ -16,17 +16,27 @@ public class WeicheKriteriumsAnalyseAssert extends
     return new WeicheKriteriumsAnalyseAssert(actual);
   }
 
-  public WeicheKriteriumsAnalyseAssert conflictingPruefungenAreExactly(Set<String> pruefungsNummern) {
-    Set<String> actualPruefungsnummern = TestUtils.getPruefungsnummernFromModel(actual.getCausingPruefungen());
+  public WeicheKriteriumsAnalyseAssert conflictingPruefungenAreExactly(
+      Set<String> pruefungsNummern) {
+    Set<String> actualPruefungsnummern = TestUtils.getPruefungsnummernFromModel(
+        actual.getCausingPruefungen());
     if (actualPruefungsnummern.size() != pruefungsNummern.size()) {
       if (!actualPruefungsnummern.containsAll(pruefungsNummern)) {
-        failWithMessage("The result is missing Pruefungen with numbers: {}",
+        failWithMessage("The result is missing Pruefungen with numbers: %d",
             pruefungsNummern.removeAll(actualPruefungsnummern));
       }
       if (!pruefungsNummern.containsAll(actualPruefungsnummern)) {
-        failWithMessage("The result contains unexpected Pruefungen with numbers: {}",
+        failWithMessage("The result contains unexpected Pruefungen with numbers: %d",
             actualPruefungsnummern.removeAll(pruefungsNummern));
       }
+    }
+    return this;
+  }
+
+  public WeicheKriteriumsAnalyseAssert affectsExactlyAsManyStudentsAs(int amount) {
+    if (amount != actual.getAmountAffectedStudents()) {
+      failWithMessage("The %s should affect %d students, but actually affects %d.",
+          this.actual.getClass().getSimpleName(), amount, actual.getAmountAffectedStudents());
     }
     return this;
   }

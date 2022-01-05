@@ -48,7 +48,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
    * x Grade so viele Personen, dass die Restriktion nicht verletzt wird (Klausur / Block)
    * x Genau so viele Personen, dass die Restriktion minimal verletzt wird (Klausur / Block)
    * x Genau die betroffenen Teilnehmerkreise sind enthalten (Klausur / Block)
-   * O Die Anzahl der betroffenen Studenten ist korrekt (Klausur / Block)
+   * x Die Anzahl der betroffenen Studenten ist korrekt (Klausur / Block)
    * O Das minimal moegliche scoring
    * O Naechst hoeheres scoring, ...
    */
@@ -195,7 +195,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
   @Test
   void oneTeilnehmerMoreAtATimeThanAllowed_analysisContainsCorrectPruefungen()
       throws IllegalTimeSpanException {
-    List<Pruefung> pruefungen = get3OverlappingPruefungenWith2001Teilnehmer();
+    List<Pruefung> pruefungen = get3OverlappingPruefungenWith201Teilnehmer();
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         convertPruefungenToPlanungseinheiten(pruefungen));
@@ -205,7 +205,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
         .conflictingPruefungenAreExactly(getPruefungsnummernFromModel(pruefungen));
   }
 
-  private List<Pruefung> get3OverlappingPruefungenWith2001Teilnehmer() {
+  private List<Pruefung> get3OverlappingPruefungenWith201Teilnehmer() {
     LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
     List<Pruefung> pruefungen = getRandomPruefungenAt(5L, startFirstPruefung,
         startFirstPruefung.plusMinutes(15), startFirstPruefung.plusMinutes(30));
@@ -224,19 +224,52 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         convertPruefungenToPlanungseinheiten(new ArrayList<>(block.getPruefungen())));
 
-    WeicheKriteriumsAnalyseAssert.assertThat(
-            (deviceUnderTest.evaluate(pruefungToTest).get()))
+    WeicheKriteriumsAnalyseAssert.assertThat((deviceUnderTest.evaluate(pruefungToTest).get()))
         .conflictingPruefungenAreExactly(getPruefungsnummernFromModel(block.getPruefungen()));
   }
 
   private Block getBlockWithPlanungseinheitenWithMoreThan200Teilnehmer() {
-    List<Pruefung> pruefungen = get3OverlappingPruefungenWith2001Teilnehmer();
+    List<Pruefung> pruefungen = get3OverlappingPruefungenWith201Teilnehmer();
     Block block = new BlockImpl(mock(Pruefungsperiode.class), "name", PARALLEL);
     for (Pruefung pruefung : pruefungen) {
       block.addPruefung(pruefung);
     }
     block.setStartzeitpunkt(getRandomDate(1L));
     return block;
+  }
+
+  @Test
+  void correctAmountOfStudents_oneMoreThanAllowed() throws IllegalTimeSpanException {
+    List<Pruefung> pruefungen = get3OverlappingPruefungenWith201Teilnehmer();
+
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(pruefungen));
+
+    WeicheKriteriumsAnalyseAssert.assertThat(
+            (deviceUnderTest.evaluate(pruefungen.get(0).asPruefung()).get()))
+        .affectsExactlyAsManyStudentsAs(201);
+  }
+
+  @Test
+  void correctAmountOfStudents_wayMoreThanAllowed() throws IllegalTimeSpanException {
+    List<Pruefung> pruefungen = get3OverlappingPruefungenWith999Teilnehmer();
+
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(pruefungen));
+
+    WeicheKriteriumsAnalyseAssert.assertThat(
+            (deviceUnderTest.evaluate(pruefungen.get(0).asPruefung()).get()))
+        .affectsExactlyAsManyStudentsAs(999);
+  }
+
+  private List<Pruefung> get3OverlappingPruefungenWith999Teilnehmer() {
+    LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
+    List<Pruefung> pruefungen = getRandomPruefungenAt(5L, startFirstPruefung,
+        startFirstPruefung.plusMinutes(15), startFirstPruefung.plusMinutes(30));
+    pruefungen.get(0).addTeilnehmerkreis(getRandomTeilnehmerkreis(1L), 765);
+    pruefungen.get(1).addTeilnehmerkreis(getRandomTeilnehmerkreis(2L), 123);
+    pruefungen.get(2).addTeilnehmerkreis(getRandomTeilnehmerkreis(3L), 111);
+    return pruefungen;
   }
 
 }
