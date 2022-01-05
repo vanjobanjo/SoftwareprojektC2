@@ -18,17 +18,30 @@ public class AnzahlTeilnehmerGleichzeitigZuHochRestriction extends AtSameTimeRes
 
   private static final int DEFAULT_MAX_TEILNEHMER_AT_A_TIME = 200;
 
+  private static final int DEFAULT_SCORING_STEP_SIZE = 2;
+
   private final int maxTeilnehmer;
+
+  private final int scoringStepSize;
 
   protected AnzahlTeilnehmerGleichzeitigZuHochRestriction(DataAccessService dataAccessService,
       Duration puffer) {
-    this(dataAccessService, puffer, DEFAULT_MAX_TEILNEHMER_AT_A_TIME);
+    this(dataAccessService, puffer, DEFAULT_MAX_TEILNEHMER_AT_A_TIME, DEFAULT_SCORING_STEP_SIZE);
   }
 
   public AnzahlTeilnehmerGleichzeitigZuHochRestriction(DataAccessService dataAccessService,
-      Duration duration, int maxTeilnehmerAtSameTime) {
-    super(dataAccessService, ANZAHL_TEILNEHMER_GLEICHZEITIG_ZU_HOCH, duration);
-    this.maxTeilnehmer = maxTeilnehmerAtSameTime;
+      Duration buffer, int maxTeilnehmerAtATime, int scoreStepSize) {
+    super(dataAccessService, ANZAHL_TEILNEHMER_GLEICHZEITIG_ZU_HOCH, buffer);
+    this.maxTeilnehmer = maxTeilnehmerAtATime;
+    if (scoreStepSize <= 0) {
+      throw new IllegalArgumentException("Scoring step size must be positive!");
+    }
+    this.scoringStepSize = scoreStepSize;
+  }
+
+  public AnzahlTeilnehmerGleichzeitigZuHochRestriction(DataAccessService dataAccessService,
+      Duration buffer, int maxTeilnehmerAtSameTime) {
+    this(dataAccessService, buffer, maxTeilnehmerAtSameTime, DEFAULT_SCORING_STEP_SIZE);
   }
 
   public AnzahlTeilnehmerGleichzeitigZuHochRestriction() {
@@ -36,7 +49,8 @@ public class AnzahlTeilnehmerGleichzeitigZuHochRestriction extends AtSameTimeRes
   }
 
   public AnzahlTeilnehmerGleichzeitigZuHochRestriction(DataAccessService dataAccessService) {
-    this(dataAccessService, DEFAULT_BUFFER, DEFAULT_MAX_TEILNEHMER_AT_A_TIME);
+    this(dataAccessService, DEFAULT_BUFFER, DEFAULT_MAX_TEILNEHMER_AT_A_TIME,
+        DEFAULT_SCORING_STEP_SIZE);
   }
 
   @Override
@@ -68,6 +82,11 @@ public class AnzahlTeilnehmerGleichzeitigZuHochRestriction extends AtSameTimeRes
   }
 
   @Override
+  protected int addDeltaScoring(Set<Pruefung> affectedPruefungen) {
+    throw new UnsupportedOperationException("not implemented");
+  }
+
+  @Override
   protected int getAffectedStudentsFrom(Set<Planungseinheit> violatingPlanungseinheiten) {
     int amount = 0;
     for (Planungseinheit planungseinheit : violatingPlanungseinheiten) {
@@ -78,11 +97,16 @@ public class AnzahlTeilnehmerGleichzeitigZuHochRestriction extends AtSameTimeRes
 
   @Override
   protected int calcScoringFor(Set<Planungseinheit> violatingPlanungseinheiten) {
-    return 0;
+    int students = getAffectedStudentsFrom(violatingPlanungseinheiten);
+    return getScoringFactor(students) * this.kriterium.getWert();
   }
 
-  @Override
-  protected int addDeltaScoring(Set<Pruefung> affectedPruefungen) {
-    throw new UnsupportedOperationException("not implemented");
+  private int getScoringFactor(int students) {
+    return ((getAmountOfStudentsSurpassingLimit(students) / scoringStepSize) + 1);
   }
+
+  private int getAmountOfStudentsSurpassingLimit(int totalStudents) {
+    return totalStudents - maxTeilnehmer;
+  }
+
 }

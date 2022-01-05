@@ -337,11 +337,6 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     assertThat((deviceUnderTest.evaluate(pruefungen.get(1)))).isNotPresent();
   }
 
-  private List<Pruefung> convertPruefungenFromReadonlyToModel(
-      Collection<ReadOnlyPruefung> pruefungen) {
-    return pruefungen.stream().map(this::getPruefungOfReadOnlyPruefung).toList();
-  }
-
   private Pruefung getPruefungOfReadOnlyPruefung(ReadOnlyPruefung roPruefung) {
     PruefungImpl modelPruefung = new PruefungImpl(roPruefung.getPruefungsnummer(),
         roPruefung.getName(), "", roPruefung.getDauer(), roPruefung.getTermin().orElse(null));

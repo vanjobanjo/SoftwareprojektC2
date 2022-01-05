@@ -106,7 +106,7 @@ public abstract class AtSameTimeRestriction extends WeicheRestriktion {
   }
 
   @NotNull
-  private WeichesKriteriumAnalyse createAnalyse(
+  private WeichesKriteriumAnalyse   createAnalyse(
       @NotNull Set<Planungseinheit> violatingPlanungseinheiten) {
     return new WeichesKriteriumAnalyse(getAllPruefungen(violatingPlanungseinheiten), this.kriterium,
         getAffectedTeilnehmerkreiseFrom(violatingPlanungseinheiten),
