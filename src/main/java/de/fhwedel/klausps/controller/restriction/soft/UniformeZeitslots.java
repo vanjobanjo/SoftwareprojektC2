@@ -39,7 +39,7 @@ public UniformeZeitslots() {
       return Optional.empty();
     }
 
-    return Optional.of(buildAnalysis(pruefungenAtSameTime));
+    return Optional.of(buildAnalysis(pruefung, pruefungenAtSameTime));
   }
 
 

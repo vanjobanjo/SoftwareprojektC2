@@ -515,12 +515,11 @@ class ScheduleServiceTest {
     when(dataAccessService.getPruefungWith(analysis.getPruefungsnummer())).thenReturn(analysis);
     when(dataAccessService.getPruefungWith(dm.getPruefungsnummer())).thenReturn(dm);
 
-    // should always be too high, right?
     int newSchaetzung = Integer.MAX_VALUE;
-    deviceUnderTest.setTeilnehmerkreisSchaetzung(converter.convertToReadOnlyPruefung(dm),
-        teilnehmerkreis, newSchaetzung);
-    // todo, when RestrictionService is not mocked anymore, add check if right
-    //  pruefungen are in result of setTeilnehmerkreis(...)
+    when(restrictionService.getAffectedPruefungen(dm)).thenReturn(Set.of(dm, analysis));
+    assertThat(deviceUnderTest.setTeilnehmerkreisSchaetzung(converter.convertToReadOnlyPruefung(dm),
+        teilnehmerkreis, newSchaetzung)).containsAll(Set.of(converter.convertToReadOnlyPruefung(dm),
+        converter.convertToReadOnlyPruefung(analysis)));
     assertThat(analysis.getSchaetzungen()).containsEntry(teilnehmerkreis, oldSchaetzung);
     assertThat(dm.getSchaetzungen()).containsEntry(teilnehmerkreis, newSchaetzung);
 

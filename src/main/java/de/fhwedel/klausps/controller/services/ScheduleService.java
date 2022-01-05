@@ -1,5 +1,7 @@
 package de.fhwedel.klausps.controller.services;
 
+import static java.util.Collections.emptyList;
+
 import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
@@ -81,8 +83,7 @@ public class ScheduleService {
     if (!hard.isEmpty()) {
       // reverse
       dataAccessService.schedulePruefung(pruefung, pruefung.getTermin().get());
-      HartesKriteriumException exHard = converter.convertHardException(hard);
-      throw exHard;
+      throw converter.convertHardException(hard);
     }
   }
 
@@ -134,8 +135,7 @@ public class ScheduleService {
     }
     if (!list.isEmpty()) {
       dataAccessService.scheduleBlock(roBlock, roBlock.getTermin().get());
-      HartesKriteriumException exHard = converter.convertHardException(list);
-      throw exHard;
+      throw converter.convertHardException(list);
     }
   }
 
@@ -229,21 +229,6 @@ public class ScheduleService {
     }
   }
 
-  /*
-  public List<ReadOnlyPruefung> movePruefung(ReadOnlyPruefung pruefung, LocalDateTime expectedStart)
-      throws HartesKriteriumException {
-    LocalDateTime currentStart = dataAccessService.getStartOfPruefungWith(
-        pruefung.getPruefungsnummer()).orElseThrow(
-        () -> new IllegalArgumentException("Nur geplante Pruefungen können verschoben werden!"));
-    dataAccessService.schedulePruefung(pruefung, expectedStart);
-    List<HartesKriteriumAnalyse> hardRestrictionFailures = restrictionService.checkHarteKriterien();
-    if (!hardRestrictionFailures.isEmpty()) {
-      dataAccessService.schedulePruefung(pruefung, currentStart);
-      signalHartesKriteriumFailure(hardRestrictionFailures);
-    }
-    return new ArrayList<>((getPruefungenInvolvedIn(restrictionService.checkWeicheKriterien())));
-  }*/
-
 
 
   private Set<Pruefung> getPruefungenInvolvedIn(
@@ -320,8 +305,7 @@ public class ScheduleService {
           pruefungModel);
       if (!hard.isEmpty()) {
         this.dataAccessService.removeTeilnehmerkreis(pruefungModel, teilnehmerkreis);
-        HartesKriteriumException exHard = converter.convertHardException(hard);
-        throw exHard;
+        throw converter.convertHardException(hard);
       }
     }
     listOfRead = checkSoftCriteria(pruefungModel);
@@ -339,7 +323,7 @@ public class ScheduleService {
     if (modelPruefung.isGeplant()) {
       return checkSoftCriteria(modelPruefung);
     }
-    return List.of();
+    return emptyList();
   }
 
 }

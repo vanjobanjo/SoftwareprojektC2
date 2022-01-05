@@ -7,7 +7,10 @@ import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Pruefung;
+import de.fhwedel.klausps.model.api.Teilnehmerkreis;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
@@ -42,7 +45,7 @@ public class FreierTagZwischenPruefungen extends WeicheRestriktion {
     if (pruefungenWithSameTeilnehmerkreisen.isEmpty()) {
       return Optional.empty();
     }
-    return Optional.of(buildAnalysis(pruefungenWithSameTeilnehmerkreisen));
+    return Optional.of(buildAnalysis(pruefung, pruefungenWithSameTeilnehmerkreisen));
   }
 
 
@@ -75,4 +78,16 @@ public class FreierTagZwischenPruefungen extends WeicheRestriktion {
     return pruefungBlock.equals(otherBlock);
   }
 
+
+  @Override
+  protected Map<Teilnehmerkreis, Integer> getRelevantSchaetzungen(Pruefung pruefung,
+      Pruefung affected) {
+    Map<Teilnehmerkreis, Integer> result = new HashMap<>();
+    for (Map.Entry<Teilnehmerkreis, Integer> schaetzung : pruefung.getSchaetzungen().entrySet()) {
+      if (affected.getSchaetzungen().containsKey(schaetzung.getKey())) {
+        result.put(schaetzung.getKey(), schaetzung.getValue());
+      }
+    }
+      return result;
+  }
 }

@@ -7,7 +7,6 @@ import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Pruefung;
 import java.time.DayOfWeek;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -43,7 +42,7 @@ public class KeineKlausurAmSonntag extends WeicheRestriktion {
       return Optional.empty();
     }
 
-    return Optional.of(buildAnalysis(Set.of(pruefung)));
+    return Optional.of(buildAnalysis(pruefung, Set.of(pruefung)));
   }
 
 

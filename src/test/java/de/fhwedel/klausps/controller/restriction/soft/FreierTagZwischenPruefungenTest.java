@@ -8,6 +8,8 @@ import static de.fhwedel.klausps.controller.util.TestFactory.getPruefungOfReadOn
 import static de.fhwedel.klausps.controller.util.TestFactory.infBachelor;
 import static de.fhwedel.klausps.controller.util.TestFactory.infMaster;
 import static de.fhwedel.klausps.controller.util.TestFactory.infPtl;
+import static de.fhwedel.klausps.controller.util.TestFactory.wingBachelor;
+import static de.fhwedel.klausps.controller.util.TestFactory.wingMaster;
 import static de.fhwedel.klausps.model.api.Blocktyp.SEQUENTIAL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -715,6 +717,30 @@ class FreierTagZwischenPruefungenTest {
 
     assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
   }
+
+
+  @Test
+  void overlap_not_all_Teilnehmerkreise() {
+    LocalDateTime dayAfter = LocalDateTime.of(2022, 1, 2, 8, 0);
+    LocalDateTime dayBefore = LocalDateTime.of(2022, 1, 1, 8, 0);
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    analysis.addTeilnehmerkreis(bwlBachelor);
+    analysis.addTeilnehmerkreis(infBachelor);
+    analysis.addTeilnehmerkreis(wingBachelor);
+    analysis.addTeilnehmerkreis(infPtl);
+    analysis.setStartzeitpunkt(dayBefore);
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+    dm.addTeilnehmerkreis(infBachelor);
+    dm.addTeilnehmerkreis(infMaster);
+    dm.addTeilnehmerkreis(bwlBachelor);
+    dm.addTeilnehmerkreis(wingMaster);
+    dm.setStartzeitpunkt(dayAfter);
+
+    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
+
+    testKriterium(analysis, Set.of(dm), Set.of(infBachelor, bwlBachelor));
+  }
+
 
   // ----------------------------------------------------------------------------
   // -------------------------------- helper ------------------------------------

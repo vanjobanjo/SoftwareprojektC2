@@ -34,11 +34,12 @@ public abstract class WeicheRestriktion {
   public abstract Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung);
 
 
-  protected WeichesKriteriumAnalyse buildAnalysis(Set<Pruefung> affectedPruefungen) {
+  protected WeichesKriteriumAnalyse buildAnalysis(Pruefung pruefung,
+      Set<Pruefung> affectedPruefungen) {
     int scoring;
     Map<Teilnehmerkreis, Integer> affectedTeilnehmerkreise = new HashMap<>();
-    for (Pruefung pruefung : affectedPruefungen) {
-      addTeilnehmerkreis(affectedTeilnehmerkreise, pruefung.getSchaetzungen());
+    for (Pruefung affected : affectedPruefungen) {
+      addTeilnehmerkreis(affectedTeilnehmerkreise, getRelevantSchaetzungen(pruefung, affected));
     }
     scoring = addDeltaScoring(affectedPruefungen);
 
@@ -71,11 +72,18 @@ public abstract class WeicheRestriktion {
 
   /**
    * default approach
+   *
    * @param affectedPruefungen pruefungen that violate restriction
    * @return the scoring
    */
   protected int addDeltaScoring(Set<Pruefung> affectedPruefungen) {
     return affectedPruefungen.size() * this.kriterium.getWert();
+  }
+
+
+  protected Map<Teilnehmerkreis, Integer> getRelevantSchaetzungen(Pruefung pruefung,
+      Pruefung affected) {
+    return affected.getSchaetzungen();
   }
 
 }
