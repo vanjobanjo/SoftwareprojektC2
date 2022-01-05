@@ -24,8 +24,7 @@ public class HartesKriteriumAnalyse {
   }
 
   public Set<Pruefung> getCausingPruefungen() {
-
-    return  this.causingPruefungen;
+    return this.causingPruefungen;
   }
 
   public Set<Teilnehmerkreis> getAffectedTeilnehmerkreise() {

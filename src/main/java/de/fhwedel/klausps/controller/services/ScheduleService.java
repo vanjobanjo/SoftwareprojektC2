@@ -81,7 +81,7 @@ public class ScheduleService {
     if (!hard.isEmpty()) {
       // reverse
       dataAccessService.schedulePruefung(pruefung, pruefung.getTermin().get());
-      HartesKriteriumException exHard = converter.convertHardException(hard); //TODO #172
+      HartesKriteriumException exHard = converter.convertHardException(hard);
       throw exHard;
     }
   }
@@ -274,7 +274,8 @@ public class ScheduleService {
       Iterable<HartesKriteriumAnalyse> hartesKriteriumAnalysen) {
     Set<ReadOnlyPruefung> result = new HashSet<>();
     for (HartesKriteriumAnalyse hartesKriteriumAnalyse : hartesKriteriumAnalysen) {
-      result.addAll(converter.convertToROPruefungCollection(hartesKriteriumAnalyse.getCausingPruefungen()));
+      result.addAll(
+          converter.convertToROPruefungCollection(hartesKriteriumAnalyse.getCausingPruefungen()));
     }
     return result;
   }
@@ -325,7 +326,7 @@ public class ScheduleService {
           pruefungModel);
       if (!hard.isEmpty()) {
         this.dataAccessService.removeTeilnehmerkreis(pruefungModel, teilnehmerkreis);
-        HartesKriteriumException exHard = converter.convertHardException(hard); //TODO #172
+        HartesKriteriumException exHard = converter.convertHardException(hard);
         throw exHard;
       }
     }

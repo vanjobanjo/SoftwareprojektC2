@@ -122,7 +122,6 @@ public class Converter {
     Set<Teilnehmerkreis> conflictTeilnehmer = new HashSet<>();
     int amountStudens = 0;
 
-
     for (HartesKriteriumAnalyse hKA : hard) {
 
       for (Pruefung pruefung : hKA.getCausingPruefungen()) {
@@ -137,6 +136,5 @@ public class Converter {
     }
 
     return new HartesKriteriumException(conflictPruefung, conflictTeilnehmer, amountStudens);
-    //TODO #172
   }
 }
