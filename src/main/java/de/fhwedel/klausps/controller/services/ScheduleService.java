@@ -245,12 +245,6 @@ public class ScheduleService {
   }*/
 
 
-  private List<ReadOnlyPruefung> testHartKriterium(ReadOnlyPruefung roPruefung)
-      throws HartesKriteriumException {
-
-    throw new IllegalStateException("Not implemented yet!");
-  }
-
 
   private Set<Pruefung> getPruefungenInvolvedIn(
       List<WeichesKriteriumAnalyse> weicheKriterien) {
@@ -334,4 +328,18 @@ public class ScheduleService {
 
     return listOfRead;
   }
+
+  public List<ReadOnlyPlanungseinheit> setTeilnehmerkreisSchaetzung(ReadOnlyPruefung pruefung,
+      Teilnehmerkreis teilnehmerkreis, int schaetzung) {
+    Pruefung modelPruefung = dataAccessService.getPruefungWith(pruefung.getPruefungsnummer());
+    if (!modelPruefung.getTeilnehmerkreise().contains(teilnehmerkreis)) {
+      throw new IllegalArgumentException("Pruefung hat keinen Teilnehmerkreis mit diesem Namen.");
+    }
+    modelPruefung.setSchaetzung(teilnehmerkreis, schaetzung);
+    if (modelPruefung.isGeplant()) {
+      return checkSoftCriteria(modelPruefung);
+    }
+    return List.of();
+  }
+
 }

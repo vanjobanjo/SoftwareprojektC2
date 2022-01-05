@@ -231,7 +231,7 @@ public class Controller implements InterfaceController {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, teilnehmerkreis, schaetzung);
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    return scheduleService.setTeilnehmerkreisSchaetzung(pruefung, teilnehmerkreis, schaetzung);
   }
 
   @Override

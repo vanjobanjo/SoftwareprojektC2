@@ -178,9 +178,6 @@ public class DataAccessService {
               value -> areSameBlocksBySpecs(block, value) && haveSamePruefungen(block, value))
           .isPresent();
     }
-
-    // TODO wie bekommen wir den Model Block wenn der Block leer ist? Um z.B. den Namen
-    //  und der Termin zu überprüfen.
   }
 
 
@@ -254,7 +251,7 @@ public class DataAccessService {
     Pruefung pruefung = getPruefungFromModelOrException(toChange.getPruefungsnummer());
     pruefung.setName(name);
 
-    return getROPlanungseinheitToPrufung(pruefung);
+    return getROPlanungseinheitToPruefung(pruefung);
   }
 
   public Set<ReadOnlyPruefung> getGeplantePruefungen() {
@@ -300,13 +297,13 @@ public class DataAccessService {
   public ReadOnlyPlanungseinheit addPruefer(String pruefungsNummer, String pruefer) {
     Pruefung pruefung = getPruefungFromModelOrException(pruefungsNummer);
     pruefung.addPruefer(pruefer);
-    return getROPlanungseinheitToPrufung(pruefung);
+    return getROPlanungseinheitToPruefung(pruefung);
   }
 
   public ReadOnlyPlanungseinheit removePruefer(String pruefungsNummer, String pruefer) {
     Pruefung pruefung = getPruefungFromModelOrException(pruefungsNummer);
     pruefung.removePruefer(pruefer);
-    return getROPlanungseinheitToPrufung(pruefung);
+    return getROPlanungseinheitToPruefung(pruefung);
   }
 
   public ReadOnlyPlanungseinheit setPruefungsnummer(ReadOnlyPruefung pruefung,
@@ -316,13 +313,13 @@ public class DataAccessService {
       throw new IllegalArgumentException("Die angegebene Pruefungsnummer ist bereits vergeben.");
     }
     modelPruefung.setPruefungsnummer(pruefungsnummer);
-    return getROPlanungseinheitToPrufung(modelPruefung);
+    return getROPlanungseinheitToPruefung(modelPruefung);
   }
 
   /*
   Gibt übergeordneten Block oder Pruefung zurück.
    */
-  private ReadOnlyPlanungseinheit getROPlanungseinheitToPrufung(Pruefung pruefung) {
+  private ReadOnlyPlanungseinheit getROPlanungseinheitToPruefung(Pruefung pruefung) {
     Block block = pruefungsperiode.block(pruefung);
     return block != null ? converter.convertToROBlock(block)
         : converter.convertToReadOnlyPruefung(pruefung);
