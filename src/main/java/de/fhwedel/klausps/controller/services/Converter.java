@@ -13,6 +13,7 @@ import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
+import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -116,7 +117,26 @@ public class Converter {
   }
 
   public HartesKriteriumException convertHardException(List<HartesKriteriumAnalyse> hard) {
-    return new HartesKriteriumException(null, null, null);
+
+    Set<ReadOnlyPruefung> conflictPruefung = new HashSet<>();
+    Set<Teilnehmerkreis> conflictTeilnehmer = new HashSet<>();
+    int amountStudens = 0;
+
+
+    for (HartesKriteriumAnalyse hKA : hard) {
+
+      for (Pruefung pruefung : hKA.getCausingPruefungen()) {
+        conflictPruefung.add(convertToReadOnlyPruefung(pruefung));
+      }
+      for (Teilnehmerkreis teilnehmerkreis : hKA.getAffectedTeilnehmerkreise()) {
+        if (!conflictTeilnehmer.contains(teilnehmerkreis)) {
+          conflictTeilnehmer.add(teilnehmerkreis);
+          amountStudens += hKA.getAmountAffectedStudents();
+        }
+      }
+    }
+
+    return new HartesKriteriumException(conflictPruefung, conflictTeilnehmer, amountStudens);
     //TODO #172
   }
 }

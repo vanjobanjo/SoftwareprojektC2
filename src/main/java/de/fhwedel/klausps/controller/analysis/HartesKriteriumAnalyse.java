@@ -23,13 +23,9 @@ public class HartesKriteriumAnalyse {
     this.amountAffectedStudents = amountAffectedStudents;
   }
 
-  public Set<ReadOnlyPruefung> getCausingPruefungen() {
-   //TODO hier nochmal drauf achten ob wirklich ReadOnlyPruefungenzurück gegeben werden sollen
-    Set<ReadOnlyPruefung> returnSet = new HashSet<>();
-    for(Pruefung p: this.causingPruefungen){
-      returnSet.add(new PruefungDTOBuilder(p).build());
-    }
-    return returnSet;
+  public Set<Pruefung> getCausingPruefungen() {
+
+    return  this.causingPruefungen;
   }
 
   public Set<Teilnehmerkreis> getAffectedTeilnehmerkreise() {

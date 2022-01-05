@@ -274,7 +274,7 @@ public class ScheduleService {
       Iterable<HartesKriteriumAnalyse> hartesKriteriumAnalysen) {
     Set<ReadOnlyPruefung> result = new HashSet<>();
     for (HartesKriteriumAnalyse hartesKriteriumAnalyse : hartesKriteriumAnalysen) {
-      result.addAll(hartesKriteriumAnalyse.getCausingPruefungen());
+      result.addAll(converter.convertToROPruefungCollection(hartesKriteriumAnalyse.getCausingPruefungen()));
     }
     return result;
   }
