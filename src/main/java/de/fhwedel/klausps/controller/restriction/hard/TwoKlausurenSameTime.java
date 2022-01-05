@@ -81,18 +81,12 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
     Optional<Block> maybeBlock = dataAccessService.getBlockTo(pruefung);
     LocalDateTime date = pruefung.getStartzeitpunkt()
         .plusMinutes(MINUTES_BETWEEN_PRUEFUNGEN);
-    if (maybeBlock.isPresent()) {
-      Block block = maybeBlock.get();
-      if (block.getTyp() == Blocktyp.SEQUENTIAL) {
-        date = date.plus(block.getDauer());
-      }
-    } else {
-      date = date.plus(pruefung.getDauer());
-    }
-    return date;
+    
+    return maybeBlock.isPresent() && maybeBlock.get().getTyp() == Blocktyp.SEQUENTIAL ? date.plus(
+        maybeBlock.get().getDauer()) : date.plus(pruefung.getDauer());
   }
 
-  private boolean  getTeilnehmerkreisFromPruefung(Pruefung pruefung, Pruefung toCheck) {
+  private boolean getTeilnehmerkreisFromPruefung(Pruefung pruefung, Pruefung toCheck) {
     boolean retBool = false;
     Set<Teilnehmerkreis> teilnehmer = pruefung.getTeilnehmerkreise();
     for (Teilnehmerkreis teilnehmerkreis : toCheck.getTeilnehmerkreise()) {
