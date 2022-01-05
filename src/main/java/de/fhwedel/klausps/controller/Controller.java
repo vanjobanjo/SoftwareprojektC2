@@ -74,8 +74,8 @@ public class Controller implements InterfaceController {
 
   @Override
   public LocalDate getAnkerPeriode() throws NoPruefungsPeriodeDefinedException {
-    throw new IllegalStateException("Not implemented yet!");
-
+    checkNoPruefungDefined();
+    return dataAccessService.getAnkerPeriode();
   }
 
   @Override
@@ -114,7 +114,9 @@ public class Controller implements InterfaceController {
   @Override
   public Set<ReadOnlyPruefung> getAllKlausurenFromPruefer(String pruefer)
       throws NoPruefungsPeriodeDefinedException {
-    throw new IllegalStateException("Not implemented yet!");
+    noNullParameters(pruefer);
+    checkNoPruefungDefined();
+    return dataAccessService.getAllKlausurenFromPruefer(pruefer);
   }
 
   @Override
@@ -238,7 +240,7 @@ public class Controller implements InterfaceController {
   public ReadOnlyPruefung createPruefung(
       String name,
       String pruefungsNummer,
-      String pruefer, //TODO muss hier kein Set rein?
+      String pruefer, //TODO muss hier kein Set rein? => jo
       Duration duration,
       Map<Teilnehmerkreis, Integer> teilnehmerkreis)
       throws NoPruefungsPeriodeDefinedException {
@@ -438,7 +440,7 @@ public class Controller implements InterfaceController {
   }
 
   /**
-   * In case any parameter is null, inmediately throw a nullpointer exception
+   * In case any parameter is null, immediately throw a NullPointer exception
    *
    * @param objects The parameters to check.
    * @throws NullPointerException In case any of the parameters is null.

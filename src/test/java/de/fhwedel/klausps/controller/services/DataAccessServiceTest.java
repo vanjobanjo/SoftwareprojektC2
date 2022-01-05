@@ -34,9 +34,11 @@ import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.BlockImpl;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -683,11 +685,6 @@ class DataAccessServiceTest {
     setPlanung.add(haskel);
     setPlanung.add(infotech);
 
-    List<Pruefung> listPruefung = new ArrayList<>();
-    listPruefung.add(dm.asPruefung());
-    listPruefung.add(haskel.asPruefung());
-    listPruefung.add(infotech.asPruefung());
-
     when(this.pruefungsperiode.planungseinheitenBetween(start, end)).thenReturn(setPlanung);
     assertThrows(IllegalTimeSpanException.class,
         () -> this.deviceUnderTest.getAllPlanungseinheitenBetween(end, start));
@@ -742,11 +739,6 @@ class DataAccessServiceTest {
     setPlanung.add(dm);
     setPlanung.add(haskel);
     setPlanung.add(infotech);
-
-    Set<Pruefung> listPruefung = new HashSet<>();
-    listPruefung.add(dm.asPruefung());
-    listPruefung.add(haskel.asPruefung());
-    listPruefung.add(infotech.asPruefung());
 
     when(this.pruefungsperiode.planungseinheitenBetween(start, end)).thenReturn(setPlanung);
     assertThrows(IllegalTimeSpanException.class,
@@ -1221,6 +1213,130 @@ class DataAccessServiceTest {
             RO_HASKELL_UNPLANNED));
 
   }
+
+  @Test
+  void getAllKlausurenFromPruefer_no_pruefungen() {
+    when(pruefungsperiode.getPlanungseinheiten()).thenReturn(Collections.emptySet());
+    assertThat(deviceUnderTest.getAllKlausurenFromPruefer("test")).isEmpty();
+
+  }
+
+  @Test
+  void getAllKlausurenFromPruefer_no_pruefungen_with_pruefer() {
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+    when(pruefungsperiode.getPlanungseinheiten()).thenReturn(Set.of(analysis, haskell, dm));
+    assertThat(deviceUnderTest.getAllKlausurenFromPruefer("test")).isEmpty();
+
+  }
+
+
+  @Test
+  void getAllKlausurenFromPruefer_only_one_pruefer() {
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    analysis.addPruefer("test");
+    when(pruefungsperiode.getPlanungseinheiten()).thenReturn(Set.of(analysis));
+    assertThat(deviceUnderTest.getAllKlausurenFromPruefer("test")).contains(RO_ANALYSIS_UNPLANNED);
+  }
+
+  @Test
+  void getAllKlausurenFromPruefer_more_than_one_pruefer() {
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    analysis.addPruefer("harms");
+    analysis.addPruefer("test");
+    analysis.addPruefer("pruefer2");
+    analysis.addPruefer("pruefer3");
+    analysis.addPruefer("pruefer4");
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+    when(pruefungsperiode.getPlanungseinheiten()).thenReturn(Set.of(analysis, haskell, dm));
+    assertThat(deviceUnderTest.getAllKlausurenFromPruefer("test")).contains(RO_ANALYSIS_UNPLANNED);
+  }
+
+  @Test
+  void getAllKlausurenFromPruefer_more_than_one_pruefer_different_pruefungen() {
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    analysis.addPruefer("harms");
+    analysis.addPruefer("test");
+    analysis.addPruefer("pruefer2");
+    analysis.addPruefer("pruefer3");
+    analysis.addPruefer("pruefer4");
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    haskell.addPruefer("t");
+    haskell.addPruefer("e");
+    haskell.addPruefer("s");
+    haskell.addPruefer("t");
+    haskell.addPruefer("test");
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+    dm.addPruefer("te");
+    dm.addPruefer("st");
+    dm.addPruefer("test");
+    when(pruefungsperiode.getPlanungseinheiten()).thenReturn(Set.of(analysis, haskell, dm));
+    assertThat(deviceUnderTest.getAllKlausurenFromPruefer("test")).contains(RO_ANALYSIS_UNPLANNED,
+        RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED);
+  }
+  @Test
+  void getAllKlausurenFromPruefer_more_than_one_pruefer_block() {
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    analysis.addPruefer("harms");
+    analysis.addPruefer("test");
+    analysis.addPruefer("pruefer2");
+    analysis.addPruefer("pruefer3");
+    analysis.addPruefer("pruefer4");
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    haskell.addPruefer("t");
+    haskell.addPruefer("e");
+    haskell.addPruefer("s");
+    haskell.addPruefer("t");
+    haskell.addPruefer("test");
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+    dm.addPruefer("te");
+    dm.addPruefer("st");
+    dm.addPruefer("test");
+    Block block = new BlockImpl(pruefungsperiode, "block", Blocktyp.PARALLEL);
+    block.addPruefung(analysis);
+    block.addPruefung(dm);
+    when(pruefungsperiode.getPlanungseinheiten()).thenReturn(Set.of(analysis, haskell, dm));
+    assertThat(deviceUnderTest.getAllKlausurenFromPruefer("test")).contains(RO_ANALYSIS_UNPLANNED,
+        RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED);
+  }
+
+  @Test
+  void getAllKlausurenFromPruefer_planned_and_not_planned() {
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    analysis.addPruefer("harms");
+    analysis.addPruefer("pruefer");
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    haskell.addPruefer("harms");
+    haskell.addPruefer("e");
+    haskell.addPruefer("s");
+    haskell.addPruefer("t");
+    haskell.addPruefer("pruefer");
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+    dm.addPruefer("te");
+    dm.addPruefer("st");
+    dm.addPruefer("pruefer");
+    Block block = new BlockImpl(pruefungsperiode, "block", Blocktyp.PARALLEL);
+    block.addPruefung(analysis);
+    block.addPruefung(dm);
+    block.setStartzeitpunkt(LocalDateTime.of(2022, 1, 2, 12, 1));
+    when(pruefungsperiode.getPlanungseinheiten()).thenReturn(Set.of(analysis, haskell, dm));
+    assertThat(deviceUnderTest.getAllKlausurenFromPruefer("pruefer")).contains(RO_ANALYSIS_UNPLANNED,
+        RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED);
+  }
+
+
+  @Test
+  void getAnkertag_test() {
+    LocalDate ankertag = LocalDate.of(2022, 2, 2);
+    when(pruefungsperiode.getAnkertag()).thenReturn(ankertag);
+    assertThat(deviceUnderTest.getAnkerPeriode()).isEqualTo(ankertag);
+  }
+
+  // ------------------------------------------------------------------------------
+  // ---------------------------------- helper ------------------------------------
+  // ------------------------------------------------------------------------------
 
 
   private void configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(

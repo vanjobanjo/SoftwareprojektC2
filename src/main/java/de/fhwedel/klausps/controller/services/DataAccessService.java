@@ -412,7 +412,7 @@ public class DataAccessService {
 
   private boolean isAnyInBlock(Collection<ReadOnlyPruefung> pruefungen) {
     return pruefungen.stream()
-        .anyMatch((pruefung) -> this.pruefungIsInBlock(pruefung.getPruefungsnummer()));
+        .anyMatch(pruefung -> this.pruefungIsInBlock(pruefung.getPruefungsnummer()));
   }
 
   private boolean contaisDuplicatePruefung(ReadOnlyPruefung[] pruefungen) {
@@ -528,11 +528,11 @@ public class DataAccessService {
     return getAllPruefungen(planungseinheitenBetween);
   }
 
-  public Set<ReadOnlyPruefung> getAllReadOnlyPruefungenBetween(LocalDateTime start, LocalDateTime end)
+  public Set<ReadOnlyPruefung> getAllReadOnlyPruefungenBetween(LocalDateTime start,
+      LocalDateTime end)
       throws IllegalTimeSpanException {
-    return Set.copyOf(converter.convertToROPruefungCollection(getAllPruefungenBetween(start,end)));
+    return Set.copyOf(converter.convertToROPruefungCollection(getAllPruefungenBetween(start, end)));
   }
-
 
 
   //TODO kann das hier raus? Evtl? Weil hier an dieser Stelle der Converter genutzt wird.
@@ -586,6 +586,24 @@ public class DataAccessService {
     return converter.convertToROBlock(model);
   }
 
+  public Set<ReadOnlyPruefung> getAllKlausurenFromPruefer(String pruefer) {
+    Set<Planungseinheit> planungseinheiten = pruefungsperiode.getPlanungseinheiten();
+    Set<ReadOnlyPruefung> result = new HashSet<>();
+    Pruefung pruefung;
+    for (Planungseinheit planungseinheit : planungseinheiten) {
+      if (!planungseinheit.isBlock()) {
+        pruefung = planungseinheit.asPruefung();
+        if (pruefung.getPruefer().contains(pruefer)) {
+          result.add(converter.convertToReadOnlyPruefung(pruefung));
+        }
+      }
+    }
+    return result;
+  }
+
+  public LocalDate getAnkerPeriode() {
+    return pruefungsperiode.getAnkertag();
+  }
 
 
 }
