@@ -142,10 +142,11 @@ public class Controller implements InterfaceController {
 
   @Override
   public Set<ReadOnlyPruefung> getPruefungenInZeitraum(
-      LocalDateTime start, LocalDateTime end) throws NoPruefungsPeriodeDefinedException {
+      LocalDateTime start, LocalDateTime end)
+      throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
     noNullParameters(start, end);
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+   return dataAccessService.getAllReadOnlyPruefungenBetween(start,end);
   }
 
   @Override

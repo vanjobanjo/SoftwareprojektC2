@@ -531,6 +531,13 @@ public class DataAccessService {
     return getAllPruefungen(planungseinheitenBetween);
   }
 
+  public Set<ReadOnlyPruefung> getAllReadOnlyPruefungenBetween(LocalDateTime start, LocalDateTime end)
+      throws IllegalTimeSpanException {
+    return Set.copyOf(converter.convertToROPruefungCollection(getAllPruefungenBetween(start,end)));
+  }
+
+
+
   //TODO kann das hier raus? Evtl? Weil hier an dieser Stelle der Converter genutzt wird.
   public Optional<ReadOnlyBlock> getBlockTo(ReadOnlyPruefung pruefung) {
     String nummer = pruefung.getPruefungsnummer();
@@ -547,6 +554,7 @@ public class DataAccessService {
       throw new IllegalArgumentException("Pruefungsnummer nicht im System!");
     }
   }
+
 
   public Optional<Block> getBlockTo(Pruefung pruefung) {
     return Optional.ofNullable(pruefungsperiode.block(pruefung));
@@ -570,8 +578,9 @@ public class DataAccessService {
 
   }
 
-  public boolean addTeilnehmerkreis(Pruefung pruefung, Teilnehmerkreis teilnehmerkreis, int schaetzung) {
-    return pruefung.addTeilnehmerkreis(teilnehmerkreis,schaetzung);
+  public boolean addTeilnehmerkreis(Pruefung pruefung, Teilnehmerkreis teilnehmerkreis,
+      int schaetzung) {
+    return pruefung.addTeilnehmerkreis(teilnehmerkreis, schaetzung);
   }
 
   public ReadOnlyBlock setNameOfBlock(ReadOnlyBlock block, String name) {
@@ -579,6 +588,7 @@ public class DataAccessService {
     model.setName(name);
     return converter.convertToROBlock(model);
   }
+
 
 
 }
