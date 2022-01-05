@@ -24,11 +24,6 @@ public class AnzahlTeilnehmerGleichzeitigZuHochRestriction extends AtSameTimeRes
 
   private final int scoringStepSize;
 
-  protected AnzahlTeilnehmerGleichzeitigZuHochRestriction(DataAccessService dataAccessService,
-      Duration puffer) {
-    this(dataAccessService, puffer, DEFAULT_MAX_TEILNEHMER_AT_A_TIME, DEFAULT_SCORING_STEP_SIZE);
-  }
-
   public AnzahlTeilnehmerGleichzeitigZuHochRestriction(DataAccessService dataAccessService,
       Duration buffer, int maxTeilnehmerAtATime, int scoreStepSize) {
     super(dataAccessService, ANZAHL_TEILNEHMER_GLEICHZEITIG_ZU_HOCH, buffer);
