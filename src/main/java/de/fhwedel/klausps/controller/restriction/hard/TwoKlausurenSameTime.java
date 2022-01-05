@@ -5,8 +5,9 @@ import static de.fhwedel.klausps.controller.kriterium.HartesKriterium.ZWEI_KLAUS
 import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
-import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
+import de.fhwedel.klausps.model.api.Block;
+import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
@@ -14,7 +15,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
 import org.jetbrains.annotations.NotNull;
 
 public class TwoKlausurenSameTime extends HarteRestriktion {
@@ -82,8 +82,9 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
     LocalDateTime date = pruefung.getStartzeitpunkt()
         .plusMinutes(MINUTES_BETWEEN_PRUEFUNGEN);
     if (maybeBlock.isPresent()) {
-      if (!maybeBlock.stream().isParallel()) {
-        date = date.plus(maybeBlock.get().getDauer());
+      Block block = maybeBlock.get();
+      if (block.getTyp() == Blocktyp.SEQUENTIAL) {
+        date = date.plus(block.getDauer());
       }
     } else {
       date = date.plus(pruefung.getDauer());
@@ -91,7 +92,7 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
     return date;
   }
 
-  private boolean getTeilnehmerkreisFromPruefung(Pruefung pruefung, Pruefung toCheck) {
+  private boolean  getTeilnehmerkreisFromPruefung(Pruefung pruefung, Pruefung toCheck) {
     boolean retBool = false;
     Set<Teilnehmerkreis> teilnehmer = pruefung.getTeilnehmerkreise();
     for (Teilnehmerkreis teilnehmerkreis : toCheck.getTeilnehmerkreise()) {
