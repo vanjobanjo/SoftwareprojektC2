@@ -95,6 +95,7 @@ class MehrePruefungenAmTagTest {
     listOfPruefungen.add(haskelPL);
     listOfPruefungen.add(analysisPL);
 
+
     try {
       when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
           listOfPruefungen);

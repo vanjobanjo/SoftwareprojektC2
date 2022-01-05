@@ -87,6 +87,7 @@ class TwoKlausurenSameTimeTest {
 
     ArrayList<Planungseinheit> listOfPruefungen = new ArrayList<>();
     listOfPruefungen.add(analysisPL);
+    listOfPruefungen.add(haskelPL);
 
     Set<Pruefung> setOfConflictPruefunge = new HashSet<>();
 
