@@ -64,11 +64,4 @@ public UniformeZeitslots() {
   private boolean hasSameDuration(Pruefung pruefung, Pruefung other) {
     return pruefung.getDauer().equals(other.getDauer());
   }
-
-  @Override
-  protected int addDeltaScoring(Set<Pruefung> affectedPruefungen) {
-    return affectedPruefungen.size() * this.kriterium.getWert();
-  }
-
-
 }

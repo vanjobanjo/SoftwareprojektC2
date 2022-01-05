@@ -81,6 +81,13 @@ public abstract class WeicheRestriktion {
   }
 
 
+  /**
+   * default approach <br>
+   * collects all relevant Teilnehmerkreisschätzungen <br>
+   * @param pruefung for which the restriction gets tested
+   * @param affected an affected pruefung
+   * @return the relevant Teilnehmerkreisschätzungen
+   */
   protected Map<Teilnehmerkreis, Integer> getRelevantSchaetzungen(Pruefung pruefung,
       Pruefung affected) {
     return affected.getSchaetzungen();
