@@ -54,6 +54,10 @@ public class DataAccessService {
     this.converter = converter;
   }
 
+  public void setKapazitaetPeriode(int kapazitaet) {
+    pruefungsperiode.setKapazitaet(kapazitaet);
+  }
+
   public ReadOnlyPruefung createPruefung(String name, String pruefungsNr, String refVWS,
       String pruefer,
       Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreise) {

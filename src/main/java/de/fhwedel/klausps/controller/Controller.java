@@ -203,7 +203,7 @@ public class Controller implements InterfaceController {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(kapazitaet);
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    return scheduleService.setKapazitaetPeriode(kapazitaet);
   }
 
   @Override
