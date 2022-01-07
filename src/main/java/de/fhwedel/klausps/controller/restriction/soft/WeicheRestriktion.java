@@ -1,5 +1,6 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
+import de.fhwedel.klausps.controller.PlanungseinheitUtil;
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
@@ -10,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import org.jetbrains.annotations.Nullable;
 
 
 public abstract class WeicheRestriktion {
@@ -50,15 +52,9 @@ public abstract class WeicheRestriktion {
   protected void addTeilnehmerkreis(
       Map<Teilnehmerkreis, Integer> affectedTeilnehmerkreise,
       Map<Teilnehmerkreis, Integer> teilnehmerkreiseToAdd) {
-    for (Map.Entry<Teilnehmerkreis, Integer> schaetzung : teilnehmerkreiseToAdd.entrySet()) {
-      Integer foundSchaetzung = affectedTeilnehmerkreise.getOrDefault(schaetzung.getKey(), null);
-      Integer newSchaetzung = schaetzung.getValue();
-      if (foundSchaetzung == null) {
-        affectedTeilnehmerkreise.put(schaetzung.getKey(), newSchaetzung);
-      } else if (foundSchaetzung < newSchaetzung) {
-        affectedTeilnehmerkreise.replace(schaetzung.getKey(), foundSchaetzung, newSchaetzung);
-      }
-    }
+
+    PlanungseinheitUtil.compareAndPutBiggerSchaetzung(affectedTeilnehmerkreise,
+        teilnehmerkreiseToAdd);
   }
 
 
@@ -82,13 +78,13 @@ public abstract class WeicheRestriktion {
 
 
   /**
-   * default approach <br>
-   * collects all relevant Teilnehmerkreisschätzungen <br>
+   * default approach <br> collects all relevant Teilnehmerkreisschätzungen <br>
+   *
    * @param pruefung for which the restriction gets tested
    * @param affected an affected pruefung
    * @return the relevant Teilnehmerkreisschätzungen
    */
-  protected Map<Teilnehmerkreis, Integer> getRelevantSchaetzungen(Pruefung pruefung,
+  protected Map<Teilnehmerkreis, Integer> getRelevantSchaetzungen(@Nullable Pruefung pruefung,
       Pruefung affected) {
     return affected.getSchaetzungen();
   }
