@@ -980,6 +980,27 @@ class DataAccessServiceTest {
     assertThat(deviceUnderTest.ungeplantePruefungenForTeilnehmerkreis(TestFactory.bwlBachelor)).isEmpty();
   }
 
+  @Test
+  void getPuefungenInZeitraumTest(){
+    LocalDateTime start_at_first = LocalDateTime.of(2000,1,1,1,0);
+    Duration duration = Duration.ofMinutes(90);
+    Pruefung pruefung = new PruefungImpl("Name", "Test", "1", duration, start_at_first);
+    when(pruefungsperiode.geplantePruefungen()).thenReturn(Set.of(pruefung));
+    Set<ReadOnlyPruefung> result = deviceUnderTest.getPruefungenInZeitraum(start_at_first, start_at_first.plus(duration));
+    assertThat(result).hasSize(1);
+  }
+
+  @Test
+  void getPuefungenInZeitraumTest2(){
+    LocalDateTime start_at_first = LocalDateTime.of(2000,1,1,1,0);
+    LocalDateTime ends = LocalDateTime.of(2000,1,1,2,0);
+    Duration duration = Duration.ofMinutes(61);
+    Pruefung pruefung = new PruefungImpl("Name", "Test", "1", duration, start_at_first);
+    when(pruefungsperiode.geplantePruefungen()).thenReturn(Set.of(pruefung));
+    Set<ReadOnlyPruefung> result = deviceUnderTest.getPruefungenInZeitraum(start_at_first, ends);
+    assertThat(result).hasSize(0);
+  }
+
   private void configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(
       Block modelBlock, LocalDateTime termin, ReadOnlyPruefung... pruefungen) {
     for (ReadOnlyPruefung p : pruefungen) {
