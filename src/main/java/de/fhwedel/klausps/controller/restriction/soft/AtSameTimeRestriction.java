@@ -1,11 +1,13 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
 import static de.fhwedel.klausps.controller.PlanungseinheitUtil.getAllPruefungen;
+import static de.fhwedel.klausps.model.api.Blocktyp.SEQUENTIAL;
 
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
+import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
@@ -40,14 +42,24 @@ public abstract class AtSameTimeRestriction extends WeicheRestriktion {
       return Optional.empty();
     }
     Duration bufferPerSide = puffer.dividedBy(2);
-    LocalDateTime startOfPruefung = pruefung.getStartzeitpunkt().minus(bufferPerSide);
-    LocalDateTime endOfPruefung = pruefung.endzeitpunkt().plus(bufferPerSide);
+    LocalDateTime startOfPruefung = getSequentialBlockOrSelf(pruefung).getStartzeitpunkt()
+        .minus(bufferPerSide);
+    LocalDateTime endOfPruefung = getSequentialBlockOrSelf(pruefung).endzeitpunkt()
+        .plus(bufferPerSide);
 
     List<Planungseinheit> planungseinheitenOverlappingTheOneToCheck = tryToGetAllPlanungseinheitenBetween(
         startOfPruefung, endOfPruefung);
     ignorePruefungenOf(planungseinheitenOverlappingTheOneToCheck, pruefung);
 
     return getAnalyseIfRestrictionViolated(planungseinheitenOverlappingTheOneToCheck);
+  }
+
+  private Planungseinheit getSequentialBlockOrSelf(Pruefung pruefung) {
+    Optional<Block> block = dataAccessService.getBlockTo(pruefung);
+    if (block.isPresent() && block.get().getTyp().equals(SEQUENTIAL)) {
+      return block.get();
+    }
+    return pruefung;
   }
 
   @NotNull
@@ -74,7 +86,7 @@ public abstract class AtSameTimeRestriction extends WeicheRestriktion {
     Set<Planungseinheit> conflictingPlanungseinheiten = findConflictingPlanungseinheiten(
         planungseinheitenOverlappingTheOneToCheck);
     if (!conflictingPlanungseinheiten.isEmpty()) {
-      return Optional.of(createAnalyse(conflictingPlanungseinheiten));
+      return Optional.of(buildAnalysis(conflictingPlanungseinheiten));
     }
     return Optional.empty();
   }
@@ -106,7 +118,7 @@ public abstract class AtSameTimeRestriction extends WeicheRestriktion {
   }
 
   @NotNull
-  private WeichesKriteriumAnalyse createAnalyse(
+  private WeichesKriteriumAnalyse buildAnalysis(
       @NotNull Set<Planungseinheit> violatingPlanungseinheiten) {
     return new WeichesKriteriumAnalyse(getAllPruefungen(violatingPlanungseinheiten), this.kriterium,
         getAffectedTeilnehmerkreiseFrom(violatingPlanungseinheiten),
