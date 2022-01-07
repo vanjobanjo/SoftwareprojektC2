@@ -326,4 +326,15 @@ public class ScheduleService {
     return emptyList();
   }
 
+  public List<ReadOnlyPlanungseinheit> setKapazitaetPeriode(int kapazitaet) {
+    dataAccessService.setKapazitaetPeriode(kapazitaet);
+    // collect in set => same Pruefung will not be added twice
+    Set<ReadOnlyPlanungseinheit> result = new HashSet<>();
+    for (Pruefung pruefung : dataAccessService.getGeplanteModelPruefung()) {
+      result.addAll(checkSoftCriteria(pruefung));
+    }
+    return new LinkedList<>(result);
+  }
+
+
 }

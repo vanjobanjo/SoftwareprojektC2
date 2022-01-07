@@ -54,6 +54,10 @@ public class DataAccessService {
     this.converter = converter;
   }
 
+  public void setKapazitaetPeriode(int kapazitaet) {
+    pruefungsperiode.setKapazitaet(kapazitaet);
+  }
+
   public ReadOnlyPruefung createPruefung(String name, String pruefungsNr, String refVWS,
       String pruefer,
       Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
@@ -412,7 +416,7 @@ public class DataAccessService {
 
   private boolean isAnyInBlock(Collection<ReadOnlyPruefung> pruefungen) {
     return pruefungen.stream()
-        .anyMatch((pruefung) -> this.pruefungIsInBlock(pruefung.getPruefungsnummer()));
+        .anyMatch(pruefung -> this.pruefungIsInBlock(pruefung.getPruefungsnummer()));
   }
 
   private boolean contaisDuplicatePruefung(ReadOnlyPruefung[] pruefungen) {
@@ -528,11 +532,11 @@ public class DataAccessService {
     return getAllPruefungen(planungseinheitenBetween);
   }
 
-  public Set<ReadOnlyPruefung> getAllReadOnlyPruefungenBetween(LocalDateTime start, LocalDateTime end)
+  public Set<ReadOnlyPruefung> getAllReadOnlyPruefungenBetween(LocalDateTime start,
+      LocalDateTime end)
       throws IllegalTimeSpanException {
-    return Set.copyOf(converter.convertToROPruefungCollection(getAllPruefungenBetween(start,end)));
+    return Set.copyOf(converter.convertToROPruefungCollection(getAllPruefungenBetween(start, end)));
   }
-
 
 
   //TODO kann das hier raus? Evtl? Weil hier an dieser Stelle der Converter genutzt wird.
@@ -586,6 +590,41 @@ public class DataAccessService {
     return converter.convertToROBlock(model);
   }
 
+  public Set<ReadOnlyPruefung> getAllKlausurenFromPruefer(String pruefer) {
+    Set<Planungseinheit> planungseinheiten = pruefungsperiode.getPlanungseinheiten();
+    Set<ReadOnlyPruefung> result = new HashSet<>();
+    Pruefung pruefung;
+    for (Planungseinheit planungseinheit : planungseinheiten) {
+      if (!planungseinheit.isBlock()) {
+        pruefung = planungseinheit.asPruefung();
+        if (pruefung.getPruefer().contains(pruefer)) {
+          result.add(converter.convertToReadOnlyPruefung(pruefung));
+        }
+      }
+    }
+    return result;
+  }
 
+  public LocalDate getAnkerPeriode() {
+    return pruefungsperiode.getAnkertag();
+  }
+
+  public int getAnzahlStudentenZeitpunkt(LocalDateTime zeitpunkt) {
+    int res = 0;
+    for (Pruefung pruefung : pruefungsperiode.geplantePruefungen()) {
+      LocalDateTime start = pruefung.getStartzeitpunkt();
+      LocalDateTime end = pruefung.endzeitpunkt();
+      if ((start.equals(zeitpunkt) || start.isBefore(zeitpunkt))
+          && (end.equals(zeitpunkt) || end.isAfter(zeitpunkt))) {
+
+        // no check if teilnehmerkreis is already in result needed
+        // that would violate hard restriction and can therefore never be planned
+        for (Integer schaetzung : pruefung.getSchaetzungen().values()) {
+          res += schaetzung;
+        }
+      }
+    }
+    return res;
+  }
 
 }
