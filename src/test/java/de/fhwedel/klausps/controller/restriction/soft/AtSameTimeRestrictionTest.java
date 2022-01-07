@@ -3,17 +3,21 @@ package de.fhwedel.klausps.controller.restriction.soft;
 import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH;
 import static de.fhwedel.klausps.controller.util.TestUtils.convertPruefungenToPlanungseinheiten;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefungen;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungenAt;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedPruefung;
 import static java.time.Duration.ZERO;
+import static java.time.Duration.ofMinutes;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
+import de.fhwedel.klausps.controller.matchers.IsOneOfMatcher;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Blocktyp;
@@ -23,6 +27,7 @@ import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.impl.BlockImpl;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +35,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockSettings;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 class AtSameTimeRestrictionTest {
 
@@ -154,6 +161,37 @@ class AtSameTimeRestrictionTest {
       result.addPruefung(pruefung);
     }
     result.setStartzeitpunkt(LocalDateTime.of(1998, 1, 2, 21, 39));
+    return result;
+  }
+
+  @Test
+  void sequentialBlocksOverlapBecauseOfAdditiveDuration() throws IllegalTimeSpanException {
+    // test that sequential blocks are detected as overlapping with the checked pruefung if none of
+    // the contained pruefungen overlaps but the combined time does.
+    Block block = getSequentialBlockWithTotalDurationOf5Hours().asBlock();
+    Pruefung toCheckFor = getRandomPruefung(block.getStartzeitpunkt().plusMinutes(120),
+        block.endzeitpunkt().plusMinutes(10), 1L);
+    List<Pruefung> pruefungenInBlock = new ArrayList<>(block.getPruefungen());
+    Answer<Boolean> hasMoreThanOneElement = (InvocationOnMock invocation) ->
+        invocation.getArgument(0, Collection.class).size() > 1;
+
+    when(dataAccessService.getBlockTo(
+        argThat(new IsOneOfMatcher<>(pruefungenInBlock)))).thenReturn(Optional.of(block));
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        List.of(toCheckFor, block));
+    when(deviceUnderTest.violatesRestriction(any())).thenAnswer(hasMoreThanOneElement);
+
+    assertThat(deviceUnderTest.evaluate(toCheckFor)).isPresent();
+  }
+
+  private Planungseinheit getSequentialBlockWithTotalDurationOf5Hours() {
+    Pruefungsperiode pruefungsperiode = mock(Pruefungsperiode.class);
+    Block result = new BlockImpl(pruefungsperiode, "name", Blocktyp.SEQUENTIAL);
+    for (Pruefung pruefung : getRandomPlannedPruefungen(2L, 3)) {
+      pruefung.setDauer(ofMinutes(100));
+      result.addPruefung(pruefung);
+    }
+    result.setStartzeitpunkt(LocalDateTime.of(1998, 1, 2, 10, 0));
     return result;
   }
 

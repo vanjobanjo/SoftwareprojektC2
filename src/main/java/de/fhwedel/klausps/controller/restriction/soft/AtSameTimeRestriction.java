@@ -54,7 +54,7 @@ public abstract class AtSameTimeRestriction extends WeicheRestriktion {
     return getAnalyseIfRestrictionViolated(planungseinheitenOverlappingTheOneToCheck);
   }
 
-  private Planungseinheit getSequentialBlockOrSelf(Pruefung pruefung) {
+  protected final Planungseinheit getSequentialBlockOrSelf(Pruefung pruefung) {
     Optional<Block> block = dataAccessService.getBlockTo(pruefung);
     if (block.isPresent() && block.get().getTyp().equals(SEQUENTIAL)) {
       return block.get();
