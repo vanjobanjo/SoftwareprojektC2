@@ -20,8 +20,6 @@ import org.jetbrains.annotations.NotNull;
 
 public abstract class AtSameTimeRestriction extends WeicheRestriktion {
 
-  protected static final int DEFAULT_MAX_PRUEFUNGEN_AT_A_TIME = 6;
-
   // TODO use global default
   protected static final Duration DEFAULT_BUFFER = Duration.ofMinutes(30);
 
