@@ -5,7 +5,6 @@ import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.FREIER_TA
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
-import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.util.HashMap;
@@ -38,7 +37,7 @@ public class FreierTagZwischenPruefungen extends WeicheRestriktion {
     // remove of no overlapping Teilnehmerkreise and more than one day apart
     pruefungenWithSameTeilnehmerkreisen.remove(pruefung);
     pruefungenWithSameTeilnehmerkreisen.removeIf(other ->
-        testInSameBlock(pruefung, other)
+        dataAccessService.areInSameBlock(pruefung, other)
             || testDayApart(pruefung, other)
             || testOverlappingTeilnehmerkreise(pruefung, other));
 
@@ -66,28 +65,18 @@ public class FreierTagZwischenPruefungen extends WeicheRestriktion {
     return difference > 1;
   }
 
-  private boolean testInSameBlock(Pruefung pruefung, Pruefung other) {
-    Optional<Block> pruefungBlock = dataAccessService.getBlockTo(pruefung);
-    Optional<Block> otherBlock = dataAccessService.getBlockTo(other);
-    if (pruefungBlock.isEmpty()) {
-      return false;
-    }
-    if (otherBlock.isEmpty()) {
-      return false;
-    }
-    return pruefungBlock.equals(otherBlock);
-  }
-
 
   @Override
   protected Map<Teilnehmerkreis, Integer> getRelevantSchaetzungen(Pruefung pruefung,
       Pruefung affected) {
     Map<Teilnehmerkreis, Integer> result = new HashMap<>();
-    for (Map.Entry<Teilnehmerkreis, Integer> schaetzung : pruefung.getSchaetzungen().entrySet()) {
-      if (affected.getSchaetzungen().containsKey(schaetzung.getKey())) {
-        result.put(schaetzung.getKey(), schaetzung.getValue());
+    if (pruefung != null) {
+      for (Map.Entry<Teilnehmerkreis, Integer> schaetzung : pruefung.getSchaetzungen().entrySet()) {
+        if (affected.getSchaetzungen().containsKey(schaetzung.getKey())) {
+          result.put(schaetzung.getKey(), schaetzung.getValue());
+        }
       }
     }
-      return result;
+    return result;
   }
 }

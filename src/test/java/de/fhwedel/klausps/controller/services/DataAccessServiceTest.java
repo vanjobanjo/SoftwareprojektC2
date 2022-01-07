@@ -4,6 +4,8 @@ import static de.fhwedel.klausps.controller.util.TestFactory.bwlBachelor;
 import static de.fhwedel.klausps.controller.util.TestFactory.infBachelor;
 import static de.fhwedel.klausps.controller.util.TestFactory.infMaster;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungenReadOnly;
+import static de.fhwedel.klausps.model.api.Blocktyp.PARALLEL;
+import static de.fhwedel.klausps.model.api.Blocktyp.SEQUENTIAL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -1423,6 +1425,26 @@ class DataAccessServiceTest {
     assertThat(deviceUnderTest.getAnzahlStudentenZeitpunkt(analysis.endzeitpunkt()))
         .isEqualTo(infB_analysis);
 
+  }
+
+  @Test
+  void getAnzahlStudentenZeitpunkt_in_Block() {
+    LocalDateTime termin = LocalDateTime.of(2022, 2, 2, 2, 2);
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    int infB_haskell = 20;
+    int infB_analysis = 10;
+    analysis.addTeilnehmerkreis(infBachelor, infB_analysis);
+    haskell.addTeilnehmerkreis(infBachelor, infB_haskell);
+
+    Block block = new BlockImpl(pruefungsperiode, "block", PARALLEL);
+    block.addPruefung(analysis);
+    block.addPruefung(haskell);
+
+    block.setStartzeitpunkt(termin);
+        when(pruefungsperiode.geplantePruefungen()).thenReturn(Set.of(analysis, haskell));
+    assertThat(deviceUnderTest.getAnzahlStudentenZeitpunkt(termin))
+        .isEqualTo(infB_haskell);
   }
 
   // ------------------------------------------------------------------------------

@@ -1,5 +1,6 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
+import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.FREIER_TAG_ZWISCHEN_PRUEFUNGEN;
 import static de.fhwedel.klausps.controller.util.TestFactory.RO_ANALYSIS_UNPLANNED;
 import static de.fhwedel.klausps.controller.util.TestFactory.RO_DM_UNPLANNED;
 import static de.fhwedel.klausps.controller.util.TestFactory.RO_HASKELL_UNPLANNED;
@@ -24,6 +25,7 @@ import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.BlockImpl;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -76,6 +78,7 @@ class FreierTagZwischenPruefungenTest {
 
   public FreierTagZwischenPruefungen deviceUnderTest;
   public DataAccessService dataAccessService;
+  private static final int SCORING = FREIER_TAG_ZWISCHEN_PRUEFUNGEN.getWert();
 
   @BeforeEach
   public void setUp() {
@@ -125,8 +128,9 @@ class FreierTagZwischenPruefungenTest {
   void same_day_overlap() {
     LocalDateTime date = LocalDateTime.of(2022, 1, 1, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    analysis.addTeilnehmerkreis(bwlBachelor);
-    analysis.addTeilnehmerkreis(infBachelor);
+    int amount_infBachelor = 10;
+    analysis.addTeilnehmerkreis(bwlBachelor, 3);
+    analysis.addTeilnehmerkreis(infBachelor, amount_infBachelor);
     analysis.setStartzeitpunkt(date);
     Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
     dm.addTeilnehmerkreis(infBachelor);
@@ -134,7 +138,7 @@ class FreierTagZwischenPruefungenTest {
 
     when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
 
-    testKriterium(analysis, dm, infBachelor);
+    testKriterium(analysis, dm, infBachelor, amount_infBachelor);
   }
 
   @Test
@@ -142,20 +146,23 @@ class FreierTagZwischenPruefungenTest {
   void same_day_overlap_multiple() {
     LocalDateTime date = LocalDateTime.of(2022, 1, 1, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    analysis.addTeilnehmerkreis(bwlBachelor);
-    analysis.addTeilnehmerkreis(infBachelor);
+    int infB = 20;
+    int bwlB = 23;
+    int affected = infB + bwlB;
+    analysis.addTeilnehmerkreis(bwlBachelor, bwlB);
+    analysis.addTeilnehmerkreis(infBachelor, infB);
     analysis.setStartzeitpunkt(date);
     Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
-    dm.addTeilnehmerkreis(infBachelor);
+    dm.addTeilnehmerkreis(infBachelor, infB);
     dm.setStartzeitpunkt(date);
 
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
-    haskell.addTeilnehmerkreis(bwlBachelor);
+    haskell.addTeilnehmerkreis(bwlBachelor, bwlB);
     haskell.setStartzeitpunkt(date);
 
     when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis, haskell));
 
-    testKriterium(analysis, Set.of(dm, haskell), Set.of(infBachelor, bwlBachelor));
+    testKriterium(analysis, Set.of(dm, haskell), Set.of(infBachelor, bwlBachelor), affected);
   }
 
   @Test
@@ -171,7 +178,7 @@ class FreierTagZwischenPruefungenTest {
     dm.addTeilnehmerkreis(infBachelor);
     dm.setStartzeitpunkt(date);
     getBlockWithPruefungen(pruefungsperiode, "b", date, analysis, dm);
-
+    when(dataAccessService.areInSameBlock(analysis, dm)).thenReturn(true);
     when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
 
     assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
@@ -183,36 +190,39 @@ class FreierTagZwischenPruefungenTest {
     Pruefungsperiode pruefungsperiode = mock(Pruefungsperiode.class);
     LocalDateTime date = LocalDateTime.of(2022, 1, 1, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    analysis.addTeilnehmerkreis(bwlBachelor);
-    analysis.addTeilnehmerkreis(infBachelor);
+    int infB = 1;
+    analysis.addTeilnehmerkreis(bwlBachelor, 23);
+    analysis.addTeilnehmerkreis(infBachelor, infB);
     analysis.setStartzeitpunkt(date);
     Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
-    dm.addTeilnehmerkreis(infBachelor);
+    dm.addTeilnehmerkreis(infBachelor, infB);
     dm.setStartzeitpunkt(date);
     getBlockWithPruefungen(pruefungsperiode, "b", date, analysis);
     getBlockWithPruefungen(pruefungsperiode, "b2", date, dm);
-
+    when(dataAccessService.areInSameBlock(analysis, dm)).thenReturn(false);
     when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
 
-    testKriterium(analysis, dm, infBachelor);
+    testKriterium(analysis, dm, infBachelor, infB);
   }
 
-@Test
+  @Test
   @DisplayName("gleicher Tag + Überschneidungen + ein Block")
   void same_day_overlap_one_in_block() {
     Pruefungsperiode pruefungsperiode = mock(Pruefungsperiode.class);
     LocalDateTime date = LocalDateTime.of(2022, 1, 1, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    analysis.addTeilnehmerkreis(bwlBachelor);
-    analysis.addTeilnehmerkreis(infBachelor);
+    int affected = 123;
+    analysis.addTeilnehmerkreis(bwlBachelor, affected);
+    analysis.addTeilnehmerkreis(infBachelor, affected);
     analysis.setStartzeitpunkt(date);
     Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
-    dm.addTeilnehmerkreis(infBachelor);
+    dm.addTeilnehmerkreis(infBachelor, affected);
     dm.setStartzeitpunkt(date);
     getBlockWithPruefungen(pruefungsperiode, "b", date, analysis);
+    when(dataAccessService.areInSameBlock(analysis, dm)).thenReturn(false);
     when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
 
-    testKriterium(analysis, dm, infBachelor);
+    testKriterium(analysis, dm, infBachelor, affected);
   }
 
   // ----------------------------------------------------------------------------
@@ -243,16 +253,17 @@ class FreierTagZwischenPruefungenTest {
     LocalDateTime date = LocalDateTime.of(2022, 1, 2, 8, 0);
     LocalDateTime dayBefore = LocalDateTime.of(2022, 1, 1, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    analysis.addTeilnehmerkreis(bwlBachelor);
-    analysis.addTeilnehmerkreis(infBachelor);
+    Random random = new Random();
+    int affected = random.nextInt(400);
+    analysis.addTeilnehmerkreis(bwlBachelor, affected);
+    analysis.addTeilnehmerkreis(infBachelor, affected);
     analysis.setStartzeitpunkt(date);
     Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
-    dm.addTeilnehmerkreis(infBachelor);
+    dm.addTeilnehmerkreis(infBachelor, affected);
     dm.setStartzeitpunkt(dayBefore);
 
     when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
-
-    testKriterium(analysis, dm, infBachelor);
+    testKriterium(analysis, dm, infBachelor, affected);
   }
 
   @Test
@@ -261,19 +272,22 @@ class FreierTagZwischenPruefungenTest {
     LocalDateTime date = LocalDateTime.of(2022, 1, 2, 8, 0);
     LocalDateTime dayBefore = LocalDateTime.of(2022, 1, 1, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    analysis.addTeilnehmerkreis(bwlBachelor);
-    analysis.addTeilnehmerkreis(infBachelor);
+    Random random = new Random();
+    int schaetzung = random.nextInt(300);
+    int affected = 2 * schaetzung;
+    analysis.addTeilnehmerkreis(bwlBachelor, schaetzung);
+    analysis.addTeilnehmerkreis(infBachelor, schaetzung);
     analysis.setStartzeitpunkt(date);
     Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
-    dm.addTeilnehmerkreis(infBachelor);
+    dm.addTeilnehmerkreis(infBachelor, schaetzung);
     dm.setStartzeitpunkt(dayBefore);
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
-    haskell.addTeilnehmerkreis(bwlBachelor);
+    haskell.addTeilnehmerkreis(bwlBachelor, schaetzung);
     haskell.setStartzeitpunkt(dayBefore);
 
     when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis, haskell));
 
-    testKriterium(analysis, Set.of(dm, haskell), Set.of(infBachelor, bwlBachelor));
+    testKriterium(analysis, Set.of(dm, haskell), Set.of(infBachelor, bwlBachelor), affected);
   }
 
   @Test
@@ -282,16 +296,17 @@ class FreierTagZwischenPruefungenTest {
     LocalDateTime date = LocalDateTime.of(2022, 1, 1, 8, 0);
     LocalDateTime dayBefore = LocalDateTime.of(2021, 12, 31, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    analysis.addTeilnehmerkreis(bwlBachelor);
-    analysis.addTeilnehmerkreis(infBachelor);
+    int affected = 234;
+    analysis.addTeilnehmerkreis(bwlBachelor, 1);
+    analysis.addTeilnehmerkreis(infBachelor, affected);
     analysis.setStartzeitpunkt(date);
     Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
-    dm.addTeilnehmerkreis(infBachelor);
+    dm.addTeilnehmerkreis(infBachelor, affected);
     dm.setStartzeitpunkt(dayBefore);
 
     when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
 
-    testKriterium(analysis, dm, infBachelor);
+    testKriterium(analysis, dm, infBachelor, affected);
   }
 
 
@@ -302,18 +317,19 @@ class FreierTagZwischenPruefungenTest {
     LocalDateTime date = LocalDateTime.of(2022, 1, 2, 8, 0);
     LocalDateTime dayBefore = LocalDateTime.of(2022, 1, 1, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    analysis.addTeilnehmerkreis(bwlBachelor);
-    analysis.addTeilnehmerkreis(infBachelor);
+    int affected = 34;
+    analysis.addTeilnehmerkreis(bwlBachelor, 3);
+    analysis.addTeilnehmerkreis(infBachelor, affected);
     analysis.setStartzeitpunkt(date);
     Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
-    dm.addTeilnehmerkreis(infBachelor);
+    dm.addTeilnehmerkreis(infBachelor, affected);
     dm.setStartzeitpunkt(dayBefore);
     getBlockWithPruefungen(pruefungsperiode, "b", date, analysis);
     getBlockWithPruefungen(pruefungsperiode, "b2", date, dm);
-
+    when(dataAccessService.areInSameBlock(analysis, dm)).thenReturn(false);
     when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
 
-    testKriterium(analysis, dm, infBachelor);
+    testKriterium(analysis, dm, infBachelor, affected);
   }
 
   // ----------------------------------------------------------------------------
@@ -344,16 +360,17 @@ class FreierTagZwischenPruefungenTest {
     LocalDateTime dayAfter = LocalDateTime.of(2022, 1, 2, 8, 0);
     LocalDateTime dayBefore = LocalDateTime.of(2022, 1, 1, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    analysis.addTeilnehmerkreis(bwlBachelor);
-    analysis.addTeilnehmerkreis(infBachelor);
+    int affected = 78;
+    analysis.addTeilnehmerkreis(bwlBachelor, 3);
+    analysis.addTeilnehmerkreis(infBachelor, affected);
     analysis.setStartzeitpunkt(dayBefore);
     Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
-    dm.addTeilnehmerkreis(infBachelor);
+    dm.addTeilnehmerkreis(infBachelor, affected);
     dm.setStartzeitpunkt(dayAfter);
 
     when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
 
-    testKriterium(analysis, dm, infBachelor);
+    testKriterium(analysis, dm, infBachelor, affected);
   }
 
   @Test
@@ -362,20 +379,23 @@ class FreierTagZwischenPruefungenTest {
     LocalDateTime dayAfter = LocalDateTime.of(2022, 1, 2, 8, 0);
     LocalDateTime dayBefore = LocalDateTime.of(2022, 1, 1, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    analysis.addTeilnehmerkreis(bwlBachelor);
-    analysis.addTeilnehmerkreis(infBachelor);
+    int bwlB = 346;
+    int infB = 300;
+    int affected = bwlB + infB;
+    analysis.addTeilnehmerkreis(bwlBachelor, bwlB);
+    analysis.addTeilnehmerkreis(infBachelor, infB);
     analysis.setStartzeitpunkt(dayBefore);
     Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
-    dm.addTeilnehmerkreis(infBachelor);
+    dm.addTeilnehmerkreis(infBachelor, infB);
     dm.setStartzeitpunkt(dayAfter);
 
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
-    haskell.addTeilnehmerkreis(bwlBachelor);
+    haskell.addTeilnehmerkreis(bwlBachelor, bwlB);
     haskell.setStartzeitpunkt(dayAfter);
 
     when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis, haskell));
 
-    testKriterium(analysis, Set.of(dm, haskell), Set.of(infBachelor, bwlBachelor));
+    testKriterium(analysis, Set.of(dm, haskell), Set.of(infBachelor, bwlBachelor), affected);
   }
 
   @Test
@@ -384,16 +404,17 @@ class FreierTagZwischenPruefungenTest {
     LocalDateTime dayAfter = LocalDateTime.of(2022, 1, 1, 8, 0);
     LocalDateTime dayBefore = LocalDateTime.of(2021, 12, 31, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    analysis.addTeilnehmerkreis(bwlBachelor);
-    analysis.addTeilnehmerkreis(infBachelor);
+    int affected = 10;
+    analysis.addTeilnehmerkreis(bwlBachelor, affected);
+    analysis.addTeilnehmerkreis(infBachelor, affected);
     analysis.setStartzeitpunkt(dayBefore);
     Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
-    dm.addTeilnehmerkreis(infBachelor);
+    dm.addTeilnehmerkreis(infBachelor, affected);
     dm.setStartzeitpunkt(dayAfter);
 
     when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
 
-    testKriterium(analysis, dm, infBachelor);
+    testKriterium(analysis, dm, infBachelor, affected);
   }
 
 
@@ -404,18 +425,19 @@ class FreierTagZwischenPruefungenTest {
     LocalDateTime dayAfter = LocalDateTime.of(2022, 1, 2, 8, 0);
     LocalDateTime dayBefore = LocalDateTime.of(2022, 1, 1, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    analysis.addTeilnehmerkreis(bwlBachelor);
-    analysis.addTeilnehmerkreis(infBachelor);
+    int affected = 0;
+    analysis.addTeilnehmerkreis(bwlBachelor, affected);
+    analysis.addTeilnehmerkreis(infBachelor, affected);
     analysis.setStartzeitpunkt(dayBefore);
     Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
-    dm.addTeilnehmerkreis(infBachelor);
+    dm.addTeilnehmerkreis(infBachelor, affected);
     dm.setStartzeitpunkt(dayAfter);
     getBlockWithPruefungen(pruefungsperiode, "b", dayBefore, analysis);
     getBlockWithPruefungen(pruefungsperiode, "b2", dayAfter, dm);
-
+    when(dataAccessService.areInSameBlock(analysis, dm)).thenReturn(false);
     when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
 
-    testKriterium(analysis, dm, infBachelor);
+    testKriterium(analysis, dm, infBachelor, affected);
   }
 
   // ----------------------------------------------------------------------------
@@ -572,19 +594,22 @@ class FreierTagZwischenPruefungenTest {
     LocalDateTime later = LocalDateTime.of(2022, 4, 23, 8, 0);
     LocalDateTime earlier = LocalDateTime.of(2022, 4, 21, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    analysis.addTeilnehmerkreis(bwlBachelor);
-    analysis.addTeilnehmerkreis(infBachelor);
+    int infB = 95;
+    int bwlB = 80;
+    int affected = infB + bwlB;
+    analysis.addTeilnehmerkreis(bwlBachelor, bwlB);
+    analysis.addTeilnehmerkreis(infBachelor, infB);
     analysis.setStartzeitpunkt(date);
     Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
-    dm.addTeilnehmerkreis(infBachelor);
+    dm.addTeilnehmerkreis(infBachelor, infB);
     dm.setStartzeitpunkt(earlier);
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
-    haskell.addTeilnehmerkreis(bwlBachelor);
+    haskell.addTeilnehmerkreis(bwlBachelor, bwlB);
     haskell.setStartzeitpunkt(later);
 
     when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis, haskell));
 
-    testKriterium(analysis, Set.of(dm, haskell), Set.of(bwlBachelor, infBachelor));
+    testKriterium(analysis, Set.of(dm, haskell), Set.of(bwlBachelor, infBachelor), affected);
   }
 
   @Test
@@ -594,41 +619,43 @@ class FreierTagZwischenPruefungenTest {
     LocalDateTime later = LocalDateTime.of(2022, 4, 23, 8, 0);
     LocalDateTime earlier = LocalDateTime.of(2022, 4, 21, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    analysis.addTeilnehmerkreis(bwlBachelor);
-    analysis.addTeilnehmerkreis(infBachelor);
+    int affected = 1234;
+    analysis.addTeilnehmerkreis(bwlBachelor, affected);
+    analysis.addTeilnehmerkreis(infBachelor, affected);
     analysis.setStartzeitpunkt(date);
     Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
-    dm.addTeilnehmerkreis(infBachelor);
+    dm.addTeilnehmerkreis(infBachelor, affected);
     dm.setStartzeitpunkt(earlier);
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
-    haskell.addTeilnehmerkreis(infPtl);
+    haskell.addTeilnehmerkreis(infPtl, affected);
     haskell.setStartzeitpunkt(later);
 
     when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis, haskell));
 
-    testKriterium(analysis, Set.of(dm), Set.of(infBachelor));
+    testKriterium(analysis, dm, infBachelor, affected);
   }
 
- @Test
+  @Test
   @DisplayName("einen Tag davor + danach + Überschneidung danach")
   void one_day_before_and_after_overlap_after() {
     LocalDateTime date = LocalDateTime.of(2022, 4, 22, 8, 0);
     LocalDateTime later = LocalDateTime.of(2022, 4, 23, 8, 0);
     LocalDateTime earlier = LocalDateTime.of(2022, 4, 21, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    analysis.addTeilnehmerkreis(bwlBachelor);
-    analysis.addTeilnehmerkreis(infBachelor);
+    int affected = 678;
+    analysis.addTeilnehmerkreis(bwlBachelor, affected);
+    analysis.addTeilnehmerkreis(infBachelor, affected);
     analysis.setStartzeitpunkt(date);
     Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
-    dm.addTeilnehmerkreis(infPtl);
+    dm.addTeilnehmerkreis(infPtl, affected);
     dm.setStartzeitpunkt(earlier);
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
-    haskell.addTeilnehmerkreis(infBachelor);
+    haskell.addTeilnehmerkreis(infBachelor, affected);
     haskell.setStartzeitpunkt(later);
 
     when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis, haskell));
 
-    testKriterium(analysis, Set.of(haskell), Set.of(infBachelor));
+    testKriterium(analysis, haskell, infBachelor, affected);
   }
 
   @Test
@@ -696,7 +723,7 @@ class FreierTagZwischenPruefungenTest {
     assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
   }
 
-@Test
+  @Test
   @DisplayName("mehr als einen Tag davor + danach + Überschneidungen danach")
   void more_than_one_day_before_and_after_overlap_after() {
     LocalDateTime date = LocalDateTime.of(2022, 4, 22, 8, 0);
@@ -724,23 +751,25 @@ class FreierTagZwischenPruefungenTest {
     LocalDateTime dayAfter = LocalDateTime.of(2022, 1, 2, 8, 0);
     LocalDateTime dayBefore = LocalDateTime.of(2022, 1, 1, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    analysis.addTeilnehmerkreis(bwlBachelor);
-    analysis.addTeilnehmerkreis(infBachelor);
-    analysis.addTeilnehmerkreis(wingBachelor);
-    analysis.addTeilnehmerkreis(infPtl);
+    int bwl = 145;
+    int inf = 456;
+    int affected = bwl + inf;
+    analysis.addTeilnehmerkreis(bwlBachelor, bwl);
+    analysis.addTeilnehmerkreis(infBachelor, inf);
+    analysis.addTeilnehmerkreis(wingBachelor, 3);
+    analysis.addTeilnehmerkreis(infPtl, 23);
     analysis.setStartzeitpunkt(dayBefore);
     Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
-    dm.addTeilnehmerkreis(infBachelor);
-    dm.addTeilnehmerkreis(infMaster);
-    dm.addTeilnehmerkreis(bwlBachelor);
-    dm.addTeilnehmerkreis(wingMaster);
+    dm.addTeilnehmerkreis(infBachelor, inf);
+    dm.addTeilnehmerkreis(infMaster, 23);
+    dm.addTeilnehmerkreis(bwlBachelor, bwl);
+    dm.addTeilnehmerkreis(wingMaster, 12);
     dm.setStartzeitpunkt(dayAfter);
 
     when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
 
-    testKriterium(analysis, Set.of(dm), Set.of(infBachelor, bwlBachelor));
+    testKriterium(analysis, Set.of(dm), Set.of(infBachelor, bwlBachelor), affected);
   }
-
 
   // ----------------------------------------------------------------------------
   // -------------------------------- helper ------------------------------------
@@ -748,13 +777,13 @@ class FreierTagZwischenPruefungenTest {
 
 
   private void testKriterium(Pruefung toEvaluate, Pruefung causingPruefungen,
-      Teilnehmerkreis causingTeilnehmerkreise) {
-    testKriterium(toEvaluate, Set.of(causingPruefungen), Set.of(causingTeilnehmerkreise));
+      Teilnehmerkreis causingTeilnehmerkreise, int affected) {
+    testKriterium(toEvaluate, Set.of(causingPruefungen), Set.of(causingTeilnehmerkreise), affected);
   }
 
 
   private void testKriterium(Pruefung toEvaluate, Set<Pruefung> causingPruefungen,
-      Set<Teilnehmerkreis> causingTeilnehmerkreise) {
+      Set<Teilnehmerkreis> causingTeilnehmerkreise, int affected) {
 
     Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(toEvaluate);
     assertThat(result).isPresent();
@@ -762,12 +791,12 @@ class FreierTagZwischenPruefungenTest {
         causingTeilnehmerkreise);
     assertThat(result.get().getCausingPruefungen()).containsExactlyInAnyOrderElementsOf(
         causingPruefungen);
-    // todo test amount of affected students
-    // todo test scoring
+    assertThat(result.get().getAmountAffectedStudents()).isEqualTo(affected);
+    assertThat(result.get().getDeltaScoring()).isEqualTo(causingPruefungen.size() * SCORING);
   }
 
 
-  private Block getBlockWithPruefungen(Pruefungsperiode pruefungsperiode, String name,
+  private void getBlockWithPruefungen(Pruefungsperiode pruefungsperiode, String name,
       LocalDateTime termin, Pruefung... pruefungen) {
     Block result = new BlockImpl(pruefungsperiode, name, SEQUENTIAL);
     for (Pruefung pruefung : pruefungen) {
@@ -777,7 +806,6 @@ class FreierTagZwischenPruefungenTest {
     if (termin != null) {
       result.setStartzeitpunkt(termin);
     }
-    return result;
   }
 
 

@@ -3,6 +3,7 @@ package de.fhwedel.klausps.controller.services;
 import static de.fhwedel.klausps.controller.PlanungseinheitUtil.getAllPruefungen;
 import static java.util.Objects.nonNull;
 
+import de.fhwedel.klausps.controller.PlanungseinheitUtil;
 import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
@@ -26,6 +27,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -437,6 +439,7 @@ public class DataAccessService {
    *
    * @param time The time to check for.
    * @return The amount of planned pruefungen.
+   * @deprecated
    */
   @Deprecated
   public Integer getAmountOfPruefungenAt(LocalDateTime time) {
@@ -610,21 +613,36 @@ public class DataAccessService {
   }
 
   public int getAnzahlStudentenZeitpunkt(LocalDateTime zeitpunkt) {
-    int res = 0;
+    HashMap<Teilnehmerkreis, Integer> schaetzungen = new HashMap<>();
+    int result = 0;
     for (Pruefung pruefung : pruefungsperiode.geplantePruefungen()) {
       LocalDateTime start = pruefung.getStartzeitpunkt();
       LocalDateTime end = pruefung.endzeitpunkt();
       if ((start.equals(zeitpunkt) || start.isBefore(zeitpunkt))
           && (end.equals(zeitpunkt) || end.isAfter(zeitpunkt))) {
-
-        // no check if teilnehmerkreis is already in result needed
-        // that would violate hard restriction and can therefore never be planned
-        for (Integer schaetzung : pruefung.getSchaetzungen().values()) {
-          res += schaetzung;
-        }
+        PlanungseinheitUtil.compareAndPutBiggerSchaetzung(schaetzungen,
+            pruefung.getSchaetzungen());
       }
     }
-    return res;
+
+    for (Integer schaetzung : schaetzungen.values()) {
+      result += schaetzung;
+    }
+    return result;
   }
+
+
+  public boolean areInSameBlock(Pruefung pruefung, Pruefung otherPruefung) {
+    Optional<Block> pruefungBlock = getBlockTo(pruefung);
+    Optional<Block> otherBlock = getBlockTo(otherPruefung);
+    if (pruefungBlock.isEmpty()) {
+      return false;
+    }
+    if (otherBlock.isEmpty()) {
+      return false;
+    }
+    return pruefungBlock.equals(otherBlock);
+  }
+
 
 }
