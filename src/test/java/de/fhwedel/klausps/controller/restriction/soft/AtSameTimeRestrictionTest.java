@@ -1,0 +1,111 @@
+package de.fhwedel.klausps.controller.restriction.soft;
+
+import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH;
+import static de.fhwedel.klausps.controller.util.TestUtils.convertPruefungenToPlanungseinheiten;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungenAt;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedPruefung;
+import static java.time.Duration.ZERO;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
+
+import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
+import de.fhwedel.klausps.controller.services.DataAccessService;
+import de.fhwedel.klausps.model.api.Planungseinheit;
+import de.fhwedel.klausps.model.api.Pruefung;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockSettings;
+
+class AtSameTimeRestrictionTest {
+
+  public AtSameTimeRestriction deviceUnderTest;
+  public DataAccessService dataAccessService;
+
+  @BeforeEach
+  public void setUp() {
+    this.dataAccessService = mock(DataAccessService.class);
+    MockSettings mockSettings = withSettings().useConstructor(this.dataAccessService,
+        ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH, ZERO);
+    this.deviceUnderTest = mock(AtSameTimeRestriction.class, mockSettings);
+    when(deviceUnderTest.evaluate(any())).thenCallRealMethod();
+  }
+
+  @Test
+  @DisplayName("Checking an unplanned pruefung results in no violation")
+  void evaluate_callWithUnplannedPruefung() {
+    Pruefung pruefung = getRandomUnplannedPruefung(5L);
+    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Collections.emptySet());
+    assertThat(deviceUnderTest.evaluate(pruefung)).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Multiple pruefungen do not violate the restriction when not at the same time")
+  void evaluate_noSimultaneousPruefungen() {
+    LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
+    LocalDateTime startSecondPruefung = startFirstPruefung.plusMinutes(180);
+    LocalDateTime startThirdPruefung = startSecondPruefung.plusMinutes(180);
+    List<Pruefung> pruefungen = getRandomPruefungenAt(5L, startFirstPruefung, startSecondPruefung,
+        startThirdPruefung);
+
+    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Collections.emptySet());
+
+    assertThat(deviceUnderTest.evaluate(pruefungen.get(0))).isEmpty();
+    assertThat(deviceUnderTest.evaluate(pruefungen.get(1))).isEmpty();
+    assertThat(deviceUnderTest.evaluate(pruefungen.get(2))).isEmpty();
+  }
+
+  @Test
+  void evaluate_violatedRestrictionResultsInAnalyse()
+      throws IllegalTimeSpanException {
+    /*this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2);*/
+    LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
+    List<Planungseinheit> pruefungen = convertPruefungenToPlanungseinheiten(
+        getRandomPruefungenAt(5L, startFirstPruefung, startFirstPruefung.plusMinutes(15),
+            startFirstPruefung.plusMinutes(30)));
+
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(pruefungen);
+    // direct violation of restriction
+    when(deviceUnderTest.violatesRestriction(any())).thenReturn(true);
+
+    assertThat(deviceUnderTest.evaluate(pruefungen.get(0).asPruefung())).isPresent();
+  }
+
+  @Test
+  void evaluate_violatedRestrictionResultsInAnalyse_()
+      throws IllegalTimeSpanException {
+    /*this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2);*/
+    LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
+    List<Planungseinheit> pruefungen = convertPruefungenToPlanungseinheiten(
+        getRandomPruefungenAt(5L, startFirstPruefung, startFirstPruefung.plusMinutes(15),
+            startFirstPruefung.plusMinutes(30)));
+
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(pruefungen);
+    // direct violation of restriction
+    when(deviceUnderTest.violatesRestriction(any())).thenReturn(true, false, true);
+
+    assertThat(deviceUnderTest.evaluate(pruefungen.get(0).asPruefung())).isPresent();
+  }
+
+  @Test
+  void evaluate_notViolatedRestrictionResultsInNoAnalyse() throws IllegalTimeSpanException {
+    /*this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2);*/
+    LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
+    List<Planungseinheit> pruefungen = convertPruefungenToPlanungseinheiten(
+        getRandomPruefungenAt(5L, startFirstPruefung, startFirstPruefung.plusMinutes(15),
+            startFirstPruefung.plusMinutes(30)));
+
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(pruefungen);
+    // direct violation of restriction
+    when(deviceUnderTest.violatesRestriction(any())).thenReturn(true, false);
+
+    assertThat(deviceUnderTest.evaluate(pruefungen.get(0).asPruefung())).isNotPresent();
+  }
+
+}

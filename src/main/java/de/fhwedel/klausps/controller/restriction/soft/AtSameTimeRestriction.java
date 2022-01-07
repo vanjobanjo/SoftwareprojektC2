@@ -20,6 +20,8 @@ import org.jetbrains.annotations.NotNull;
 
 public abstract class AtSameTimeRestriction extends WeicheRestriktion {
 
+  // TODO refactor methods to overwrite the methods from WeicheRestriktion
+
   // TODO use global default
   protected static final Duration DEFAULT_BUFFER = Duration.ofMinutes(30);
 
@@ -69,7 +71,7 @@ public abstract class AtSameTimeRestriction extends WeicheRestriktion {
       return Optional.empty();
     }
     // find overlapping pruefungen
-    Set<Planungseinheit> conflictingPlanungseinheiten = findTooManyOverlappingPlanungseinheiten(
+    Set<Planungseinheit> conflictingPlanungseinheiten = findConflictingPlanungseinheiten(
         planungseinheitenOverlappingTheOneToCheck);
     if (!conflictingPlanungseinheiten.isEmpty()) {
       return Optional.of(createAnalyse(conflictingPlanungseinheiten));
@@ -80,7 +82,7 @@ public abstract class AtSameTimeRestriction extends WeicheRestriktion {
   protected abstract boolean violatesRestriction(Collection<Planungseinheit> planungseinheiten);
 
   @NotNull
-  private Set<Planungseinheit> findTooManyOverlappingPlanungseinheiten(
+  private Set<Planungseinheit> findConflictingPlanungseinheiten(
       @NotNull List<Planungseinheit> planungseinheiten) {
     // might be possible to implement more efficient for the suspected most common use case of many
     // pruefungen starting at the same time and only few variations in the length of pruefung
@@ -104,7 +106,7 @@ public abstract class AtSameTimeRestriction extends WeicheRestriktion {
   }
 
   @NotNull
-  private WeichesKriteriumAnalyse   createAnalyse(
+  private WeichesKriteriumAnalyse createAnalyse(
       @NotNull Set<Planungseinheit> violatingPlanungseinheiten) {
     return new WeichesKriteriumAnalyse(getAllPruefungen(violatingPlanungseinheiten), this.kriterium,
         getAffectedTeilnehmerkreiseFrom(violatingPlanungseinheiten),
