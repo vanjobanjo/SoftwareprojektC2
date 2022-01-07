@@ -8,7 +8,6 @@ import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungWith;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungenAt;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTeilnehmerkreis;
-import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedPruefung;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -33,7 +32,6 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -54,37 +52,12 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
   }
 
   @Test
-  @DisplayName("Checking an unplanned pruefung results in no violation")
-  void evaluate_callWithUnplannedPruefung() {
-    Pruefung pruefung = getRandomUnplannedPruefung(5L);
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Collections.emptySet());
-
-    assertThat(deviceUnderTest.evaluate(pruefung)).isEmpty();
-  }
-
-  @Test
   @DisplayName("A single Pruefung can not violate the restriction")
   void evaluate_onlyCheckedPruefungIsPlanned() {
     Pruefung pruefung = getRandomPlannedPruefung(5L);
     when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(pruefung));
 
     assertThat(deviceUnderTest.evaluate(pruefung)).isEmpty();
-  }
-
-  @Test
-  @DisplayName("Multiple pruefungen do not violate the restriction when not at the same time")
-  void evaluate_noSimultaneousPruefungen() {
-    LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
-    LocalDateTime startSecondPruefung = startFirstPruefung.plusMinutes(180);
-    LocalDateTime startThirdPruefung = startSecondPruefung.plusMinutes(180);
-    List<Pruefung> pruefungen = getRandomPruefungenAt(5L, startFirstPruefung, startSecondPruefung,
-        startThirdPruefung);
-
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Collections.emptySet());
-
-    assertThat(deviceUnderTest.evaluate(pruefungen.get(0))).isEmpty();
-    assertThat(deviceUnderTest.evaluate(pruefungen.get(1))).isEmpty();
-    assertThat(deviceUnderTest.evaluate(pruefungen.get(2))).isEmpty();
   }
 
   @Test
