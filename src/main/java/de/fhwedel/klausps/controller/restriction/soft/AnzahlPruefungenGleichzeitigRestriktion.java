@@ -51,6 +51,7 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends AtSameTimeRestricti
     Optional<Block> block = dataAccessService.getBlockTo(pruefung);
     if (block.isPresent()) {
       planungseinheiten.removeAll(block.get().getPruefungen());
+      planungseinheiten.remove(block.get());
       planungseinheiten.add(toFilterFor);
     }
   }

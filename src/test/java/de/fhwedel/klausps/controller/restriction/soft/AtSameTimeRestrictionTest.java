@@ -2,22 +2,30 @@ package de.fhwedel.klausps.controller.restriction.soft;
 
 import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH;
 import static de.fhwedel.klausps.controller.util.TestUtils.convertPruefungenToPlanungseinheiten;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefungen;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungenAt;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedPruefung;
 import static java.time.Duration.ZERO;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
+import de.fhwedel.klausps.model.api.Block;
+import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
+import de.fhwedel.klausps.model.api.Pruefungsperiode;
+import de.fhwedel.klausps.model.impl.BlockImpl;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -62,9 +70,7 @@ class AtSameTimeRestrictionTest {
   }
 
   @Test
-  void evaluate_violatedRestrictionResultsInAnalyse()
-      throws IllegalTimeSpanException {
-    /*this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2);*/
+  void evaluate_violatedRestrictionResultsInAnalyse() throws IllegalTimeSpanException {
     LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
     List<Planungseinheit> pruefungen = convertPruefungenToPlanungseinheiten(
         getRandomPruefungenAt(5L, startFirstPruefung, startFirstPruefung.plusMinutes(15),
@@ -78,9 +84,7 @@ class AtSameTimeRestrictionTest {
   }
 
   @Test
-  void evaluate_violatedRestrictionResultsInAnalyse_()
-      throws IllegalTimeSpanException {
-    /*this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2);*/
+  void evaluate_violatedRestrictionResultsInAnalyse_() throws IllegalTimeSpanException {
     LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
     List<Planungseinheit> pruefungen = convertPruefungenToPlanungseinheiten(
         getRandomPruefungenAt(5L, startFirstPruefung, startFirstPruefung.plusMinutes(15),
@@ -95,7 +99,6 @@ class AtSameTimeRestrictionTest {
 
   @Test
   void evaluate_notViolatedRestrictionResultsInNoAnalyse() throws IllegalTimeSpanException {
-    /*this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2);*/
     LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
     List<Planungseinheit> pruefungen = convertPruefungenToPlanungseinheiten(
         getRandomPruefungenAt(5L, startFirstPruefung, startFirstPruefung.plusMinutes(15),
@@ -106,6 +109,52 @@ class AtSameTimeRestrictionTest {
     when(deviceUnderTest.violatesRestriction(any())).thenReturn(true, false);
 
     assertThat(deviceUnderTest.evaluate(pruefungen.get(0).asPruefung())).isNotPresent();
+  }
+
+  @Test
+  void evaluate_checkedPruefungIsInBlock_parallel() throws IllegalTimeSpanException {
+    // when checking for a pruefung use the start and end time of the pruefung itself when the blocks type is parallel
+    Block block = getParallelBlockWith3Pruefungen().asBlock();
+    List<Pruefung> pruefungenInBlock = new ArrayList<>(block.getPruefungen());
+
+    when(dataAccessService.getBlockTo(any(Pruefung.class))).thenReturn(Optional.of(block));
+
+    deviceUnderTest.evaluate(pruefungenInBlock.get(0));
+    verify(dataAccessService).getAllPlanungseinheitenBetween(
+        pruefungenInBlock.get(0).getStartzeitpunkt(), pruefungenInBlock.get(0).endzeitpunkt());
+  }
+
+  private Planungseinheit getParallelBlockWith3Pruefungen() {
+    Pruefungsperiode pruefungsperiode = mock(Pruefungsperiode.class);
+    Block result = new BlockImpl(pruefungsperiode, "name", Blocktyp.PARALLEL);
+    for (Pruefung pruefung : getRandomPlannedPruefungen(2L, 3)) {
+      result.addPruefung(pruefung);
+    }
+    result.setStartzeitpunkt(LocalDateTime.of(1998, 1, 2, 21, 39));
+    return result;
+  }
+
+  @Test
+  void evaluate_checkedPruefungIsInBlock_sequential() throws IllegalTimeSpanException {
+    // when checking for a pruefung use the start and end time of its block if the blocks type is sequential
+    Block block = getSequentialBlockWith3Pruefungen().asBlock();
+    List<Pruefung> pruefungenInBlock = new ArrayList<>(block.getPruefungen());
+
+    when(dataAccessService.getBlockTo(any(Pruefung.class))).thenReturn(Optional.of(block));
+
+    deviceUnderTest.evaluate(pruefungenInBlock.get(0));
+    verify(dataAccessService).getAllPlanungseinheitenBetween(block.getStartzeitpunkt(),
+        block.endzeitpunkt());
+  }
+
+  private Planungseinheit getSequentialBlockWith3Pruefungen() {
+    Pruefungsperiode pruefungsperiode = mock(Pruefungsperiode.class);
+    Block result = new BlockImpl(pruefungsperiode, "name", Blocktyp.SEQUENTIAL);
+    for (Pruefung pruefung : getRandomPlannedPruefungen(2L, 3)) {
+      result.addPruefung(pruefung);
+    }
+    result.setStartzeitpunkt(LocalDateTime.of(1998, 1, 2, 21, 39));
+    return result;
   }
 
 }
