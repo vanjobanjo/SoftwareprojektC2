@@ -4,6 +4,7 @@ import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.restriction.hard.HarteRestriktion;
 import de.fhwedel.klausps.controller.restriction.soft.WeicheRestriktion;
+import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Pruefung;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -57,6 +58,15 @@ public class RestrictionService {
     }
     return result;
   }
+
+  public Set<Pruefung> getAffectedPruefungen(Block block) {
+    Set<Pruefung> result = new HashSet<>();
+    for (Pruefung pruefung : block.getPruefungen()) {
+      result.addAll(getAffectedPruefungen(pruefung));
+    }
+    return result;
+  }
+
 
   /**
    * Checks all hard restriction for passed pruefung.

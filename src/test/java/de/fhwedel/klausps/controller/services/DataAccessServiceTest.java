@@ -815,14 +815,13 @@ class DataAccessServiceTest {
         modelBlock.getId(), Blocktyp.PARALLEL);
 
     // get results
-    Pair<Block, Pruefung> actualResult = deviceUnderTest.removePruefungFromBlock(
+    Block actualBlock = deviceUnderTest.removePruefungFromBlock(
         block, RO_ANALYSIS_UNPLANNED);
-    Block actualBlock = actualResult.left();
-    Pruefung actualPruefung = actualResult.right();
+
     // assertions
     ReadOnlyBlockAssert.assertThat(expectedBlock).isSameAs(converter.convertToROBlock(actualBlock));
-    ReadOnlyPruefungAssert.assertThat(RO_ANALYSIS_UNPLANNED)
-        .isTheSameAs(converter.convertToReadOnlyPruefung(actualPruefung));
+    assertThat(actualBlock.isGeplant()).isFalse();
+
   }
 
 
@@ -853,15 +852,12 @@ class DataAccessServiceTest {
         modelBlock.getId(), Blocktyp.PARALLEL);
     when(pruefungsperiode.block(modelBlock.getId())).thenReturn(modelBlock);
     // actual method to test call
-    Pair<Block, Pruefung> actualResult = deviceUnderTest.removePruefungFromBlock(
+    Block actualBlock= deviceUnderTest.removePruefungFromBlock(
         block, pruefung);
-    Block actualBlock = actualResult.left();
-    Pruefung actualPruefung = actualResult.right();
 
     // assertions
     ReadOnlyBlockAssert.assertThat(expectedBlock).isSameAs(converter.convertToROBlock(actualBlock));
-    ReadOnlyPruefungAssert.assertThat(RO_ANALYSIS_UNPLANNED)
-        .isTheSameAs(converter.convertToReadOnlyPruefung(actualPruefung));
+    assertThat(actualBlock.isGeplant()).isFalse();
   }
 
   @Test
@@ -889,15 +885,12 @@ class DataAccessServiceTest {
 
     when(pruefungsperiode.block(modelBlock.getId())).thenReturn(modelBlock);
     // actual method to test call
-    Pair<Block, Pruefung> actualResult = deviceUnderTest.removePruefungFromBlock(
+    Block actualBlock= deviceUnderTest.removePruefungFromBlock(
         block, pruefungToRemove);
-    Block actualBlock = actualResult.left();
-    Pruefung actualPruefung = actualResult.right();
 
     // assertions
     ReadOnlyBlockAssert.assertThat(expectedBlock).isSameAs(converter.convertToROBlock(actualBlock));
-    ReadOnlyPruefungAssert.assertThat(RO_DM_UNPLANNED)
-        .isTheSameAs(converter.convertToReadOnlyPruefung(actualPruefung));
+    assertThat(actualBlock.isGeplant()).isTrue();
   }
 
   @Test
@@ -923,15 +916,12 @@ class DataAccessServiceTest {
         modelBlock.getId(), Blocktyp.PARALLEL);
     when(pruefungsperiode.block(modelBlock.getId())).thenReturn(modelBlock);
     // actual method to test call
-    Pair<Block, Pruefung> actualResult = deviceUnderTest.removePruefungFromBlock(
+    Block actualBlock= deviceUnderTest.removePruefungFromBlock(
         block, pruefungToRemove);
-    Block actualBlock = actualResult.left();
-    Pruefung actualPruefung = actualResult.right();
 
     // assertions
     ReadOnlyBlockAssert.assertThat(expectedBlock).isSameAs(converter.convertToROBlock(actualBlock));
-    ReadOnlyPruefungAssert.assertThat(RO_DM_UNPLANNED)
-        .isTheSameAs(converter.convertToReadOnlyPruefung(actualPruefung));
+    assertThat(actualBlock.isGeplant()).isFalse();
   }
 
   @Test
@@ -1035,11 +1025,11 @@ class DataAccessServiceTest {
     when(pruefungsperiode.ungeplanteBloecke()).thenReturn(Set.of(modelBlock));
     when(pruefungsperiode.block(modelBlock.getId())).thenReturn(modelBlock);
     configureMock_getPruefungToROPruefung(RO_ANALYSIS_UNPLANNED);
-    Pair<Block, Pruefung> result = deviceUnderTest.addPruefungToBlock(blockToAddTo,
+    Block result = deviceUnderTest.addPruefungToBlock(blockToAddTo,
         RO_ANALYSIS_UNPLANNED);
 
     ReadOnlyBlockAssert.assertThat(expectedBlock)
-        .isSameAs(converter.convertToROBlock(result.left()));
+        .isSameAs(converter.convertToROBlock(result));
   }
 
 
@@ -1070,11 +1060,11 @@ class DataAccessServiceTest {
         new HashSet<>(List.of(pruefung)), modelBlock.getId(), Blocktyp.PARALLEL);
 
     // method call
-    Pair<Block, Pruefung> result = deviceUnderTest.addPruefungToBlock(inputBlock,
+    Block result = deviceUnderTest.addPruefungToBlock(inputBlock,
         RO_DM_UNPLANNED);
     // compare results
     ReadOnlyBlockAssert.assertThat(expectedBlock)
-        .isSameAs(converter.convertToROBlock(result.left()));
+        .isSameAs(converter.convertToROBlock(result));
   }
 
   @Test
@@ -1094,11 +1084,11 @@ class DataAccessServiceTest {
     when(pruefungsperiode.ungeplanteBloecke()).thenReturn(Set.of(modelBlock));
     when(pruefungsperiode.block(modelBlock.getId())).thenReturn(modelBlock);
     configureMock_getPruefungToROPruefung(RO_ANALYSIS_UNPLANNED);
-    Pair<Block, Pruefung> result = deviceUnderTest.addPruefungToBlock(blockToAddTo,
+    Block result = deviceUnderTest.addPruefungToBlock(blockToAddTo,
         analysis);
 
     ReadOnlyBlockAssert.assertThat(expectedBlock)
-        .isSameAs(converter.convertToROBlock(result.left()));
+        .isSameAs(converter.convertToROBlock(result));
   }
 
 
@@ -1164,11 +1154,11 @@ class DataAccessServiceTest {
         new HashSet<>(List.of(pruefung)), modelBlock.getId(), Blocktyp.PARALLEL);
 
     // method call
-    Pair<Block, Pruefung> result = deviceUnderTest.addPruefungToBlock(inputBlock,
+    Block result = deviceUnderTest.addPruefungToBlock(inputBlock,
         pruefungToAdd);
     // compare results
     ReadOnlyBlockAssert.assertThat(expectedBlock)
-        .isSameAs(converter.convertToROBlock(result.left()));
+        .isSameAs(converter.convertToROBlock(result));
   }
 
   @Test
