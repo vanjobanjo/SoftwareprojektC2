@@ -4,7 +4,6 @@ import static java.util.Collections.emptyList;
 
 import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
-import de.fhwedel.klausps.controller.api.BlockDTO;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
@@ -189,7 +188,6 @@ public class ScheduleService {
   public List<ReadOnlyPlanungseinheit> removePruefungFromBlock(ReadOnlyBlock block,
       ReadOnlyPruefung pruefung) {
     List<ReadOnlyPlanungseinheit> result = new LinkedList<>();
-    // todo vorher Analyse
     Pair<Block, Pruefung> separated = dataAccessService.removePruefungFromBlock(block, pruefung);
     if (!block.geplant()) {
       result.addAll(converter.convertToROPlanungseinheitCollection(separated.left(),
