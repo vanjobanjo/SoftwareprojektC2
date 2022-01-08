@@ -97,10 +97,11 @@ public class ScheduleService {
    */
   public List<ReadOnlyPlanungseinheit> unschedulePruefung(ReadOnlyPruefung pruefung) {
     Pruefung pruefungModel = dataAccessService.getPruefungWith(pruefung.getPruefungsnummer());
-    List<ReadOnlyPlanungseinheit> list = affectedPruefungenSoft(pruefungModel);
+    Set<Pruefung> pruefungen = restrictionService.getAffectedPruefungen(pruefungModel);
     pruefungModel = dataAccessService.unschedulePruefung(pruefung);
-    list.add(converter.convertToReadOnlyPruefung(pruefungModel));
-    return list;
+    pruefungen.add(pruefungModel);
+    return new LinkedList<>(
+        converter.convertToROPlanungseinheitCollection(getPlanungseinheitenWithBlock(pruefungen)));
   }
 
 
@@ -133,10 +134,13 @@ public class ScheduleService {
     }
   }
 
-  //TODO siehe unschedulePrufung, so noch nicht richtig.
   public List<ReadOnlyPlanungseinheit> unscheduleBlock(ReadOnlyBlock block) {
-    Block blockModel = dataAccessService.unscheduleBlock(block);
-    return affectedPruefungenSoft(blockModel);
+    Block blockModel = dataAccessService.getBlockTo(block);
+    Set<Pruefung> pruefungen = restrictionService.getAffectedPruefungen(blockModel);
+    blockModel = dataAccessService.unscheduleBlock(block);
+    pruefungen.addAll(blockModel.getPruefungen());
+    return new LinkedList<>(
+        converter.convertToROPlanungseinheitCollection(getPlanungseinheitenWithBlock(pruefungen)));
   }
 
   /**

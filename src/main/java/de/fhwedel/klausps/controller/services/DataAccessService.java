@@ -597,4 +597,7 @@ public class DataAccessService {
     return pruefungBlock.equals(otherBlock);
   }
 
+  public Block getBlockTo(ReadOnlyBlock block) {
+    return getBlockFromModelOrException(block);
+  }
 }

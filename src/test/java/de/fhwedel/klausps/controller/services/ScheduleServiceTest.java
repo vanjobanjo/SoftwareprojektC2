@@ -288,7 +288,7 @@ class ScheduleServiceTest {
     ReadOnlyBlock block = getROBlockFromROPruefungen("AnalysisAndDm", now, ro_analysis, ro_dm);
 
     when(dataAccessService.unscheduleBlock(any())).thenReturn(blockWithAnalysisDM);
-    when(restrictionService.getAffectedPruefungen(any())).thenReturn(
+    when(restrictionService.getAffectedPruefungen(any(Pruefung.class))).thenReturn(
         Set.of(model_analysis, model_dm));
 
     List<ReadOnlyPlanungseinheit> result = deviceUnderTest.unscheduleBlock(block);

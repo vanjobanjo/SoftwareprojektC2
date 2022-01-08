@@ -4,7 +4,6 @@ import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.restriction.hard.HarteRestriktion;
 import de.fhwedel.klausps.controller.restriction.hard.TwoKlausurenSameTime;
-import de.fhwedel.klausps.controller.restriction.soft.AnzahlPruefungProWoche;
 import de.fhwedel.klausps.controller.restriction.soft.AnzahlPruefungProWocheTeilnehmerkreis;
 import de.fhwedel.klausps.controller.restriction.soft.AnzahlPruefungenGleichzeitigRestriktion;
 import de.fhwedel.klausps.controller.restriction.soft.AnzahlTeilnehmerGleichzeitigZuHochRestriction;
@@ -14,6 +13,7 @@ import de.fhwedel.klausps.controller.restriction.soft.MehrePruefungenAmTag;
 import de.fhwedel.klausps.controller.restriction.soft.UniformeZeitslots;
 import de.fhwedel.klausps.controller.restriction.soft.WeicheRestriktion;
 import de.fhwedel.klausps.controller.restriction.soft.WocheVierFuerMaster;
+import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Pruefung;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -40,7 +40,7 @@ public class RestrictionService {
 
   private void registerSoftCriteria() {
     softRestrictions.addAll(Set.of(
-       // new AnzahlPruefungProWoche(), deprecated.
+        // new AnzahlPruefungProWoche(), deprecated.
         new AnzahlPruefungProWocheTeilnehmerkreis(),
         new AnzahlPruefungenGleichzeitigRestriktion(),
         new AnzahlTeilnehmerGleichzeitigZuHochRestriction(),
@@ -93,6 +93,14 @@ public class RestrictionService {
     return result;
   }
 
+  public Set<Pruefung> getAffectedPruefungen(Block block) {
+    Set<Pruefung> pruefungen = new HashSet<>();
+    for (Pruefung p : block.getPruefungen()) {
+      pruefungen.addAll(getAffectedPruefungen(p));
+    }
+    return pruefungen;
+  }
+
   /**
    * @param pruefung
    * @return
@@ -120,4 +128,5 @@ public class RestrictionService {
     return checkWeicheKriterien(pruefung).stream()
         .reduce(0, (scoring, analyse) -> scoring + analyse.getDeltaScoring(), Integer::sum);
   }
+
 }
