@@ -282,7 +282,6 @@ public class Controller implements InterfaceController {
     return scheduleService.schedulePruefung(pruefung, startTermin);
   }
 
-
   @Override
   public ReadOnlyPlanungseinheit addPruefer(ReadOnlyPruefung pruefung, String kuerzel)
       throws NoPruefungsPeriodeDefinedException {
@@ -307,7 +306,6 @@ public class Controller implements InterfaceController {
     checkNoPruefungDefined();
 
     return this.scheduleService.addTeilnehmerkreis(pruefung,teilnehmerkreis,schaetzung);
-
   }
 
   @Override

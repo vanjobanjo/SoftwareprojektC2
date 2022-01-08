@@ -42,23 +42,6 @@ public class ScheduleService {
     this.converter.setScheduleService(this);
   }
 
-  /**
-   * Plant eine uebergebene Pruefung ein! Die uebergebene Pruefung muss Teil des Rueckgabewertes
-   * sein.
-   *
-   * @param pruefung Pruefung die zu planen ist.
-   * @param termin   Starttermin
-   * @return Liste von veränderten Ergebnissen
-   */
-  public List<ReadOnlyPlanungseinheit> schedulePruefung(ReadOnlyPruefung pruefung,
-      LocalDateTime termin)
-      throws HartesKriteriumException {
-
-    Pruefung pruefungModel = dataAccessService.schedulePruefung(pruefung, termin);
-    checkHardCriteriaUndoScheduling(pruefung, pruefungModel);
-    return affectedPruefungenSoft(pruefungModel);
-  }
-
   @NotNull
   private List<ReadOnlyPlanungseinheit> affectedPruefungenSoft(Pruefung pruefungModel) {
     if (!pruefungModel.isGeplant()) {
@@ -232,8 +215,9 @@ public class ScheduleService {
       throw new IllegalArgumentException(
           "Pruefungen contained in a block can not be added to another block.");
     }
-    return new ArrayList<>(new BlockDTO(block.getName(), block.getTermin().orElse(null), block.getDauer(),
-        Sets.union(block.getROPruefungen(), Set.of(pruefung)), block.getBlockId(), block.))
+    return null;
+    /*return new ArrayList<>(new BlockDTO(block.getName(), block.getTermin().orElse(null), block.getDauer(),
+        Sets.union(block.getROPruefungen(), Set.of(pruefung)), block.getBlockId(), block.))*/
     /*List<ReadOnlyPlanungseinheit> result = new LinkedList<>();
     // todo get analyse before applying any changes
     Optional<ReadOnlyBlock> oldBlock = dataAccessService.getBlockTo(pruefung);
@@ -250,7 +234,7 @@ public class ScheduleService {
     checkHartesKriteriumAddPruefungToBlock(pruefung, block, oldBlock, added.right());
     // todo check soft criteria
     return result;*/
-    return null;
+    /*return null;*/
   }
 
   /**
@@ -266,8 +250,8 @@ public class ScheduleService {
       throws HartesKriteriumException {
 
     Pruefung pruefungModel = dataAccessService.schedulePruefung(pruefung, termin);
-    checkHardCriteriaUndo(pruefung, pruefungModel);
-    return checkSoftCriteria(pruefungModel);
+    checkHardCriteriaUndoScheduling(pruefung, pruefungModel);
+    return affectedPruefungenSoft(pruefungModel);
   }
 
   private Set<Pruefung> getPruefungenInvolvedIn(
