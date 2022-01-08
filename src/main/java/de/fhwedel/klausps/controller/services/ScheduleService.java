@@ -4,6 +4,7 @@ import static java.util.Collections.emptyList;
 
 import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.api.BlockDTO;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
@@ -20,6 +21,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
@@ -165,7 +167,7 @@ public class ScheduleService {
    */
   public List<Pruefung> changeDuration(Pruefung pruefung, Duration minutes)
       throws HartesKriteriumException {
-    // todo please implement; Rüc
+    // todo please implement
     throw new UnsupportedOperationException("not implemented");
   }
 
@@ -182,6 +184,23 @@ public class ScheduleService {
   public Optional<ReadOnlyBlock> deletePruefung(ReadOnlyPruefung pruefung) {
     Block block = dataAccessService.deletePruefung(pruefung);
     return block == null ? Optional.empty() : Optional.of(converter.convertToROBlock(block));
+  }
+
+  private void checkHartesKriteriumAddPruefungToBlock(ReadOnlyPruefung pruefung,
+      ReadOnlyBlock block,
+      Optional<ReadOnlyBlock> oldBlock, Pruefung addedPruefung)
+      throws HartesKriteriumException {
+    List<HartesKriteriumAnalyse> hardAnalyses = restrictionService.checkHarteKriterien(
+        addedPruefung);
+    if (!hardAnalyses.isEmpty()) {
+      removePruefungFromBlock(block, pruefung);
+      if (oldBlock.isPresent()) {
+        addPruefungToBlock(oldBlock.get(), pruefung);
+      } else if (pruefung.geplant()) {
+        schedulePruefung(pruefung, pruefung.getTermin().get());
+      }
+      signalHartesKriteriumFailure(hardAnalyses);
+    }
   }
 
   public List<ReadOnlyPlanungseinheit> removePruefungFromBlock(ReadOnlyBlock block,
@@ -201,10 +220,21 @@ public class ScheduleService {
     return result;
   }
 
-
-  public List<ReadOnlyPlanungseinheit> addPruefungToBlock(ReadOnlyBlock block,
-      ReadOnlyPruefung pruefung) throws HartesKriteriumException {
-    List<ReadOnlyPlanungseinheit> result = new LinkedList<>();
+  public List<ReadOnlyPlanungseinheit> addPruefungToBlock(@NotNull ReadOnlyBlock block,
+      @NotNull ReadOnlyPruefung pruefung) throws HartesKriteriumException {
+    Objects.requireNonNull(block);
+    Objects.requireNonNull(pruefung);
+    if (pruefung.geplant()) {
+      throw new IllegalArgumentException("Planned Pruefungen can not be added to a Block.");
+    }
+    Optional<ReadOnlyBlock> oldBlock = dataAccessService.getBlockTo(pruefung);
+    if (oldBlock.isPresent() && !oldBlock.get().equals(block)) {
+      throw new IllegalArgumentException(
+          "Pruefungen contained in a block can not be added to another block.");
+    }
+    return new ArrayList<>(new BlockDTO(block.getName(), block.getTermin().orElse(null), block.getDauer(),
+        Sets.union(block.getROPruefungen(), Set.of(pruefung)), block.getBlockId(), block.))
+    /*List<ReadOnlyPlanungseinheit> result = new LinkedList<>();
     // todo get analyse before applying any changes
     Optional<ReadOnlyBlock> oldBlock = dataAccessService.getBlockTo(pruefung);
     Pair<Block, Pruefung> added = dataAccessService.addPruefungToBlock(block, pruefung);
@@ -219,27 +249,26 @@ public class ScheduleService {
     }
     checkHartesKriteriumAddPruefungToBlock(pruefung, block, oldBlock, added.right());
     // todo check soft criteria
-    return result;
+    return result;*/
+    return null;
   }
 
-
-  private void checkHartesKriteriumAddPruefungToBlock(ReadOnlyPruefung pruefung,
-      ReadOnlyBlock block,
-      Optional<ReadOnlyBlock> oldBlock, Pruefung addedPruefung)
+  /**
+   * Plant eine uebergebene Pruefung ein! Die uebergebene Pruefung muss Teil des Rueckgabewertes
+   * sein.
+   *
+   * @param pruefung Pruefung die zu planen ist.
+   * @param termin   Starttermin
+   * @return Liste von veränderten Ergebnissen
+   */
+  public List<ReadOnlyPlanungseinheit> schedulePruefung(ReadOnlyPruefung pruefung,
+      LocalDateTime termin)
       throws HartesKriteriumException {
-    List<HartesKriteriumAnalyse> hardAnalyses = restrictionService.checkHarteKriterien(
-        addedPruefung);
-    if (!hardAnalyses.isEmpty()) {
-      removePruefungFromBlock(block, pruefung);
-      if (oldBlock.isPresent()) {
-        addPruefungToBlock(oldBlock.get(), pruefung);
-      } else if (pruefung.geplant()) {
-        schedulePruefung(pruefung, pruefung.getTermin().get());
-      }
-      signalHartesKriteriumFailure(hardAnalyses);
-    }
-  }
 
+    Pruefung pruefungModel = dataAccessService.schedulePruefung(pruefung, termin);
+    checkHardCriteriaUndo(pruefung, pruefungModel);
+    return checkSoftCriteria(pruefungModel);
+  }
 
   private Set<Pruefung> getPruefungenInvolvedIn(
       List<WeichesKriteriumAnalyse> weicheKriterien) {
@@ -345,6 +374,4 @@ public class ScheduleService {
     }
     return new LinkedList<>(result);
   }
-
-
 }

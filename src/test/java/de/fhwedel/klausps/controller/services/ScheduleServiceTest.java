@@ -6,7 +6,10 @@ import static de.fhwedel.klausps.controller.util.TestFactory.bwlMaster;
 import static de.fhwedel.klausps.controller.util.TestFactory.infBachelor;
 import static de.fhwedel.klausps.controller.util.TestFactory.infMaster;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomDuration;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomString;
+import static de.fhwedel.klausps.model.api.Blocktyp.PARALLEL;
+import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,6 +40,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,24 +51,12 @@ class ScheduleServiceTest {
   private final LocalDate START_PERIOD = LocalDate.of(2000, 1, 1);
   private final LocalDate END_PERIOD = LocalDate.of(2000, 1, 31);
   private final LocalTime _1000 = LocalTime.of(10, 0);
-  private final ReadOnlyPruefung RO_ANALYSIS =
-      new PruefungDTOBuilder()
-          .withPruefungsName("Analysis")
-          .withPruefungsNummer("1")
-          .withDauer(Duration.ofMinutes(120))
-          .build();
-  private final ReadOnlyPruefung RO_DM =
-      new PruefungDTOBuilder()
-          .withPruefungsName("DM")
-          .withPruefungsNummer("2")
-          .withDauer(Duration.ofMinutes(120))
-          .build();
-  private final ReadOnlyPruefung RO_HASKELL =
-      new PruefungDTOBuilder()
-          .withPruefungsName("HASKELL")
-          .withPruefungsNummer("3")
-          .withDauer(Duration.ofMinutes(120))
-          .build();
+  private final ReadOnlyPruefung RO_ANALYSIS = new PruefungDTOBuilder().withPruefungsName(
+      "Analysis").withPruefungsNummer("1").withDauer(Duration.ofMinutes(120)).build();
+  private final ReadOnlyPruefung RO_DM = new PruefungDTOBuilder().withPruefungsName("DM")
+      .withPruefungsNummer("2").withDauer(Duration.ofMinutes(120)).build();
+  private final ReadOnlyPruefung RO_HASKELL = new PruefungDTOBuilder().withPruefungsName("HASKELL")
+      .withPruefungsNummer("3").withDauer(Duration.ofMinutes(120)).build();
   private DataAccessService dataAccessService;
   private RestrictionService restrictionService;
   private ScheduleService deviceUnderTest;
@@ -103,20 +95,44 @@ class ScheduleServiceTest {
     when(pruefungsperiode.pruefung(RO_HASKELL.getPruefungsnummer())).thenReturn(model_haskell);
 
     // in the data model analysis and dm are in a block. haskell is not part of the block
-    Block blockWithAnalysisDM =
-        getModelBlockFromROPruefungen("AnalysisAndDm", null, RO_ANALYSIS, RO_DM);
+    Block blockWithAnalysisDM = getModelBlockFromROPruefungen("AnalysisAndDm", null, RO_ANALYSIS,
+        RO_DM);
 
     when(pruefungsperiode.block(any(Pruefung.class))).thenReturn(null);
     when(pruefungsperiode.block(model_analysis)).thenReturn(blockWithAnalysisDM);
     when(pruefungsperiode.block(model_dm)).thenReturn(blockWithAnalysisDM);
 
-    ReadOnlyBlock inCosistentBlock =
-        getROBlockFromROPruefungen("AnalysisAndDm", null, RO_DM, RO_ANALYSIS, RO_HASKELL);
+    ReadOnlyBlock inCosistentBlock = getROBlockFromROPruefungen("AnalysisAndDm", null, RO_DM,
+        RO_ANALYSIS, RO_HASKELL);
 
     //Block doesn't exist
-    assertThrows(
-        IllegalArgumentException.class,
+    assertThrows(IllegalArgumentException.class,
         () -> deviceUnderTest.scheduleBlock(inCosistentBlock, START_PERIOD.atTime(_1000)));
+  }
+
+  private Pruefung getPruefungOfReadOnlyPruefung(ReadOnlyPruefung roPruefung) {
+    PruefungImpl modelPruefung = new PruefungImpl(roPruefung.getPruefungsnummer(),
+        roPruefung.getName(), "", roPruefung.getDauer(), roPruefung.getTermin().orElse(null));
+    for (String pruefer : roPruefung.getPruefer()) {
+      modelPruefung.addPruefer(pruefer);
+    }
+    roPruefung.getTeilnehmerKreisSchaetzung().forEach(modelPruefung::setSchaetzung);
+    return modelPruefung;
+  }
+
+  private Block getModelBlockFromROPruefungen(String name, LocalDateTime start,
+      ReadOnlyPruefung... pruefungen) {
+    Block block = new BlockImpl(pruefungsperiode, 1, name, Blocktyp.SEQUENTIAL);
+    block.setStartzeitpunkt(start);
+    for (ReadOnlyPruefung p : pruefungen) {
+      block.addPruefung(getPruefungOfReadOnlyPruefung(p));
+    }
+    return block;
+  }
+
+  private ReadOnlyBlock getROBlockFromROPruefungen(String name, LocalDateTime start,
+      ReadOnlyPruefung... pruefungen) {
+    return new BlockDTO(name, start, Duration.ZERO, Set.of(pruefungen), 1, PARALLEL);
   }
 
   @Test
@@ -132,12 +148,11 @@ class ScheduleServiceTest {
     when(dataAccessService.terminIsInPeriod(any())).thenReturn(true);
     when(dataAccessService.scheduleBlock(any(), any())).thenReturn(model);
 
-    ReadOnlyBlock consistentBlock =
-        getROBlockFromROPruefungen("AnalysisAndDm", null, RO_DM, RO_ANALYSIS);
+    ReadOnlyBlock consistentBlock = getROBlockFromROPruefungen("AnalysisAndDm", null, RO_DM,
+        RO_ANALYSIS);
 
     // check no exceptions
-    List<ReadOnlyPlanungseinheit> result =
-        deviceUnderTest.scheduleBlock(consistentBlock, time);
+    List<ReadOnlyPlanungseinheit> result = deviceUnderTest.scheduleBlock(consistentBlock, time);
   }
 
   @Test
@@ -151,21 +166,20 @@ class ScheduleServiceTest {
     when(pruefungsperiode.pruefung(RO_DM.getPruefungsnummer())).thenReturn(model_dm);
     when(pruefungsperiode.pruefung(RO_HASKELL.getPruefungsnummer())).thenReturn(model_haskell);
 
-    Block blockWithAnalysisDM =
-        getModelBlockFromROPruefungen("AnalysisAndDm", null, RO_ANALYSIS, RO_DM);
+    Block blockWithAnalysisDM = getModelBlockFromROPruefungen("AnalysisAndDm", null, RO_ANALYSIS,
+        RO_DM);
 
     when(pruefungsperiode.block(any(Pruefung.class))).thenReturn(null);
     when(pruefungsperiode.block(model_analysis)).thenReturn(blockWithAnalysisDM);
     when(pruefungsperiode.block(model_dm)).thenReturn(blockWithAnalysisDM);
 
-    ReadOnlyBlock consistentBlock =
-        getROBlockFromROPruefungen("AnalysisAndDm", null, RO_DM, RO_ANALYSIS);
+    ReadOnlyBlock consistentBlock = getROBlockFromROPruefungen("AnalysisAndDm", null, RO_DM,
+        RO_ANALYSIS);
 
     LocalDateTime endOfPeriodPlus1 = END_PERIOD.plusDays(1).atTime(_1000);
 
     // Time is one day after of end
-    assertThrows(
-        IllegalArgumentException.class,
+    assertThrows(IllegalArgumentException.class,
         () -> deviceUnderTest.scheduleBlock(consistentBlock, endOfPeriodPlus1));
   }
 
@@ -180,20 +194,19 @@ class ScheduleServiceTest {
     when(pruefungsperiode.pruefung(RO_DM.getPruefungsnummer())).thenReturn(model_dm);
     when(pruefungsperiode.pruefung(RO_HASKELL.getPruefungsnummer())).thenReturn(model_haskell);
 
-    Block blockWithAnalysisDM =
-        getModelBlockFromROPruefungen("AnalysisAndDm", null, RO_ANALYSIS, RO_DM);
+    Block blockWithAnalysisDM = getModelBlockFromROPruefungen("AnalysisAndDm", null, RO_ANALYSIS,
+        RO_DM);
 
     when(pruefungsperiode.block(any(Pruefung.class))).thenReturn(null);
     when(pruefungsperiode.block(model_analysis)).thenReturn(blockWithAnalysisDM);
     when(pruefungsperiode.block(model_dm)).thenReturn(blockWithAnalysisDM);
 
-    ReadOnlyBlock consistentBlock =
-        getROBlockFromROPruefungen("AnalysisAndDm", null, RO_DM, RO_ANALYSIS);
+    ReadOnlyBlock consistentBlock = getROBlockFromROPruefungen("AnalysisAndDm", null, RO_DM,
+        RO_ANALYSIS);
 
     LocalDateTime endOfPeriodPlus1 = START_PERIOD.minusDays(1).atTime(_1000);
     // Time is one day before start
-    assertThrows(
-        IllegalArgumentException.class,
+    assertThrows(IllegalArgumentException.class,
         () -> deviceUnderTest.scheduleBlock(consistentBlock, endOfPeriodPlus1));
   }
 
@@ -208,19 +221,18 @@ class ScheduleServiceTest {
     // Haskell is not in period
 
     // in the data model analysis and dm are in a block. haskell is not part of the block
-    Block blockWithAnalysisDM =
-        getModelBlockFromROPruefungen("AnalysisAndDm", null, RO_ANALYSIS, RO_DM);
+    Block blockWithAnalysisDM = getModelBlockFromROPruefungen("AnalysisAndDm", null, RO_ANALYSIS,
+        RO_DM);
 
     when(pruefungsperiode.block(any(Pruefung.class))).thenReturn(null);
     when(pruefungsperiode.block(model_analysis)).thenReturn(blockWithAnalysisDM);
     when(pruefungsperiode.block(model_dm)).thenReturn(blockWithAnalysisDM);
 
-    ReadOnlyBlock inCosistentBlock =
-        getROBlockFromROPruefungen("AnalysisAndDm", null, RO_DM, RO_ANALYSIS, RO_HASKELL);
+    ReadOnlyBlock inCosistentBlock = getROBlockFromROPruefungen("AnalysisAndDm", null, RO_DM,
+        RO_ANALYSIS, RO_HASKELL);
 
     //Exam 3 Haskell doesn't exist
-    assertThrows(
-        IllegalArgumentException.class,
+    assertThrows(IllegalArgumentException.class,
         () -> deviceUnderTest.scheduleBlock(inCosistentBlock, START_PERIOD.atTime(_1000)));
   }
 
@@ -235,12 +247,10 @@ class ScheduleServiceTest {
     // Haskell is not in period
     when(pruefungsperiode.block(any(Pruefung.class))).thenReturn(null);
 
-    ReadOnlyBlock emptyROBlock =
-        getROBlockFromROPruefungen("Empty", null);
+    ReadOnlyBlock emptyROBlock = getROBlockFromROPruefungen("Empty", null);
 
     // Not allowed schedule empty block
-    assertThrows(
-        IllegalArgumentException.class,
+    assertThrows(IllegalArgumentException.class,
         () -> deviceUnderTest.scheduleBlock(emptyROBlock, START_PERIOD.atTime(_1000)));
   }
 
@@ -264,8 +274,7 @@ class ScheduleServiceTest {
     ReadOnlyPruefung ro_dm = new PruefungDTOBuilder(RO_DM).withStartZeitpunkt(now).build();
 
     // in the data model analysis and dm are in a block. haskell is not part of the block
-    Block blockWithAnalysisDM = new BlockImpl(pruefungsperiode, 1, "AnalysisAndDm",
-        Blocktyp.PARALLEL);
+    Block blockWithAnalysisDM = new BlockImpl(pruefungsperiode, 1, "AnalysisAndDm", PARALLEL);
 
     blockWithAnalysisDM.addPruefung(model_analysis);
     blockWithAnalysisDM.addPruefung(model_dm);
@@ -277,8 +286,7 @@ class ScheduleServiceTest {
     when(pruefungsperiode.block(model_analysis)).thenReturn(blockWithAnalysisDM);
     when(pruefungsperiode.block(model_dm)).thenReturn(blockWithAnalysisDM);
 
-    ReadOnlyBlock block =
-        getROBlockFromROPruefungen("AnalysisAndDm", now, ro_analysis, ro_dm);
+    ReadOnlyBlock block = getROBlockFromROPruefungen("AnalysisAndDm", now, ro_analysis, ro_dm);
 
     when(dataAccessService.unscheduleBlock(any())).thenReturn(blockWithAnalysisDM);
     when(restrictionService.getAffectedPruefungen(any())).thenReturn(
@@ -288,18 +296,14 @@ class ScheduleServiceTest {
     assertThat(result).contains(ro_analysis, ro_dm);
   }
 
-
   @Test
   void removeTeilnehmerkreis() {
 
     Teilnehmerkreis informatik = mock(Teilnehmerkreis.class);
 
-    ReadOnlyPruefung roHaskel = new PruefungDTOBuilder()
-        .withPruefungsName("Haskel")
-        .withDauer(Duration.ofMinutes(120))
-        .withPruefungsNummer("haskel")
-        .withAdditionalTeilnehmerkreis(informatik)
-        .build();
+    ReadOnlyPruefung roHaskel = new PruefungDTOBuilder().withPruefungsName("Haskel")
+        .withDauer(Duration.ofMinutes(120)).withPruefungsNummer("haskel")
+        .withAdditionalTeilnehmerkreis(informatik).build();
 
     Set<Teilnehmerkreis> haskelTeilnehmrekeis = new HashSet<>();
     haskelTeilnehmrekeis.add(informatik);
@@ -316,23 +320,15 @@ class ScheduleServiceTest {
 
     LocalDateTime date = LocalDateTime.of(2021, 8, 11, 9, 0);
 
-    ReadOnlyPruefung roHaskel = new PruefungDTOBuilder()
-        .withPruefungsName("Haskel")
-        .withDauer(Duration.ofMinutes(120))
-        .withPruefungsNummer("haskel")
-        .withStartZeitpunkt(date)
-        .withAdditionalPruefer("Schmidt")
-        .build();
+    ReadOnlyPruefung roHaskel = new PruefungDTOBuilder().withPruefungsName("Haskel")
+        .withDauer(Duration.ofMinutes(120)).withPruefungsNummer("haskel").withStartZeitpunkt(date)
+        .withAdditionalPruefer("Schmidt").build();
 
-    ReadOnlyPruefung roDM = new PruefungDTOBuilder()
-        .withPruefungsName("roDM")
-        .withDauer(Duration.ofMinutes(120))
-        .withPruefungsNummer("roDM")
+    ReadOnlyPruefung roDM = new PruefungDTOBuilder().withPruefungsName("roDM")
+        .withDauer(Duration.ofMinutes(120)).withPruefungsNummer("roDM")
         //Hiermit sollte dann aufjedenfall mehrePruefunganeinemTag verletzt werden
-        .withAdditionalTeilnehmerkreis(informatik)
-        .withStartZeitpunkt(date.plusMinutes(180))
-        .withAdditionalPruefer("Schmidt")
-        .build();
+        .withAdditionalTeilnehmerkreis(informatik).withStartZeitpunkt(date.plusMinutes(180))
+        .withAdditionalPruefer("Schmidt").build();
 
     Pruefung haskel = getPruefungOfReadOnlyPruefung(roHaskel);
     Pruefung dm = getPruefungOfReadOnlyPruefung(roDM);
@@ -371,23 +367,15 @@ class ScheduleServiceTest {
 
     LocalDateTime date = LocalDateTime.of(2021, 8, 11, 9, 0);
 
-    ReadOnlyPruefung roHaskel = new PruefungDTOBuilder()
-        .withPruefungsName("Haskel")
-        .withDauer(Duration.ofMinutes(120))
-        .withPruefungsNummer("haskel")
-        .withStartZeitpunkt(date)
-        .withAdditionalPruefer("Schmidt")
-        .build();
+    ReadOnlyPruefung roHaskel = new PruefungDTOBuilder().withPruefungsName("Haskel")
+        .withDauer(Duration.ofMinutes(120)).withPruefungsNummer("haskel").withStartZeitpunkt(date)
+        .withAdditionalPruefer("Schmidt").build();
 
-    ReadOnlyPruefung roDM = new PruefungDTOBuilder()
-        .withPruefungsName("roDM")
-        .withDauer(Duration.ofMinutes(120))
-        .withPruefungsNummer("roDM")
+    ReadOnlyPruefung roDM = new PruefungDTOBuilder().withPruefungsName("roDM")
+        .withDauer(Duration.ofMinutes(120)).withPruefungsNummer("roDM")
         //Hiermit sollte dann aufjedenfall mehrePruefunganeinemTag verletzt werden
-        .withAdditionalTeilnehmerkreis(informatik)
-        .withStartZeitpunkt(date)
-        .withAdditionalPruefer("Schmidt")
-        .build();
+        .withAdditionalTeilnehmerkreis(informatik).withStartZeitpunkt(date)
+        .withAdditionalPruefer("Schmidt").build();
 
     Pruefung haskel = getPruefungOfReadOnlyPruefung(roHaskel);
     Pruefung dm = getPruefungOfReadOnlyPruefung(roDM);
@@ -416,11 +404,9 @@ class ScheduleServiceTest {
         schaetzungInformatik)).thenReturn(true);
 
     assertThrows(HartesKriteriumException.class,
-        () -> deviceUnderTest.addTeilnehmerkreis(roHaskel, informatik,
-            schaetzungInformatik));
+        () -> deviceUnderTest.addTeilnehmerkreis(roHaskel, informatik, schaetzungInformatik));
     assertThat(haskel.getTeilnehmerkreise()).isEmpty();
   }
-
 
   @Test
   void setTeilnehmerkreisSchaetzung_not_planned() {
@@ -441,10 +427,9 @@ class ScheduleServiceTest {
 
     int newSchaetzung = 300;
     assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.setTeilnehmerkreisSchaetzung(RO_ANALYSIS_UNPLANNED,
-            infBachelor, newSchaetzung));
+        () -> deviceUnderTest.setTeilnehmerkreisSchaetzung(RO_ANALYSIS_UNPLANNED, infBachelor,
+            newSchaetzung));
   }
-
 
   @Test
   void setTeilnehmerkreisSchaetzung_no_conflicts() {
@@ -473,8 +458,8 @@ class ScheduleServiceTest {
     LocalDateTime dayAfter = LocalDateTime.now().plusDays(1);
 
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    Teilnehmerkreis teilnehmerkreis = new TeilnehmerkreisImpl("t",
-        "ord", 1, Ausbildungsgrad.MASTER);
+    Teilnehmerkreis teilnehmerkreis = new TeilnehmerkreisImpl("t", "ord", 1,
+        Ausbildungsgrad.MASTER);
 
     int oldSchaetzung = 12;
     analysis.addTeilnehmerkreis(teilnehmerkreis, oldSchaetzung);
@@ -502,8 +487,8 @@ class ScheduleServiceTest {
     LocalDateTime dayAfter = LocalDateTime.now().plusDays(1);
 
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    Teilnehmerkreis teilnehmerkreis = new TeilnehmerkreisImpl("t",
-        "ord", 1, Ausbildungsgrad.MASTER);
+    Teilnehmerkreis teilnehmerkreis = new TeilnehmerkreisImpl("t", "ord", 1,
+        Ausbildungsgrad.MASTER);
 
     int oldSchaetzung = 12;
     analysis.addTeilnehmerkreis(teilnehmerkreis, oldSchaetzung);
@@ -525,37 +510,10 @@ class ScheduleServiceTest {
 
   }
 
-
-  private Pruefung getPruefungOfReadOnlyPruefung(ReadOnlyPruefung roPruefung) {
-    PruefungImpl modelPruefung =
-        new PruefungImpl(
-            roPruefung.getPruefungsnummer(),
-            roPruefung.getName(),
-            "",
-            roPruefung.getDauer(),
-            roPruefung.getTermin().orElse(null));
-    for (String pruefer : roPruefung.getPruefer()) {
-      modelPruefung.addPruefer(pruefer);
-    }
-    roPruefung.getTeilnehmerKreisSchaetzung().forEach(modelPruefung::setSchaetzung);
-    return modelPruefung;
-  }
-
-  private Block getModelBlockFromROPruefungen(
-      String name, LocalDateTime start, ReadOnlyPruefung... pruefungen) {
-    Block block = new BlockImpl(pruefungsperiode, 1, name, Blocktyp.SEQUENTIAL);
-    block.setStartzeitpunkt(start);
-    for (ReadOnlyPruefung p : pruefungen) {
-      block.addPruefung(getPruefungOfReadOnlyPruefung(p));
-    }
-    return block;
-  }
-
-
-  private ReadOnlyBlock getROBlockFromROPruefungen(
-      String name, LocalDateTime start, ReadOnlyPruefung... pruefungen) {
-    return new BlockDTO(name, start, Duration.ZERO,
-        Set.of(pruefungen), 1, Blocktyp.PARALLEL);
+  @Test
+  void addPruefungToBlock_blockMustNotBeNull() {
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.addPruefungToBlock(null, getRandomPruefung(12L)));
   }
 
   private ReadOnlyPruefung getRandomPruefung(long seed) {
@@ -566,15 +524,76 @@ class ScheduleServiceTest {
     Random random = new Random(seed);
     List<ReadOnlyPruefung> randomPruefungen = new ArrayList<>(amount);
     for (int index = 0; index < amount; index++) {
-      randomPruefungen.add(
-          new PruefungDTOBuilder()
-              .withPruefungsName(getRandomString(random, 5))
-              .withDauer(getRandomDuration(random, 120))
-              .withPruefungsNummer(getRandomString(random, 4))
-              .build());
+      randomPruefungen.add(new PruefungDTOBuilder().withPruefungsName(getRandomString(random, 5))
+          .withDauer(getRandomDuration(random, 120)).withPruefungsNummer(getRandomString(random, 4))
+          .build());
     }
     return randomPruefungen;
   }
 
+  @Test
+  void addPruefungToBlock_pruefungMustNotBeNull() {
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.addPruefungToBlock(getEmptyROBlock(), null));
+  }
+
+  private ReadOnlyBlock getEmptyROBlock() {
+    LocalDateTime startTime = LocalDateTime.of(2022, 1, 7, 11, 11);
+    Set<ReadOnlyPruefung> noPruefungen = emptySet();
+    return new BlockDTO("someName", startTime, Duration.ZERO, noPruefungen, 123456, PARALLEL);
+  }
+
+  @Test
+  void addPruefungToBlock_plannedPruefungenMayNotBeAddedToBlocks() {
+    Pruefung pruefung = getRandomPlannedPruefung(1L);
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.addPruefungToBlock(getEmptyROBlock(),
+            converter.convertToReadOnlyPruefung(pruefung)));
+  }
+
+  @Test
+  void addPruefungToBlock_pruefungIsPartOfOtherBlock() {
+    ReadOnlyPruefung pruefung = getRandomPruefung(1L);
+    ReadOnlyBlock otherBlock = getUnplannedBlockWith1RandomPruefung();
+
+    when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(
+        Optional.of(otherBlock));
+
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.addPruefungToBlock(getEmptyROBlock(), pruefung));
+  }
+
+  private ReadOnlyBlock getUnplannedBlockWith1RandomPruefung() {
+    LocalDateTime startTime = LocalDateTime.of(2022, 1, 7, 11, 11);
+    return new BlockDTO("someName", startTime, Duration.ZERO, Set.of(getRandomPruefung(1L)), 123456,
+        PARALLEL);
+  }
+
+  @Test
+  void addPruefungToBlock_pruefungIsAlreadyInSameBlock() throws HartesKriteriumException {
+    ReadOnlyPruefung pruefung = getRandomPruefung(1L);
+    ReadOnlyBlock block = getBlockWith(pruefung);
+
+    when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(Optional.of(block));
+
+    deviceUnderTest.addPruefungToBlock(block, pruefung);
+  }
+
+  private ReadOnlyBlock getBlockWith(ReadOnlyPruefung... pruefungen) {
+    LocalDateTime startTime = LocalDateTime.of(2022, 1, 7, 11, 11);
+    return new BlockDTO("someName", startTime, Duration.ZERO, Set.of(pruefungen), 123456, PARALLEL);
+  }
+
+
+  @Test
+  void addPruefungToBlock_unplannedBlock_resultContainsBlock()
+      throws HartesKriteriumException {
+    ReadOnlyPruefung pruefung = getRandomPruefung(1L);
+    ReadOnlyBlock expectedBlock = getBlockWith(pruefung);
+
+    when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(Optional.empty());
+
+    assertThat(deviceUnderTest.addPruefungToBlock(getEmptyROBlock(), pruefung)).containsExactlyInAnyOrder();
+  }
 
 }
