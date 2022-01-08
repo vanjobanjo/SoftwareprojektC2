@@ -78,9 +78,6 @@ class ScheduleServiceTest {
     when(pruefungsperiode.getStartdatum()).thenReturn(START_PERIOD);
     when(pruefungsperiode.getEnddatum()).thenReturn(END_PERIOD);
     dataAccessService.setPruefungsperiode(this.pruefungsperiode);
-    dataAccessService.setScheduleService(this.deviceUnderTest);
-
-
   }
 
   @Test

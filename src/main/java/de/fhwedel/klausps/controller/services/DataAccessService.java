@@ -41,15 +41,10 @@ import org.jetbrains.annotations.NotNull;
 public class DataAccessService {
 
   private Pruefungsperiode pruefungsperiode;
-  private ScheduleService scheduleService; // TODO ScheduleService muss hier noch raus.
   private Converter converter; //TODO where does it come from
 
   public void setPruefungsperiode(Pruefungsperiode pruefungsperiode) {
     this.pruefungsperiode = pruefungsperiode;
-  }
-
-  public void setScheduleService(ScheduleService scheduleService) {
-    this.scheduleService = scheduleService;
   }
 
   public void setConverter(Converter converter) {
@@ -97,7 +92,7 @@ public class DataAccessService {
 
   //TODO diese Methode muss in ScheduleService #183?
   //TODO Planungseinheit, wenn Prüfung im Block, dann Block sonst Prüfung als Rückgabe
-  public List<ReadOnlyPlanungseinheit> changeDurationOf(ReadOnlyPruefung pruefung, Duration duration)
+  public void changeDurationOf(ReadOnlyPruefung pruefung, Duration duration)
       throws HartesKriteriumException, IllegalArgumentException {
 
     if (duration.isNegative()) {
@@ -107,9 +102,7 @@ public class DataAccessService {
     Pruefung toChangeDuration = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
     // Hartes Kriterium wird in ScheduleService geprüft.
     // Die Änderungen der Pruefungen werden auch im ScheduleService vorgenommen.
-    List<Pruefung> resultOfChangingDuration = scheduleService.changeDuration(toChangeDuration,
-        duration);
-    return new ArrayList<>(createListOfPruefungWithScoring(resultOfChangingDuration));
+    toChangeDuration.setDauer(duration);
   }
 
   private Pruefung getPruefungFromModelOrException(String pruefungsNr)
@@ -119,17 +112,6 @@ public class DataAccessService {
           "Pruefung mit Pruefungsnummer " + pruefungsNr + " ist in der Datenbank nicht vorhanden.");
     }
     return pruefungsperiode.pruefung(pruefungsNr);
-  }
-
-  //TODO kann weg, scheduleservice oder converter!
-  private List<ReadOnlyPruefung> createListOfPruefungWithScoring(List<Pruefung> pruefungen) {
-    List<ReadOnlyPruefung> result = new ArrayList<>();
-    for (Pruefung pruefung : pruefungen) {
-      PruefungDTO build = new PruefungDTOBuilder(pruefung).withScoring(
-          scheduleService.scoringOfPruefung(pruefung)).build();
-      result.add(build);
-    }
-    return result;
   }
 
   /**
@@ -261,6 +243,15 @@ public class DataAccessService {
     return getROPlanungseinheitToPruefung(pruefung);
   }
 
+  /*
+  Gibt übergeordneten Block oder Pruefung zurück.
+   */
+  private ReadOnlyPlanungseinheit getROPlanungseinheitToPruefung(Pruefung pruefung) {
+    Block block = pruefungsperiode.block(pruefung);
+    return block != null ? converter.convertToROBlock(block)
+        : converter.convertToReadOnlyPruefung(pruefung);
+  }
+
   public Set<ReadOnlyPruefung> getGeplantePruefungen() {
     return new HashSet<>(
         converter.convertToROPruefungCollection(pruefungsperiode.geplantePruefungen()));
@@ -269,7 +260,6 @@ public class DataAccessService {
   public Set<Pruefung> getGeplanteModelPruefung() {
     return pruefungsperiode.geplantePruefungen();
   }
-
 
   public Set<ReadOnlyPruefung> getUngeplantePruefungen() {
     return new HashSet<>(
@@ -321,15 +311,6 @@ public class DataAccessService {
     }
     modelPruefung.setPruefungsnummer(pruefungsnummer);
     return getROPlanungseinheitToPruefung(modelPruefung);
-  }
-
-  /*
-  Gibt übergeordneten Block oder Pruefung zurück.
-   */
-  private ReadOnlyPlanungseinheit getROPlanungseinheitToPruefung(Pruefung pruefung) {
-    Block block = pruefungsperiode.block(pruefung);
-    return block != null ? converter.convertToROBlock(block)
-        : converter.convertToReadOnlyPruefung(pruefung);
   }
 
   public Block deletePruefung(ReadOnlyPruefung roPruefung) throws IllegalArgumentException {
@@ -434,34 +415,6 @@ public class DataAccessService {
     throw new IllegalArgumentException("Pruefung existiert nicht.");
   }
 
-  /**
-   * Gets the amount of pruefungen taking place at a specified time. Multiple pruefungen that are
-   * planned as one block only count as one.
-   *
-   * @param time The time to check for.
-   * @return The amount of planned pruefungen.
-   * @deprecated
-   */
-  @Deprecated
-  public Integer getAmountOfPruefungenAt(LocalDateTime time) {
-    Set<Planungseinheit> planungseinheiten = pruefungsperiode.planungseinheitenAt(time);
-    Set<String> pruefungsNummernInBloecken = new HashSet<>();
-    int amountPruefungen = 0;
-    for (Planungseinheit planungseinheit : planungseinheiten) {
-      if (planungseinheit.isBlock()) {
-        planungseinheit.asBlock().getPruefungen()
-            .forEach(x -> pruefungsNummernInBloecken.add(x.getPruefungsnummer()));
-        amountPruefungen++;
-      } else {
-        String pruefungsNummer = planungseinheit.asPruefung().getPruefungsnummer();
-        if (!pruefungsNummernInBloecken.contains(pruefungsNummer)) {
-          amountPruefungen++;
-        }
-      }
-    }
-    return amountPruefungen;
-  }
-
   public Pair<Block, Pruefung> removePruefungFromBlock(ReadOnlyBlock block,
       ReadOnlyPruefung pruefung) {
     Block modelBlock = getBlockFromModelOrException(block);
@@ -524,6 +477,12 @@ public class DataAccessService {
     return List.copyOf(pruefungsperiode.planungseinheitenBetween(start, end));
   }
 
+  public Set<ReadOnlyPruefung> getAllReadOnlyPruefungenBetween(LocalDateTime start,
+      LocalDateTime end)
+      throws IllegalTimeSpanException {
+    return Set.copyOf(converter.convertToROPruefungCollection(getAllPruefungenBetween(start, end)));
+  }
+
   @NotNull
   public Set<Pruefung> getAllPruefungenBetween(@NotNull LocalDateTime start,
       @NotNull LocalDateTime end)
@@ -535,13 +494,6 @@ public class DataAccessService {
         end);
     return getAllPruefungen(planungseinheitenBetween);
   }
-
-  public Set<ReadOnlyPruefung> getAllReadOnlyPruefungenBetween(LocalDateTime start,
-      LocalDateTime end)
-      throws IllegalTimeSpanException {
-    return Set.copyOf(converter.convertToROPruefungCollection(getAllPruefungenBetween(start, end)));
-  }
-
 
   //TODO kann das hier raus? Evtl? Weil hier an dieser Stelle der Converter genutzt wird.
   public Optional<ReadOnlyBlock> getBlockTo(ReadOnlyPruefung pruefung) {
@@ -644,6 +596,5 @@ public class DataAccessService {
     }
     return pruefungBlock.equals(otherBlock);
   }
-
 
 }

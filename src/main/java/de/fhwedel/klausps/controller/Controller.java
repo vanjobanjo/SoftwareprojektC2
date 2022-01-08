@@ -195,7 +195,8 @@ public class Controller implements InterfaceController {
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, dauer);
     checkNoPruefungDefined();
-    return this.dataAccessService.changeDurationOf(pruefung, dauer);
+    // TODO use scheduleService
+    throw new UnsupportedOperationException("Not implemented yet!");
   }
 
   @Override
