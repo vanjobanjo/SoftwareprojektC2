@@ -16,6 +16,7 @@ import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -52,12 +53,15 @@ public class ScheduleService {
       throws HartesKriteriumException {
 
     Pruefung pruefungModel = dataAccessService.schedulePruefung(pruefung, termin);
-    checkHardCriteriaUndo(pruefung, pruefungModel);
-    return checkSoftCriteria(pruefungModel);
+    checkHardCriteriaUndoScheduling(pruefung, pruefungModel);
+    return affectedPruefungenSoft(pruefungModel);
   }
 
   @NotNull
-  private List<ReadOnlyPlanungseinheit> checkSoftCriteria(Pruefung pruefungModel) {
+  private List<ReadOnlyPlanungseinheit> affectedPruefungenSoft(Pruefung pruefungModel) {
+    if (!pruefungModel.isGeplant()) {
+      return Collections.emptyList();
+    }
     Set<Pruefung> changedScoring = restrictionService.getAffectedPruefungen(pruefungModel);
     return new LinkedList<>(
         converter.convertToROPlanungseinheitCollection(getPlanungseinheitenWithBlock(
@@ -65,7 +69,10 @@ public class ScheduleService {
   }
 
   @NotNull
-  private List<ReadOnlyPlanungseinheit> checkSoftCriteria(Block blockModel) {
+  private List<ReadOnlyPlanungseinheit> affectedPruefungenSoft(Block blockModel) {
+    if (!blockModel.isGeplant()) {
+      return Collections.emptyList();
+    }
     Set<Pruefung> changedScoring = new HashSet<>();
     for (Pruefung p : blockModel.getPruefungen()) {
       changedScoring.addAll(restrictionService.getAffectedPruefungen(p));
@@ -75,7 +82,7 @@ public class ScheduleService {
             changedScoring)));
   }
 
-  private void checkHardCriteriaUndo(ReadOnlyPruefung pruefung, Pruefung pruefungModel)
+  private void checkHardCriteriaUndoScheduling(ReadOnlyPruefung pruefung, Pruefung pruefungModel)
       throws HartesKriteriumException {
     List<HartesKriteriumAnalyse> hard = restrictionService.checkHarteKriterien(
         pruefungModel);
@@ -105,8 +112,11 @@ public class ScheduleService {
    * @return Liste von veraenderte Pruefungen
    */
   public List<ReadOnlyPlanungseinheit> unschedulePruefung(ReadOnlyPruefung pruefung) {
-    Pruefung pruefungModel = dataAccessService.unschedulePruefung(pruefung);
-    return checkSoftCriteria(pruefungModel);
+    Pruefung pruefungModel = dataAccessService.getPruefungWith(pruefung.getPruefungsnummer());
+    List<ReadOnlyPlanungseinheit> list = affectedPruefungenSoft(pruefungModel);
+    pruefungModel = dataAccessService.unschedulePruefung(pruefung);
+    list.add(converter.convertToReadOnlyPruefung(pruefungModel));
+    return list;
   }
 
 
@@ -122,12 +132,12 @@ public class ScheduleService {
     }
     Block blockModel = dataAccessService.scheduleBlock(roBlock, termin);
 
-    checkHardCriteriaUndo(roBlock, blockModel);
+    checkHardCriteriaUndoScheduling(roBlock, blockModel);
 
-    return checkSoftCriteria(blockModel);
+    return affectedPruefungenSoft(blockModel);
   }
 
-  private void checkHardCriteriaUndo(ReadOnlyBlock roBlock, Block modelBlock)
+  private void checkHardCriteriaUndoScheduling(ReadOnlyBlock roBlock, Block modelBlock)
       throws HartesKriteriumException {
     List<HartesKriteriumAnalyse> list = new LinkedList<>();
     for (Pruefung p : modelBlock.getPruefungen()) {
@@ -139,9 +149,10 @@ public class ScheduleService {
     }
   }
 
+  //TODO siehe unschedulePrufung, so noch nicht richtig.
   public List<ReadOnlyPlanungseinheit> unscheduleBlock(ReadOnlyBlock block) {
     Block blockModel = dataAccessService.unscheduleBlock(block);
-    return checkSoftCriteria(blockModel);
+    return affectedPruefungenSoft(blockModel);
   }
 
   /**
@@ -154,7 +165,7 @@ public class ScheduleService {
    */
   public List<Pruefung> changeDuration(Pruefung pruefung, Duration minutes)
       throws HartesKriteriumException {
-    // todo please implement
+    // todo please implement; Rüc
     throw new UnsupportedOperationException("not implemented");
   }
 
@@ -230,7 +241,6 @@ public class ScheduleService {
   }
 
 
-
   private Set<Pruefung> getPruefungenInvolvedIn(
       List<WeichesKriteriumAnalyse> weicheKriterien) {
     Set<Pruefung> result = new HashSet<>();
@@ -281,7 +291,7 @@ public class ScheduleService {
         roPruefung.getPruefungsnummer());
 
     //Damit man eine Liste hat, wo sich das Scoring ändert
-    listOfRead = checkSoftCriteria(pruefungModel);
+    listOfRead = affectedPruefungenSoft(pruefungModel);
 
     //Hier muss ja nicht auf HarteKriteren gecheckt werden.
     this.dataAccessService.removeTeilnehmerkreis(pruefungModel, teilnehmerkreis);
@@ -308,7 +318,7 @@ public class ScheduleService {
         throw converter.convertHardException(hard);
       }
     }
-    listOfRead = checkSoftCriteria(pruefungModel);
+    listOfRead = affectedPruefungenSoft(pruefungModel);
 
     return listOfRead;
   }
@@ -321,7 +331,7 @@ public class ScheduleService {
     }
     modelPruefung.setSchaetzung(teilnehmerkreis, schaetzung);
     if (modelPruefung.isGeplant()) {
-      return checkSoftCriteria(modelPruefung);
+      return affectedPruefungenSoft(modelPruefung);
     }
     return emptyList();
   }
@@ -331,7 +341,7 @@ public class ScheduleService {
     // collect in set => same Pruefung will not be added twice
     Set<ReadOnlyPlanungseinheit> result = new HashSet<>();
     for (Pruefung pruefung : dataAccessService.getGeplanteModelPruefung()) {
-      result.addAll(checkSoftCriteria(pruefung));
+      result.addAll(affectedPruefungenSoft(pruefung));
     }
     return new LinkedList<>(result);
   }

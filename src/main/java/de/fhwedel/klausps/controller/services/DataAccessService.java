@@ -96,10 +96,11 @@ public class DataAccessService {
   }
 
   //TODO diese Methode muss in ScheduleService #183?
-  public List<ReadOnlyPlanungseinheit> changeDurationOf(ReadOnlyPruefung pruefung, Duration minutes)
+  //TODO Planungseinheit, wenn Prüfung im Block, dann Block sonst Prüfung als Rückgabe
+  public List<ReadOnlyPlanungseinheit> changeDurationOf(ReadOnlyPruefung pruefung, Duration duration)
       throws HartesKriteriumException, IllegalArgumentException {
 
-    if (minutes.isNegative()) {
+    if (duration.isNegative()) {
       throw new IllegalArgumentException("Die Dauer der Pruefung muss positiv sein.");
     }
 
@@ -107,7 +108,7 @@ public class DataAccessService {
     // Hartes Kriterium wird in ScheduleService geprüft.
     // Die Änderungen der Pruefungen werden auch im ScheduleService vorgenommen.
     List<Pruefung> resultOfChangingDuration = scheduleService.changeDuration(toChangeDuration,
-        minutes);
+        duration);
     return new ArrayList<>(createListOfPruefungWithScoring(resultOfChangingDuration));
   }
 
