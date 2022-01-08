@@ -3,19 +3,25 @@ package de.fhwedel.klausps.controller.services;
 import static de.fhwedel.klausps.controller.kriterium.HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG;
 import static de.fhwedel.klausps.controller.util.TestFactory.RO_ANALYSIS_UNPLANNED;
 import static de.fhwedel.klausps.controller.util.TestFactory.RO_DM_UNPLANNED;
+import static de.fhwedel.klausps.controller.util.TestFactory.RO_HASKELL_UNPLANNED;
 import static de.fhwedel.klausps.controller.util.TestFactory.bwlMaster;
 import static de.fhwedel.klausps.controller.util.TestFactory.infBachelor;
 import static de.fhwedel.klausps.controller.util.TestFactory.infMaster;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomDuration;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomString;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTeilnehmerkreis;
 import static de.fhwedel.klausps.model.api.Blocktyp.PARALLEL;
+import static de.fhwedel.klausps.model.api.Blocktyp.SEQUENTIAL;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
@@ -25,7 +31,6 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
-import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
 import de.fhwedel.klausps.model.api.Ausbildungsgrad;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Blocktyp;
@@ -46,6 +51,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class ScheduleServiceTest {
@@ -288,11 +294,16 @@ class ScheduleServiceTest {
     ReadOnlyBlock block = getROBlockFromROPruefungen("AnalysisAndDm", now, ro_analysis, ro_dm);
 
     when(dataAccessService.unscheduleBlock(any())).thenReturn(blockWithAnalysisDM);
-    when(restrictionService.getAffectedPruefungen(any())).thenReturn(
+    when(dataAccessService.getModelBlock(any())).thenReturn(blockWithAnalysisDM);
+    when(restrictionService.getAffectedPruefungen(any(Block.class))).thenReturn(
         Set.of(model_analysis, model_dm));
 
     List<ReadOnlyPlanungseinheit> result = deviceUnderTest.unscheduleBlock(block);
+    blockWithAnalysisDM.setStartzeitpunkt(null);
+    // todo auf Block testen wenn equals für block implementiert ist
     assertThat(result).contains(ro_analysis, ro_dm);
+
+
   }
 
   @Test
@@ -307,7 +318,8 @@ class ScheduleServiceTest {
     haskelTeilnehmrekeis.add(informatik);
 
     when(this.dataAccessService.removeTeilnehmerkreis(any(), any())).thenReturn(true);
-    when(dataAccessService.getPruefungWith(anyString())).thenReturn(getPruefungOfReadOnlyPruefung(roHaskel));
+    when(dataAccessService.getPruefungWith(anyString())).thenReturn(
+        getPruefungOfReadOnlyPruefung(roHaskel));
 
     assertThat(deviceUnderTest.removeTeilnehmerKreis(roHaskel, informatik)).isEmpty();
   }
@@ -574,7 +586,7 @@ class ScheduleServiceTest {
 
     when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(Optional.of(block));
 
-    deviceUnderTest.addPruefungToBlock(block, pruefung);
+    assertDoesNotThrow(() -> deviceUnderTest.addPruefungToBlock(block, pruefung));
   }
 
   private ReadOnlyBlock getBlockWith(ReadOnlyPruefung... pruefungen) {
@@ -582,15 +594,156 @@ class ScheduleServiceTest {
     return new BlockDTO("someName", startTime, Duration.ZERO, Set.of(pruefungen), 123456, PARALLEL);
   }
 
-  /*@Test
-  void addPruefungToBlock_unplannedBlock_resultContainsBlock()
+  private ReadOnlyBlock getUnplannedBlockWith(ReadOnlyPruefung... pruefungen) {
+    return new BlockDTO("someName", null, Duration.ZERO, Set.of(pruefungen), 123456, PARALLEL);
+  }
+
+  @Test
+  void addPruefungToBlock_pruefungIsAlreadyInSameBlock_empty_result()
       throws HartesKriteriumException {
     ReadOnlyPruefung pruefung = getRandomPruefung(1L);
-    ReadOnlyBlock expectedBlock = getBlockWith(pruefung);
+    ReadOnlyBlock block = getBlockWith(pruefung);
 
+    when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(Optional.of(block));
+
+    assertThat(deviceUnderTest.addPruefungToBlock(block, pruefung)).isEmpty();
+
+  }
+
+  @Test
+  void addPruefungToBlock_pruefung_block_is_not_planned_no_affected_pruefungen()
+      throws HartesKriteriumException {
+    ReadOnlyPruefung pruefung = getRandomPruefung(1L);
+    ReadOnlyBlock block = getUnplannedBlockWith();
     when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(Optional.empty());
 
-    assertThat(deviceUnderTest.addPruefungToBlock(getEmptyROBlock(), pruefung)).containsExactlyInAnyOrder();
-  }*/
+    assertThat(deviceUnderTest.addPruefungToBlock(block, pruefung)).isEmpty();
 
+  }
+
+  @Test
+  void addPruefungToBlock_pruefung_block_is_not_planned_no_further_calculation()
+      throws HartesKriteriumException {
+    ReadOnlyPruefung pruefung = getRandomPruefung(1L);
+    ReadOnlyBlock block = getUnplannedBlockWith();
+    when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(Optional.empty());
+
+    deviceUnderTest.addPruefungToBlock(block, pruefung);
+    verify(dataAccessService, times(0)).addPruefungToBlock(any(), any());
+  }
+
+
+  @Test
+  void addPruefungToBlock_pruefung_with_same_teilnehmerkreis_at_same_time() {
+    LocalDateTime termin = LocalDateTime.of(2022, 1, 2, 8, 0);
+
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    haskell.addTeilnehmerkreis(infBachelor, 13);
+    analysis.addTeilnehmerkreis(infBachelor, 13);
+
+    Block block = getModelBlockWithPruefungen(pruefungsperiode, "block", termin, haskell);
+    ReadOnlyBlock roBlock = converter.convertToROBlock(block);
+
+    when(dataAccessService.getBlockTo(haskell)).thenReturn(Optional.of(block));
+    when(restrictionService.checkHarteKriterien(any())).thenReturn(
+        List.of(getNewHartesKriteriumAnalyse()));
+    when(dataAccessService.addPruefungToBlock(roBlock, RO_ANALYSIS_UNPLANNED)).thenReturn(block);
+
+    assertThrows(HartesKriteriumException.class,
+        () -> deviceUnderTest.addPruefungToBlock(roBlock,
+            converter.convertToReadOnlyPruefung(analysis)));
+
+  }
+
+  @Test
+  @DisplayName("addPruefungToBlock - hard restriction - check that pruefung does not get planned")
+  void addPruefungToBlock_pruefung_with_same_teilnehmerkreis_hard_restriction() {
+    LocalDateTime termin = LocalDateTime.of(2022, 1, 2, 8, 0);
+
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    haskell.addTeilnehmerkreis(infBachelor, 13);
+    analysis.addTeilnehmerkreis(infBachelor, 13);
+
+    Block block = getModelBlockWithPruefungen(pruefungsperiode, "block", termin, haskell);
+    ReadOnlyBlock roBlock = converter.convertToROBlock(block);
+
+    when(dataAccessService.getBlockTo(haskell)).thenReturn(Optional.of(block));
+    when(dataAccessService.getBlockTo(analysis)).thenReturn(Optional.of(block));
+    when(restrictionService.checkHarteKriterien(any())).thenReturn(
+        List.of(getNewHartesKriteriumAnalyse()));
+    when(dataAccessService.addPruefungToBlock(roBlock, RO_ANALYSIS_UNPLANNED)).thenReturn(block);
+    when(dataAccessService.getPruefungWith(haskell.getPruefungsnummer())).thenReturn(haskell);
+    when(dataAccessService.getPruefungWith(analysis.getPruefungsnummer())).thenReturn(analysis);
+    when(dataAccessService.removePruefungFromBlock(any(), any())).thenReturn(block);
+    try {
+      deviceUnderTest.addPruefungToBlock(roBlock, converter.convertToReadOnlyPruefung(analysis));
+
+    } catch (HartesKriteriumException hardViolation) {
+      verify(dataAccessService, times(1)).removePruefungFromBlock(roBlock,
+          RO_ANALYSIS_UNPLANNED);
+    }
+
+  }
+
+  @Test
+  void removePruefungFromBlock_pruefung_empty_block() {
+    ReadOnlyPruefung pruefung = getRandomPruefung(1L);
+    ReadOnlyBlock block = getBlockWith();
+    assertThat(deviceUnderTest.removePruefungFromBlock(block, pruefung)).isEmpty();
+  }
+
+  @Test
+  void removePruefungFromBlock_pruefung_empty_block_remove_pruefung_data_access_doesnt_get_called() {
+    ReadOnlyPruefung pruefung = getRandomPruefung(1L);
+    ReadOnlyBlock block = getBlockWith();
+    deviceUnderTest.removePruefungFromBlock(block, pruefung);
+    verify(dataAccessService, times(0)).removePruefungFromBlock(block, pruefung);
+  }
+
+  @Test
+  void removePruefungFromBlock_pruefung_not_in_block() {
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    ReadOnlyPruefung pruefungInBlock = getRandomPruefung(1L);
+    ReadOnlyBlock block = getBlockWith(pruefungInBlock);
+    when(dataAccessService.getPruefungWith(RO_HASKELL_UNPLANNED.getPruefungsnummer())).thenReturn(
+        haskell);
+    assertThat(deviceUnderTest.removePruefungFromBlock(block, RO_HASKELL_UNPLANNED)).isEmpty();
+
+  }
+
+  @Test
+  @DisplayName("remove pruefung from block - dataAccessService removePruefungFromBlock does not get called")
+  void removePruefungFromBlock_pruefung_not_in_block_verify() {
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    ReadOnlyPruefung pruefungInBlock = getRandomPruefung(1L);
+    ReadOnlyBlock block = getBlockWith(pruefungInBlock);
+    when(dataAccessService.getPruefungWith(RO_HASKELL_UNPLANNED.getPruefungsnummer())).thenReturn(
+        haskell);
+    deviceUnderTest.removePruefungFromBlock(block, RO_HASKELL_UNPLANNED);
+    verify(dataAccessService, times(0)).removePruefungFromBlock(any(), any());
+
+  }
+
+
+  private HartesKriteriumAnalyse getNewHartesKriteriumAnalyse() {
+    Random random = new Random(1L);
+    int next = random.nextInt();
+    return new HartesKriteriumAnalyse(Set.of(getPruefungOfReadOnlyPruefung(getRandomPruefung(1L))),
+        Set.of(getRandomTeilnehmerkreis(1L)), next, ZWEI_KLAUSUREN_GLEICHZEITIG);
+  }
+
+  private Block getModelBlockWithPruefungen(Pruefungsperiode pruefungsperiode, String name,
+      LocalDateTime termin, Pruefung... pruefungen) {
+    Block result = new BlockImpl(pruefungsperiode, name, SEQUENTIAL);
+    for (Pruefung pruefung : pruefungen) {
+      result.addPruefung(pruefung);
+      when(dataAccessService.getBlockTo(pruefung)).thenReturn(Optional.of(result));
+    }
+    if (termin != null) {
+      result.setStartzeitpunkt(termin);
+    }
+    return result;
+  }
 }
