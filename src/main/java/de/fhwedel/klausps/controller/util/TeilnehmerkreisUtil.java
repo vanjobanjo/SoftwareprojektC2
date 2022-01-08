@@ -10,7 +10,6 @@ public class TeilnehmerkreisUtil {
 
   }
 
-  // Anm.: Wo soll das hin? Ist util, aber nicht unbedingt von Planungseinheiten...
   public static void compareAndPutBiggerSchaetzung(
       Map<Teilnehmerkreis, Integer> collectedTeilnehmerkreise,
       Map<Teilnehmerkreis, Integer> toAdd) {
