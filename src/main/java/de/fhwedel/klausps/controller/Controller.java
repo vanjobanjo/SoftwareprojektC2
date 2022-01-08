@@ -1,5 +1,6 @@
 package de.fhwedel.klausps.controller;
 
+import static de.fhwedel.klausps.controller.util.ParameterUtil.noNullParameters;
 import static java.util.Objects.requireNonNull;
 
 import de.fhwedel.klausps.controller.api.InterfaceController;
@@ -441,15 +442,5 @@ public class Controller implements InterfaceController {
     }
   }
 
-  /**
-   * In case any parameter is null, immediately throw a NullPointer exception
-   *
-   * @param objects The parameters to check.
-   * @throws NullPointerException In case any of the parameters is null.
-   */
-  private void noNullParameters(Object... objects) throws NullPointerException {
-    for (Object parameter : objects) {
-      requireNonNull(parameter);
-    }
-  }
+
 }

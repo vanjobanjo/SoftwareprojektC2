@@ -1,11 +1,10 @@
 package de.fhwedel.klausps.controller.services;
 
-import static de.fhwedel.klausps.controller.PlanungseinheitUtil.getAllPruefungen;
+import static de.fhwedel.klausps.controller.util.PlanungseinheitUtil.getAllPruefungen;
+import static de.fhwedel.klausps.controller.util.TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung;
 import static java.util.Objects.nonNull;
 
-import de.fhwedel.klausps.controller.PlanungseinheitUtil;
-import de.fhwedel.klausps.controller.api.PruefungDTO;
-import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
+import de.fhwedel.klausps.controller.util.PlanungseinheitUtil;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
@@ -24,7 +23,6 @@ import de.fhwedel.klausps.model.impl.PruefungImpl;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -573,7 +571,7 @@ public class DataAccessService {
       LocalDateTime end = pruefung.endzeitpunkt();
       if ((start.equals(zeitpunkt) || start.isBefore(zeitpunkt))
           && (end.equals(zeitpunkt) || end.isAfter(zeitpunkt))) {
-        PlanungseinheitUtil.compareAndPutBiggerSchaetzung(schaetzungen,
+        compareAndPutBiggerSchaetzung(schaetzungen,
             pruefung.getSchaetzungen());
       }
     }
