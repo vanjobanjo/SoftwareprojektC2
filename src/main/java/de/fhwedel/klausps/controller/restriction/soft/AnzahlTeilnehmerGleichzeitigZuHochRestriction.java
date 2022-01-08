@@ -25,6 +25,11 @@ public class AnzahlTeilnehmerGleichzeitigZuHochRestriction extends AtSameTimeRes
   private final int scoringStepSize;
 
   public AnzahlTeilnehmerGleichzeitigZuHochRestriction(DataAccessService dataAccessService,
+      Duration buffer, int maxTeilnehmerAtSameTime) {
+    this(dataAccessService, buffer, maxTeilnehmerAtSameTime, DEFAULT_SCORING_STEP_SIZE);
+  }
+
+  public AnzahlTeilnehmerGleichzeitigZuHochRestriction(DataAccessService dataAccessService,
       Duration buffer, int maxTeilnehmerAtATime, int scoreStepSize) {
     super(dataAccessService, ANZAHL_TEILNEHMER_GLEICHZEITIG_ZU_HOCH, buffer);
     this.maxTeilnehmer = maxTeilnehmerAtATime;
@@ -34,17 +39,8 @@ public class AnzahlTeilnehmerGleichzeitigZuHochRestriction extends AtSameTimeRes
     this.scoringStepSize = scoreStepSize;
   }
 
-  public AnzahlTeilnehmerGleichzeitigZuHochRestriction(DataAccessService dataAccessService,
-      Duration buffer, int maxTeilnehmerAtSameTime) {
-    this(dataAccessService, buffer, maxTeilnehmerAtSameTime, DEFAULT_SCORING_STEP_SIZE);
-  }
-
   public AnzahlTeilnehmerGleichzeitigZuHochRestriction() {
-    this(ServiceProvider.getDataAccessService());
-  }
-
-  public AnzahlTeilnehmerGleichzeitigZuHochRestriction(DataAccessService dataAccessService) {
-    this(dataAccessService, DEFAULT_BUFFER, DEFAULT_MAX_TEILNEHMER_AT_A_TIME,
+    this(ServiceProvider.getDataAccessService(), DEFAULT_BUFFER, DEFAULT_MAX_TEILNEHMER_AT_A_TIME,
         DEFAULT_SCORING_STEP_SIZE);
   }
 

@@ -19,4 +19,8 @@ public class BlockDTO extends ReadOnlyBlock {
     super(name, termin, dauer, readOnlyPruefungen, id, type);
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    return super.equals(obj);
+  }
 }
