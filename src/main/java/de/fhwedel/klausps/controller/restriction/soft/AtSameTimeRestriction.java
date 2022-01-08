@@ -1,6 +1,6 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
-import static de.fhwedel.klausps.controller.PlanungseinheitUtil.getAllPruefungen;
+import static de.fhwedel.klausps.controller.util.PlanungseinheitUtil.getAllPruefungen;
 import static de.fhwedel.klausps.model.api.Blocktyp.SEQUENTIAL;
 
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;

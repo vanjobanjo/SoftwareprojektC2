@@ -1,5 +1,6 @@
 package de.fhwedel.klausps.controller.services;
 
+import static de.fhwedel.klausps.controller.util.ParameterUtil.noNullParameters;
 import static java.util.Collections.emptyList;
 
 import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
@@ -20,7 +21,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
@@ -32,13 +32,14 @@ public class ScheduleService {
 
   private final RestrictionService restrictionService;
 
-  private final Converter converter = new Converter();
+  private final Converter converter;
 
   public ScheduleService(DataAccessService dataAccessService,
-      RestrictionService restrictionService) {
+      RestrictionService restrictionService, Converter converter) {
     this.dataAccessService = dataAccessService;
     this.restrictionService = restrictionService;
-    this.converter.setScheduleService(this);
+    this.converter = converter;
+    converter.setScheduleService(this);
   }
 
   @NotNull
@@ -71,10 +72,12 @@ public class ScheduleService {
     List<HartesKriteriumAnalyse> hard = restrictionService.checkHarteKriterien(
         pruefungModel);
 
-    if (!hard.isEmpty()) {
+    Optional<LocalDateTime> termin = pruefung.getTermin();
+    if (!hard.isEmpty() && termin.isPresent()) {
       // reverse
-      dataAccessService.schedulePruefung(pruefung, pruefung.getTermin().get());
+      dataAccessService.schedulePruefung(pruefung, termin.get());
       throw converter.convertHardException(hard);
+
     }
   }
 
@@ -96,6 +99,7 @@ public class ScheduleService {
    * @return Liste von veraenderte Pruefungen
    */
   public List<ReadOnlyPlanungseinheit> unschedulePruefung(ReadOnlyPruefung pruefung) {
+    noNullParameters(pruefung);
     Pruefung pruefungModel = dataAccessService.getPruefungWith(pruefung.getPruefungsnummer());
     List<ReadOnlyPlanungseinheit> list = affectedPruefungenSoft(pruefungModel);
     pruefungModel = dataAccessService.unschedulePruefung(pruefung);
@@ -106,6 +110,7 @@ public class ScheduleService {
 
   public List<ReadOnlyPlanungseinheit> scheduleBlock(ReadOnlyBlock roBlock,
       LocalDateTime termin) throws HartesKriteriumException {
+    noNullParameters(termin);
     if (!dataAccessService.terminIsInPeriod(termin)) {
       throw new IllegalArgumentException(
           "Der angegebene Termin liegt ausserhalb der Pruefungsperiode.");
@@ -127,14 +132,16 @@ public class ScheduleService {
     for (Pruefung p : modelBlock.getPruefungen()) {
       list.addAll(restrictionService.checkHarteKriterien(p));
     }
-    if (!list.isEmpty()) {
-      dataAccessService.scheduleBlock(roBlock, roBlock.getTermin().get());
+    Optional<LocalDateTime> termin = roBlock.getTermin();
+    if (!list.isEmpty() && termin.isPresent()) {
+      dataAccessService.scheduleBlock(roBlock, termin.get());
       throw converter.convertHardException(list);
     }
   }
 
   //TODO siehe unschedulePrufung, so noch nicht richtig.
   public List<ReadOnlyPlanungseinheit> unscheduleBlock(ReadOnlyBlock block) {
+    noNullParameters(block);
     Block blockModel = dataAccessService.unscheduleBlock(block);
     return affectedPruefungenSoft(blockModel);
   }
@@ -149,6 +156,7 @@ public class ScheduleService {
    */
   public List<Pruefung> changeDuration(Pruefung pruefung, Duration minutes)
       throws HartesKriteriumException {
+    noNullParameters(pruefung, minutes);
     // todo please implement
     throw new UnsupportedOperationException("not implemented");
   }
@@ -160,10 +168,12 @@ public class ScheduleService {
    * @return Scoring ungeplant ? 0 : scoring
    */
   public int scoringOfPruefung(Pruefung pruefung) {
+    noNullParameters(pruefung);
     return restrictionService.getScoringOfPruefung(pruefung);
   }
 
   public Optional<ReadOnlyBlock> deletePruefung(ReadOnlyPruefung pruefung) {
+    noNullParameters(pruefung);
     Block block = dataAccessService.deletePruefung(pruefung);
     return block == null ? Optional.empty() : Optional.of(converter.convertToROBlock(block));
   }
@@ -187,6 +197,7 @@ public class ScheduleService {
 
   public List<ReadOnlyPlanungseinheit> removePruefungFromBlock(ReadOnlyBlock block,
       ReadOnlyPruefung pruefung) {
+    noNullParameters(block, pruefung);
     List<ReadOnlyPlanungseinheit> result = new LinkedList<>();
     Pair<Block, Pruefung> separated = dataAccessService.removePruefungFromBlock(block, pruefung);
     if (!block.geplant()) {
@@ -201,10 +212,9 @@ public class ScheduleService {
     return result;
   }
 
-  public List<ReadOnlyPlanungseinheit> addPruefungToBlock(@NotNull ReadOnlyBlock block,
-      @NotNull ReadOnlyPruefung pruefung) throws HartesKriteriumException {
-    Objects.requireNonNull(block);
-    Objects.requireNonNull(pruefung);
+  public List<ReadOnlyPlanungseinheit> addPruefungToBlock(ReadOnlyBlock block,
+      ReadOnlyPruefung pruefung) throws HartesKriteriumException {
+    noNullParameters(block, pruefung);
     if (pruefung.geplant()) {
       throw new IllegalArgumentException("Planned Pruefungen can not be added to a Block.");
     }
@@ -246,7 +256,7 @@ public class ScheduleService {
   public List<ReadOnlyPlanungseinheit> schedulePruefung(ReadOnlyPruefung pruefung,
       LocalDateTime termin)
       throws HartesKriteriumException {
-
+    noNullParameters(pruefung, termin);
     Pruefung pruefungModel = dataAccessService.schedulePruefung(pruefung, termin);
     checkHardCriteriaUndoScheduling(pruefung, pruefungModel);
     return affectedPruefungenSoft(pruefungModel);
@@ -292,7 +302,7 @@ public class ScheduleService {
 
   public List<ReadOnlyPlanungseinheit> removeTeilnehmerKreis(ReadOnlyPruefung roPruefung,
       Teilnehmerkreis teilnehmerkreis) {
-
+    noNullParameters(teilnehmerkreis);
     List<ReadOnlyPlanungseinheit> listOfRead = new ArrayList<>();
     if (!roPruefung.getTeilnehmerkreise().contains(teilnehmerkreis)) {
       return listOfRead;
@@ -312,7 +322,7 @@ public class ScheduleService {
 
   public List<ReadOnlyPlanungseinheit> addTeilnehmerkreis(ReadOnlyPruefung roPruefung,
       Teilnehmerkreis teilnehmerkreis, int schaetzung) throws HartesKriteriumException {
-
+    noNullParameters(roPruefung, teilnehmerkreis);
     List<ReadOnlyPlanungseinheit> listOfRead = new ArrayList<>();
 
     if (roPruefung.getTeilnehmerkreise().contains(teilnehmerkreis)) {
@@ -336,6 +346,7 @@ public class ScheduleService {
 
   public List<ReadOnlyPlanungseinheit> setTeilnehmerkreisSchaetzung(ReadOnlyPruefung pruefung,
       Teilnehmerkreis teilnehmerkreis, int schaetzung) {
+    noNullParameters(pruefung, teilnehmerkreis);
     Pruefung modelPruefung = dataAccessService.getPruefungWith(pruefung.getPruefungsnummer());
     if (!modelPruefung.getTeilnehmerkreise().contains(teilnehmerkreis)) {
       throw new IllegalArgumentException("Pruefung hat keinen Teilnehmerkreis mit diesem Namen.");
@@ -348,6 +359,7 @@ public class ScheduleService {
   }
 
   public List<ReadOnlyPlanungseinheit> setKapazitaetPeriode(int kapazitaet) {
+    noNullParameters(kapazitaet);
     dataAccessService.setKapazitaetPeriode(kapazitaet);
     // collect in set => same Pruefung will not be added twice
     Set<ReadOnlyPlanungseinheit> result = new HashSet<>();

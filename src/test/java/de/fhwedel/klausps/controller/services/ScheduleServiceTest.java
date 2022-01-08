@@ -73,8 +73,8 @@ class ScheduleServiceTest {
   void setUp() {
     this.dataAccessService = mock(DataAccessService.class);
     this.restrictionService = mock(RestrictionService.class);
-    this.deviceUnderTest = new ScheduleService(dataAccessService, restrictionService);
     converter = new Converter();
+    this.deviceUnderTest = new ScheduleService(dataAccessService, restrictionService, converter);
     converter.setScheduleService(deviceUnderTest);
     this.pruefungsperiode = mock(Pruefungsperiode.class);
     when(pruefungsperiode.getStartdatum()).thenReturn(START_PERIOD);
@@ -510,7 +510,7 @@ class ScheduleServiceTest {
 
   @Test
   void addPruefungToBlock_blockMustNotBeNull() {
-    assertThrows(IllegalArgumentException.class,
+    assertThrows(NullPointerException.class,
         () -> deviceUnderTest.addPruefungToBlock(null, getRandomPruefung(12L)));
   }
 
@@ -531,7 +531,7 @@ class ScheduleServiceTest {
 
   @Test
   void addPruefungToBlock_pruefungMustNotBeNull() {
-    assertThrows(IllegalArgumentException.class,
+    assertThrows(NullPointerException.class,
         () -> deviceUnderTest.addPruefungToBlock(getEmptyROBlock(), null));
   }
 

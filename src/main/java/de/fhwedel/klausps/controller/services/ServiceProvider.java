@@ -10,6 +10,8 @@ public class ServiceProvider {
 
   private static RestrictionService restrictionService;
 
+  private static Converter converter;
+
   private ServiceProvider() {
   }
 
@@ -17,6 +19,7 @@ public class ServiceProvider {
     if (dataAccessService == null) {
       dataAccessService = new DataAccessService();
     }
+    dataAccessService.setConverter(getConverter());
     return dataAccessService;
   }
 
@@ -29,7 +32,9 @@ public class ServiceProvider {
 
   public static ScheduleService getScheduleService() {
     if (scheduleService == null) {
-      scheduleService = new ScheduleService(getDataAccessService(), getRestrictionService());
+      scheduleService = new ScheduleService(getDataAccessService(), getRestrictionService(),
+          getConverter());
+      dataAccessService.setConverter(converter);
     }
     return scheduleService;
   }
@@ -39,5 +44,18 @@ public class ServiceProvider {
       restrictionService = new RestrictionService();
     }
     return restrictionService;
+  }
+
+   static Converter getConverter() {
+    if (converter == null) {
+      converter = new Converter();
+    }
+    if (scheduleService != null) {
+      converter.setScheduleService(scheduleService);
+    }
+    if (dataAccessService != null) {
+      dataAccessService.setConverter(converter);
+    }
+    return converter;
   }
 }
