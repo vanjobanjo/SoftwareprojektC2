@@ -82,7 +82,6 @@ class DataAccessServiceTest {
     // todo make sure the mocked class is not tested
     this.scheduleService = mock(ScheduleService.class);
     deviceUnderTest.setPruefungsperiode(pruefungsperiode);
-    deviceUnderTest.setScheduleService(this.scheduleService);
     this.converter = new Converter();
     converter.setScheduleService(this.scheduleService); //TODO
     deviceUnderTest.setConverter(converter);
@@ -280,26 +279,19 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void changeDurationOf_Successful() {
-    PruefungDTOBuilder pDTOB = new PruefungDTOBuilder();
-    pDTOB.withPruefungsName("Analysi");
-    pDTOB.withDauer(Duration.ofMinutes(90));
-    ReadOnlyPruefung ro01 = pDTOB.build();
-    PruefungImpl t = new PruefungImpl(ro01.getPruefungsnummer(), ro01.getName(), "Keine Ahnnung",
-        ro01.getDauer());
-    pruefungsperiode.addPlanungseinheit(t);
+  void changeDurationOf_Successful() throws HartesKriteriumException {
+    PruefungDTOBuilder pruefungROBuilder = new PruefungDTOBuilder();
+    pruefungROBuilder.withPruefungsName("Analysi");
+    pruefungROBuilder.withDauer(Duration.ofMinutes(90));
+    ReadOnlyPruefung pruefungRO = pruefungROBuilder.build();
+    Pruefung pruefung = convertPruefungenFromReadonlyToModel(List.of(pruefungRO)).get(0);
+    Duration newDuration = Duration.ofMinutes(120);
 
-    assertEquals(ro01.getDauer(), Duration.ofMinutes(90));
-    ReadOnlyPlanungseinheit roAcc = ro01;
-    try {
-      when(pruefungsperiode.pruefung(ro01.getPruefungsnummer())).thenReturn(t);
-      when(scheduleService.changeDuration(t, Duration.ofMinutes(120))).thenReturn(List.of(t));
-      assertThat(deviceUnderTest.changeDurationOf(ro01, Duration.ofMinutes(120))).hasSize(1);
-      t.setDauer(Duration.ofMinutes(120)); // ScheduleService muss noch implementiert werden.
-      roAcc = deviceUnderTest.changeDurationOf(ro01, Duration.ofMinutes(120)).get(0);
-    } catch (HartesKriteriumException ignored) {
-    }
-    assertEquals(roAcc.getDauer(), Duration.ofMinutes(120));
+    assertEquals(pruefungRO.getDauer(), Duration.ofMinutes(90));
+    when(pruefungsperiode.pruefung(pruefungRO.getPruefungsnummer())).thenReturn(pruefung);
+    when(scheduleService.changeDuration(pruefung, newDuration)).thenReturn(List.of(pruefung));
+    deviceUnderTest.changeDurationOf(pruefungRO, newDuration);
+    assertThat(pruefung.getDauer()).isEqualTo(newDuration);
   }
 
   @Test
