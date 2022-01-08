@@ -12,6 +12,7 @@ import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -21,7 +22,7 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
 
   static final long MINUTES_BETWEEN_PRUEFUNGEN = 30;
 
-
+  private int countStudents = 0;
   public TwoKlausurenSameTime() {
     this(ServiceProvider.getDataAccessService());
   }
@@ -36,6 +37,9 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
     boolean hartKriterium = false;
     if (pruefung.isGeplant()) {
       LocalDateTime start = pruefung.getStartzeitpunkt().minusMinutes(MINUTES_BETWEEN_PRUEFUNGEN);
+      HashSet<Pruefung> inConflictROPruefung = new HashSet<>();
+      HashSet<Teilnehmerkreis> inConflictTeilnehmerkreis = new HashSet<>();
+      countStudents = 0;
       LocalDateTime end = getEndTime(pruefung);
       List<Planungseinheit> testList = null;
       try {
@@ -56,19 +60,21 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
             if (!pruefungenFromBlock.contains(pruefung)) {
               for (Pruefung pruefungBlock : pruefungenFromBlock) {
                 hartKriterium =
-                    getTeilnehmerkreisFromPruefung(pruefung, pruefungBlock) || hartKriterium;
+                    getTeilnehmerkreisFromPruefung(pruefung, pruefungBlock, inConflictROPruefung,
+                        inConflictTeilnehmerkreis) || hartKriterium;
               }
             }
           } else {
             hartKriterium =
-                getTeilnehmerkreisFromPruefung(pruefung, planungseinheit.asPruefung())
+                getTeilnehmerkreisFromPruefung(pruefung, planungseinheit.asPruefung(),
+                    inConflictROPruefung, inConflictTeilnehmerkreis)
                     || hartKriterium;
           }
         }
         if (hartKriterium) {
-          this.inConflictROPruefung.add(pruefung);
-          HartesKriteriumAnalyse hKA = new HartesKriteriumAnalyse(this.inConflictROPruefung,
-              this.inConfilictTeilnehmerkreis, this.countStudents);
+          inConflictROPruefung.add(pruefung);
+          HartesKriteriumAnalyse hKA = new HartesKriteriumAnalyse(inConflictROPruefung,
+              inConflictTeilnehmerkreis, countStudents, this.hardRestriction);
           return Optional.of(hKA);
         }
       }
@@ -81,63 +87,28 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
     Optional<Block> maybeBlock = dataAccessService.getBlockTo(pruefung);
     LocalDateTime date = pruefung.getStartzeitpunkt()
         .plusMinutes(MINUTES_BETWEEN_PRUEFUNGEN);
-    
+
     return maybeBlock.isPresent() && maybeBlock.get().getTyp() == Blocktyp.SEQUENTIAL ? date.plus(
         maybeBlock.get().getDauer()) : date.plus(pruefung.getDauer());
   }
 
-  private boolean getTeilnehmerkreisFromPruefung(Pruefung pruefung, Pruefung toCheck) {
+  private boolean getTeilnehmerkreisFromPruefung(Pruefung pruefung, Pruefung toCheck,
+      HashSet<Pruefung> inConflictROPruefung, HashSet<Teilnehmerkreis> inConflictTeilnehmerkreis) {
     boolean retBool = false;
     Set<Teilnehmerkreis> teilnehmer = pruefung.getTeilnehmerkreise();
     for (Teilnehmerkreis teilnehmerkreis : toCheck.getTeilnehmerkreise()) {
       if (teilnehmer.contains(teilnehmerkreis)) {
-        if (!inConfilictTeilnehmerkreis.contains(teilnehmerkreis)) {
+        if (!inConflictTeilnehmerkreis.contains(teilnehmerkreis)) {
           //hier sollte ein Teilnehmerkreis nur einmal dazu addiert werden.
-          this.countStudents += toCheck.getSchaetzungen().get(teilnehmerkreis);
+          countStudents += toCheck.getSchaetzungen().get(teilnehmerkreis);
         }
         //Hier ist es egal, da es ein Set ist und es nur einmal vorkommen darf
-        this.inConfilictTeilnehmerkreis.add(teilnehmerkreis);
-        this.inConflictROPruefung.add(toCheck);
+        inConflictTeilnehmerkreis.add(teilnehmerkreis);
+        inConflictROPruefung.add(toCheck);
         retBool = true;
       }
     }
     return retBool;
   }
-  /*
-  @Override
-  public boolean test(Pruefung pruefung) {
 
-    boolean hartKriterium = false;
-
-    LocalDateTime start = pruefung.getStartzeitpunkt().minusMinutes(MINUTES_BETWEEN_PRUEFUNGEN);
-    LocalDateTime end = pruefung.getStartzeitpunkt().plus(pruefung.getDauer())
-        .plusMinutes(MINUTES_BETWEEN_PRUEFUNGEN);
-    List<Planungseinheit> testList = null;
-    try {
-      testList = dataAccessService.getAllPlanungseinheitenBetween(start, end);
-    } catch (IllegalTimeSpanException e) {
-      //start kann nicht vor ende liegen, da ich das berechne
-      e.printStackTrace();
-    }
-
-    Set<Pruefung> pruefungenFromBlock;
-    for (Planungseinheit planungseinheit : testList) {
-      if (planungseinheit.isBlock()) {
-        pruefungenFromBlock = planungseinheit.asBlock().getPruefungen();
-        if (!pruefungenFromBlock.contains(pruefung)) {
-          for (Pruefung pruefungBlock : pruefungenFromBlock) {
-            hartKriterium =
-                getTeilnehmerkreisFromPruefung(pruefung, pruefungBlock) || hartKriterium;
-          }
-        }
-      } else {
-        hartKriterium =
-            getTeilnehmerkreisFromPruefung(pruefung, planungseinheit.asPruefung()) || hartKriterium;
-      }
-    }
-    if (hartKriterium) {
-      this.inConflictROPruefung.add(pruefung);
-    }
-    return hartKriterium;
-  }*/
 }

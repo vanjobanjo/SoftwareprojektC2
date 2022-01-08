@@ -1,5 +1,6 @@
 package de.fhwedel.klausps.controller.services;
 
+import static de.fhwedel.klausps.controller.kriterium.HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG;
 import static de.fhwedel.klausps.controller.util.TestFactory.RO_ANALYSIS_UNPLANNED;
 import static de.fhwedel.klausps.controller.util.TestFactory.RO_DM_UNPLANNED;
 import static de.fhwedel.klausps.controller.util.TestFactory.bwlMaster;
@@ -24,6 +25,7 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
+import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
 import de.fhwedel.klausps.model.api.Ausbildungsgrad;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Blocktyp;
@@ -389,7 +391,7 @@ class ScheduleServiceTest {
     conflictedPruefung.add(dm);
 
     HartesKriteriumAnalyse hKA = new HartesKriteriumAnalyse(conflictedPruefung,
-        haskelTeilnehmrekeis, schaetzungInformatik);
+        haskelTeilnehmrekeis, schaetzungInformatik, ZWEI_KLAUSUREN_GLEICHZEITIG);
 
     List<HartesKriteriumAnalyse> listHard = new ArrayList<>();
     listHard.add(hKA);

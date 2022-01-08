@@ -9,7 +9,6 @@ import static org.mockito.Mockito.when;
 
 import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
-import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Ausbildungsgrad;
 import de.fhwedel.klausps.model.api.Planungseinheit;
@@ -130,11 +129,11 @@ class TwoKlausurenSameTimeTest {
 
     TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
 
-    h.evaluate(haskel).get();
-
-    assertEquals(setOfConflictPruefunge, h.inConflictROPruefung);
-    assertEquals(setOfConflictTeilnehmer, h.inConfilictTeilnehmerkreis);
-    assertEquals(studends, h.countStudents);
+   Optional<HartesKriteriumAnalyse> analyse =  h.evaluate(haskel);
+    assertTrue(analyse.isPresent());
+    assertEquals(setOfConflictPruefunge, analyse.get().getCausingPruefungen());
+    assertEquals(setOfConflictTeilnehmer, analyse.get().getAffectedTeilnehmerkreise());
+    assertEquals(studends, analyse.get().getAmountAffectedStudents());
   }
 
 
@@ -201,9 +200,6 @@ class TwoKlausurenSameTimeTest {
     Optional<HartesKriteriumAnalyse> should = Optional.empty();
     assertEquals(should, h.evaluate(haskel));
 
-    assertEquals(setOfConflictPruefunge, h.inConflictROPruefung);
-    assertEquals(setOfConflictTeilnehmer, h.inConfilictTeilnehmerkreis);
-    assertEquals(studends, h.countStudents);
   }
 
   @Test
@@ -217,7 +213,7 @@ class TwoKlausurenSameTimeTest {
     Pruefung haskel = mock(Pruefung.class);
     Pruefung dm = mock(Pruefung.class);
 
-    setNameAndNummer(analysis,"analysis");
+    setNameAndNummer(analysis, "analysis");
     setNameAndNummer(haskel, "haskel");
     setNameAndNummer(dm, "dm");
 
@@ -278,15 +274,13 @@ class TwoKlausurenSameTimeTest {
     when(haskel.getDauer()).thenReturn(duration);
 
     TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
-    ;
-    h.evaluate(haskel);
+    Optional<HartesKriteriumAnalyse> analyse = h.evaluate(haskel);
+    assertTrue(analyse.isPresent());
+    assertEquals(setOfConflictPruefunge, analyse.get().getCausingPruefungen());
+    assertEquals(setOfConflictTeilnehmer, analyse.get().getAffectedTeilnehmerkreise());
+    assertEquals(studends, analyse.get().getAmountAffectedStudents());
 
-    assertEquals(setOfConflictPruefunge, h.inConflictROPruefung);
-    assertEquals(setOfConflictTeilnehmer, h.inConfilictTeilnehmerkreis);
-    assertEquals(studends, h.countStudents);
   }
-
-
   @Test
   void twoKlausurenSameTime_ThreeSameTime_two_DiffrentTeilnehmerkreis() {
 
@@ -385,12 +379,11 @@ class TwoKlausurenSameTimeTest {
 
     TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
 
-
-   h.evaluate(haskel);
-
-    assertEquals(setOfConflictPruefunge, h.inConflictROPruefung);
-    assertEquals(setOfConflictTeilnehmerkreis, h.inConfilictTeilnehmerkreis);
-    assertEquals(studends, h.countStudents);
+    Optional<HartesKriteriumAnalyse> analyse =  h.evaluate(haskel);
+    assertTrue(analyse.isPresent());
+    assertEquals(setOfConflictPruefunge, analyse.get().getCausingPruefungen());
+    assertEquals(teilnehmer3, analyse.get().getAffectedTeilnehmerkreise());
+    assertEquals(studends, analyse.get().getAmountAffectedStudents());
   }
 
   private void setNameAndNummer(Pruefung analysis, String name) {
