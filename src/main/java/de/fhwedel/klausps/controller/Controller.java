@@ -20,6 +20,8 @@ import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Semestertyp;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
+import de.fhwedel.klausps.model.api.exporter.ExportException;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -282,6 +284,7 @@ public class Controller implements InterfaceController {
     return scheduleService.schedulePruefung(pruefung, startTermin);
   }
 
+
   @Override
   public ReadOnlyPlanungseinheit addPruefer(ReadOnlyPruefung pruefung, String kuerzel)
       throws NoPruefungsPeriodeDefinedException {
@@ -306,6 +309,7 @@ public class Controller implements InterfaceController {
     checkNoPruefungDefined();
 
     return this.scheduleService.addTeilnehmerkreis(pruefung,teilnehmerkreis,schaetzung);
+
   }
 
   @Override
@@ -400,7 +404,14 @@ public class Controller implements InterfaceController {
   public void exportPeriode(Path path, ExportTyp typ) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(path, typ);
     checkNoPruefungDefined();
-    throw new IllegalStateException("Not implemented yet!");
+    try {
+      ioService.exportPeriode(path, typ);
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (ExportException e) {
+      e.printStackTrace();
+    }
+    //TODO kann nach nächstem deploy weg.
   }
 
   @Override
