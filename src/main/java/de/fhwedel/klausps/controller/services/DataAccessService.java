@@ -581,6 +581,10 @@ public class DataAccessService {
     return pruefungBlock.equals(otherBlock);
   }
 
+  public Pruefungsperiode getPruefungsperiode() {
+    return pruefungsperiode;
+  }
+
   public Block getModelBlock(ReadOnlyBlock block) {
     return pruefungsperiode.block(block.getBlockId());
   }
