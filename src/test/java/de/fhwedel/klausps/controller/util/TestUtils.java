@@ -112,17 +112,6 @@ public class TestUtils {
     return getRandomPlannedPruefungen(seed, 1).get(0);
   }
 
-  public static PruefungDTO getRandomPlannedROPruefung(long seed) {
-    Random random = new Random(seed);
-    return new PruefungDTOBuilder().withPruefungsName(getRandomString(random, 8))
-        .withPruefungsNummer(getRandomString(random, 20))
-        .withDauer(Duration.ofMinutes(random.nextInt(60, 150)))
-        .withStartZeitpunkt(getRandomDate(seed))
-        .withAdditionalPruefer(getRandomString(random, 5))
-        .withScoring(random.nextInt(0, Integer.MAX_VALUE))
-        .build();
-  }
-
   public static List<Pruefung> getRandomPlannedPruefungen(long seed, int amount) {
     Random random = new Random(seed);
     List<Pruefung> randomPruefungen = new ArrayList<>(amount);
@@ -134,10 +123,34 @@ public class TestUtils {
     return randomPruefungen;
   }
 
+  public static PruefungDTO getRandomPlannedROPruefung(long seed) {
+    Random random = new Random(seed);
+    return new PruefungDTOBuilder().withPruefungsName(getRandomString(random, 8))
+        .withPruefungsNummer(getRandomString(random, 20))
+        .withDauer(Duration.ofMinutes(random.nextInt(60, 150)))
+        .withStartZeitpunkt(getRandomDate(seed)).withAdditionalPruefer(getRandomString(random, 5))
+        .withScoring(random.nextInt(0, Integer.MAX_VALUE)).build();
+  }
+
   public static LocalDateTime getRandomDate(long seed) {
     Random random = new Random(seed);
     return LocalDateTime.of(random.nextInt(2000, 2030), random.nextInt(1, 12),
         random.nextInt(1, 28), random.nextInt(0, 20), random.nextInt(0, 60));
+  }
+
+  public static ReadOnlyPruefung getRandomROPruefung(long seed) {
+    return getRandomROPruefungen(seed, 1).get(0);
+  }
+
+  public static List<ReadOnlyPruefung> getRandomROPruefungen(long seed, int amount) {
+    Random random = new Random(seed);
+    List<ReadOnlyPruefung> randomPruefungen = new ArrayList<>(amount);
+    for (int index = 0; index < amount; index++) {
+      randomPruefungen.add(new PruefungDTOBuilder().withPruefungsName(getRandomString(random, 5))
+          .withDauer(getRandomDuration(random, 120)).withPruefungsNummer(getRandomString(random, 4))
+          .build());
+    }
+    return randomPruefungen;
   }
 
 }

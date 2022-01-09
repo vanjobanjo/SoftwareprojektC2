@@ -23,6 +23,7 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
   static final long MINUTES_BETWEEN_PRUEFUNGEN = 30;
 
   private int countStudents = 0;
+
   public TwoKlausurenSameTime() {
     this(ServiceProvider.getDataAccessService());
   }
@@ -65,10 +66,8 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
               }
             }
           } else {
-            hartKriterium =
-                getTeilnehmerkreisFromPruefung(pruefung, planungseinheit.asPruefung(),
-                    inConflictROPruefung, inConflictTeilnehmerkreis)
-                    || hartKriterium;
+            hartKriterium = getTeilnehmerkreisFromPruefung(pruefung, planungseinheit.asPruefung(),
+                inConflictROPruefung, inConflictTeilnehmerkreis) || hartKriterium;
           }
         }
         if (hartKriterium) {
@@ -82,11 +81,16 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
     return Optional.empty();
   }
 
+  @Override
+  public Set<Pruefung> getAllPotentialConflictingPruefungenWith(
+      Planungseinheit planungseinheitToCheckFor) {
+    throw new UnsupportedOperationException("Not implemented yet!");
+  }
+
   @NotNull
   private LocalDateTime getEndTime(Pruefung pruefung) {
     Optional<Block> maybeBlock = dataAccessService.getBlockTo(pruefung);
-    LocalDateTime date = pruefung.getStartzeitpunkt()
-        .plusMinutes(MINUTES_BETWEEN_PRUEFUNGEN);
+    LocalDateTime date = pruefung.getStartzeitpunkt().plusMinutes(MINUTES_BETWEEN_PRUEFUNGEN);
 
     return maybeBlock.isPresent() && maybeBlock.get().getTyp() == Blocktyp.SEQUENTIAL ? date.plus(
         maybeBlock.get().getDauer()) : date.plus(pruefung.getDauer());
