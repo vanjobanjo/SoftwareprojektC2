@@ -7,9 +7,8 @@ import static de.fhwedel.klausps.controller.util.TestFactory.RO_HASKELL_UNPLANNE
 import static de.fhwedel.klausps.controller.util.TestFactory.bwlMaster;
 import static de.fhwedel.klausps.controller.util.TestFactory.infBachelor;
 import static de.fhwedel.klausps.controller.util.TestFactory.infMaster;
-import static de.fhwedel.klausps.controller.util.TestUtils.getRandomDuration;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
-import static de.fhwedel.klausps.controller.util.TestUtils.getRandomString;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomROPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTeilnehmerkreis;
 import static de.fhwedel.klausps.model.api.Blocktyp.PARALLEL;
 import static de.fhwedel.klausps.model.api.Blocktyp.SEQUENTIAL;
@@ -156,8 +155,7 @@ class ScheduleServiceTest {
     ReadOnlyBlock consistentBlock = getROBlockFromROPruefungen("AnalysisAndDm", null, RO_DM,
         RO_ANALYSIS);
 
-    // check no exceptions
-    List<ReadOnlyPlanungseinheit> result = deviceUnderTest.scheduleBlock(consistentBlock, time);
+    assertDoesNotThrow(() -> deviceUnderTest.scheduleBlock(consistentBlock, time));
   }
 
   @Test
@@ -516,22 +514,7 @@ class ScheduleServiceTest {
   @Test
   void addPruefungToBlock_blockMustNotBeNull() {
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.addPruefungToBlock(null, getRandomPruefung(12L)));
-  }
-
-  private ReadOnlyPruefung getRandomPruefung(long seed) {
-    return getRandomPruefungen(seed, 1).get(0);
-  }
-
-  private List<ReadOnlyPruefung> getRandomPruefungen(long seed, int amount) {
-    Random random = new Random(seed);
-    List<ReadOnlyPruefung> randomPruefungen = new ArrayList<>(amount);
-    for (int index = 0; index < amount; index++) {
-      randomPruefungen.add(new PruefungDTOBuilder().withPruefungsName(getRandomString(random, 5))
-          .withDauer(getRandomDuration(random, 120)).withPruefungsNummer(getRandomString(random, 4))
-          .build());
-    }
-    return randomPruefungen;
+        () -> deviceUnderTest.addPruefungToBlock(null, getRandomROPruefung(12L)));
   }
 
   @Test
@@ -556,7 +539,7 @@ class ScheduleServiceTest {
 
   @Test
   void addPruefungToBlock_pruefungIsPartOfOtherBlock() {
-    ReadOnlyPruefung pruefung = getRandomPruefung(1L);
+    ReadOnlyPruefung pruefung = getRandomROPruefung(1L);
     ReadOnlyBlock otherBlock = getUnplannedBlockWith1RandomPruefung();
 
     when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(
@@ -568,13 +551,13 @@ class ScheduleServiceTest {
 
   private ReadOnlyBlock getUnplannedBlockWith1RandomPruefung() {
     LocalDateTime startTime = LocalDateTime.of(2022, 1, 7, 11, 11);
-    return new BlockDTO("someName", startTime, Duration.ZERO, Set.of(getRandomPruefung(1L)), 123456,
-        PARALLEL);
+    return new BlockDTO("someName", startTime, Duration.ZERO, Set.of(getRandomROPruefung(1L)),
+        123456, PARALLEL);
   }
 
   @Test
   void addPruefungToBlock_pruefungIsAlreadyInSameBlock() throws HartesKriteriumException {
-    ReadOnlyPruefung pruefung = getRandomPruefung(1L);
+    ReadOnlyPruefung pruefung = getRandomROPruefung(1L);
     ReadOnlyBlock block = getBlockWith(pruefung);
 
     when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(Optional.of(block));
@@ -590,7 +573,7 @@ class ScheduleServiceTest {
   @Test
   void addPruefungToBlock_pruefungIsAlreadyInSameBlock_empty_result()
       throws HartesKriteriumException {
-    ReadOnlyPruefung pruefung = getRandomPruefung(1L);
+    ReadOnlyPruefung pruefung = getRandomROPruefung(1L);
     ReadOnlyBlock block = getBlockWith(pruefung);
 
     when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(Optional.of(block));
@@ -601,7 +584,7 @@ class ScheduleServiceTest {
   @Test
   void addPruefungToBlock_pruefung_block_is_not_planned_no_affected_pruefungen()
       throws HartesKriteriumException {
-    ReadOnlyPruefung pruefung = getRandomPruefung(1L);
+    ReadOnlyPruefung pruefung = getRandomROPruefung(1L);
     ReadOnlyBlock block = getUnplannedBlockWith();
     when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(Optional.empty());
 
@@ -615,7 +598,7 @@ class ScheduleServiceTest {
   @Test
   void addPruefungToBlock_pruefung_block_is_not_planned_no_further_calculation()
       throws HartesKriteriumException {
-    ReadOnlyPruefung pruefung = getRandomPruefung(1L);
+    ReadOnlyPruefung pruefung = getRandomROPruefung(1L);
     ReadOnlyBlock block = getUnplannedBlockWith();
     when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(Optional.empty());
 
@@ -660,7 +643,8 @@ class ScheduleServiceTest {
   private HartesKriteriumAnalyse getNewHartesKriteriumAnalyse() {
     Random random = new Random(1L);
     int next = random.nextInt();
-    return new HartesKriteriumAnalyse(Set.of(getPruefungOfReadOnlyPruefung(getRandomPruefung(1L))),
+    return new HartesKriteriumAnalyse(
+        Set.of(getPruefungOfReadOnlyPruefung(getRandomROPruefung(1L))),
         Set.of(getRandomTeilnehmerkreis(1L)), next, ZWEI_KLAUSUREN_GLEICHZEITIG);
   }
 
@@ -695,14 +679,14 @@ class ScheduleServiceTest {
 
   @Test
   void removePruefungFromBlock_pruefung_empty_block() {
-    ReadOnlyPruefung pruefung = getRandomPruefung(1L);
+    ReadOnlyPruefung pruefung = getRandomROPruefung(1L);
     ReadOnlyBlock block = getBlockWith();
     assertThat(deviceUnderTest.removePruefungFromBlock(block, pruefung)).isEmpty();
   }
 
   @Test
   void removePruefungFromBlock_pruefung_empty_block_remove_pruefung_data_access_doesnt_get_called() {
-    ReadOnlyPruefung pruefung = getRandomPruefung(1L);
+    ReadOnlyPruefung pruefung = getRandomROPruefung(1L);
     ReadOnlyBlock block = getBlockWith();
     deviceUnderTest.removePruefungFromBlock(block, pruefung);
     verify(dataAccessService, times(0)).removePruefungFromBlock(block, pruefung);
@@ -711,7 +695,7 @@ class ScheduleServiceTest {
   @Test
   void removePruefungFromBlock_pruefung_not_in_block() {
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
-    ReadOnlyPruefung pruefungInBlock = getRandomPruefung(1L);
+    ReadOnlyPruefung pruefungInBlock = getRandomROPruefung(1L);
     ReadOnlyBlock block = getBlockWith(pruefungInBlock);
     when(dataAccessService.getPruefungWith(RO_HASKELL_UNPLANNED.getPruefungsnummer())).thenReturn(
         haskell);
@@ -723,7 +707,7 @@ class ScheduleServiceTest {
   @DisplayName("remove pruefung from block - dataAccessService removePruefungFromBlock does not get called")
   void removePruefungFromBlock_pruefung_not_in_block_verify() {
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
-    ReadOnlyPruefung pruefungInBlock = getRandomPruefung(1L);
+    ReadOnlyPruefung pruefungInBlock = getRandomROPruefung(1L);
     ReadOnlyBlock block = getBlockWith(pruefungInBlock);
     when(dataAccessService.getPruefungWith(RO_HASKELL_UNPLANNED.getPruefungsnummer())).thenReturn(
         haskell);
