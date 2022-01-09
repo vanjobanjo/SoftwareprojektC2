@@ -302,8 +302,6 @@ class ScheduleServiceTest {
     blockWithAnalysisDM.setStartzeitpunkt(null);
     // todo auf Block testen wenn equals für block implementiert ist
     assertThat(result).contains(ro_analysis, ro_dm);
-
-
   }
 
   @Test
@@ -367,8 +365,6 @@ class ScheduleServiceTest {
       //Sollte hier nicht passieren, deshalb wird sie hier verworfen
       e.printStackTrace();
     }
-
-
   }
 
   @Test
@@ -458,7 +454,6 @@ class ScheduleServiceTest {
     int schaetzung = 20;
     assertThat(deviceUnderTest.setTeilnehmerkreisSchaetzung(converter.convertToReadOnlyPruefung(dm),
         infMaster, schaetzung)).isEmpty();
-
   }
 
   @Test
@@ -487,7 +482,6 @@ class ScheduleServiceTest {
     assertThat(analysis.getSchaetzungen()).containsEntry(teilnehmerkreis, oldSchaetzung);
 
     assertThat(dm.getSchaetzungen()).containsEntry(teilnehmerkreis, newSchaetzung);
-
   }
 
   @Test
@@ -517,7 +511,6 @@ class ScheduleServiceTest {
         converter.convertToReadOnlyPruefung(analysis)));
     assertThat(analysis.getSchaetzungen()).containsEntry(teilnehmerkreis, oldSchaetzung);
     assertThat(dm.getSchaetzungen()).containsEntry(teilnehmerkreis, newSchaetzung);
-
   }
 
   @Test
@@ -594,10 +587,6 @@ class ScheduleServiceTest {
     return new BlockDTO("someName", startTime, Duration.ZERO, Set.of(pruefungen), 123456, PARALLEL);
   }
 
-  private ReadOnlyBlock getUnplannedBlockWith(ReadOnlyPruefung... pruefungen) {
-    return new BlockDTO("someName", null, Duration.ZERO, Set.of(pruefungen), 123456, PARALLEL);
-  }
-
   @Test
   void addPruefungToBlock_pruefungIsAlreadyInSameBlock_empty_result()
       throws HartesKriteriumException {
@@ -607,7 +596,6 @@ class ScheduleServiceTest {
     when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(Optional.of(block));
 
     assertThat(deviceUnderTest.addPruefungToBlock(block, pruefung)).isEmpty();
-
   }
 
   @Test
@@ -618,7 +606,10 @@ class ScheduleServiceTest {
     when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(Optional.empty());
 
     assertThat(deviceUnderTest.addPruefungToBlock(block, pruefung)).isEmpty();
+  }
 
+  private ReadOnlyBlock getUnplannedBlockWith(ReadOnlyPruefung... pruefungen) {
+    return new BlockDTO("someName", null, Duration.ZERO, Set.of(pruefungen), 123456, PARALLEL);
   }
 
   @Test
@@ -631,7 +622,6 @@ class ScheduleServiceTest {
     deviceUnderTest.addPruefungToBlock(block, pruefung);
     verify(dataAccessService, times(0)).addPruefungToBlock(any(), any());
   }
-
 
   @Test
   void addPruefungToBlock_pruefung_with_same_teilnehmerkreis_at_same_time() {
@@ -650,10 +640,28 @@ class ScheduleServiceTest {
         List.of(getNewHartesKriteriumAnalyse()));
     when(dataAccessService.addPruefungToBlock(roBlock, RO_ANALYSIS_UNPLANNED)).thenReturn(block);
 
-    assertThrows(HartesKriteriumException.class,
-        () -> deviceUnderTest.addPruefungToBlock(roBlock,
-            converter.convertToReadOnlyPruefung(analysis)));
+    assertThrows(HartesKriteriumException.class, () -> deviceUnderTest.addPruefungToBlock(roBlock,
+        converter.convertToReadOnlyPruefung(analysis)));
+  }
 
+  private Block getModelBlockWithPruefungen(Pruefungsperiode pruefungsperiode, String name,
+      LocalDateTime termin, Pruefung... pruefungen) {
+    Block result = new BlockImpl(pruefungsperiode, name, SEQUENTIAL);
+    for (Pruefung pruefung : pruefungen) {
+      result.addPruefung(pruefung);
+      when(dataAccessService.getBlockTo(pruefung)).thenReturn(Optional.of(result));
+    }
+    if (termin != null) {
+      result.setStartzeitpunkt(termin);
+    }
+    return result;
+  }
+
+  private HartesKriteriumAnalyse getNewHartesKriteriumAnalyse() {
+    Random random = new Random(1L);
+    int next = random.nextInt();
+    return new HartesKriteriumAnalyse(Set.of(getPruefungOfReadOnlyPruefung(getRandomPruefung(1L))),
+        Set.of(getRandomTeilnehmerkreis(1L)), next, ZWEI_KLAUSUREN_GLEICHZEITIG);
   }
 
   @Test
@@ -681,10 +689,8 @@ class ScheduleServiceTest {
       deviceUnderTest.addPruefungToBlock(roBlock, converter.convertToReadOnlyPruefung(analysis));
 
     } catch (HartesKriteriumException hardViolation) {
-      verify(dataAccessService, times(1)).removePruefungFromBlock(roBlock,
-          RO_ANALYSIS_UNPLANNED);
+      verify(dataAccessService, times(1)).removePruefungFromBlock(roBlock, RO_ANALYSIS_UNPLANNED);
     }
-
   }
 
   @Test
@@ -724,26 +730,5 @@ class ScheduleServiceTest {
     deviceUnderTest.removePruefungFromBlock(block, RO_HASKELL_UNPLANNED);
     verify(dataAccessService, times(0)).removePruefungFromBlock(any(), any());
 
-  }
-
-
-  private HartesKriteriumAnalyse getNewHartesKriteriumAnalyse() {
-    Random random = new Random(1L);
-    int next = random.nextInt();
-    return new HartesKriteriumAnalyse(Set.of(getPruefungOfReadOnlyPruefung(getRandomPruefung(1L))),
-        Set.of(getRandomTeilnehmerkreis(1L)), next, ZWEI_KLAUSUREN_GLEICHZEITIG);
-  }
-
-  private Block getModelBlockWithPruefungen(Pruefungsperiode pruefungsperiode, String name,
-      LocalDateTime termin, Pruefung... pruefungen) {
-    Block result = new BlockImpl(pruefungsperiode, name, SEQUENTIAL);
-    for (Pruefung pruefung : pruefungen) {
-      result.addPruefung(pruefung);
-      when(dataAccessService.getBlockTo(pruefung)).thenReturn(Optional.of(result));
-    }
-    if (termin != null) {
-      result.setStartzeitpunkt(termin);
-    }
-    return result;
   }
 }
