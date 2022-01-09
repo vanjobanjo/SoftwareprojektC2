@@ -1,17 +1,14 @@
 package de.fhwedel.klausps.controller.services;
 
-import static de.fhwedel.klausps.controller.PlanungseinheitUtil.getAllPruefungen;
+import static de.fhwedel.klausps.controller.util.PlanungseinheitUtil.getAllPruefungen;
+import static de.fhwedel.klausps.controller.util.TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung;
 import static java.util.Objects.nonNull;
 
-import de.fhwedel.klausps.controller.PlanungseinheitUtil;
-import de.fhwedel.klausps.controller.api.PruefungDTO;
-import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
-import de.fhwedel.klausps.controller.helper.Pair;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Planungseinheit;
@@ -24,7 +21,6 @@ import de.fhwedel.klausps.model.impl.PruefungImpl;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -415,36 +411,24 @@ public class DataAccessService {
     throw new IllegalArgumentException("Pruefung existiert nicht.");
   }
 
-  public Pair<Block, Pruefung> removePruefungFromBlock(ReadOnlyBlock block,
+  public Block removePruefungFromBlock(ReadOnlyBlock block,
       ReadOnlyPruefung pruefung) {
     Block modelBlock = getBlockFromModelOrException(block);
     Pruefung modelPruefung = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
 
-    if (!modelBlock.removePruefung(modelPruefung)) {
-      throw new IllegalArgumentException("Pruefung konnte nicht aus dem Block entfernt werden.");
-    }
+    modelBlock.removePruefung(modelPruefung);
     if (modelBlock.getPruefungen().isEmpty()) {
       modelBlock.setStartzeitpunkt(null);
     }
-    return new Pair<>(modelBlock, modelPruefung);
+
+    return modelBlock;
   }
 
-  public Pair<Block, Pruefung> addPruefungToBlock(ReadOnlyBlock block, ReadOnlyPruefung pruefung) {
+  public Block addPruefungToBlock(ReadOnlyBlock block, ReadOnlyPruefung pruefung) {
     Block modelBlock = getBlockFromModelOrException(block);
     Pruefung modelPruefung = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
-    Optional<Block> potentialOldBlock = Optional.ofNullable(pruefungsperiode.block(modelPruefung));
-
-    if (block.getROPruefungen() != null || !modelBlock.getPruefungen().contains(modelPruefung)) {
-      if (potentialOldBlock.isPresent()) {
-        Block oldBlock = potentialOldBlock.get();
-        Pair<Block, Pruefung> unscheduled = removePruefungFromBlock(
-            converter.convertToROBlock(oldBlock), pruefung);
-        modelPruefung = unscheduled.right();
-      }
-      modelBlock.addPruefung(modelPruefung);
-    }
-
-    return new Pair<>(modelBlock, modelPruefung);
+    modelBlock.addPruefung(modelPruefung);
+    return modelBlock;
   }
 
   public LocalDate getStartOfPeriode() {
@@ -573,7 +557,7 @@ public class DataAccessService {
       LocalDateTime end = pruefung.endzeitpunkt();
       if ((start.equals(zeitpunkt) || start.isBefore(zeitpunkt))
           && (end.equals(zeitpunkt) || end.isAfter(zeitpunkt))) {
-        PlanungseinheitUtil.compareAndPutBiggerSchaetzung(schaetzungen,
+        compareAndPutBiggerSchaetzung(schaetzungen,
             pruefung.getSchaetzungen());
       }
     }
@@ -600,4 +584,9 @@ public class DataAccessService {
   public Pruefungsperiode getPruefungsperiode() {
     return pruefungsperiode;
   }
+
+  public Block getModelBlock(ReadOnlyBlock block) {
+    return pruefungsperiode.block(block.getBlockId());
+  }
+
 }

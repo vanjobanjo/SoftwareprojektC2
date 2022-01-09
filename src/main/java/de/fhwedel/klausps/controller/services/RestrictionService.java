@@ -3,17 +3,8 @@ package de.fhwedel.klausps.controller.services;
 import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.restriction.hard.HarteRestriktion;
-import de.fhwedel.klausps.controller.restriction.hard.TwoKlausurenSameTime;
-import de.fhwedel.klausps.controller.restriction.soft.AnzahlPruefungProWoche;
-import de.fhwedel.klausps.controller.restriction.soft.AnzahlPruefungProWocheTeilnehmerkreis;
-import de.fhwedel.klausps.controller.restriction.soft.AnzahlPruefungenGleichzeitigRestriktion;
-import de.fhwedel.klausps.controller.restriction.soft.AnzahlTeilnehmerGleichzeitigZuHochRestriction;
-import de.fhwedel.klausps.controller.restriction.soft.FreierTagZwischenPruefungen;
-import de.fhwedel.klausps.controller.restriction.soft.KeineKlausurAmSonntag;
-import de.fhwedel.klausps.controller.restriction.soft.MehrePruefungenAmTag;
-import de.fhwedel.klausps.controller.restriction.soft.UniformeZeitslots;
 import de.fhwedel.klausps.controller.restriction.soft.WeicheRestriktion;
-import de.fhwedel.klausps.controller.restriction.soft.WocheVierFuerMaster;
+import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Pruefung;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -32,30 +23,18 @@ public class RestrictionService {
   RestrictionService() {
     softRestrictions = new HashSet<>();
     hardRestrictions = new HashSet<>();
-    registerSoftCriteria();
-    registerHardCriteria();
+    RestrictionFactory factory = new RestrictionFactory();
+    factory.createRestrictions(this);
 
   }
 
 
-  private void registerSoftCriteria() {
-    softRestrictions.addAll(Set.of(
-       // new AnzahlPruefungProWoche(), deprecated.
-        new AnzahlPruefungProWocheTeilnehmerkreis(),
-        new AnzahlPruefungenGleichzeitigRestriktion(),
-        new AnzahlTeilnehmerGleichzeitigZuHochRestriction(),
-        new FreierTagZwischenPruefungen(),
-        new KeineKlausurAmSonntag(),
-        new UniformeZeitslots(),
-        new MehrePruefungenAmTag(),
-        new WocheVierFuerMaster()
-        // todo register KlausurenMitVielenAmAnfang
-    ));
+  void registerSoftCriteria(Set<WeicheRestriktion> restrictions) {
+    softRestrictions.addAll(restrictions);
   }
 
-
-  private void registerHardCriteria() {
-    hardRestrictions.add(new TwoKlausurenSameTime());
+  void registerHardCriteria(Set<HarteRestriktion> restrictions) {
+    hardRestrictions.addAll(restrictions);
   }
 
 
@@ -79,6 +58,15 @@ public class RestrictionService {
     }
     return result;
   }
+
+  public Set<Pruefung> getAffectedPruefungen(Block block) {
+    Set<Pruefung> result = new HashSet<>();
+    for (Pruefung pruefung : block.getPruefungen()) {
+      result.addAll(getAffectedPruefungen(pruefung));
+    }
+    return result;
+  }
+
 
   /**
    * Checks all hard restriction for passed pruefung.

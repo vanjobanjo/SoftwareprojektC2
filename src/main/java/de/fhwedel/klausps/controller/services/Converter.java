@@ -120,7 +120,7 @@ public class Converter {
 
     Set<ReadOnlyPruefung> conflictPruefung = new HashSet<>();
     Set<Teilnehmerkreis> conflictTeilnehmer = new HashSet<>();
-    int amountStudens = 0;
+    int amountStudents = 0;
 
     for (HartesKriteriumAnalyse hKA : hard) {
 
@@ -130,11 +130,11 @@ public class Converter {
       for (Teilnehmerkreis teilnehmerkreis : hKA.getAffectedTeilnehmerkreise()) {
         if (!conflictTeilnehmer.contains(teilnehmerkreis)) {
           conflictTeilnehmer.add(teilnehmerkreis);
-          amountStudens += hKA.getAmountAffectedStudents();
+          amountStudents += hKA.getAmountAffectedStudents();
         }
       }
     }
 
-    return new HartesKriteriumException(conflictPruefung, conflictTeilnehmer, amountStudens);
+    return new HartesKriteriumException(conflictPruefung, conflictTeilnehmer, amountStudents);
   }
 }

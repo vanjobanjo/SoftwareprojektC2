@@ -1,6 +1,7 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
-import de.fhwedel.klausps.controller.PlanungseinheitUtil;
+import static de.fhwedel.klausps.controller.util.TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung;
+
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
@@ -53,7 +54,7 @@ public abstract class WeicheRestriktion {
       Map<Teilnehmerkreis, Integer> affectedTeilnehmerkreise,
       Map<Teilnehmerkreis, Integer> teilnehmerkreiseToAdd) {
 
-    PlanungseinheitUtil.compareAndPutBiggerSchaetzung(affectedTeilnehmerkreise,
+    compareAndPutBiggerSchaetzung(affectedTeilnehmerkreise,
         teilnehmerkreiseToAdd);
   }
 
