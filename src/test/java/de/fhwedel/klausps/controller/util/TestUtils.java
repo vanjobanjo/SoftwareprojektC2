@@ -1,5 +1,6 @@
 package de.fhwedel.klausps.controller.util;
 
+import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.model.api.Ausbildungsgrad;
@@ -109,6 +110,17 @@ public class TestUtils {
 
   public static Pruefung getRandomPlannedPruefung(long seed) {
     return getRandomPlannedPruefungen(seed, 1).get(0);
+  }
+
+  public static PruefungDTO getRandomPlannedROPruefung(long seed) {
+    Random random = new Random(seed);
+    return new PruefungDTOBuilder().withPruefungsName(getRandomString(random, 8))
+        .withPruefungsNummer(getRandomString(random, 20))
+        .withDauer(Duration.ofMinutes(random.nextInt(60, 150)))
+        .withStartZeitpunkt(getRandomDate(seed))
+        .withAdditionalPruefer(getRandomString(random, 5))
+        .withScoring(random.nextInt(0, Integer.MAX_VALUE))
+        .build();
   }
 
   public static List<Pruefung> getRandomPlannedPruefungen(long seed, int amount) {
