@@ -597,4 +597,7 @@ public class DataAccessService {
     return pruefungBlock.equals(otherBlock);
   }
 
+  public Pruefungsperiode getPruefungsperiode() {
+    return pruefungsperiode;
+  }
 }
