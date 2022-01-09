@@ -22,15 +22,12 @@ public class RestrictionService {
 
   private final Set<WeicheRestriktion> softRestrictions;
 
-
   RestrictionService() {
     softRestrictions = new HashSet<>();
     hardRestrictions = new HashSet<>();
     RestrictionFactory factory = new RestrictionFactory();
     factory.createRestrictions(this);
-
   }
-
 
   void registerSoftCriteria(Set<WeicheRestriktion> restrictions) {
     softRestrictions.addAll(restrictions);
@@ -40,17 +37,11 @@ public class RestrictionService {
     hardRestrictions.addAll(restrictions);
   }
 
-
-  /**
-   * Checks all restriction for passed pruefung.
-   *
-   * @param pruefung Pruefung to check criteria
-   * @return WeichesKriteriumAnalysen
-   */
-  public List<WeichesKriteriumAnalyse> checkWeicheKriterien(
-      Pruefung pruefung) {
-    List<WeichesKriteriumAnalyse> result = new LinkedList<>();
-    softRestrictions.forEach(soft -> soft.evaluate(pruefung).ifPresent(result::add));
+  public Set<Pruefung> getAffectedPruefungen(Block block) {
+    Set<Pruefung> result = new HashSet<>();
+    for (Pruefung pruefung : block.getPruefungen()) {
+      result.addAll(getAffectedPruefungen(pruefung));
+    }
     return result;
   }
 
@@ -62,25 +53,15 @@ public class RestrictionService {
     return result;
   }
 
-  public Set<Pruefung> getAffectedPruefungen(Block block) {
-    Set<Pruefung> result = new HashSet<>();
-    for (Pruefung pruefung : block.getPruefungen()) {
-      result.addAll(getAffectedPruefungen(pruefung));
-    }
-    return result;
-  }
-
-
   /**
-   * Checks all hard restriction for passed pruefung.
+   * Checks all restriction for passed pruefung.
    *
    * @param pruefung Pruefung to check criteria
-   * @return HartesKriteriumAnalysen
+   * @return WeichesKriteriumAnalysen
    */
-  public List<HartesKriteriumAnalyse> checkHarteKriterien(
-      Pruefung pruefung) {
-    List<HartesKriteriumAnalyse> result = new LinkedList<>();
-    hardRestrictions.forEach(hard -> hard.evaluate(pruefung).ifPresent(result::add));
+  public List<WeichesKriteriumAnalyse> checkWeicheKriterien(Pruefung pruefung) {
+    List<WeichesKriteriumAnalyse> result = new LinkedList<>();
+    softRestrictions.forEach(soft -> soft.evaluate(pruefung).ifPresent(result::add));
     return result;
   }
 
@@ -102,6 +83,18 @@ public class RestrictionService {
       Set<Pruefung> pruefung) {
     return pruefung.stream().collect(Collectors.groupingBy(prue -> prue,
         Collectors.flatMapping(prue -> checkHarteKriterien(prue).stream(), Collectors.toList())));
+  }
+
+  /**
+   * Checks all hard restriction for passed pruefung.
+   *
+   * @param pruefung Pruefung to check criteria
+   * @return HartesKriteriumAnalysen
+   */
+  public List<HartesKriteriumAnalyse> checkHarteKriterien(Pruefung pruefung) {
+    List<HartesKriteriumAnalyse> result = new LinkedList<>();
+    hardRestrictions.forEach(hard -> hard.evaluate(pruefung).ifPresent(result::add));
+    return result;
   }
 
   public int getScoringOfPruefung(Pruefung pruefung) {
