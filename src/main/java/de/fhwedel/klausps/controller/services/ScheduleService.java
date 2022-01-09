@@ -331,8 +331,10 @@ public class ScheduleService {
     return new LinkedList<>(result);
   }
 
+  @NotNull
   public Set<ReadOnlyPruefung> getGeplantePruefungenWithKonflikt(
       ReadOnlyPlanungseinheit planungseinheit) {
-    return null;
+    noNullParameters(planungseinheit);
+    return restrictionService.getPruefungenInHardConflictWith(planungseinheit);
   }
 }
