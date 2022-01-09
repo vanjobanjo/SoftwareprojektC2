@@ -1,7 +1,6 @@
 package de.fhwedel.klausps.controller;
 
 import static de.fhwedel.klausps.controller.util.ParameterUtil.noNullParameters;
-import static java.util.Objects.requireNonNull;
 
 import de.fhwedel.klausps.controller.api.InterfaceController;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
@@ -35,9 +34,21 @@ import java.util.Set;
 
 public class Controller implements InterfaceController {
 
-  private final DataAccessService dataAccessService = ServiceProvider.getDataAccessService();
-  private final IOService ioService = ServiceProvider.getIOService();
-  private final ScheduleService scheduleService = ServiceProvider.getScheduleService();
+  private final DataAccessService dataAccessService;
+  private final IOService ioService;
+  private final ScheduleService scheduleService;
+
+  public Controller() {
+    this(ServiceProvider.getDataAccessService(), ServiceProvider.getIOService(),
+        ServiceProvider.getScheduleService());
+  }
+
+  public Controller(DataAccessService dataAccessService, IOService ioService,
+      ScheduleService scheduleService) {
+    this.dataAccessService = dataAccessService;
+    this.ioService = ioService;
+    this.scheduleService = scheduleService;
+  }
 
   @Override
   public Set<ReadOnlyPruefung> getGeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
@@ -154,7 +165,7 @@ public class Controller implements InterfaceController {
       throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
     noNullParameters(start, end);
     checkNoPruefungDefined();
-   return dataAccessService.getAllReadOnlyPruefungenBetween(start,end);
+    return dataAccessService.getAllReadOnlyPruefungenBetween(start, end);
   }
 
   @Override
@@ -169,7 +180,6 @@ public class Controller implements InterfaceController {
       throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
     throw new IllegalStateException("Not implemented yet!");
   }
-
 
   @Override
   public Optional<ReadOnlyBlock> getBlockOfPruefung(ReadOnlyPruefung pruefung)
@@ -211,7 +221,8 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public ReadOnlyPlanungseinheit setPruefungsnummer(ReadOnlyPruefung pruefung, String pruefungsnummer)
+  public ReadOnlyPlanungseinheit setPruefungsnummer(ReadOnlyPruefung pruefung,
+      String pruefungsnummer)
       throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, pruefungsnummer);
     checkNoPruefungDefined();
@@ -285,7 +296,6 @@ public class Controller implements InterfaceController {
     return scheduleService.schedulePruefung(pruefung, startTermin);
   }
 
-
   @Override
   public ReadOnlyPlanungseinheit addPruefer(ReadOnlyPruefung pruefung, String kuerzel)
       throws NoPruefungsPeriodeDefinedException {
@@ -309,8 +319,7 @@ public class Controller implements InterfaceController {
     noNullParameters(pruefung, teilnehmerkreis, schaetzung);
     checkNoPruefungDefined();
 
-    return this.scheduleService.addTeilnehmerkreis(pruefung,teilnehmerkreis,schaetzung);
-
+    return this.scheduleService.addTeilnehmerkreis(pruefung, teilnehmerkreis, schaetzung);
   }
 
   @Override
@@ -319,7 +328,7 @@ public class Controller implements InterfaceController {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, teilnehmerkreis);
     checkNoPruefungDefined();
-  return this.scheduleService.removeTeilnehmerKreis(pruefung,teilnehmerkreis);
+    return this.scheduleService.removeTeilnehmerKreis(pruefung, teilnehmerkreis);
   }
 
   @Override
@@ -368,7 +377,6 @@ public class Controller implements InterfaceController {
     return scheduleService.unscheduleBlock(block);
   }
 
-
   @Override
   public List<ReadOnlyPlanungseinheit> addPruefungToBlock(ReadOnlyBlock block,
       ReadOnlyPruefung pruefung)
@@ -376,7 +384,6 @@ public class Controller implements InterfaceController {
     noNullParameters(block, pruefung);
     checkNoPruefungDefined();
     return scheduleService.addPruefungToBlock(block, pruefung);
-
   }
 
   @Override
@@ -452,6 +459,5 @@ public class Controller implements InterfaceController {
       throw new NoPruefungsPeriodeDefinedException();
     }
   }
-
 
 }
