@@ -52,55 +52,55 @@ public class Controller implements InterfaceController {
 
   @Override
   public Set<ReadOnlyPruefung> getGeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getGeplantePruefungen();
   }
 
   @Override
   public Set<ReadOnlyPruefung> getUngeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getUngeplantePruefungen();
   }
 
   @Override
   public Set<ReadOnlyBlock> getGeplanteBloecke() throws NoPruefungsPeriodeDefinedException {
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getGeplanteBloecke();
   }
 
   @Override
   public Set<ReadOnlyBlock> getUngeplanteBloecke() throws NoPruefungsPeriodeDefinedException {
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getUngeplanteBloecke();
   }
 
   @Override
   public LocalDate getStartDatumPeriode() throws NoPruefungsPeriodeDefinedException {
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getStartOfPeriode();
   }
 
   @Override
   public LocalDate getEndDatumPeriode() throws NoPruefungsPeriodeDefinedException {
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getEndOfPeriode();
   }
 
   @Override
   public LocalDate getAnkerPeriode() throws NoPruefungsPeriodeDefinedException {
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getAnkerPeriode();
   }
 
   @Override
   public int getKapazitaetPeriode() throws NoPruefungsPeriodeDefinedException {
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getPeriodenKapazitaet();
   }
 
   @Override
   public Semester getSemester() throws NoPruefungsPeriodeDefinedException {
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getSemester();
   }
 
@@ -113,7 +113,7 @@ public class Controller implements InterfaceController {
 
   @Override
   public Set<Teilnehmerkreis> getAllTeilnehmerKreise() throws NoPruefungsPeriodeDefinedException {
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getAllTeilnehmerkreise();
   }
 
@@ -121,7 +121,7 @@ public class Controller implements InterfaceController {
   public Set<ReadOnlyPruefung> getAllKlasurenFromPruefer(String pruefer)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefer);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     // todo Methode ist doppelt (hier ist lediglich der Name falsch geschrieben)
     throw new IllegalStateException("Not implemented yet!");
   }
@@ -130,7 +130,7 @@ public class Controller implements InterfaceController {
   public Set<ReadOnlyPruefung> getAllKlausurenFromPruefer(String pruefer)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefer);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getAllKlausurenFromPruefer(pruefer);
   }
 
@@ -138,15 +138,15 @@ public class Controller implements InterfaceController {
   public Set<ReadOnlyPruefung> getGeplantePruefungenForTeilnehmer(Teilnehmerkreis teilnehmer)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(teilnehmer);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.geplantePruefungenForTeilnehmerkreis(teilnehmer);
   }
 
   @Override
-  public Set<ReadOnlyPruefung> getUngeplantePruefungenForTeilnehmer(
-      Teilnehmerkreis teilnehmer) throws NoPruefungsPeriodeDefinedException {
+  public Set<ReadOnlyPruefung> getUngeplantePruefungenForTeilnehmer(Teilnehmerkreis teilnehmer)
+      throws NoPruefungsPeriodeDefinedException {
     noNullParameters(teilnehmer);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.ungeplantePruefungenForTeilnehmerkreis(teilnehmer);
   }
 
@@ -154,24 +154,25 @@ public class Controller implements InterfaceController {
   public int getAnzahlStudentenZeitpunkt(LocalDateTime zeitpunkt)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(zeitpunkt);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getAnzahlStudentenZeitpunkt(zeitpunkt);
   }
 
 
   @Override
-  public Set<ReadOnlyPruefung> getPruefungenInZeitraum(
-      LocalDateTime start, LocalDateTime end)
+  public Set<ReadOnlyPruefung> getPruefungenInZeitraum(LocalDateTime start, LocalDateTime end)
       throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
     noNullParameters(start, end);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getAllReadOnlyPruefungenBetween(start, end);
   }
 
   @Override
   public Set<ReadOnlyPruefung> getGeplantePruefungenWithKonflikt(
       ReadOnlyPlanungseinheit planungseinheit) throws NoPruefungsPeriodeDefinedException {
-    throw new IllegalStateException("Not implemented yet!");
+    noNullParameters(planungseinheit);
+    ensureAvailabilityOfPruefungsperiode();
+    return scheduleService.getGeplantePruefungenWithKonflikt(planungseinheit);
   }
 
   @Override
@@ -185,7 +186,7 @@ public class Controller implements InterfaceController {
   public Optional<ReadOnlyBlock> getBlockOfPruefung(ReadOnlyPruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getBlockTo(pruefung);
   }
 
@@ -193,7 +194,7 @@ public class Controller implements InterfaceController {
   public List<ReadOnlyPlanungseinheit> setDatumPeriode(LocalDate startDatum, LocalDate endDatum)
       throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
     noNullParameters(startDatum, endDatum);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     throw new IllegalStateException("Not implemented yet!");
   }
 
@@ -207,7 +208,7 @@ public class Controller implements InterfaceController {
   public List<ReadOnlyPlanungseinheit> setDauer(ReadOnlyPruefung pruefung, Duration dauer)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, dauer);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     // TODO use scheduleService
     throw new UnsupportedOperationException("Not implemented yet!");
   }
@@ -216,16 +217,15 @@ public class Controller implements InterfaceController {
   public List<ReadOnlyPlanungseinheit> setKapazitaetPeriode(int kapazitaet)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(kapazitaet);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return scheduleService.setKapazitaetPeriode(kapazitaet);
   }
 
   @Override
   public ReadOnlyPlanungseinheit setPruefungsnummer(ReadOnlyPruefung pruefung,
-      String pruefungsnummer)
-      throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
+      String pruefungsnummer) throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, pruefungsnummer);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.setPruefungsnummer(pruefung, pruefungsnummer);
   }
 
@@ -233,7 +233,7 @@ public class Controller implements InterfaceController {
   public ReadOnlyPlanungseinheit setName(ReadOnlyPruefung pruefung, String name)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, name);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.changeNameOfPruefung(pruefung, name);
   }
 
@@ -241,40 +241,36 @@ public class Controller implements InterfaceController {
   public ReadOnlyBlock setName(ReadOnlyBlock block, String name)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block, name);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.setNameOfBlock(block, name);
   }
 
   @Override
-  public List<ReadOnlyPlanungseinheit> setTeilnehmerkreisSchaetzung(
-      ReadOnlyPruefung pruefung, Teilnehmerkreis teilnehmerkreis, int schaetzung)
-      throws NoPruefungsPeriodeDefinedException {
+  public List<ReadOnlyPlanungseinheit> setTeilnehmerkreisSchaetzung(ReadOnlyPruefung pruefung,
+      Teilnehmerkreis teilnehmerkreis, int schaetzung) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, teilnehmerkreis, schaetzung);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return scheduleService.setTeilnehmerkreisSchaetzung(pruefung, teilnehmerkreis, schaetzung);
   }
 
   @Override
-  public ReadOnlyPruefung createPruefung(
-      String name,
-      String pruefungsNummer,
-      String pruefer, //TODO muss hier kein Set rein? => jo
-      Duration duration,
-      Map<Teilnehmerkreis, Integer> teilnehmerkreis)
+  public ReadOnlyPruefung createPruefung(String name, String pruefungsNummer, String pruefer,
+      //TODO muss hier kein Set rein? => jo
+      Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreis)
       throws NoPruefungsPeriodeDefinedException {
 
     noNullParameters(name, pruefungsNummer, pruefer, duration, teilnehmerkreis);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     // todo exchange refVWS for real parameter
-    return dataAccessService.createPruefung(
-        name, pruefungsNummer, "", pruefer, duration, teilnehmerkreis);
+    return dataAccessService.createPruefung(name, pruefungsNummer, "", pruefer, duration,
+        teilnehmerkreis);
   }
 
   @Override
   public Optional<ReadOnlyBlock> deletePruefung(ReadOnlyPruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
 
     return scheduleService.deletePruefung(pruefung);
   }
@@ -283,16 +279,16 @@ public class Controller implements InterfaceController {
   public List<ReadOnlyPlanungseinheit> unschedulePruefung(ReadOnlyPruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return scheduleService.unschedulePruefung(pruefung);
   }
 
   @Override
-  public List<ReadOnlyPlanungseinheit> schedulePruefung(
-      ReadOnlyPruefung pruefung, LocalDateTime startTermin)
+  public List<ReadOnlyPlanungseinheit> schedulePruefung(ReadOnlyPruefung pruefung,
+      LocalDateTime startTermin)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, startTermin);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return scheduleService.schedulePruefung(pruefung, startTermin);
   }
 
@@ -300,7 +296,7 @@ public class Controller implements InterfaceController {
   public ReadOnlyPlanungseinheit addPruefer(ReadOnlyPruefung pruefung, String kuerzel)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, kuerzel);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.addPruefer(pruefung.getPruefungsnummer(), kuerzel);
   }
 
@@ -308,26 +304,25 @@ public class Controller implements InterfaceController {
   public ReadOnlyPlanungseinheit removePruefer(ReadOnlyPruefung pruefung, String kuerzel)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, kuerzel);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.removePruefer(pruefung.getPruefungsnummer(), kuerzel);
   }
 
   @Override
-  public List<ReadOnlyPlanungseinheit> addTeilnehmerkreis(
-      ReadOnlyPruefung pruefung, Teilnehmerkreis teilnehmerkreis, Integer schaetzung)
+  public List<ReadOnlyPlanungseinheit> addTeilnehmerkreis(ReadOnlyPruefung pruefung,
+      Teilnehmerkreis teilnehmerkreis, Integer schaetzung)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, teilnehmerkreis, schaetzung);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
 
     return this.scheduleService.addTeilnehmerkreis(pruefung, teilnehmerkreis, schaetzung);
   }
 
   @Override
-  public List<ReadOnlyPlanungseinheit> removeTeilnehmerkreis(
-      ReadOnlyPruefung pruefung, Teilnehmerkreis teilnehmerkreis)
-      throws NoPruefungsPeriodeDefinedException {
+  public List<ReadOnlyPlanungseinheit> removeTeilnehmerkreis(ReadOnlyPruefung pruefung,
+      Teilnehmerkreis teilnehmerkreis) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, teilnehmerkreis);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return this.scheduleService.removeTeilnehmerKreis(pruefung, teilnehmerkreis);
   }
 
@@ -336,7 +331,7 @@ public class Controller implements InterfaceController {
       throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
     noNullParameters((Object[]) pruefungen);
     noNullParameters(name);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.createBlock(name, pruefungen);
   }
 
@@ -353,11 +348,10 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public List<ReadOnlyPlanungseinheit> scheduleBlock(
-      ReadOnlyBlock block, LocalDateTime start)
+  public List<ReadOnlyPlanungseinheit> scheduleBlock(ReadOnlyBlock block, LocalDateTime start)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     noNullParameters(block, start);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return scheduleService.scheduleBlock(block, start);
   }
 
@@ -365,7 +359,7 @@ public class Controller implements InterfaceController {
   public List<ReadOnlyPruefung> deleteBlock(ReadOnlyBlock block)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.deleteBlock(block);
   }
 
@@ -373,7 +367,7 @@ public class Controller implements InterfaceController {
   public List<ReadOnlyPlanungseinheit> unscheduleBlock(ReadOnlyBlock block)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return scheduleService.unscheduleBlock(block);
   }
 
@@ -382,15 +376,15 @@ public class Controller implements InterfaceController {
       ReadOnlyPruefung pruefung)
       throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
     noNullParameters(block, pruefung);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return scheduleService.addPruefungToBlock(block, pruefung);
   }
 
   @Override
-  public List<ReadOnlyPlanungseinheit> removePruefungFromBlock(
-      ReadOnlyBlock block, ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException {
+  public List<ReadOnlyPlanungseinheit> removePruefungFromBlock(ReadOnlyBlock block,
+      ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block, pruefung);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     return scheduleService.removePruefungFromBlock(block, pruefung);
   }
 
@@ -398,7 +392,7 @@ public class Controller implements InterfaceController {
   public List<KriteriumsAnalyse> analyseScoring(ReadOnlyPruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     throw new IllegalStateException("Not implemented yet!");
   }
 
@@ -411,39 +405,32 @@ public class Controller implements InterfaceController {
   @Override
   public void exportPeriode(Path path, ExportTyp typ) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(path, typ);
-    checkNoPruefungDefined();
+    ensureAvailabilityOfPruefungsperiode();
     try {
       ioService.exportPeriode(path, typ);
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (ExportException e) {
+    } catch (IOException | ExportException e) {
       e.printStackTrace();
     }
     //TODO kann nach nächstem deploy weg.
   }
 
   @Override
-  public void createEmptyPeriode(
-      Semester semester, LocalDate start, LocalDate end, LocalDate ankertag,
-      int kapazitaet) {
+  public void createEmptyPeriode(Semester semester, LocalDate start, LocalDate end,
+      LocalDate ankertag, int kapazitaet) {
     noNullParameters(semester, start, end, kapazitaet);
     ioService.createEmptyPeriode(semester, start, end, kapazitaet);
   }
 
   @Override
-  public void createEmptyPeriodeWithData(
-      Semester semester, LocalDate start, LocalDate end,
-      LocalDate ankertag, int kapazitaet,
-      Path path) {
+  public void createEmptyPeriodeWithData(Semester semester, LocalDate start, LocalDate end,
+      LocalDate ankertag, int kapazitaet, Path path) {
     noNullParameters(semester, start, end, kapazitaet, path);
     throw new IllegalStateException("Not implemented yet!");
   }
 
   @Override
-  public void createEmptyAndAdoptPeriode(
-      Semester semester, LocalDate start, LocalDate end,
-      LocalDate ankertag, int kapazitaet,
-      Path path) {
+  public void createEmptyAndAdoptPeriode(Semester semester, LocalDate start, LocalDate end,
+      LocalDate ankertag, int kapazitaet, Path path) {
     noNullParameters(semester, start, end, kapazitaet, path);
     throw new IllegalStateException("Not implemented yet!");
   }
@@ -454,7 +441,7 @@ public class Controller implements InterfaceController {
     throw new IllegalStateException("Not implemented yet!");
   }
 
-  private void checkNoPruefungDefined() throws NoPruefungsPeriodeDefinedException {
+  private void ensureAvailabilityOfPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
     if (!dataAccessService.isPruefungsperiodeSet()) {
       throw new NoPruefungsPeriodeDefinedException();
     }
