@@ -2,6 +2,8 @@ package de.fhwedel.klausps.controller.services;
 
 import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.restriction.hard.HarteRestriktion;
 import de.fhwedel.klausps.controller.restriction.soft.WeicheRestriktion;
 import de.fhwedel.klausps.model.api.Block;
@@ -12,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.jetbrains.annotations.NotNull;
 
 public class RestrictionService {
 
@@ -107,5 +110,11 @@ public class RestrictionService {
     }
     return checkWeicheKriterien(pruefung).stream()
         .reduce(0, (scoring, analyse) -> scoring + analyse.getDeltaScoring(), Integer::sum);
+  }
+
+  @NotNull
+  public Set<ReadOnlyPruefung> getPruefungenInHardConflictWith(
+      ReadOnlyPlanungseinheit planungseinheitToCheckFor) {
+    return null;
   }
 }

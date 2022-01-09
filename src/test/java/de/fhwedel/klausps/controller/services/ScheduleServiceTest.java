@@ -731,4 +731,10 @@ class ScheduleServiceTest {
     verify(dataAccessService, times(0)).removePruefungFromBlock(any(), any());
 
   }
+
+  @Test
+  void getGeplantePruefungenWithKonflikt_noNullParametersAllowed() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.getGeplantePruefungenWithKonflikt(null));
+  }
 }
