@@ -552,7 +552,7 @@ class ScheduleServiceTest {
   private ReadOnlyBlock getUnplannedBlockWith1RandomPruefung() {
     LocalDateTime startTime = LocalDateTime.of(2022, 1, 7, 11, 11);
     return new BlockDTO("someName", startTime, Duration.ZERO, Set.of(getRandomROPruefung(1L)),
-        123456, PARALLEL);
+        654321, PARALLEL);
   }
 
   @Test

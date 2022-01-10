@@ -117,14 +117,6 @@ public class Controller implements InterfaceController {
     return dataAccessService.getAllTeilnehmerkreise();
   }
 
-  @Override
-  public Set<ReadOnlyPruefung> getAllKlasurenFromPruefer(String pruefer)
-      throws NoPruefungsPeriodeDefinedException {
-    noNullParameters(pruefer);
-    ensureAvailabilityOfPruefungsperiode();
-    // todo Methode ist doppelt (hier ist lediglich der Name falsch geschrieben)
-    throw new IllegalStateException("Not implemented yet!");
-  }
 
   @Override
   public Set<ReadOnlyPruefung> getAllKlausurenFromPruefer(String pruefer)
@@ -165,6 +157,13 @@ public class Controller implements InterfaceController {
     noNullParameters(start, end);
     ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getAllReadOnlyPruefungenBetween(start, end);
+  }
+
+  @Override
+  public Set<ReadOnlyPlanungseinheit> getPlanungseinheitenInZeitraum(LocalDateTime localDateTime,
+      LocalDateTime localDateTime1)
+      throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
+    return null;
   }
 
   @Override
@@ -253,16 +252,17 @@ public class Controller implements InterfaceController {
     return scheduleService.setTeilnehmerkreisSchaetzung(pruefung, teilnehmerkreis, schaetzung);
   }
 
+
   @Override
-  public ReadOnlyPruefung createPruefung(String name, String pruefungsNummer, String pruefer,
-      //TODO muss hier kein Set rein? => jo
+  public ReadOnlyPruefung createPruefung(String ref, String name, String pruefungsNummer, Set<String> pruefer,
+
       Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreis)
       throws NoPruefungsPeriodeDefinedException {
 
     noNullParameters(name, pruefungsNummer, pruefer, duration, teilnehmerkreis);
     ensureAvailabilityOfPruefungsperiode();
-    // todo exchange refVWS for real parameter
-    return dataAccessService.createPruefung(name, pruefungsNummer, "", pruefer, duration,
+
+    return dataAccessService.createPruefung(name, pruefungsNummer, ref, pruefer, duration,
         teilnehmerkreis);
   }
 
