@@ -396,7 +396,7 @@ public class Controller implements InterfaceController {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung);
     ensureAvailabilityOfPruefungsperiode();
-    throw new IllegalStateException("Not implemented yet!");
+    return scheduleService.analyseScoring(pruefung);
   }
 
   @Override

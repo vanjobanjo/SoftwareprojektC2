@@ -1,6 +1,7 @@
 package de.fhwedel.klausps.controller.services;
 
 import static de.fhwedel.klausps.controller.kriterium.HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG;
+import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.UNIFORME_ZEITSLOTS;
 import static de.fhwedel.klausps.controller.util.TestFactory.RO_ANALYSIS_UNPLANNED;
 import static de.fhwedel.klausps.controller.util.TestFactory.RO_DM_UNPLANNED;
 import static de.fhwedel.klausps.controller.util.TestFactory.RO_HASKELL_UNPLANNED;
@@ -18,13 +19,13 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.api.BlockDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
@@ -32,7 +33,7 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
-import de.fhwedel.klausps.controller.restriction.hard.TwoKlausurenSameTime;
+import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.model.api.Ausbildungsgrad;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Blocktyp;
@@ -47,6 +48,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -726,7 +728,7 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void setDauer_Succssful() throws HartesKriteriumException {
+  void setDauer_Successful() throws HartesKriteriumException {
     LocalDateTime time = LocalDateTime.of(2021, 8, 12, 8, 0);
     LocalDateTime timeb = LocalDateTime.of(2021, 8, 11, 8, 0);
 
@@ -751,7 +753,7 @@ class ScheduleServiceTest {
 
 
   @Test
-  void setDauer_Succssful_checkSoft() throws HartesKriteriumException {
+  void setDauer_Successful_checkSoft() throws HartesKriteriumException {
     LocalDateTime time = LocalDateTime.of(2021, 8, 12, 8, 0);
     LocalDateTime timeb = LocalDateTime.of(2021, 8, 11, 8, 0);
 
@@ -774,7 +776,7 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void setDauer_UnSuccssful() throws HartesKriteriumException {
+  void setDauer_Unsuccessful() {
     LocalDateTime time = LocalDateTime.of(2021, 8, 12, 8, 0);
     LocalDateTime timeb = LocalDateTime.of(2021, 8, 12, 10, 30);
 
@@ -798,9 +800,38 @@ class ScheduleServiceTest {
     when(restrictionService.checkHarteKriterien(any())).thenReturn(List.of(hka));
 
     assertThat(analysis.getDauer()).isEqualTo(RO_ANALYSIS_UNPLANNED.getDauer());
-    assertThrows(HartesKriteriumException.class, () -> deviceUnderTest.setDauer(RO_ANALYSIS_UNPLANNED, Duration.ofMinutes(150)));
+    assertThrows(HartesKriteriumException.class,
+        () -> deviceUnderTest.setDauer(RO_ANALYSIS_UNPLANNED, Duration.ofMinutes(150)));
 
   }
 
+  @Test
+  void analyseScoring_no_restriction_violations() {
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+    when(restrictionService.checkWeicheKriterien(dm)).thenReturn(Collections.emptyList());
+    assertThat(deviceUnderTest.analyseScoring(RO_DM_UNPLANNED)).isEmpty();
+
+  }
+
+  @Test
+  void analyseScoring_restrictions_violated() {
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    WeichesKriteriumAnalyse weichesKriteriumAnalyse = new WeichesKriteriumAnalyse(Set.of(analysis),
+        UNIFORME_ZEITSLOTS,
+        Set.of(infBachelor), 10, 100);
+    when(dataAccessService.getPruefungWith(RO_DM_UNPLANNED.getPruefungsnummer())).thenReturn(dm);
+    when(restrictionService.checkWeicheKriterien(dm)).thenReturn(List.of(weichesKriteriumAnalyse));
+
+    List<KriteriumsAnalyse> result = deviceUnderTest.analyseScoring(RO_DM_UNPLANNED);
+    assertThat(result).isNotEmpty();
+    assertThat(result.size()).isEqualTo(1);
+    assertThat(result.get(0)).isNotNull();
+    KriteriumsAnalyse resultAnalyse = result.get(0);
+    assertThat(resultAnalyse.getBetroffenePruefungen()).containsOnly(RO_ANALYSIS_UNPLANNED);
+    assertThat(resultAnalyse.getKriterium()).isEqualTo(UNIFORME_ZEITSLOTS);
+    assertThat(resultAnalyse.getTeilnehmer()).containsOnly(infBachelor);
+    assertThat(resultAnalyse.getAnzahlBetroffenerStudenten()).isEqualTo(10);
+  }
 
 }
