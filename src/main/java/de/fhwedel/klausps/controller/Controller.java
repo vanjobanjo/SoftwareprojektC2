@@ -21,6 +21,7 @@ import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Semestertyp;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.api.exporter.ExportException;
+import de.fhwedel.klausps.model.impl.SemesterImpl;
 import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -107,8 +108,8 @@ public class Controller implements InterfaceController {
 
   @Override
   public Semester createSemester(Semestertyp typ, Year year) {
-    throw new IllegalStateException("Not implemented yet!");
-
+    noNullParameters(typ, year);
+    return new SemesterImpl(typ, year);
   }
 
 
@@ -181,6 +182,8 @@ public class Controller implements InterfaceController {
   public Set<LocalDateTime> getHardConflictedTimes(Set<LocalDateTime> zeitpunkte,
       ReadOnlyPlanungseinheit planungseinheit)
       throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
+    noNullParameters(zeitpunkte, planungseinheit);
+    ensureAvailabilityOfPruefungsperiode();
     throw new IllegalStateException("Not implemented yet!");
   }
 
