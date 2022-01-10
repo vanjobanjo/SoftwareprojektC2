@@ -184,7 +184,7 @@ public class Controller implements InterfaceController {
       throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
     noNullParameters(zeitpunkte, planungseinheit);
     ensureAvailabilityOfPruefungsperiode();
-    throw new IllegalStateException("Not implemented yet!");
+    return scheduleService.getHardConflictedTimes(zeitpunkte, planungseinheit);
   }
 
   @Override

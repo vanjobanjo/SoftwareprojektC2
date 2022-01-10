@@ -364,4 +364,9 @@ public class ScheduleService {
         dataAccessService.getPruefungWith(pruefung.getPruefungsnummer()));
     return converter.convertAnalyseList(analyses);
   }
+
+  public Set<LocalDateTime> getHardConflictedTimes(Set<LocalDateTime> timesToCheck,
+      ReadOnlyPlanungseinheit planungseinheit) {
+    throw new UnsupportedOperationException("Not implemented yet!");
+  }
 }
