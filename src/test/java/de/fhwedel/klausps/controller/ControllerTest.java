@@ -1,6 +1,7 @@
 package de.fhwedel.klausps.controller;
 
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedROPruefung;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -14,6 +15,9 @@ import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedExcepti
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.IOService;
 import de.fhwedel.klausps.controller.services.ScheduleService;
+import de.fhwedel.klausps.model.api.Ausbildungsgrad;
+import de.fhwedel.klausps.model.api.Teilnehmerkreis;
+import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -70,4 +74,12 @@ class ControllerTest {
     verify(scheduleService, times(1)).getGeplantePruefungenWithKonflikt(any());
   }
 
+
+  @Test
+  void createTeilnehmerkreis() {
+    Teilnehmerkreis teilnehmerkreis = new TeilnehmerkreisImpl("Informatik", "14.0", 1,
+        Ausbildungsgrad.BACHELOR);
+    assertThat(deviceUnderTest.createTeilnehmerkreis(Ausbildungsgrad.BACHELOR, "Informatik", "14.0",
+        1)).isEqualTo(teilnehmerkreis);
+  }
 }
