@@ -4,10 +4,12 @@ import static de.fhwedel.klausps.controller.util.ParameterUtil.noNullParameters;
 import static java.util.Collections.emptyList;
 
 import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
+import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
@@ -335,7 +337,7 @@ public class ScheduleService {
 
   public List<ReadOnlyPlanungseinheit> setDauer(ReadOnlyPruefung pruefung, Duration dauer)
       throws HartesKriteriumException {
-
+    noNullParameters(pruefung, dauer);
     dataAccessService.changeDurationOf(pruefung, dauer);
     Pruefung pruefungModel = dataAccessService.getPruefungWith(pruefung.getPruefungsnummer());
     List<HartesKriteriumAnalyse> hard = restrictionService.checkHarteKriterien(pruefungModel);
@@ -354,5 +356,12 @@ public class ScheduleService {
       return dataAccessService.getPruefungWith(
           planungseinheitToCheckFor.asPruefung().getPruefungsnummer());
     }
+  }
+
+  public List<KriteriumsAnalyse> analyseScoring(ReadOnlyPruefung pruefung) {
+    noNullParameters(pruefung);
+    List<WeichesKriteriumAnalyse> analyses = restrictionService.checkWeicheKriterien(
+        dataAccessService.getPruefungWith(pruefung.getPruefungsnummer()));
+    return converter.convertAnalyseList(analyses);
   }
 }

@@ -98,14 +98,14 @@ public class Converter {
     return result;
   }
 
-  public List<KriteriumsAnalyse> convertAnalyseScoring(
+  public List<KriteriumsAnalyse> convertAnalyseList(
       List<WeichesKriteriumAnalyse> analysen) {
 
-    List<KriteriumsAnalyse> list = new LinkedList<>();
+    List<KriteriumsAnalyse> result = new LinkedList<>();
     for (WeichesKriteriumAnalyse a : analysen) {
-      list.add(convertAnalyse(a));
+      result.add(convertAnalyse(a));
     }
-    return list;
+    return result;
   }
 
   public KriteriumsAnalyse convertAnalyse(WeichesKriteriumAnalyse analyse) {
