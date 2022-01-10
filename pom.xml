@@ -115,14 +115,6 @@
     </dependency>
     <dependency>
       <groupId>de.fhwedel.klausps</groupId>
-      <artifactId>controller-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>de.fhwedel.klausps</groupId>
-      <artifactId>model-impl</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>de.fhwedel.klausps</groupId>
       <artifactId>model2</artifactId>
     </dependency>
 
@@ -147,8 +139,13 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.jetbrains</groupId>
+      <artifactId>annotations</artifactId>
+      <version>20.1.0</version>
+    </dependency>
+    <dependency>
       <groupId>de.fhwedel.klausps</groupId>
-      <artifactId>model-api</artifactId>
+      <artifactId>controller-api</artifactId>
       <version>1.0.2-SNAPSHOT</version>
     </dependency>
   </dependencies>

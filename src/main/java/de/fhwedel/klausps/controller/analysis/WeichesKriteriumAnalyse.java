@@ -1,18 +1,46 @@
 package de.fhwedel.klausps.controller.analysis;
 
-import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
+
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
+import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.util.Set;
 
 public class WeichesKriteriumAnalyse {
 
-  Set<ReadOnlyPruefung> causingPruefungen;
+
+  Set<Pruefung> causingPruefungen;
   WeichesKriterium kriterium;
   Set<Teilnehmerkreis> affectedTeilnehmerKreise;
   Integer amountAffectedStudents;
+  //Verursachte Scoring Änderung durch dieses verletzte Kriterium.
+  //Um das Scoring der Klausur zu bestimmen, muss die Summe der deltaScoring aus der Liste ergeben
+  //das Scoring der Pruefung
 
-  public Set<ReadOnlyPruefung> getCausingPruefungen() {
+  Integer deltaScoring;
+
+  /**
+   * @deprecated delta scoring
+   */
+  @Deprecated
+  public WeichesKriteriumAnalyse(Set<Pruefung> causingPruefungen, WeichesKriterium kriterium,
+      Set<Teilnehmerkreis> affectedTeilnehmerKreise, int affectedStudents) {
+    this.causingPruefungen = causingPruefungen;
+    this.kriterium = kriterium;
+    this.affectedTeilnehmerKreise = affectedTeilnehmerKreise;
+    this.amountAffectedStudents = affectedStudents;
+  }
+
+  public WeichesKriteriumAnalyse(Set<Pruefung> causingPruefungen, WeichesKriterium kriterium,
+      Set<Teilnehmerkreis> affectedTeilnehmerKreise, int affectedStudents, int scoring) {
+    this.causingPruefungen = causingPruefungen;
+    this.kriterium = kriterium;
+    this.affectedTeilnehmerKreise = affectedTeilnehmerKreise;
+    this.amountAffectedStudents = affectedStudents;
+    this.deltaScoring = scoring;
+  }
+
+  public Set<Pruefung> getCausingPruefungen() {
     return causingPruefungen;
   }
 
@@ -26,5 +54,12 @@ public class WeichesKriteriumAnalyse {
 
   public Integer getAmountAffectedStudents() {
     return amountAffectedStudents;
+  }
+
+  public Integer getDeltaScoring() {
+    if (deltaScoring == null) {
+      throw new UnsupportedOperationException("Es wurde wahrscheinlich der alte Konstruktor benutzt!");
+    }
+    return deltaScoring;
   }
 }

@@ -19,7 +19,6 @@ public class ReadOnlyBlockAssert extends AbstractAssert<ReadOnlyBlockAssert, Rea
 
   public ReadOnlyBlockAssert containsOnlyPruefungen(ReadOnlyPruefung... pruefungen) {
     if (!actual.getROPruefungen().containsAll(List.of(pruefungen))) {
-
       failWithMessage("Block expected: %s but found: %s",
           getPruefungsNames(actual.getROPruefungen()), getPruefungsNames(List.of(pruefungen)));
     }
@@ -28,6 +27,33 @@ public class ReadOnlyBlockAssert extends AbstractAssert<ReadOnlyBlockAssert, Rea
           actual.getROPruefungen().size(),
           pruefungen.length);
     }
+    return this;
+  }
+
+  public ReadOnlyBlockAssert isSameAs(ReadOnlyBlock other) {
+    if (other.geplant() && actual.ungeplant()) {
+      failWithMessage("Block was expected to not be planned but was.");
+    }
+    if (other.ungeplant() && actual.geplant()) {
+      failWithMessage("Block was expected to be planned but was not.");
+    }
+
+    if (!other.getName().equals(actual.getName())) {
+      failWithMessage("Expected Name was %s, but was actually %s", actual.getName(),
+          other.getName());
+    }
+    if (!other.getTermin().equals(actual.getTermin())) {
+      failWithMessage("Termin was expected to be %s, but was actually %s",
+          actual.getTermin().toString(), other.getTermin().toString());
+    }
+
+    if (!other.getDauer().equals(actual.getDauer())) {
+      failWithMessage("Dauer was expected to be %s, but was %s", actual.getDauer().toMinutes(),
+          other.getDauer().toMinutes());
+    }
+
+    containsOnlyPruefungen(other.getROPruefungen().toArray(new ReadOnlyPruefung[0]));
+
     return this;
   }
 

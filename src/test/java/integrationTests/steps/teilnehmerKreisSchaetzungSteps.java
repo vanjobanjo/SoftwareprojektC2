@@ -82,7 +82,6 @@ public class teilnehmerKreisSchaetzungSteps {
   }
 
 
-
   @Wenn(
       "ich den Studiengang {string} Fachsemester {int} mit Ordnung {string} und {int} schaetze und entferne")
   public void ichDenStudiengangFachsemesterMitOrdnungUndSchaetzeUndEntferne(
@@ -91,7 +90,8 @@ public class teilnehmerKreisSchaetzungSteps {
   }
 
   @Angenommen("die Pruefung {string} hat als Teilnehmerkreisschaetzung: {string}")
-  public void diePruefungHatAlsTeilnehmerkreisschaetzung(String pruefung, String teilnehmerKreisSchatzung) {
+  public void diePruefungHatAlsTeilnehmerkreisschaetzung(String pruefung,
+      String teilnehmerKreisSchatzung) {
     throw new AssumptionViolatedException("Not implemented yet!");
   }
 }

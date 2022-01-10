@@ -31,7 +31,8 @@ class PruefungDTOTest {
   @Test
   @DisplayName("Teilnehmerkreis wird probiert nochmal hinzugefügt zu werden, soll aber nicht klappen")
   void addTeilnehmerkreis_schon_Vorhanden() {
-    TeilnehmerkreisImpl teilnehmerkreis = new TeilnehmerkreisImpl("Inf", "11", 1, Ausbildungsgrad.BACHELOR);
+    TeilnehmerkreisImpl teilnehmerkreis = new TeilnehmerkreisImpl("Inf", "11", 1,
+        Ausbildungsgrad.BACHELOR);
     PruefungDTOBuilder pruefungDTOBuilder = new PruefungDTOBuilder()
         .withPruefungsName("Test")
         .withPruefungsNummer("1234")
@@ -49,7 +50,8 @@ class PruefungDTOTest {
   @Test
   @DisplayName("Änderung der Duration von einer Pruefung im Builder erfolgreich")
   void setDurationFromPruefung() {
-    TeilnehmerkreisImpl teilnehmerkreis = new TeilnehmerkreisImpl("Inf", "11", 1, Ausbildungsgrad.BACHELOR);
+    TeilnehmerkreisImpl teilnehmerkreis = new TeilnehmerkreisImpl("Inf", "11", 1,
+        Ausbildungsgrad.BACHELOR);
     PruefungDTOBuilder pruefungDTOBuilder = new PruefungDTOBuilder()
         .withPruefungsName("Test")
         .withPruefungsNummer("1234")

@@ -36,7 +36,7 @@ class PruefungDTOBuilderTest {
   @Test
   void withTeilnehmerKreisSchaetzung() {
     Map<Teilnehmerkreis, Integer> temp = new HashMap<>();
-    TeilnehmerkreisImpl analysis = new TeilnehmerkreisImpl("BWL", "10", 0, Ausbildungsgrad.BACHELOR);
+    TeilnehmerkreisImpl analysis = new TeilnehmerkreisImpl("BWL", "10", 1, Ausbildungsgrad.BACHELOR);
     temp.put(analysis, 10);
     PruefungDTO tester = BUILDER.withTeilnehmerKreisSchaetzung(temp).build();
     assertThat(tester.getTeilnehmerKreisSchaetzung()).isEqualTo(temp);
@@ -45,7 +45,7 @@ class PruefungDTOBuilderTest {
   @Test
   void withAdditionalTeilnehmerkreis() {
     Map<Teilnehmerkreis, Integer> temp = new HashMap<>();
-    TeilnehmerkreisImpl analysis = new TeilnehmerkreisImpl("BWL", "10", 0, Ausbildungsgrad.BACHELOR);
+    TeilnehmerkreisImpl analysis = new TeilnehmerkreisImpl("BWL", "10", 1, Ausbildungsgrad.BACHELOR);
     TeilnehmerkreisImpl additional = new TeilnehmerkreisImpl("adfd", ">SD", 3, Ausbildungsgrad.BACHELOR);
     temp.put(analysis, 10);
     PruefungDTO tester =
@@ -60,7 +60,7 @@ class PruefungDTOBuilderTest {
 
   @Test
   void withAdditionalTeilnehmerkreisSchaetzung() {
-    TeilnehmerkreisImpl analysis = new TeilnehmerkreisImpl("BWL", "10", 0, Ausbildungsgrad.BACHELOR);
+    TeilnehmerkreisImpl analysis = new TeilnehmerkreisImpl("BWL", "10", 1, Ausbildungsgrad.BACHELOR);
     TeilnehmerkreisImpl additional = new TeilnehmerkreisImpl("adfd", ">SD", 3, Ausbildungsgrad.BACHELOR);
 
     PruefungDTO tester =
