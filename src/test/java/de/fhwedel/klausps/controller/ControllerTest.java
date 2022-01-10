@@ -1,6 +1,8 @@
 package de.fhwedel.klausps.controller;
 
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedROPruefung;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomROPruefung;
+import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -15,6 +17,7 @@ import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedExcepti
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.IOService;
 import de.fhwedel.klausps.controller.services.ScheduleService;
+import de.fhwedel.klausps.controller.util.TestUtils;
 import de.fhwedel.klausps.model.api.Ausbildungsgrad;
 import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Semestertyp;
@@ -70,13 +73,15 @@ class ControllerTest {
   void getGeplantePruefungenWithKonflikt_delegateToScheduleService()
       throws NoPruefungsPeriodeDefinedException {
     ReadOnlyPlanungseinheit toCheckFor = getRandomPlannedROPruefung(1L);
-
-    when(dataAccessService.isPruefungsperiodeSet()).thenReturn(true);
+    pruefungsperiodeIsSet();
 
     deviceUnderTest.getGeplantePruefungenWithKonflikt(toCheckFor);
     verify(scheduleService, times(1)).getGeplantePruefungenWithKonflikt(any());
   }
 
+  private void pruefungsperiodeIsSet() {
+    when(dataAccessService.isPruefungsperiodeSet()).thenReturn(true);
+  }
 
   @Test
   void createTeilnehmerkreis_successful() {
@@ -115,4 +120,34 @@ class ControllerTest {
     assertThrows(NullPointerException.class, () -> deviceUnderTest.createSemester(null, year));
     assertThrows(NullPointerException.class, () -> deviceUnderTest.createSemester(null, null));
   }
+
+  @Test
+  void getHardConflictedTimes_zeitpunkteMustNotBeNull() {
+    assertThrows(NullPointerException.class, () -> deviceUnderTest.getHardConflictedTimes(null,
+        TestUtils.getRandomPlannedROPruefung(1L)));
+  }
+
+  @Test
+  void getHardConflictedTimes_planungseinheitMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.getHardConflictedTimes(emptySet(), null));
+  }
+
+  @Test
+  void getHardConflictedTimes_zeitpunktOutOfPeriodeIsContained() {
+    when(dataAccessService.isPruefungsperiodeSet()).thenReturn(true);
+    when(scheduleService.getHardConflictedTimes(any(), any())).thenThrow(
+        IllegalArgumentException.class);
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.getHardConflictedTimes(emptySet(), getRandomROPruefung(1L)));
+  }
+
+  @Test
+  void getHardConflictedTimes_missingPruefungsperiodeIsDetected() {
+    when(dataAccessService.isPruefungsperiodeSet()).thenReturn(false);
+
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getHardConflictedTimes(emptySet(), getRandomROPruefung(1L)));
+  }
+
 }
