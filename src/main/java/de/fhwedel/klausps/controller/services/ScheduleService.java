@@ -190,8 +190,6 @@ public class ScheduleService {
       removePruefungFromBlock(block, pruefung);
       throw converter.convertHardException(hardAnalyses);
     }
-
-
   }
 
   public List<ReadOnlyPlanungseinheit> removePruefungFromBlock(ReadOnlyBlock block,
@@ -243,7 +241,6 @@ public class ScheduleService {
       // reverse
       dataAccessService.schedulePruefung(pruefung, termin.get());
       throw converter.convertHardException(hard);
-
     }
   }
 
@@ -333,7 +330,6 @@ public class ScheduleService {
     return new HashSet<>(converter.convertToROPruefungCollection(
         restrictionService.getPruefungenInHardConflictWith(planungseinheit)));
   }
-
 
   public List<ReadOnlyPlanungseinheit> setDauer(ReadOnlyPruefung pruefung, Duration dauer)
       throws HartesKriteriumException {
