@@ -21,6 +21,7 @@ import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Semestertyp;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.api.exporter.ExportException;
+import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -256,7 +257,8 @@ public class Controller implements InterfaceController {
 
 
   @Override
-  public ReadOnlyPruefung createPruefung(String ref, String name, String pruefungsNummer, Set<String> pruefer,
+  public ReadOnlyPruefung createPruefung(String ref, String name, String pruefungsNummer,
+      Set<String> pruefer,
 
       Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreis)
       throws NoPruefungsPeriodeDefinedException {
@@ -440,7 +442,8 @@ public class Controller implements InterfaceController {
   @Override
   public Teilnehmerkreis createTeilnehmerkreis(Ausbildungsgrad grad, String studiengang,
       String ordnung, int semester) {
-    throw new IllegalStateException("Not implemented yet!");
+    noNullParameters(grad, studiengang, ordnung);
+    return new TeilnehmerkreisImpl(studiengang, ordnung, semester, grad);
   }
 
   private void ensureAvailabilityOfPruefungsperiode() throws NoPruefungsPeriodeDefinedException {

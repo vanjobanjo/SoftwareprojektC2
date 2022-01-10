@@ -7,9 +7,7 @@ import static java.util.Objects.nonNull;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
-import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
-import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Planungseinheit;
@@ -87,10 +85,8 @@ public class DataAccessService {
     return nonNull(pruefungsperiode);
   }
 
-  //TODO diese Methode muss in ScheduleService #183?
-  //TODO Planungseinheit, wenn Prüfung im Block, dann Block sonst Prüfung als Rückgabe
   public void changeDurationOf(ReadOnlyPruefung pruefung, Duration duration)
-      throws HartesKriteriumException, IllegalArgumentException {
+      throws IllegalArgumentException {
 
     if (duration.isNegative()) {
       throw new IllegalArgumentException("Die Dauer der Pruefung muss positiv sein.");
@@ -455,7 +451,7 @@ public class DataAccessService {
 
   public List<Planungseinheit> getAllPlanungseinheitenBetween(LocalDateTime start,
       LocalDateTime end)
-      throws IllegalTimeSpanException{
+      throws IllegalTimeSpanException {
     if (start.isAfter(end)) {
       throw new IllegalTimeSpanException("Der Start liegt nach dem Ende des Zeitslots");
     }
