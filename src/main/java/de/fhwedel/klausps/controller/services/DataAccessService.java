@@ -37,7 +37,7 @@ import org.jetbrains.annotations.NotNull;
 public class DataAccessService {
 
   private Pruefungsperiode pruefungsperiode;
-  private Converter converter; //TODO where does it come from
+  private Converter converter;
 
   public void setPruefungsperiode(Pruefungsperiode pruefungsperiode) {
     this.pruefungsperiode = pruefungsperiode;

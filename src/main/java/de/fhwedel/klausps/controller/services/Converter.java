@@ -30,7 +30,6 @@ import java.util.Set;
  */
 public class Converter {
 
-  //TODO von wo?
   private ScheduleService scheduleService;
 
   public void setScheduleService(ScheduleService service) {
