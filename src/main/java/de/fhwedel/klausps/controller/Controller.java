@@ -206,6 +206,8 @@ public class Controller implements InterfaceController {
   @Override
   public void setAnkerTagPeriode(LocalDate ankertag)
       throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
+    noNullParameters(ankertag);
+    ensureAvailabilityOfPruefungsperiode();
     throw new IllegalStateException("Not implemented yet!");
   }
 
@@ -320,7 +322,6 @@ public class Controller implements InterfaceController {
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, teilnehmerkreis, schaetzung);
     ensureAvailabilityOfPruefungsperiode();
-
     return this.scheduleService.addTeilnehmerkreis(pruefung, teilnehmerkreis, schaetzung);
   }
 
@@ -344,12 +345,16 @@ public class Controller implements InterfaceController {
   @Override
   public List<ReadOnlyPlanungseinheit> makeBlockSequential(ReadOnlyBlock block)
       throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
+    noNullParameters(block);
+    ensureAvailabilityOfPruefungsperiode();
     throw new IllegalStateException("Not implemented yet!");
   }
 
   @Override
   public List<ReadOnlyPlanungseinheit> makeBlockParallel(ReadOnlyBlock block)
       throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
+    noNullParameters(block);
+    ensureAvailabilityOfPruefungsperiode();
     throw new IllegalStateException("Not implemented yet!");
   }
 
