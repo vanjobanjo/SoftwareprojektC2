@@ -160,11 +160,13 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public Set<ReadOnlyPlanungseinheit> getPlanungseinheitenInZeitraum(LocalDateTime localDateTime,
-      LocalDateTime localDateTime1)
-      throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
-    return null;
+  public Set<ReadOnlyPlanungseinheit> getPlanungseinheitenInZeitraum(LocalDateTime start,
+      LocalDateTime end) throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
+    noNullParameters(start, end);
+    ensureAvailabilityOfPruefungsperiode();
+    throw new UnsupportedOperationException("not implemented");
   }
+
 
   @Override
   public Set<ReadOnlyPruefung> getGeplantePruefungenWithKonflikt(
