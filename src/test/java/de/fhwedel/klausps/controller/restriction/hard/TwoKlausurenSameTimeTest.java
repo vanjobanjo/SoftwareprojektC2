@@ -1,11 +1,19 @@
 package de.fhwedel.klausps.controller.restriction.hard;
 
+import static de.fhwedel.klausps.controller.util.TestFactory.RO_ANALYSIS_UNPLANNED;
+import static de.fhwedel.klausps.controller.util.TestFactory.RO_DM_UNPLANNED;
+import static de.fhwedel.klausps.controller.util.TestFactory.RO_HASKELL_UNPLANNED;
+import static de.fhwedel.klausps.controller.util.TestFactory.bwlBachelor;
+import static de.fhwedel.klausps.controller.util.TestFactory.getPruefungOfReadOnlyPruefung;
+import static de.fhwedel.klausps.controller.util.TestFactory.infBachelor;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import de.fhwedel.klausps.controller.*;
 import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
@@ -14,6 +22,7 @@ import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
+import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -26,6 +35,7 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
 
 class TwoKlausurenSameTimeTest {
 
@@ -161,11 +171,7 @@ class TwoKlausurenSameTimeTest {
 
     ArrayList<Planungseinheit> listOfPruefungen = new ArrayList<>();
 
-
-
     Set<Teilnehmerkreis> setOfConflictTeilnehmer = new HashSet<>();
-
-
 
     Map<Teilnehmerkreis, Integer> teilnehmerCount = new HashMap<>();
     teilnehmerCount.put(informatik, 8);
@@ -1142,6 +1148,109 @@ class TwoKlausurenSameTimeTest {
     assertEquals(setOfConflictTeilnehmer, analyse.get().getAffectedTeilnehmerkreise());
     assertEquals(studends, analyse.get().getAmountAffectedStudents());
   }
+
+  @Test
+  void getAllPotentialConflictingPruefungenWith_Successfull() {
+
+    TwoKlausurenSameTime tkst = new TwoKlausurenSameTime(dataAccessService);
+
+    LocalDateTime timeA = LocalDateTime.of(2022, 8, 11, 8, 0);
+    LocalDateTime timeB = LocalDateTime.of(2022, 8, 12, 8, 0);
+    LocalDateTime timeC = LocalDateTime.of(2022, 8, 13, 8, 0);
+
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung haskel = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+
+    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(analysis, haskel));
+
+    analysis.setStartzeitpunkt(timeA);
+    haskel.setStartzeitpunkt(timeB);
+
+    analysis.addTeilnehmerkreis(infBachelor, 8);
+    haskel.addTeilnehmerkreis(infBachelor, 8);
+    dm.addTeilnehmerkreis(infBachelor, 8);
+
+    assertThat(tkst.getAllPotentialConflictingPruefungenWith(dm)).contains(analysis, haskel);
+  }
+
+  @Test
+  void getAllPotentialConflictingPruefungenWith_Successfull_NotSameTeilnehmerkreis() {
+
+    TwoKlausurenSameTime tkst = new TwoKlausurenSameTime(dataAccessService);
+
+    LocalDateTime timeA = LocalDateTime.of(2022, 8, 11, 8, 0);
+    LocalDateTime timeB = LocalDateTime.of(2022, 8, 12, 8, 0);
+
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung haskel = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+
+    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(analysis, haskel));
+
+    analysis.setStartzeitpunkt(timeA);
+    haskel.setStartzeitpunkt(timeB);
+
+    analysis.addTeilnehmerkreis(infBachelor, 8);
+    haskel.addTeilnehmerkreis(infBachelor, 8);
+    dm.addTeilnehmerkreis(bwlBachelor, 8);
+
+    assertThat(tkst.getAllPotentialConflictingPruefungenWith(dm)).isEmpty();
+  }
+
+  @Test
+  void getAllPotentialConflictingPruefungenWith_Successfull_someTeilnehmerkreis() {
+
+    TwoKlausurenSameTime tkst = new TwoKlausurenSameTime(dataAccessService);
+
+    LocalDateTime timeA = LocalDateTime.of(2022, 8, 11, 8, 0);
+    LocalDateTime timeB = LocalDateTime.of(2022, 8, 12, 8, 0);
+
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung haskel = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+
+    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(analysis, haskel));
+
+    analysis.setStartzeitpunkt(timeA);
+    haskel.setStartzeitpunkt(timeB);
+
+    analysis.addTeilnehmerkreis(infBachelor, 8);
+    haskel.addTeilnehmerkreis(bwlBachelor, 8);
+    dm.addTeilnehmerkreis(bwlBachelor, 8);
+
+    assertThat(tkst.getAllPotentialConflictingPruefungenWith(dm)).containsOnly(haskel);
+  }
+
+
+  @Test
+  void getAllPotentialConflictingPruefungenWith_Successfull_sameTeilnehmerkreisButNotgeplant() {
+
+    TwoKlausurenSameTime tkst = new TwoKlausurenSameTime(dataAccessService);
+
+    LocalDateTime timeA = LocalDateTime.of(2022, 8, 11, 8, 0);
+    LocalDateTime timeB = LocalDateTime.of(2022, 8, 12, 8, 0);
+
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung haskel = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+
+    Pruefungsperiode pruefungsperiode = mock(Pruefungsperiode.class);
+
+    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(analysis));
+    when(pruefungsperiode.ungeplantePruefungen()).thenReturn(Set.of(haskel));
+
+    analysis.setStartzeitpunkt(timeA);
+
+    analysis.addTeilnehmerkreis(infBachelor, 8);
+    haskel.addTeilnehmerkreis(bwlBachelor, 8);
+    dm.addTeilnehmerkreis(bwlBachelor, 8);
+
+    assertThat(tkst.getAllPotentialConflictingPruefungenWith(dm)).isEmpty();
+
+  }
+
+
 
 
   private void setNameAndNummer(Pruefung analysis, String name) {

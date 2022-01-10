@@ -116,7 +116,22 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
   @Override
   public Set<Pruefung> getAllPotentialConflictingPruefungenWith(
       Planungseinheit planungseinheitToCheckFor) {
-    throw new UnsupportedOperationException("Not implemented yet!");
+
+    Set<Pruefung> geplantePruefungen = new HashSet<>(dataAccessService.getGeplanteModelPruefung());
+
+    geplantePruefungen.removeIf(x -> notSameTeilnehmerkreis(x, planungseinheitToCheckFor));
+
+    return geplantePruefungen;
+  }
+
+  private boolean notSameTeilnehmerkreis(Pruefung x, Planungseinheit planungseinheitToCheckFor) {
+
+    for (Teilnehmerkreis teilnehmerkreis : x.getTeilnehmerkreise()) {
+      if (planungseinheitToCheckFor.getTeilnehmerkreise().contains(teilnehmerkreis)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   @NotNull
