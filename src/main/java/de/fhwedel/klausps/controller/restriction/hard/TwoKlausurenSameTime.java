@@ -57,12 +57,31 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
         Set<Pruefung> pruefungenFromBlock;
         for (Planungseinheit planungseinheit : testList) {
           if (planungseinheit.isBlock()) {
-            pruefungenFromBlock = planungseinheit.asBlock().getPruefungen();
+            Block block = planungseinheit.asBlock();
+            pruefungenFromBlock = block.getPruefungen();
             if (!pruefungenFromBlock.contains(pruefung)) {
-              for (Pruefung pruefungBlock : pruefungenFromBlock) {
-                hartKriterium =
-                    getTeilnehmerkreisFromPruefung(pruefung, pruefungBlock, inConflictROPruefung,
-                        inConflictTeilnehmerkreis) || hartKriterium;
+              if (uebereinStimmendeTeilnehmerkreise(block, pruefung)) {
+                if (block.getTyp() == Blocktyp.SEQUENTIAL) {
+                  for (Pruefung pruefungBlock : pruefungenFromBlock) {
+                    hartKriterium =
+                        getTeilnehmerkreisFromPruefung(pruefung, pruefungBlock,
+                            inConflictROPruefung,
+                            inConflictTeilnehmerkreis) || hartKriterium;
+                  }
+                } else {
+                  for (Pruefung pruefungBlock : pruefungenFromBlock) {
+                    if ((uebereinStimmendeTeilnehmerkreise(pruefungBlock, pruefung))
+
+                        //TODO hier die Richtige Zeitüberprüfung einbauen
+                        && pruefungBlock.getStartzeitpunkt().plus(pruefungBlock.getDauer())
+                        .isBefore(start)) {
+                      hartKriterium =
+                          getTeilnehmerkreisFromPruefung(pruefung, pruefungBlock,
+                              inConflictROPruefung,
+                              inConflictTeilnehmerkreis) || hartKriterium;
+                    }
+                  }
+                }
               }
             }
           } else {
@@ -80,6 +99,16 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
     }
     return Optional.empty();
   }
+
+  private boolean uebereinStimmendeTeilnehmerkreise(Planungseinheit block, Pruefung pruefung) {
+    boolean sameTeilnehmerkreis = false;
+    for (Teilnehmerkreis teilnehmerkreis : pruefung.getTeilnehmerkreise()) {
+      sameTeilnehmerkreis =
+          block.getTeilnehmerkreise().contains(teilnehmerkreis) || sameTeilnehmerkreis;
+    }
+    return sameTeilnehmerkreis;
+  }
+
 
   @Override
   public Set<Pruefung> getAllPotentialConflictingPruefungenWith(

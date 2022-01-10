@@ -11,6 +11,8 @@ import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Ausbildungsgrad;
+import de.fhwedel.klausps.model.api.Block;
+import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
@@ -129,7 +131,7 @@ class TwoKlausurenSameTimeTest {
 
     TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
 
-   Optional<HartesKriteriumAnalyse> analyse =  h.evaluate(haskel);
+    Optional<HartesKriteriumAnalyse> analyse = h.evaluate(haskel);
     assertTrue(analyse.isPresent());
     assertEquals(setOfConflictPruefunge, analyse.get().getCausingPruefungen());
     assertEquals(setOfConflictTeilnehmer, analyse.get().getAffectedTeilnehmerkreise());
@@ -146,9 +148,8 @@ class TwoKlausurenSameTimeTest {
     Pruefung analysis = mock(Pruefung.class);
     Pruefung haskel = mock(Pruefung.class);
 
-    setNameAndNummer(analysis,"analysis");
+    setNameAndNummer(analysis, "analysis");
     setNameAndNummer(haskel, "haskel");
-
 
     Set<Teilnehmerkreis> teilnehmer = new HashSet<>();
     Teilnehmerkreis informatik = getTeilnehmerKreis("Informatik");
@@ -281,6 +282,7 @@ class TwoKlausurenSameTimeTest {
     assertEquals(studends, analyse.get().getAmountAffectedStudents());
 
   }
+
   @Test
   void twoKlausurenSameTime_ThreeSameTime_two_DiffrentTeilnehmerkreis() {
 
@@ -292,7 +294,7 @@ class TwoKlausurenSameTimeTest {
     Pruefung haskel = mock(Pruefung.class);
     Pruefung dm = mock(Pruefung.class);
 
-    setNameAndNummer(analysis,"analysis");
+    setNameAndNummer(analysis, "analysis");
     setNameAndNummer(haskel, "haskel");
     setNameAndNummer(dm, "dm");
 
@@ -379,12 +381,662 @@ class TwoKlausurenSameTimeTest {
 
     TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
 
-    Optional<HartesKriteriumAnalyse> analyse =  h.evaluate(haskel);
+    Optional<HartesKriteriumAnalyse> analyse = h.evaluate(haskel);
     assertTrue(analyse.isPresent());
     assertEquals(setOfConflictPruefunge, analyse.get().getCausingPruefungen());
     assertEquals(teilnehmer3, analyse.get().getAffectedTeilnehmerkreise());
     assertEquals(studends, analyse.get().getAmountAffectedStudents());
   }
+
+
+  @Test
+  void test_Blocke2_Parallen() throws IllegalTimeSpanException {
+
+    Planungseinheit blockPlan = mock(Planungseinheit.class);
+
+    when(blockPlan.isBlock()).thenReturn(true);
+
+    Block blockA = mock(Block.class);
+
+    when(blockPlan.asBlock()).thenReturn(blockA);
+    when(blockA.getTyp()).thenReturn(Blocktyp.PARALLEL);
+
+    LocalDateTime startBlock = LocalDateTime.of(2021, 8, 1, 8, 0);
+    Duration pruefungADuration = Duration.ofMinutes(60);
+    Duration pruefungBDuration = Duration.ofMinutes(90);
+    Duration pruefungCDuration = Duration.ofMinutes(60);
+
+    Planungseinheit a = mock(Planungseinheit.class);
+    Planungseinheit b = mock(Planungseinheit.class);
+    Planungseinheit c = mock(Planungseinheit.class);
+
+    Pruefung aPruefung = mock(Pruefung.class);
+    Pruefung bPruefung = mock(Pruefung.class);
+    Pruefung cPruefung = mock(Pruefung.class);
+
+    Set<Pruefung> blockSetPruefungen = new HashSet<>();
+    blockSetPruefungen.add(bPruefung);
+    blockSetPruefungen.add(aPruefung);
+
+    when(blockA.getPruefungen()).thenReturn(blockSetPruefungen);
+    when(blockA.isBlock()).thenReturn(true);
+
+    when(aPruefung.isGeplant()).thenReturn(true);
+    when(bPruefung.isGeplant()).thenReturn(true);
+    when(cPruefung.isGeplant()).thenReturn(true);
+
+    when(a.asPruefung()).thenReturn(aPruefung);
+    when(b.asPruefung()).thenReturn(bPruefung);
+    when(c.asPruefung()).thenReturn(cPruefung);
+
+    when(aPruefung.getDauer()).thenReturn(pruefungADuration);
+    when(bPruefung.getDauer()).thenReturn(pruefungBDuration);
+    when(cPruefung.getDauer()).thenReturn(pruefungCDuration);
+
+    when(blockA.getStartzeitpunkt()).thenReturn(startBlock);
+    when(aPruefung.getStartzeitpunkt()).thenReturn(startBlock);
+    when(bPruefung.getStartzeitpunkt()).thenReturn(startBlock);
+
+    //Fängt eine Stunde später erst an
+    when(cPruefung.getStartzeitpunkt()).thenReturn(startBlock.plusMinutes(60));
+
+    Set<Teilnehmerkreis> acTeilnehmerkreisSet = new HashSet<>();
+    Set<Teilnehmerkreis> bTeilnehmerkreisSet = new HashSet<>();
+    Set<Teilnehmerkreis> blockTeilnehmerkreisSet = new HashSet<>();
+
+    Teilnehmerkreis informatik = mock(Teilnehmerkreis.class);
+    Teilnehmerkreis bwl = mock(Teilnehmerkreis.class);
+
+    blockTeilnehmerkreisSet.add(informatik);
+    blockTeilnehmerkreisSet.add(bwl);
+    bTeilnehmerkreisSet.add(bwl);
+    acTeilnehmerkreisSet.add(informatik);
+
+    Map<Teilnehmerkreis, Integer> acTeilnehmerKreis = new HashMap<>();
+    acTeilnehmerKreis.put(informatik, 8);
+
+    Map<Teilnehmerkreis, Integer> bTeilnehmerKreis = new HashMap<>();
+    bTeilnehmerKreis.put(bwl, 8);
+
+    when(aPruefung.getSchaetzungen()).thenReturn(acTeilnehmerKreis);
+    when(cPruefung.getSchaetzungen()).thenReturn(acTeilnehmerKreis);
+    when(bPruefung.getSchaetzungen()).thenReturn(bTeilnehmerKreis);
+
+    when(cPruefung.getTeilnehmerkreise()).thenReturn(acTeilnehmerkreisSet);
+    when(aPruefung.getTeilnehmerkreise()).thenReturn(acTeilnehmerkreisSet);
+    when(blockA.getTeilnehmerkreise()).thenReturn(blockTeilnehmerkreisSet);
+
+    when(bPruefung.getTeilnehmerkreise()).thenReturn(bTeilnehmerkreisSet);
+
+    when(blockA.getDauer()).thenReturn(Duration.ofMinutes(60));
+
+    ArrayList<Planungseinheit> listToReturn = new ArrayList<>();
+    listToReturn.add(blockPlan);
+    when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        listToReturn);
+
+    TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
+
+    Optional<HartesKriteriumAnalyse> analyse = h.evaluate(cPruefung);
+    assertTrue(analyse.isEmpty());
+  }
+
+  @Test
+  void test_Blocke2_SEQUENTIAL() throws IllegalTimeSpanException {
+
+    Planungseinheit blockPlan = mock(Planungseinheit.class);
+
+    when(blockPlan.isBlock()).thenReturn(true);
+
+    Block blockA = mock(Block.class);
+
+    when(blockPlan.asBlock()).thenReturn(blockA);
+    when(blockA.getTyp()).thenReturn(Blocktyp.SEQUENTIAL);
+
+    LocalDateTime startBlock = LocalDateTime.of(2021, 8, 1, 8, 0);
+    Duration pruefungADuration = Duration.ofMinutes(60);
+    Duration pruefungBDuration = Duration.ofMinutes(90);
+    Duration pruefungCDuration = Duration.ofMinutes(60);
+
+    Planungseinheit a = mock(Planungseinheit.class);
+    Planungseinheit b = mock(Planungseinheit.class);
+    Planungseinheit c = mock(Planungseinheit.class);
+
+    Pruefung aPruefung = mock(Pruefung.class);
+    Pruefung bPruefung = mock(Pruefung.class);
+    Pruefung cPruefung = mock(Pruefung.class);
+
+    Set<Pruefung> blockSetPruefungen = new HashSet<>();
+    blockSetPruefungen.add(bPruefung);
+    blockSetPruefungen.add(aPruefung);
+
+    when(blockA.getPruefungen()).thenReturn(blockSetPruefungen);
+    when(blockA.isBlock()).thenReturn(true);
+
+    when(aPruefung.isGeplant()).thenReturn(true);
+    when(bPruefung.isGeplant()).thenReturn(true);
+    when(cPruefung.isGeplant()).thenReturn(true);
+
+    when(a.asPruefung()).thenReturn(aPruefung);
+    when(b.asPruefung()).thenReturn(bPruefung);
+    when(c.asPruefung()).thenReturn(cPruefung);
+
+    when(aPruefung.getDauer()).thenReturn(pruefungADuration);
+    when(bPruefung.getDauer()).thenReturn(pruefungBDuration);
+    when(cPruefung.getDauer()).thenReturn(pruefungCDuration);
+
+    when(blockA.getStartzeitpunkt()).thenReturn(startBlock);
+    when(aPruefung.getStartzeitpunkt()).thenReturn(startBlock);
+    when(bPruefung.getStartzeitpunkt()).thenReturn(startBlock);
+
+    //Fängt eine Stunde später erst an
+    when(cPruefung.getStartzeitpunkt()).thenReturn(startBlock.plusMinutes(60));
+
+    Set<Teilnehmerkreis> acTeilnehmerkreisSet = new HashSet<>();
+    Set<Teilnehmerkreis> bTeilnehmerkreisSet = new HashSet<>();
+    Set<Teilnehmerkreis> blockTeilnehmerkreisSet = new HashSet<>();
+
+    Teilnehmerkreis informatik = mock(Teilnehmerkreis.class);
+    Teilnehmerkreis bwl = mock(Teilnehmerkreis.class);
+
+    blockTeilnehmerkreisSet.add(informatik);
+    blockTeilnehmerkreisSet.add(bwl);
+    bTeilnehmerkreisSet.add(bwl);
+    acTeilnehmerkreisSet.add(informatik);
+
+    Map<Teilnehmerkreis, Integer> acTeilnehmerKreis = new HashMap<>();
+    acTeilnehmerKreis.put(informatik, 8);
+
+    Map<Teilnehmerkreis, Integer> bTeilnehmerKreis = new HashMap<>();
+    bTeilnehmerKreis.put(bwl, 8);
+
+    when(aPruefung.getSchaetzungen()).thenReturn(acTeilnehmerKreis);
+    when(cPruefung.getSchaetzungen()).thenReturn(acTeilnehmerKreis);
+    when(bPruefung.getSchaetzungen()).thenReturn(bTeilnehmerKreis);
+
+    when(cPruefung.getTeilnehmerkreise()).thenReturn(acTeilnehmerkreisSet);
+    when(aPruefung.getTeilnehmerkreise()).thenReturn(acTeilnehmerkreisSet);
+    when(blockA.getTeilnehmerkreise()).thenReturn(blockTeilnehmerkreisSet);
+
+    when(bPruefung.getTeilnehmerkreise()).thenReturn(bTeilnehmerkreisSet);
+
+    when(blockA.getDauer()).thenReturn(Duration.ofMinutes(60));
+
+    ArrayList<Planungseinheit> listToReturn = new ArrayList<>();
+    listToReturn.add(blockPlan);
+    when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        listToReturn);
+
+    Set<Pruefung> setOfConflictPruefunge = new HashSet<>();
+    setOfConflictPruefunge.add(cPruefung);
+    setOfConflictPruefunge.add(aPruefung);
+    Set<Teilnehmerkreis> setOfConflictTeilnehmer = new HashSet<>();
+    setOfConflictTeilnehmer.add(informatik);
+
+    int studends = 8;
+
+    TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
+    Optional<HartesKriteriumAnalyse> analyse = h.evaluate(cPruefung);
+    assertTrue(analyse.isPresent());
+    assertEquals(setOfConflictPruefunge, analyse.get().getCausingPruefungen());
+    assertEquals(setOfConflictTeilnehmer, analyse.get().getAffectedTeilnehmerkreise());
+    assertEquals(studends, analyse.get().getAmountAffectedStudents());
+  }
+
+  @Test
+  void test_Blocke2_Parallel_No_SameTeilnehmerkreise() throws IllegalTimeSpanException {
+
+    Planungseinheit blockPlan = mock(Planungseinheit.class);
+
+    when(blockPlan.isBlock()).thenReturn(true);
+
+    Block blockA = mock(Block.class);
+
+    when(blockPlan.asBlock()).thenReturn(blockA);
+    when(blockA.getTyp()).thenReturn(Blocktyp.PARALLEL);
+
+    LocalDateTime startBlock = LocalDateTime.of(2021, 8, 1, 8, 0);
+    Duration pruefungADuration = Duration.ofMinutes(60);
+    Duration pruefungBDuration = Duration.ofMinutes(90);
+    Duration pruefungCDuration = Duration.ofMinutes(60);
+
+    Planungseinheit a = mock(Planungseinheit.class);
+    Planungseinheit b = mock(Planungseinheit.class);
+    Planungseinheit c = mock(Planungseinheit.class);
+
+    Pruefung aPruefung = mock(Pruefung.class);
+    Pruefung bPruefung = mock(Pruefung.class);
+    Pruefung cPruefung = mock(Pruefung.class);
+
+    Set<Pruefung> blockSetPruefungen = new HashSet<>();
+    blockSetPruefungen.add(bPruefung);
+    blockSetPruefungen.add(aPruefung);
+
+    when(blockA.getPruefungen()).thenReturn(blockSetPruefungen);
+    when(blockA.isBlock()).thenReturn(true);
+
+    when(aPruefung.isGeplant()).thenReturn(true);
+    when(bPruefung.isGeplant()).thenReturn(true);
+    when(cPruefung.isGeplant()).thenReturn(true);
+
+    when(a.asPruefung()).thenReturn(aPruefung);
+    when(b.asPruefung()).thenReturn(bPruefung);
+    when(c.asPruefung()).thenReturn(cPruefung);
+
+    when(aPruefung.getDauer()).thenReturn(pruefungADuration);
+    when(bPruefung.getDauer()).thenReturn(pruefungBDuration);
+    when(cPruefung.getDauer()).thenReturn(pruefungCDuration);
+
+    when(blockA.getStartzeitpunkt()).thenReturn(startBlock);
+    when(aPruefung.getStartzeitpunkt()).thenReturn(startBlock);
+    when(bPruefung.getStartzeitpunkt()).thenReturn(startBlock);
+
+    //Fängt eine Stunde später erst an
+    when(cPruefung.getStartzeitpunkt()).thenReturn(startBlock.plusMinutes(60));
+
+    Set<Teilnehmerkreis> abTeilnehmerkreisSet = new HashSet<>();
+    Set<Teilnehmerkreis> cTeilnehmerkreisSet = new HashSet<>();
+    Set<Teilnehmerkreis> blockTeilnehmerkreisSet = new HashSet<>();
+
+    Teilnehmerkreis informatik = mock(Teilnehmerkreis.class);
+    Teilnehmerkreis bwl = mock(Teilnehmerkreis.class);
+
+
+    blockTeilnehmerkreisSet.add(bwl);
+    abTeilnehmerkreisSet.add(bwl);
+    cTeilnehmerkreisSet.add(informatik);
+
+    Map<Teilnehmerkreis, Integer> acTeilnehmerKreis = new HashMap<>();
+    acTeilnehmerKreis.put(informatik, 8);
+
+    Map<Teilnehmerkreis, Integer> bTeilnehmerKreis = new HashMap<>();
+    bTeilnehmerKreis.put(bwl, 8);
+
+    when(aPruefung.getSchaetzungen()).thenReturn(acTeilnehmerKreis);
+    when(cPruefung.getSchaetzungen()).thenReturn(acTeilnehmerKreis);
+    when(bPruefung.getSchaetzungen()).thenReturn(bTeilnehmerKreis);
+
+    when(cPruefung.getTeilnehmerkreise()).thenReturn(cTeilnehmerkreisSet);
+    when(aPruefung.getTeilnehmerkreise()).thenReturn(abTeilnehmerkreisSet);
+    when(blockA.getTeilnehmerkreise()).thenReturn(blockTeilnehmerkreisSet);
+
+    when(bPruefung.getTeilnehmerkreise()).thenReturn(abTeilnehmerkreisSet);
+
+    when(blockA.getDauer()).thenReturn(Duration.ofMinutes(60));
+
+    ArrayList<Planungseinheit> listToReturn = new ArrayList<>();
+    listToReturn.add(blockPlan);
+    when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        listToReturn);
+
+    TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
+    Optional<HartesKriteriumAnalyse> analyse = h.evaluate(cPruefung);
+    assertTrue(analyse.isEmpty());
+
+  }
+
+
+  @Test
+  void test_Blocke2_SEQUENTIAL_No_SameTeilnehmerkreise() throws IllegalTimeSpanException {
+
+    Planungseinheit blockPlan = mock(Planungseinheit.class);
+
+    when(blockPlan.isBlock()).thenReturn(true);
+
+    Block blockA = mock(Block.class);
+
+    when(blockPlan.asBlock()).thenReturn(blockA);
+    when(blockA.getTyp()).thenReturn(Blocktyp.SEQUENTIAL);
+
+    LocalDateTime startBlock = LocalDateTime.of(2021, 8, 1, 8, 0);
+    Duration pruefungADuration = Duration.ofMinutes(60);
+    Duration pruefungBDuration = Duration.ofMinutes(90);
+    Duration pruefungCDuration = Duration.ofMinutes(60);
+
+    Planungseinheit a = mock(Planungseinheit.class);
+    Planungseinheit b = mock(Planungseinheit.class);
+    Planungseinheit c = mock(Planungseinheit.class);
+
+    Pruefung aPruefung = mock(Pruefung.class);
+    Pruefung bPruefung = mock(Pruefung.class);
+    Pruefung cPruefung = mock(Pruefung.class);
+
+    Set<Pruefung> blockSetPruefungen = new HashSet<>();
+    blockSetPruefungen.add(bPruefung);
+    blockSetPruefungen.add(aPruefung);
+
+    when(blockA.getPruefungen()).thenReturn(blockSetPruefungen);
+    when(blockA.isBlock()).thenReturn(true);
+
+    when(aPruefung.isGeplant()).thenReturn(true);
+    when(bPruefung.isGeplant()).thenReturn(true);
+    when(cPruefung.isGeplant()).thenReturn(true);
+
+    when(a.asPruefung()).thenReturn(aPruefung);
+    when(b.asPruefung()).thenReturn(bPruefung);
+    when(c.asPruefung()).thenReturn(cPruefung);
+
+    when(aPruefung.getDauer()).thenReturn(pruefungADuration);
+    when(bPruefung.getDauer()).thenReturn(pruefungBDuration);
+    when(cPruefung.getDauer()).thenReturn(pruefungCDuration);
+
+    when(blockA.getStartzeitpunkt()).thenReturn(startBlock);
+    when(aPruefung.getStartzeitpunkt()).thenReturn(startBlock);
+    when(bPruefung.getStartzeitpunkt()).thenReturn(startBlock);
+
+    //Fängt eine Stunde später erst an
+    when(cPruefung.getStartzeitpunkt()).thenReturn(startBlock.plusMinutes(60));
+
+    Set<Teilnehmerkreis> abTeilnehmerkreisSet = new HashSet<>();
+    Set<Teilnehmerkreis> cTeilnehmerkreisSet = new HashSet<>();
+    Set<Teilnehmerkreis> blockTeilnehmerkreisSet = new HashSet<>();
+
+    Teilnehmerkreis informatik = mock(Teilnehmerkreis.class);
+    Teilnehmerkreis bwl = mock(Teilnehmerkreis.class);
+
+    blockTeilnehmerkreisSet.add(informatik);
+    blockTeilnehmerkreisSet.add(bwl);
+    abTeilnehmerkreisSet.add(bwl);
+    cTeilnehmerkreisSet.add(informatik);
+
+    Map<Teilnehmerkreis, Integer> acTeilnehmerKreis = new HashMap<>();
+    acTeilnehmerKreis.put(informatik, 8);
+
+    Map<Teilnehmerkreis, Integer> bTeilnehmerKreis = new HashMap<>();
+    bTeilnehmerKreis.put(bwl, 8);
+
+    when(aPruefung.getSchaetzungen()).thenReturn(acTeilnehmerKreis);
+    when(cPruefung.getSchaetzungen()).thenReturn(acTeilnehmerKreis);
+    when(bPruefung.getSchaetzungen()).thenReturn(bTeilnehmerKreis);
+
+    when(cPruefung.getTeilnehmerkreise()).thenReturn(cTeilnehmerkreisSet);
+    when(aPruefung.getTeilnehmerkreise()).thenReturn(abTeilnehmerkreisSet);
+    when(blockA.getTeilnehmerkreise()).thenReturn(blockTeilnehmerkreisSet);
+
+    when(bPruefung.getTeilnehmerkreise()).thenReturn(abTeilnehmerkreisSet);
+
+    when(blockA.getDauer()).thenReturn(Duration.ofMinutes(60));
+
+    ArrayList<Planungseinheit> listToReturn = new ArrayList<>();
+    listToReturn.add(blockPlan);
+    when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        listToReturn);
+
+    TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
+    Optional<HartesKriteriumAnalyse> analyse = h.evaluate(cPruefung);
+    assertTrue(analyse.isEmpty());
+
+  }
+
+
+  @Test
+  void test_Blocke2_Sequential_LotPruefugnen() throws IllegalTimeSpanException {
+
+    Planungseinheit blockPlan = mock(Planungseinheit.class);
+
+    when(blockPlan.isBlock()).thenReturn(true);
+
+    Block blockA = mock(Block.class);
+
+    when(blockPlan.asBlock()).thenReturn(blockA);
+    when(blockA.getTyp()).thenReturn(Blocktyp.SEQUENTIAL);
+
+    LocalDateTime startBlock = LocalDateTime.of(2021, 8, 1, 8, 0);
+    Duration pruefungADuration = Duration.ofMinutes(60);
+    Duration pruefungBDuration = Duration.ofMinutes(90);
+    Duration pruefungCDuration = Duration.ofMinutes(60);
+    Duration pruefungDDuration = Duration.ofMinutes(60);
+    Duration pruefungEDuration = Duration.ofMinutes(60);
+
+    Planungseinheit a = mock(Planungseinheit.class);
+    Planungseinheit b = mock(Planungseinheit.class);
+    Planungseinheit c = mock(Planungseinheit.class);
+    Planungseinheit d = mock(Planungseinheit.class);
+    Planungseinheit e = mock(Planungseinheit.class);
+
+    Pruefung aPruefung = mock(Pruefung.class);
+    Pruefung bPruefung = mock(Pruefung.class);
+    Pruefung cPruefung = mock(Pruefung.class);
+    Pruefung dPruefung = mock(Pruefung.class);
+    Pruefung ePruefung = mock(Pruefung.class);
+
+
+    Set<Pruefung> blockSetPruefungen = new HashSet<>();
+    blockSetPruefungen.add(bPruefung);
+    blockSetPruefungen.add(aPruefung);
+    blockSetPruefungen.add(dPruefung);
+    blockSetPruefungen.add(ePruefung);
+
+    when(blockA.getPruefungen()).thenReturn(blockSetPruefungen);
+    when(blockA.isBlock()).thenReturn(true);
+
+    when(aPruefung.isGeplant()).thenReturn(true);
+    when(bPruefung.isGeplant()).thenReturn(true);
+    when(cPruefung.isGeplant()).thenReturn(true);
+    when(ePruefung.isGeplant()).thenReturn(true);
+    when(dPruefung.isGeplant()).thenReturn(true);
+
+    when(a.asPruefung()).thenReturn(aPruefung);
+    when(b.asPruefung()).thenReturn(bPruefung);
+    when(c.asPruefung()).thenReturn(cPruefung);
+    when(d.asPruefung()).thenReturn(dPruefung);
+    when(e.asPruefung()).thenReturn(ePruefung);
+
+    when(aPruefung.getDauer()).thenReturn(pruefungADuration);
+    when(bPruefung.getDauer()).thenReturn(pruefungBDuration);
+    when(cPruefung.getDauer()).thenReturn(pruefungCDuration);
+    when(dPruefung.getDauer()).thenReturn(pruefungDDuration);
+    when(ePruefung.getDauer()).thenReturn(pruefungEDuration);
+
+    when(blockA.getStartzeitpunkt()).thenReturn(startBlock);
+    when(aPruefung.getStartzeitpunkt()).thenReturn(startBlock);
+    when(bPruefung.getStartzeitpunkt()).thenReturn(startBlock);
+    when(ePruefung.getStartzeitpunkt()).thenReturn(startBlock);
+    when(dPruefung.getStartzeitpunkt()).thenReturn(startBlock);
+
+    //Fängt eine Stunde später erst an
+    when(cPruefung.getStartzeitpunkt()).thenReturn(startBlock.plusMinutes(60));
+
+    Set<Teilnehmerkreis> abdeTeilnehmerkreisSet = new HashSet<>();
+    Set<Teilnehmerkreis> cTeilnehmerkreisSet = new HashSet<>();
+    Set<Teilnehmerkreis> blockTeilnehmerkreisSet = new HashSet<>();
+
+    Teilnehmerkreis informatik = mock(Teilnehmerkreis.class);
+    Teilnehmerkreis bwl = mock(Teilnehmerkreis.class);
+
+    blockTeilnehmerkreisSet.add(informatik);
+    blockTeilnehmerkreisSet.add(bwl);
+    abdeTeilnehmerkreisSet.add(bwl);
+    abdeTeilnehmerkreisSet.add(informatik);
+
+    cTeilnehmerkreisSet.add(informatik);
+    cTeilnehmerkreisSet.add(bwl);
+
+    Map<Teilnehmerkreis, Integer> abdeTeilnehmerKreis = new HashMap<>();
+    abdeTeilnehmerKreis.put(informatik, 8);
+    abdeTeilnehmerKreis.put(bwl, 8);
+
+    Map<Teilnehmerkreis, Integer> cTeilnehmerKreis = new HashMap<>();
+    cTeilnehmerKreis.put(bwl, 8);
+    cTeilnehmerKreis.put(informatik, 8);
+
+    when(aPruefung.getSchaetzungen()).thenReturn(abdeTeilnehmerKreis);
+    when(bPruefung.getSchaetzungen()).thenReturn(abdeTeilnehmerKreis);
+    when(cPruefung.getSchaetzungen()).thenReturn(cTeilnehmerKreis);
+    when(dPruefung.getSchaetzungen()).thenReturn(abdeTeilnehmerKreis);
+    when(ePruefung.getSchaetzungen()).thenReturn(abdeTeilnehmerKreis);
+
+    when(cPruefung.getTeilnehmerkreise()).thenReturn(cTeilnehmerkreisSet);
+    when(aPruefung.getTeilnehmerkreise()).thenReturn(abdeTeilnehmerkreisSet);
+    when(blockA.getTeilnehmerkreise()).thenReturn(blockTeilnehmerkreisSet);
+
+    when(bPruefung.getTeilnehmerkreise()).thenReturn(abdeTeilnehmerkreisSet);
+    when(ePruefung.getTeilnehmerkreise()).thenReturn(abdeTeilnehmerkreisSet);
+    when(dPruefung.getTeilnehmerkreise()).thenReturn(abdeTeilnehmerkreisSet);
+
+    when(blockA.getDauer()).thenReturn(Duration.ofMinutes(60));
+
+    ArrayList<Planungseinheit> listToReturn = new ArrayList<>();
+    listToReturn.add(blockPlan);
+    when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        listToReturn);
+
+    Set<Pruefung> setOfConflictPruefunge = new HashSet<>();
+    setOfConflictPruefunge.add(cPruefung);
+    setOfConflictPruefunge.add(aPruefung);
+    setOfConflictPruefunge.add(bPruefung);
+    setOfConflictPruefunge.add(dPruefung);
+    setOfConflictPruefunge.add(ePruefung);
+
+    Set<Teilnehmerkreis> setOfConflictTeilnehmer = new HashSet<>();
+    setOfConflictTeilnehmer.add(informatik);
+    setOfConflictTeilnehmer.add(bwl);
+
+    int studends = 16;
+
+    TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
+    Optional<HartesKriteriumAnalyse> analyse = h.evaluate(cPruefung);
+    assertTrue(analyse.isPresent());
+    assertEquals(setOfConflictPruefunge, analyse.get().getCausingPruefungen());
+    assertEquals(setOfConflictTeilnehmer, analyse.get().getAffectedTeilnehmerkreise());
+    assertEquals(studends, analyse.get().getAmountAffectedStudents());
+  }
+
+
+  @Test
+  void test_Blocke2_PARALLEL_LotPruefugnen() throws IllegalTimeSpanException {
+
+    Planungseinheit blockPlan = mock(Planungseinheit.class);
+
+    when(blockPlan.isBlock()).thenReturn(true);
+
+    Block blockA = mock(Block.class);
+
+    when(blockPlan.asBlock()).thenReturn(blockA);
+    when(blockA.getTyp()).thenReturn(Blocktyp.PARALLEL);
+
+    LocalDateTime startBlock = LocalDateTime.of(2021, 8, 1, 8, 0);
+    Duration pruefungADuration = Duration.ofMinutes(60);
+    Duration pruefungBDuration = Duration.ofMinutes(90);
+    Duration pruefungCDuration = Duration.ofMinutes(60);
+    Duration pruefungDDuration = Duration.ofMinutes(60);
+    Duration pruefungEDuration = Duration.ofMinutes(60);
+
+    Planungseinheit a = mock(Planungseinheit.class);
+    Planungseinheit b = mock(Planungseinheit.class);
+    Planungseinheit c = mock(Planungseinheit.class);
+    Planungseinheit d = mock(Planungseinheit.class);
+    Planungseinheit e = mock(Planungseinheit.class);
+
+    Pruefung aPruefung = mock(Pruefung.class);
+    Pruefung bPruefung = mock(Pruefung.class);
+    Pruefung cPruefung = mock(Pruefung.class);
+    Pruefung dPruefung = mock(Pruefung.class);
+    Pruefung ePruefung = mock(Pruefung.class);
+
+
+    Set<Pruefung> blockSetPruefungen = new HashSet<>();
+    blockSetPruefungen.add(bPruefung);
+    blockSetPruefungen.add(aPruefung);
+    blockSetPruefungen.add(dPruefung);
+    blockSetPruefungen.add(ePruefung);
+
+    when(blockA.getPruefungen()).thenReturn(blockSetPruefungen);
+    when(blockA.isBlock()).thenReturn(true);
+
+    when(aPruefung.isGeplant()).thenReturn(true);
+    when(bPruefung.isGeplant()).thenReturn(true);
+    when(cPruefung.isGeplant()).thenReturn(true);
+    when(ePruefung.isGeplant()).thenReturn(true);
+    when(dPruefung.isGeplant()).thenReturn(true);
+
+    when(a.asPruefung()).thenReturn(aPruefung);
+    when(b.asPruefung()).thenReturn(bPruefung);
+    when(c.asPruefung()).thenReturn(cPruefung);
+    when(d.asPruefung()).thenReturn(dPruefung);
+    when(e.asPruefung()).thenReturn(ePruefung);
+
+    when(aPruefung.getDauer()).thenReturn(pruefungADuration);
+    when(bPruefung.getDauer()).thenReturn(pruefungBDuration);
+    when(cPruefung.getDauer()).thenReturn(pruefungCDuration);
+    when(dPruefung.getDauer()).thenReturn(pruefungDDuration);
+    when(ePruefung.getDauer()).thenReturn(pruefungEDuration);
+
+    when(blockA.getStartzeitpunkt()).thenReturn(startBlock);
+    when(aPruefung.getStartzeitpunkt()).thenReturn(startBlock);
+    when(bPruefung.getStartzeitpunkt()).thenReturn(startBlock);
+    when(ePruefung.getStartzeitpunkt()).thenReturn(startBlock);
+    when(dPruefung.getStartzeitpunkt()).thenReturn(startBlock);
+
+    //Fängt eine Stunde später erst an
+    when(cPruefung.getStartzeitpunkt()).thenReturn(startBlock);
+
+    Set<Teilnehmerkreis> abdeTeilnehmerkreisSet = new HashSet<>();
+    Set<Teilnehmerkreis> cTeilnehmerkreisSet = new HashSet<>();
+    Set<Teilnehmerkreis> blockTeilnehmerkreisSet = new HashSet<>();
+
+    Teilnehmerkreis informatik = mock(Teilnehmerkreis.class);
+    Teilnehmerkreis bwl = mock(Teilnehmerkreis.class);
+
+    blockTeilnehmerkreisSet.add(informatik);
+    blockTeilnehmerkreisSet.add(bwl);
+    abdeTeilnehmerkreisSet.add(bwl);
+    abdeTeilnehmerkreisSet.add(informatik);
+
+    cTeilnehmerkreisSet.add(informatik);
+    cTeilnehmerkreisSet.add(bwl);
+
+    Map<Teilnehmerkreis, Integer> abdeTeilnehmerKreis = new HashMap<>();
+    abdeTeilnehmerKreis.put(informatik, 8);
+    abdeTeilnehmerKreis.put(bwl, 8);
+
+    Map<Teilnehmerkreis, Integer> cTeilnehmerKreis = new HashMap<>();
+    cTeilnehmerKreis.put(bwl, 8);
+    cTeilnehmerKreis.put(informatik, 8);
+
+    when(aPruefung.getSchaetzungen()).thenReturn(abdeTeilnehmerKreis);
+    when(bPruefung.getSchaetzungen()).thenReturn(abdeTeilnehmerKreis);
+    when(cPruefung.getSchaetzungen()).thenReturn(cTeilnehmerKreis);
+    when(dPruefung.getSchaetzungen()).thenReturn(abdeTeilnehmerKreis);
+    when(ePruefung.getSchaetzungen()).thenReturn(abdeTeilnehmerKreis);
+
+    when(cPruefung.getTeilnehmerkreise()).thenReturn(cTeilnehmerkreisSet);
+    when(aPruefung.getTeilnehmerkreise()).thenReturn(abdeTeilnehmerkreisSet);
+    when(blockA.getTeilnehmerkreise()).thenReturn(blockTeilnehmerkreisSet);
+
+    when(bPruefung.getTeilnehmerkreise()).thenReturn(abdeTeilnehmerkreisSet);
+    when(ePruefung.getTeilnehmerkreise()).thenReturn(abdeTeilnehmerkreisSet);
+    when(dPruefung.getTeilnehmerkreise()).thenReturn(abdeTeilnehmerkreisSet);
+
+    when(blockA.getDauer()).thenReturn(Duration.ofMinutes(60));
+
+    ArrayList<Planungseinheit> listToReturn = new ArrayList<>();
+    listToReturn.add(blockPlan);
+    when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        listToReturn);
+
+    Set<Pruefung> setOfConflictPruefunge = new HashSet<>();
+    setOfConflictPruefunge.add(cPruefung);
+    setOfConflictPruefunge.add(aPruefung);
+    setOfConflictPruefunge.add(bPruefung);
+    setOfConflictPruefunge.add(dPruefung);
+    setOfConflictPruefunge.add(ePruefung);
+
+    Set<Teilnehmerkreis> setOfConflictTeilnehmer = new HashSet<>();
+    setOfConflictTeilnehmer.add(informatik);
+    setOfConflictTeilnehmer.add(bwl);
+
+    int studends = 16;
+
+    TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
+    Optional<HartesKriteriumAnalyse> analyse = h.evaluate(cPruefung);
+    assertTrue(analyse.isPresent());
+    assertEquals(setOfConflictPruefunge, analyse.get().getCausingPruefungen());
+    assertEquals(setOfConflictTeilnehmer, analyse.get().getAffectedTeilnehmerkreise());
+    assertEquals(studends, analyse.get().getAmountAffectedStudents());
+  }
+
+
 
   private void setNameAndNummer(Pruefung analysis, String name) {
     when(analysis.getPruefungsnummer()).thenReturn(name);
