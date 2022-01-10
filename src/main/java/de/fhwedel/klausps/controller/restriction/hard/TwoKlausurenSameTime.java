@@ -71,10 +71,7 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
                 } else {
                   for (Pruefung pruefungBlock : pruefungenFromBlock) {
                     if ((uebereinStimmendeTeilnehmerkreise(pruefungBlock, pruefung))
-
-                        //TODO hier die Richtige Zeitüberprüfung einbauen
-                        && pruefungBlock.getStartzeitpunkt().plus(pruefungBlock.getDauer())
-                        .isBefore(start)) {
+                        && checkTime(start, end, pruefungBlock)) {
                       hartKriterium =
                           getTeilnehmerkreisFromPruefung(pruefung, pruefungBlock,
                               inConflictROPruefung,
@@ -98,6 +95,35 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
       }
     }
     return Optional.empty();
+  }
+
+  private boolean checkTime(LocalDateTime start, LocalDateTime end, Pruefung pruefungBlock) {
+    return
+        isBeforeBlock(start, end, pruefungBlock)
+            ||
+            isSameBlock(start, end, pruefungBlock)
+            ||
+            isAfterBlock(start, end, pruefungBlock);
+
+  }
+
+  private boolean isAfterBlock(LocalDateTime start, LocalDateTime end, Pruefung pruefungBlock) {
+    return start.isBefore(pruefungBlock.endzeitpunkt())
+        && (end.isEqual(pruefungBlock.endzeitpunkt())
+        || end.isAfter(pruefungBlock.endzeitpunkt()));
+  }
+
+  private boolean isSameBlock(LocalDateTime start, LocalDateTime end, Pruefung pruefungBlock) {
+    return (start.isEqual(pruefungBlock.getStartzeitpunkt())
+        || start.isAfter(pruefungBlock.getStartzeitpunkt()))
+        && (end.isBefore(pruefungBlock.endzeitpunkt())
+        || end.isEqual(pruefungBlock.endzeitpunkt()));
+  }
+
+  private boolean isBeforeBlock(LocalDateTime start, LocalDateTime end, Pruefung pruefungBlock) {
+    return start.isBefore(pruefungBlock.getStartzeitpunkt())
+        && (end.isAfter(pruefungBlock.getStartzeitpunkt())
+        || end.isEqual(pruefungBlock.getStartzeitpunkt()));
   }
 
   private boolean uebereinStimmendeTeilnehmerkreise(Planungseinheit block, Pruefung pruefung) {

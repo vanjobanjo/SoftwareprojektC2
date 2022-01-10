@@ -1,7 +1,6 @@
 package de.fhwedel.klausps.controller.restriction.hard;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -25,6 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class TwoKlausurenSameTimeTest {
@@ -161,11 +161,11 @@ class TwoKlausurenSameTimeTest {
 
     ArrayList<Planungseinheit> listOfPruefungen = new ArrayList<>();
 
-    Set<Pruefung> setOfConflictPruefunge = new HashSet<>();
+
 
     Set<Teilnehmerkreis> setOfConflictTeilnehmer = new HashSet<>();
 
-    int studends = 0;
+
 
     Map<Teilnehmerkreis, Integer> teilnehmerCount = new HashMap<>();
     teilnehmerCount.put(informatik, 8);
@@ -383,14 +383,16 @@ class TwoKlausurenSameTimeTest {
 
     Optional<HartesKriteriumAnalyse> analyse = h.evaluate(haskel);
     assertTrue(analyse.isPresent());
+
     assertEquals(setOfConflictPruefunge, analyse.get().getCausingPruefungen());
-    assertEquals(teilnehmer3, analyse.get().getAffectedTeilnehmerkreise());
+    assertEquals(setOfConflictTeilnehmerkreis, analyse.get().getAffectedTeilnehmerkreise());
     assertEquals(studends, analyse.get().getAmountAffectedStudents());
   }
 
 
   @Test
-  void test_Blocke2_Parallen() throws IllegalTimeSpanException {
+  @DisplayName("HartesKriterium: TwoKlausurenSameTIme in Block Parallel Überschneidung mit kürzere Klausur")
+  void test_Blocke2_Parallen_successful() throws IllegalTimeSpanException {
 
     Planungseinheit blockPlan = mock(Planungseinheit.class);
 
@@ -402,9 +404,9 @@ class TwoKlausurenSameTimeTest {
     when(blockA.getTyp()).thenReturn(Blocktyp.PARALLEL);
 
     LocalDateTime startBlock = LocalDateTime.of(2021, 8, 1, 8, 0);
-    Duration pruefungADuration = Duration.ofMinutes(60);
-    Duration pruefungBDuration = Duration.ofMinutes(90);
-    Duration pruefungCDuration = Duration.ofMinutes(60);
+    Duration pruefungADuration = Duration.ofMinutes(59);
+    Duration pruefungBDuration = Duration.ofMinutes(180);
+    Duration pruefungCDuration = Duration.ofMinutes(59);
 
     Planungseinheit a = mock(Planungseinheit.class);
     Planungseinheit b = mock(Planungseinheit.class);
@@ -413,6 +415,10 @@ class TwoKlausurenSameTimeTest {
     Pruefung aPruefung = mock(Pruefung.class);
     Pruefung bPruefung = mock(Pruefung.class);
     Pruefung cPruefung = mock(Pruefung.class);
+
+    when(aPruefung.endzeitpunkt()).thenReturn(startBlock.plus(pruefungADuration));
+    when(bPruefung.endzeitpunkt()).thenReturn(startBlock.plus(pruefungBDuration));
+    when(cPruefung.endzeitpunkt()).thenReturn(startBlock.plusMinutes(90).plus(pruefungCDuration));
 
     Set<Pruefung> blockSetPruefungen = new HashSet<>();
     blockSetPruefungen.add(bPruefung);
@@ -438,7 +444,7 @@ class TwoKlausurenSameTimeTest {
     when(bPruefung.getStartzeitpunkt()).thenReturn(startBlock);
 
     //Fängt eine Stunde später erst an
-    when(cPruefung.getStartzeitpunkt()).thenReturn(startBlock.plusMinutes(60));
+    when(cPruefung.getStartzeitpunkt()).thenReturn(startBlock.plusMinutes(90));
 
     Set<Teilnehmerkreis> acTeilnehmerkreisSet = new HashSet<>();
     Set<Teilnehmerkreis> bTeilnehmerkreisSet = new HashSet<>();
@@ -480,6 +486,105 @@ class TwoKlausurenSameTimeTest {
     Optional<HartesKriteriumAnalyse> analyse = h.evaluate(cPruefung);
     assertTrue(analyse.isEmpty());
   }
+
+
+  @Test
+  @DisplayName("HartesKriterium: TwoKlausurenSameTIme in Block Parallel Überschneidung mit kürzere Klausur Block liegt nach Pruefung")
+  void test_Blocke2_Parallen_successful_Pruefung_Vor_Block() throws IllegalTimeSpanException {
+
+    Planungseinheit blockPlan = mock(Planungseinheit.class);
+
+    when(blockPlan.isBlock()).thenReturn(true);
+
+    Block blockA = mock(Block.class);
+
+    when(blockPlan.asBlock()).thenReturn(blockA);
+    when(blockA.getTyp()).thenReturn(Blocktyp.PARALLEL);
+
+    LocalDateTime startBlock = LocalDateTime.of(2021, 8, 1, 9, 30);
+    Duration pruefungADuration = Duration.ofMinutes(59);
+    Duration pruefungBDuration = Duration.ofMinutes(180);
+    Duration pruefungCDuration = Duration.ofMinutes(59);
+
+    Planungseinheit a = mock(Planungseinheit.class);
+    Planungseinheit b = mock(Planungseinheit.class);
+    Planungseinheit c = mock(Planungseinheit.class);
+
+    Pruefung aPruefung = mock(Pruefung.class);
+    Pruefung bPruefung = mock(Pruefung.class);
+    Pruefung cPruefung = mock(Pruefung.class);
+
+    when(aPruefung.endzeitpunkt()).thenReturn(startBlock.plus(pruefungADuration));
+    when(bPruefung.endzeitpunkt()).thenReturn(startBlock.plus(pruefungBDuration));
+    when(cPruefung.endzeitpunkt()).thenReturn(startBlock.minusMinutes(90).plus(pruefungCDuration));
+
+    Set<Pruefung> blockSetPruefungen = new HashSet<>();
+    blockSetPruefungen.add(bPruefung);
+    blockSetPruefungen.add(aPruefung);
+
+    when(blockA.getPruefungen()).thenReturn(blockSetPruefungen);
+    when(blockA.isBlock()).thenReturn(true);
+
+    when(aPruefung.isGeplant()).thenReturn(true);
+    when(bPruefung.isGeplant()).thenReturn(true);
+    when(cPruefung.isGeplant()).thenReturn(true);
+
+    when(a.asPruefung()).thenReturn(aPruefung);
+    when(b.asPruefung()).thenReturn(bPruefung);
+    when(c.asPruefung()).thenReturn(cPruefung);
+
+    when(aPruefung.getDauer()).thenReturn(pruefungADuration);
+    when(bPruefung.getDauer()).thenReturn(pruefungBDuration);
+    when(cPruefung.getDauer()).thenReturn(pruefungCDuration);
+
+    when(blockA.getStartzeitpunkt()).thenReturn(startBlock);
+    when(aPruefung.getStartzeitpunkt()).thenReturn(startBlock);
+    when(bPruefung.getStartzeitpunkt()).thenReturn(startBlock);
+
+    //Fängt eine Stunde später erst an
+    when(cPruefung.getStartzeitpunkt()).thenReturn(startBlock.minusMinutes(90));
+
+    Set<Teilnehmerkreis> acTeilnehmerkreisSet = new HashSet<>();
+    Set<Teilnehmerkreis> bTeilnehmerkreisSet = new HashSet<>();
+    Set<Teilnehmerkreis> blockTeilnehmerkreisSet = new HashSet<>();
+
+    Teilnehmerkreis informatik = mock(Teilnehmerkreis.class);
+    Teilnehmerkreis bwl = mock(Teilnehmerkreis.class);
+
+    blockTeilnehmerkreisSet.add(informatik);
+    blockTeilnehmerkreisSet.add(bwl);
+    bTeilnehmerkreisSet.add(bwl);
+    acTeilnehmerkreisSet.add(informatik);
+
+    Map<Teilnehmerkreis, Integer> acTeilnehmerKreis = new HashMap<>();
+    acTeilnehmerKreis.put(informatik, 8);
+
+    Map<Teilnehmerkreis, Integer> bTeilnehmerKreis = new HashMap<>();
+    bTeilnehmerKreis.put(bwl, 8);
+
+    when(aPruefung.getSchaetzungen()).thenReturn(acTeilnehmerKreis);
+    when(cPruefung.getSchaetzungen()).thenReturn(acTeilnehmerKreis);
+    when(bPruefung.getSchaetzungen()).thenReturn(bTeilnehmerKreis);
+
+    when(cPruefung.getTeilnehmerkreise()).thenReturn(acTeilnehmerkreisSet);
+    when(aPruefung.getTeilnehmerkreise()).thenReturn(acTeilnehmerkreisSet);
+    when(blockA.getTeilnehmerkreise()).thenReturn(blockTeilnehmerkreisSet);
+
+    when(bPruefung.getTeilnehmerkreise()).thenReturn(bTeilnehmerkreisSet);
+
+    when(blockA.getDauer()).thenReturn(Duration.ofMinutes(60));
+
+    ArrayList<Planungseinheit> listToReturn = new ArrayList<>();
+    listToReturn.add(blockPlan);
+    when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        listToReturn);
+
+    TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
+
+    Optional<HartesKriteriumAnalyse> analyse = h.evaluate(cPruefung);
+    assertTrue(analyse.isEmpty());
+  }
+
 
   @Test
   void test_Blocke2_SEQUENTIAL() throws IllegalTimeSpanException {
@@ -641,7 +746,6 @@ class TwoKlausurenSameTimeTest {
     Teilnehmerkreis informatik = mock(Teilnehmerkreis.class);
     Teilnehmerkreis bwl = mock(Teilnehmerkreis.class);
 
-
     blockTeilnehmerkreisSet.add(bwl);
     abTeilnehmerkreisSet.add(bwl);
     cTeilnehmerkreisSet.add(informatik);
@@ -800,7 +904,6 @@ class TwoKlausurenSameTimeTest {
     Pruefung dPruefung = mock(Pruefung.class);
     Pruefung ePruefung = mock(Pruefung.class);
 
-
     Set<Pruefung> blockSetPruefungen = new HashSet<>();
     blockSetPruefungen.add(bPruefung);
     blockSetPruefungen.add(aPruefung);
@@ -917,7 +1020,7 @@ class TwoKlausurenSameTimeTest {
 
     LocalDateTime startBlock = LocalDateTime.of(2021, 8, 1, 8, 0);
     Duration pruefungADuration = Duration.ofMinutes(60);
-    Duration pruefungBDuration = Duration.ofMinutes(90);
+    Duration pruefungBDuration = Duration.ofMinutes(60);
     Duration pruefungCDuration = Duration.ofMinutes(60);
     Duration pruefungDDuration = Duration.ofMinutes(60);
     Duration pruefungEDuration = Duration.ofMinutes(60);
@@ -933,7 +1036,6 @@ class TwoKlausurenSameTimeTest {
     Pruefung cPruefung = mock(Pruefung.class);
     Pruefung dPruefung = mock(Pruefung.class);
     Pruefung ePruefung = mock(Pruefung.class);
-
 
     Set<Pruefung> blockSetPruefungen = new HashSet<>();
     blockSetPruefungen.add(bPruefung);
@@ -968,7 +1070,12 @@ class TwoKlausurenSameTimeTest {
     when(ePruefung.getStartzeitpunkt()).thenReturn(startBlock);
     when(dPruefung.getStartzeitpunkt()).thenReturn(startBlock);
 
-    //Fängt eine Stunde später erst an
+    when(aPruefung.endzeitpunkt()).thenReturn(startBlock.plus(pruefungADuration));
+    when(bPruefung.endzeitpunkt()).thenReturn(startBlock.plus(pruefungBDuration));
+    when(cPruefung.endzeitpunkt()).thenReturn(startBlock.plus(pruefungCDuration));
+    when(dPruefung.endzeitpunkt()).thenReturn(startBlock.plus(pruefungDDuration));
+    when(ePruefung.endzeitpunkt()).thenReturn(startBlock.plus(pruefungEDuration));
+
     when(cPruefung.getStartzeitpunkt()).thenReturn(startBlock);
 
     Set<Teilnehmerkreis> abdeTeilnehmerkreisSet = new HashSet<>();
@@ -1035,7 +1142,6 @@ class TwoKlausurenSameTimeTest {
     assertEquals(setOfConflictTeilnehmer, analyse.get().getAffectedTeilnehmerkreise());
     assertEquals(studends, analyse.get().getAmountAffectedStudents());
   }
-
 
 
   private void setNameAndNummer(Pruefung analysis, String name) {
