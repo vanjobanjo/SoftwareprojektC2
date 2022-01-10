@@ -85,8 +85,10 @@ public class DataAccessService {
     return nonNull(pruefungsperiode);
   }
 
+  //TODO diese Methode muss in ScheduleService #183?
+  //TODO Planungseinheit, wenn Prüfung im Block, dann Block sonst Prüfung als Rückgabe
   public void changeDurationOf(ReadOnlyPruefung pruefung, Duration duration)
-      throws IllegalArgumentException {
+     throws IllegalArgumentException {
 
     if (duration.isNegative()) {
       throw new IllegalArgumentException("Die Dauer der Pruefung muss positiv sein.");

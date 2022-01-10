@@ -332,6 +332,21 @@ public class ScheduleService {
         restrictionService.getPruefungenInHardConflictWith(planungseinheit)));
   }
 
+
+  public List<ReadOnlyPlanungseinheit> setDauer(ReadOnlyPruefung pruefung, Duration dauer)
+      throws HartesKriteriumException {
+
+    dataAccessService.changeDurationOf(pruefung, dauer);
+    Pruefung pruefungModel = dataAccessService.getPruefungWith(pruefung.getPruefungsnummer());
+    List<HartesKriteriumAnalyse> hard = restrictionService.checkHarteKriterien(pruefungModel);
+
+    if (!hard.isEmpty()) {
+      dataAccessService.changeDurationOf(pruefung, pruefung.getDauer());
+      throw converter.convertHardException(hard);
+    }
+    return affectedPruefungenSoft(pruefungModel);
+  }
+
   private Planungseinheit getAsModel(ReadOnlyPlanungseinheit planungseinheitToCheckFor) {
     if (planungseinheitToCheckFor.isBlock()) {
       return dataAccessService.getModelBlock(planungseinheitToCheckFor.asBlock());

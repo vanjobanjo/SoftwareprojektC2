@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -30,6 +31,8 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
+import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
+import de.fhwedel.klausps.controller.restriction.hard.TwoKlausurenSameTime;
 import de.fhwedel.klausps.model.api.Ausbildungsgrad;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Blocktyp;
@@ -84,7 +87,7 @@ class ScheduleServiceTest {
     this.pruefungsperiode = mock(Pruefungsperiode.class);
     when(pruefungsperiode.getStartdatum()).thenReturn(START_PERIOD);
     when(pruefungsperiode.getEnddatum()).thenReturn(END_PERIOD);
-    dataAccessService.setPruefungsperiode(this.pruefungsperiode);
+
   }
 
   @Test
@@ -721,4 +724,83 @@ class ScheduleServiceTest {
     assertThrows(NullPointerException.class,
         () -> deviceUnderTest.getGeplantePruefungenWithKonflikt(null));
   }
+
+  @Test
+  void setDauer_Succssful() throws HartesKriteriumException {
+    LocalDateTime time = LocalDateTime.of(2021, 8, 12, 8, 0);
+    LocalDateTime timeb = LocalDateTime.of(2021, 8, 11, 8, 0);
+
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+
+    when(dataAccessService.getPruefungsperiode()).thenReturn(this.pruefungsperiode);
+    when(dataAccessService.getPruefungsperiode().geplantePruefungen()).thenReturn(
+        Set.of(analysis, dm));
+
+    when(dataAccessService.getPruefungWith(RO_ANALYSIS_UNPLANNED.getPruefungsnummer())).thenReturn(
+        analysis);
+    when(dataAccessService.getPruefungWith(RO_DM_UNPLANNED.getPruefungsnummer())).thenReturn(dm);
+
+    analysis.setStartzeitpunkt(time);
+    dm.setStartzeitpunkt(timeb);
+
+    assertThat(analysis.getDauer()).isEqualTo(RO_ANALYSIS_UNPLANNED.getDauer());
+    assertThat(deviceUnderTest.setDauer(RO_ANALYSIS_UNPLANNED, Duration.ofMinutes(90))).isEmpty();
+
+  }
+
+
+  @Test
+  void setDauer_Succssful_checkSoft() throws HartesKriteriumException {
+    LocalDateTime time = LocalDateTime.of(2021, 8, 12, 8, 0);
+    LocalDateTime timeb = LocalDateTime.of(2021, 8, 11, 8, 0);
+
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+
+    when(dataAccessService.getPruefungsperiode()).thenReturn(this.pruefungsperiode);
+    when(dataAccessService.getPruefungsperiode().geplantePruefungen()).thenReturn(
+        Set.of(analysis, dm));
+
+    when(dataAccessService.getPruefungWith(RO_ANALYSIS_UNPLANNED.getPruefungsnummer())).thenReturn(
+        analysis);
+    when(dataAccessService.getPruefungWith(RO_DM_UNPLANNED.getPruefungsnummer())).thenReturn(dm);
+    analysis.setStartzeitpunkt(time);
+    dm.setStartzeitpunkt(timeb);
+
+    assertThat(analysis.getDauer()).isEqualTo(RO_ANALYSIS_UNPLANNED.getDauer());
+    assertThat(deviceUnderTest.setDauer(RO_ANALYSIS_UNPLANNED, Duration.ofMinutes(90))).isEmpty();
+
+  }
+
+  @Test
+  void setDauer_UnSuccssful() throws HartesKriteriumException {
+    LocalDateTime time = LocalDateTime.of(2021, 8, 12, 8, 0);
+    LocalDateTime timeb = LocalDateTime.of(2021, 8, 12, 10, 30);
+
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+    analysis.setStartzeitpunkt(time);
+    dm.setStartzeitpunkt(timeb);
+    analysis.addTeilnehmerkreis(infBachelor, 8);
+    dm.addTeilnehmerkreis(infBachelor, 8);
+
+    when(dataAccessService.getPruefungsperiode()).thenReturn(this.pruefungsperiode);
+    when(dataAccessService.getPruefungsperiode().geplantePruefungen()).thenReturn(
+        Set.of(analysis, dm));
+
+    when(dataAccessService.getPruefungWith(RO_ANALYSIS_UNPLANNED.getPruefungsnummer())).thenReturn(
+        analysis);
+    when(dataAccessService.getPruefungWith(RO_DM_UNPLANNED.getPruefungsnummer())).thenReturn(dm);
+
+    HartesKriteriumAnalyse hka = new HartesKriteriumAnalyse(Set.of(analysis, dm),
+        Set.of(infBachelor), 8, HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG);
+    when(restrictionService.checkHarteKriterien(any())).thenReturn(List.of(hka));
+
+    assertThat(analysis.getDauer()).isEqualTo(RO_ANALYSIS_UNPLANNED.getDauer());
+    assertThrows(HartesKriteriumException.class, () -> deviceUnderTest.setDauer(RO_ANALYSIS_UNPLANNED, Duration.ofMinutes(150)));
+
+  }
+
+
 }
