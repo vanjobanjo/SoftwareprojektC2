@@ -20,7 +20,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import org.jetbrains.annotations.NotNull;
 
-public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate<Pruefung> {
+public class MehrePruefungenAmTag extends WeicheRestriktion {
 
   static final int START_ZEIT = 8;
   static final int END_ZEIT = 18;
@@ -99,51 +99,6 @@ public class MehrePruefungenAmTag extends WeicheRestriktion implements Predicate
     }
   }
 
-  @Override
-  public boolean test(Pruefung pruefung) {
-    boolean weichesKrierium = false;
-
-    LocalDateTime start = startDay(pruefung.getStartzeitpunkt());
-    LocalDateTime end = endDay(pruefung.getStartzeitpunkt());
-
-    List<Planungseinheit> testList = null;
-    try {
-      testList = dataAccessService.getAllPlanungseinheitenBetween(start, end);
-    } catch (IllegalTimeSpanException e) {
-      //Kann nicht davor liegen, da ich den Morgen und den Abend nehme
-      e.printStackTrace();
-    }
-    //Damit die Pruefung nicht mit sich selbst in Konflict steht
-    if (testList != null) {
-      testList.remove(pruefung);
-
-      Set<Pruefung> pruefungenFromBlock;
-      // TODO wieso wird überprüft, ob ein Ergebnis von "getAllPruefungenBetween" ein Block ist,
-      //  die Methode sorgt ganz explizit dafür, dass die Klausuren in den Blöcken statt der Blöcke
-      //  selbst returned werden
-      for (Planungseinheit planungseinheit : testList) {
-        if (planungseinheit.isBlock()) {
-          pruefungenFromBlock = planungseinheit.asBlock().getPruefungen();
-          if (!pruefungenFromBlock.contains(pruefung)) {
-            for (Pruefung pruefungBlock : pruefungenFromBlock) {
-              weichesKrierium =
-                  getTeilnehmerkreisFromPruefung(pruefung, pruefungBlock) || weichesKrierium;
-            }
-          }
-        } else {
-          weichesKrierium = getTeilnehmerkreisFromPruefung(pruefung, planungseinheit.asPruefung())
-              || weichesKrierium;
-        }
-      }
-      if (weichesKrierium) {
-        scoring += 10;
-        this.setPruefung.add(pruefung);
-        this.setReadyOnly.add(new PruefungDTOBuilder(pruefung).build());
-      }
-    }
-
-    return weichesKrierium;
-  }
 
   private boolean getTeilnehmerkreisFromPruefung(Pruefung pruefung, Pruefung toCheck) {
     boolean retBool = false;

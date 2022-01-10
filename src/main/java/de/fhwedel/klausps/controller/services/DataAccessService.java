@@ -9,6 +9,7 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Planungseinheit;
@@ -454,11 +455,15 @@ public class DataAccessService {
 
   public List<Planungseinheit> getAllPlanungseinheitenBetween(LocalDateTime start,
       LocalDateTime end)
-      throws IllegalTimeSpanException {
+      throws IllegalTimeSpanException{
     if (start.isAfter(end)) {
       throw new IllegalTimeSpanException("Der Start liegt nach dem Ende des Zeitslots");
     }
-    return List.copyOf(pruefungsperiode.planungseinheitenBetween(start, end));
+    //TODO hier gucken, ob das hier hin  muss
+   /* if(this.isPruefungsperiodeSet()){
+      throw new NoPruefungsPeriodeDefinedException();
+    }*/
+    return List.copyOf(this.getPruefungsperiode().planungseinheitenBetween(start, end));
   }
 
   public Set<ReadOnlyPruefung> getAllReadOnlyPruefungenBetween(LocalDateTime start,
