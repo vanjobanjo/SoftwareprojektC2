@@ -414,15 +414,11 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public void exportPeriode(Path path, ExportTyp typ) throws NoPruefungsPeriodeDefinedException {
+  public void exportPeriode(Path path, ExportTyp typ) throws NoPruefungsPeriodeDefinedException,
+      ExportException, IOException {
     noNullParameters(path, typ);
     ensureAvailabilityOfPruefungsperiode();
-    try {
-      ioService.exportPeriode(path, typ);
-    } catch (IOException | ExportException e) {
-      e.printStackTrace();
-    }
-    //TODO kann nach nächstem deploy weg.
+    ioService.exportPeriode(path, typ);
   }
 
   @Override
