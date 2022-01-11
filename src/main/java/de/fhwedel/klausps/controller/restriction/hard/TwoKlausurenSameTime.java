@@ -11,6 +11,7 @@ import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -20,7 +21,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class TwoKlausurenSameTime extends HarteRestriktion {
 
-  static final long MINUTES_BETWEEN_PRUEFUNGEN = 30;
+  private final Duration bufferBetweenPlanungseinheiten;
 
   private int countStudents = 0;
 
@@ -30,6 +31,13 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
 
   protected TwoKlausurenSameTime(DataAccessService dataAccessService) {
     super(dataAccessService, ZWEI_KLAUSUREN_GLEICHZEITIG);
+    this.bufferBetweenPlanungseinheiten = DEFAULT_BUFFER_BETWEEN_PLANUNGSEINHEITEN;
+  }
+
+  protected TwoKlausurenSameTime(DataAccessService dataAccessService,
+      Duration bufferBetweenPlanungseinheiten) {
+    super(dataAccessService, ZWEI_KLAUSUREN_GLEICHZEITIG);
+    this.bufferBetweenPlanungseinheiten = bufferBetweenPlanungseinheiten;
   }
 
   @Override
@@ -37,7 +45,7 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
 
     boolean hartKriterium = false;
     if (pruefung.isGeplant()) {
-      LocalDateTime start = pruefung.getStartzeitpunkt().minusMinutes(MINUTES_BETWEEN_PRUEFUNGEN);
+      LocalDateTime start = pruefung.getStartzeitpunkt().minus(bufferBetweenPlanungseinheiten);
       HashSet<Pruefung> inConflictROPruefung = new HashSet<>();
       HashSet<Teilnehmerkreis> inConflictTeilnehmerkreis = new HashSet<>();
       countStudents = 0;
@@ -142,7 +150,7 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
   @NotNull
   private LocalDateTime getEndTime(Pruefung pruefung) {
     Optional<Block> maybeBlock = dataAccessService.getBlockTo(pruefung);
-    LocalDateTime date = pruefung.getStartzeitpunkt().plusMinutes(MINUTES_BETWEEN_PRUEFUNGEN);
+    LocalDateTime date = pruefung.getStartzeitpunkt().plus(bufferBetweenPlanungseinheiten);
 
     return maybeBlock.isPresent() && maybeBlock.get().getTyp() == Blocktyp.SEQUENTIAL ? date.plus(
         maybeBlock.get().getDauer()) : date.plus(pruefung.getDauer());
