@@ -1,5 +1,6 @@
 package de.fhwedel.klausps.controller;
 
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomDate;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedROPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTime;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedROPruefung;
@@ -215,6 +216,18 @@ class ControllerTest {
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     deviceUnderTest.setAnkerTagPeriode(getRandomTime(1998L).toLocalDate());
     verify(dataAccessService).setAnkertag(any(LocalDate.class));
+  }
+
+  @Test
+  void setDatumPeriode_startDatumMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.setDatumPeriode(null, getRandomDate(1L)));
+  }
+
+  @Test
+  void setDatumPeriode_endDatumMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.setDatumPeriode(getRandomDate(1L), null));
   }
 
 }
