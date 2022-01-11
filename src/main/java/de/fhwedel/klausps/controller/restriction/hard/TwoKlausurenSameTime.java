@@ -127,9 +127,7 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
       Planungseinheit planungseinheitToCheckFor) {
 
     Set<Pruefung> geplantePruefungen = new HashSet<>(dataAccessService.getGeplanteModelPruefung());
-
     geplantePruefungen.removeIf(x -> notSameTeilnehmerkreis(x, planungseinheitToCheckFor));
-
     return geplantePruefungen;
   }
 

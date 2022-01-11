@@ -56,6 +56,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -303,7 +304,7 @@ class ScheduleServiceTest {
     ReadOnlyBlock block = getROBlockFromROPruefungen("AnalysisAndDm", now, ro_analysis, ro_dm);
 
     when(dataAccessService.unscheduleBlock(any())).thenReturn(blockWithAnalysisDM);
-    when(dataAccessService.getModelBlock(any())).thenReturn(blockWithAnalysisDM);
+    when(dataAccessService.getModelBlock(any())).thenReturn(Optional.of(blockWithAnalysisDM));
     when(restrictionService.getAffectedPruefungen(any(Block.class))).thenReturn(
         Set.of(model_analysis, model_dm));
 
@@ -956,4 +957,183 @@ class ScheduleServiceTest {
         converter.convertToReadOnlyPruefung(pruefungToCheckFor))).hasSize(3);
   }
 
+
+  @Test
+  void makeBlockSequential_block_is_already_sequential() throws HartesKriteriumException {
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    LocalDateTime termin = LocalDateTime.of(2022, 2, 2, 2, 2, 2);
+    Block block = getModelBlockWithPruefungen(pruefungsperiode, "block", termin, analysis, haskell);
+    block.setTyp(SEQUENTIAL);
+    ReadOnlyBlock roBlock = converter.convertToROBlock(block);
+    when(dataAccessService.getModelBlock(roBlock)).thenReturn(Optional.of(block));
+
+    assertThat(deviceUnderTest.toggleBlockType(roBlock, SEQUENTIAL)).isEmpty();
+  }
+
+  @Test
+  void makeBlockSequential_block_is_parallel_but_not_planned() throws HartesKriteriumException {
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+
+    Block block = getModelBlockWithPruefungen(pruefungsperiode, "block", null, analysis, haskell);
+    block.setTyp(PARALLEL);
+    ReadOnlyBlock roBlock = converter.convertToROBlock(block);
+    when(dataAccessService.getModelBlock(roBlock)).thenReturn(Optional.of(block));
+
+    assertThat(deviceUnderTest.toggleBlockType(roBlock, SEQUENTIAL)).contains(roBlock);
+  }
+
+
+  @Test
+  void makeBlockSequential_block_does_not_exist() {
+    when(dataAccessService.getModelBlock(any())).thenReturn(Optional.empty());
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.toggleBlockType(any(), SEQUENTIAL));
+  }
+
+  @Test
+  void makeBlockSequential_hard_restriction_failures() {
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    LocalDateTime termin = LocalDateTime.of(2022, 2, 2, 2, 2, 2);
+    Block block = getModelBlockWithPruefungen(pruefungsperiode, "block", termin, analysis, haskell);
+    block.setTyp(PARALLEL);
+    ReadOnlyBlock roBlock = converter.convertToROBlock(block);
+    when(dataAccessService.getModelBlock(roBlock)).thenReturn(Optional.of(block));
+    List<HartesKriteriumAnalyse> hardKriterien = new LinkedList<>();
+    hardKriterien.add(new HartesKriteriumAnalyse(Collections.emptySet(), Collections.emptySet(), 0,
+        ZWEI_KLAUSUREN_GLEICHZEITIG));
+    when(restrictionService.checkHarteKriterienAll(Set.of(analysis, haskell))).thenReturn(
+        hardKriterien);
+    when(restrictionService.getAffectedPruefungen(any(Block.class))).thenReturn(
+        Set.of(analysis, haskell));
+    assertThrows(HartesKriteriumException.class,
+        () -> deviceUnderTest.toggleBlockType(roBlock, SEQUENTIAL));
+  }
+
+  @Test
+  void makeBlockSequential_successful() throws HartesKriteriumException {
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    LocalDateTime termin = LocalDateTime.of(2022, 2, 2, 2, 2, 2);
+    Block block = getModelBlockWithPruefungen(pruefungsperiode, "block", termin, analysis, haskell);
+    block.setTyp(PARALLEL);
+    ReadOnlyBlock roBlock = converter.convertToROBlock(block);
+    when(dataAccessService.getModelBlock(roBlock)).thenReturn(Optional.of(block));
+    when(restrictionService.getAffectedPruefungen(any(Block.class))).thenReturn(
+        Collections.emptySet());
+    when(restrictionService.checkHarteKriterienAll(Set.of(analysis, haskell))).thenReturn(
+        Collections.emptyList());
+
+    assertThat(deviceUnderTest.toggleBlockType(roBlock, SEQUENTIAL)).containsExactly(roBlock);
+  }
+
+  @Test
+  void makeBlockSequential_soft_restrictions() throws HartesKriteriumException {
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    LocalDateTime termin = LocalDateTime.of(2022, 2, 2, 2, 2, 2);
+    Block block = getModelBlockWithPruefungen(pruefungsperiode, "block", termin, analysis, haskell);
+    block.setTyp(PARALLEL);
+    ReadOnlyBlock roBlock = converter.convertToROBlock(block);
+    when(dataAccessService.getModelBlock(roBlock)).thenReturn(Optional.of(block));
+    when(restrictionService.getAffectedPruefungen(any(Block.class))).thenReturn(
+        Set.of(analysis));
+    when(restrictionService.checkHarteKriterienAll(Set.of(analysis, haskell))).thenReturn(
+        Collections.emptyList());
+
+    assertThat(deviceUnderTest.toggleBlockType(roBlock, SEQUENTIAL)).containsExactlyInAnyOrder(
+        roBlock, RO_ANALYSIS_UNPLANNED);
+  }
+
+
+  @Test
+  void makeBlockParallel_block_is_already_Parallel() throws HartesKriteriumException {
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    LocalDateTime termin = LocalDateTime.of(2022, 2, 2, 2, 2, 2);
+    Block block = getModelBlockWithPruefungen(pruefungsperiode, "block", termin, analysis, haskell);
+    block.setTyp(PARALLEL);
+    ReadOnlyBlock roBlock = converter.convertToROBlock(block);
+    when(dataAccessService.getModelBlock(roBlock)).thenReturn(Optional.of(block));
+
+    assertThat(deviceUnderTest.toggleBlockType(roBlock, PARALLEL)).isEmpty();
+  }
+
+  @Test
+  void makeBlockParallel_block_is_sequential_but_not_planned() throws HartesKriteriumException {
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+
+    Block block = getModelBlockWithPruefungen(pruefungsperiode, "block", null, analysis, haskell);
+    block.setTyp(SEQUENTIAL);
+    ReadOnlyBlock roBlock = converter.convertToROBlock(block);
+    when(dataAccessService.getModelBlock(roBlock)).thenReturn(Optional.of(block));
+
+    assertThat(deviceUnderTest.toggleBlockType(roBlock, PARALLEL)).contains(roBlock);
+  }
+
+
+  @Test
+  void makeBlockParallel_block_does_not_exist() {
+    when(dataAccessService.getModelBlock(any())).thenReturn(Optional.empty());
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.toggleBlockType(any(), PARALLEL));
+  }
+
+  @Test
+  void makeBlockParallel_hard_restriction_failures() {
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    LocalDateTime termin = LocalDateTime.of(2022, 2, 2, 2, 2, 2);
+    Block block = getModelBlockWithPruefungen(pruefungsperiode, "block", termin, analysis, haskell);
+    block.setTyp(SEQUENTIAL);
+    ReadOnlyBlock roBlock = converter.convertToROBlock(block);
+    when(dataAccessService.getModelBlock(roBlock)).thenReturn(Optional.of(block));
+    List<HartesKriteriumAnalyse> hardKriterien = new LinkedList<>();
+    hardKriterien.add(new HartesKriteriumAnalyse(Collections.emptySet(), Collections.emptySet(), 0,
+        ZWEI_KLAUSUREN_GLEICHZEITIG));
+    when(restrictionService.checkHarteKriterienAll(Set.of(analysis, haskell))).thenReturn(
+        hardKriterien);
+    when(restrictionService.getAffectedPruefungen(any(Block.class))).thenReturn(
+        Set.of(analysis, haskell));
+    assertThrows(HartesKriteriumException.class,
+        () -> deviceUnderTest.toggleBlockType(roBlock, PARALLEL));
+  }
+
+  @Test
+  void makeBlockParallel_successful() throws HartesKriteriumException {
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    LocalDateTime termin = LocalDateTime.of(2022, 2, 2, 2, 2, 2);
+    Block block = getModelBlockWithPruefungen(pruefungsperiode, "block", termin, analysis, haskell);
+    block.setTyp(SEQUENTIAL);
+    ReadOnlyBlock roBlock = converter.convertToROBlock(block);
+    when(dataAccessService.getModelBlock(roBlock)).thenReturn(Optional.of(block));
+    when(restrictionService.getAffectedPruefungen(any(Block.class))).thenReturn(
+        Collections.emptySet());
+    when(restrictionService.checkHarteKriterienAll(Set.of(analysis, haskell))).thenReturn(
+        Collections.emptyList());
+
+    assertThat(deviceUnderTest.toggleBlockType(roBlock, PARALLEL)).containsExactly(roBlock);
+  }
+
+  @Test
+  void makeBlockParallel_soft_restrictions() throws HartesKriteriumException {
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    LocalDateTime termin = LocalDateTime.of(2022, 2, 2, 2, 2, 2);
+    Block block = getModelBlockWithPruefungen(pruefungsperiode, "block", termin, analysis, haskell);
+    block.setTyp(SEQUENTIAL);
+    ReadOnlyBlock roBlock = converter.convertToROBlock(block);
+    when(dataAccessService.getModelBlock(roBlock)).thenReturn(Optional.of(block));
+    when(restrictionService.getAffectedPruefungen(any(Block.class))).thenReturn(
+        Set.of(analysis));
+    when(restrictionService.checkHarteKriterienAll(Set.of(analysis, haskell))).thenReturn(
+        Collections.emptyList());
+
+    assertThat(deviceUnderTest.toggleBlockType(roBlock, PARALLEL)).containsExactlyInAnyOrder(
+        roBlock, RO_ANALYSIS_UNPLANNED);
+  }
 }

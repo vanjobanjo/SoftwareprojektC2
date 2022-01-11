@@ -15,6 +15,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
@@ -228,6 +229,34 @@ class ControllerTest {
   void setDatumPeriode_endDatumMustNotBeNull() {
     assertThrows(NullPointerException.class,
         () -> deviceUnderTest.setDatumPeriode(getRandomDate(1L), null));
+  }
+
+
+  @Test
+  void makeBlockSequential_parameters_must_not_be_null() {
+    assertThrows(NullPointerException.class, () -> deviceUnderTest.makeBlockSequential(null));
+  }
+
+  @Test
+  void makeBlockSequential_no_pruefungsperiode_defined() {
+    when(dataAccessService.isPruefungsperiodeSet()).thenReturn(false);
+    ReadOnlyBlock block = mock(ReadOnlyBlock.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.makeBlockSequential(block));
+  }
+
+  @Test
+  void makeBlockParallel_parameters_must_not_be_null() {
+    assertThrows(NullPointerException.class, () -> deviceUnderTest.makeBlockParallel(null));
+  }
+
+
+  @Test
+  void makeBlockParallel__no_pruefungsperiode_defined() {
+    when(dataAccessService.isPruefungsperiodeSet()).thenReturn(false);
+    ReadOnlyBlock block = mock(ReadOnlyBlock.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.makeBlockParallel(block));
   }
 
 }
