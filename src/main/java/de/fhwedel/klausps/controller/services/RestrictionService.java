@@ -11,6 +11,7 @@ import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -125,6 +126,12 @@ public class RestrictionService {
   }
 
   public boolean wouldBeHardConflictAt(LocalDateTime time, Planungseinheit planungseinheit) {
-    throw new UnsupportedOperationException("Not implemented yet!");
+    noNullParameters(time, planungseinheit);
+    boolean isConflicted = false;
+    Iterator<HarteRestriktion> restriktionIterator = hardRestrictions.iterator();
+    while (restriktionIterator.hasNext() && !isConflicted) {
+      isConflicted = restriktionIterator.next().wouldBeHardConflictAt(time, planungseinheit);
+    }
+    return isConflicted;
   }
 }

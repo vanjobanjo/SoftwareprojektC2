@@ -1,5 +1,6 @@
 package de.fhwedel.klausps.controller.services;
 
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomDate;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefungen;
 import static java.util.Collections.emptySet;
@@ -16,14 +17,15 @@ import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
 import de.fhwedel.klausps.controller.restriction.hard.HarteRestriktion;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("OptionalGetWithoutIsPresent")
 class RestrictionServiceTest {
 
   RestrictionFactory restrictionFactory;
@@ -51,20 +53,21 @@ class RestrictionServiceTest {
 
   @Test
   void getPruefungenInHardConflictWith_oneHardRestrictions_noConflicts() {
-    deviceUnderTest.registerHardCriteria(Set.of(oneHardRestrictionThatDoesNotFail()));
+    deviceUnderTest.registerHardCriteria(Set.of(oneHardRestrictionThatDoesNotTrigger()));
     assertThat(
         deviceUnderTest.getPruefungenInHardConflictWith(getRandomPlannedPruefung(1L))).isEmpty();
   }
 
-  private HarteRestriktion oneHardRestrictionThatDoesNotFail() {
+  private HarteRestriktion oneHardRestrictionThatDoesNotTrigger() {
     HarteRestriktion restriktion = mock(HarteRestriktion.class);
     when(restriktion.evaluate(any())).thenReturn(Optional.empty());
+    when(restriktion.wouldBeHardConflictAt(any(), any())).thenReturn(false);
     return restriktion;
   }
 
   @Test
   void getPruefungenInHardConflictWith_oneHardRestriction_checkTheOneExistingHardRestriction() {
-    HarteRestriktion hardRestriction = oneHardRestrictionThatDoesNotFail();
+    HarteRestriktion hardRestriction = oneHardRestrictionThatDoesNotTrigger();
     Planungseinheit planungseinheitToCheckFor = getRandomPlannedPruefung(1L);
 
     deviceUnderTest.registerHardCriteria(Set.of(hardRestriction));
@@ -98,6 +101,58 @@ class RestrictionServiceTest {
   private HartesKriteriumAnalyse hartesKriteriumAnalyseWith(Collection<Pruefung> pruefungen) {
     return new HartesKriteriumAnalyse(new HashSet<>(pruefungen), emptySet(), 0,
         HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG);
+  }
+
+  @Test
+  void wouldBeHardConflictAt_timeMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.wouldBeHardConflictAt(null, getRandomPlannedPruefung(1L)));
+  }
+
+  @Test
+  void wouldBeHardConflictAt_planungseinheitMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.wouldBeHardConflictAt(getRandomDate(1L), null));
+  }
+
+  @Test
+  void wouldBeHardConflictAt_oneHardRestrictionGetsChecked() {
+    HarteRestriktion hardRestriction = oneHardRestrictionThatDoesNotTrigger();
+    deviceUnderTest.registerHardCriteria(Set.of(hardRestriction));
+
+    deviceUnderTest.wouldBeHardConflictAt(getRandomDate(1L), getRandomPlannedPruefung(1L));
+    verify(hardRestriction, times(1)).wouldBeHardConflictAt(any(LocalDateTime.class),
+        any(Planungseinheit.class));
+  }
+
+  @Test
+  void wouldBeHardConflictAt_twoHardRestrictionGetChecked() {
+    List<HarteRestriktion> hardRestrictions = List.of(oneHardRestrictionThatDoesNotTrigger(),
+        oneHardRestrictionThatDoesNotTrigger());
+    deviceUnderTest.registerHardCriteria(new HashSet<>(hardRestrictions));
+
+    deviceUnderTest.wouldBeHardConflictAt(getRandomDate(1L), getRandomPlannedPruefung(1L));
+
+    verify(hardRestrictions.get(0), times(1)).wouldBeHardConflictAt(any(LocalDateTime.class),
+        any(Planungseinheit.class));
+    verify(hardRestrictions.get(1), times(1)).wouldBeHardConflictAt(any(LocalDateTime.class),
+        any(Planungseinheit.class));
+  }
+
+  @Test
+  void wouldBeHardConflictAt_conflictIsIndicated() {
+    List<HarteRestriktion> hardRestrictions = List.of(oneHardRestrictionThatDoesNotTrigger(),
+        oneHardRestrictionFailingWouldBeHardConflictAt(), oneHardRestrictionThatDoesNotTrigger());
+    deviceUnderTest.registerHardCriteria(new HashSet<>(hardRestrictions));
+
+    assertThat(deviceUnderTest.wouldBeHardConflictAt(getRandomDate(1L),
+        getRandomPlannedPruefung(1L))).isTrue();
+  }
+
+  private HarteRestriktion oneHardRestrictionFailingWouldBeHardConflictAt() {
+    HarteRestriktion restriktion = mock(HarteRestriktion.class);
+    when(restriktion.wouldBeHardConflictAt(any(), any())).thenReturn(true);
+    return restriktion;
   }
 
 }
