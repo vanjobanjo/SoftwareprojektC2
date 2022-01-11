@@ -13,9 +13,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import de.fhwedel.klausps.controller.*;
 import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
+import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Ausbildungsgrad;
 import de.fhwedel.klausps.model.api.Block;
@@ -24,11 +24,15 @@ import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
+import de.fhwedel.klausps.model.impl.PruefungImpl;
+import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -71,6 +75,32 @@ class TwoKlausurenSameTimeTest {
   @BeforeEach
   void setUp() {
     this.dataAccessService = mock(DataAccessService.class);
+  }
+
+  @Test
+  void violationTwoPruefungParallelTest() throws IllegalTimeSpanException {
+    LocalDateTime same = LocalDateTime.of(2000, 1, 1, 1, 0);
+    Duration minutes90 = Duration.ofMinutes(90);
+    Pruefung pruefung1 = new PruefungImpl("1", "Pruefung1", "", minutes90, same);
+    Pruefung pruefung2 = new PruefungImpl("2", "Pruefung2", "", minutes90, same);
+    Teilnehmerkreis bwl = new TeilnehmerkreisImpl("", "", 1, Ausbildungsgrad.BACHELOR);
+    pruefung1.addTeilnehmerkreis(bwl, 20);
+    pruefung2.addTeilnehmerkreis(bwl, 30);
+    List<Planungseinheit> plannedPlanungseinheiten = new LinkedList<>();
+    plannedPlanungseinheiten.add(pruefung1);
+    plannedPlanungseinheiten.add(pruefung2);
+
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        plannedPlanungseinheiten);
+    when(dataAccessService.getBlockTo(pruefung1)).thenReturn(Optional.empty());
+    TwoKlausurenSameTime deviceUnderTest = new TwoKlausurenSameTime(dataAccessService);
+    HartesKriteriumAnalyse result = deviceUnderTest.evaluate(pruefung1).get();
+
+    assertThat(result.getAffectedTeilnehmerkreise()).contains(bwl);
+    assertThat(result.getAmountAffectedStudents()).isEqualTo(30);
+    assertThat(result.getCausingPruefungen()).contains(pruefung1);
+    assertThat(result.getCausingPruefungen()).contains(pruefung2);
+    assertThat(result.getKriterium()).isEqualTo(HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG);
   }
 
   @Test
@@ -1249,8 +1279,6 @@ class TwoKlausurenSameTimeTest {
     assertThat(tkst.getAllPotentialConflictingPruefungenWith(dm)).isEmpty();
 
   }
-
-
 
 
   private void setNameAndNummer(Pruefung analysis, String name) {
