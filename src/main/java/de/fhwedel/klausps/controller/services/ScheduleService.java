@@ -13,13 +13,13 @@ import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.model.api.Block;
+import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -120,8 +120,11 @@ public class ScheduleService {
 
   public List<ReadOnlyPlanungseinheit> unscheduleBlock(ReadOnlyBlock block) {
     noNullParameters(block);
-    Block blockModel = dataAccessService.getModelBlock(block);
-    Set<Pruefung> affected = restrictionService.getAffectedPruefungen(blockModel);
+    Optional<Block> blockModel = dataAccessService.getModelBlock(block);
+    if (blockModel.isEmpty()) {
+      throw new IllegalArgumentException("Block does not exist");
+    }
+    Set<Pruefung> affected = restrictionService.getAffectedPruefungen(blockModel.get());
     Block unscheduledBlock = dataAccessService.unscheduleBlock(block);
     List<ReadOnlyPlanungseinheit> result = new ArrayList<>();
     result.add(converter.convertToROBlock(unscheduledBlock));
@@ -200,7 +203,7 @@ public class ScheduleService {
     Pruefung toRemove = dataAccessService.getPruefungWith(pruefung.getPruefungsnummer());
     Optional<Block> toRemoveFrom = dataAccessService.getBlockTo(toRemove);
     if (toRemoveFrom.isEmpty()) {
-      return Collections.emptyList();
+      return emptyList();
     }
     if (!block.geplant()) {
       Block resultingBlock = dataAccessService.removePruefungFromBlock(block, pruefung);
@@ -349,7 +352,12 @@ public class ScheduleService {
 
   private Planungseinheit getAsModel(ReadOnlyPlanungseinheit planungseinheitToCheckFor) {
     if (planungseinheitToCheckFor.isBlock()) {
-      return dataAccessService.getModelBlock(planungseinheitToCheckFor.asBlock());
+      Optional<Block> optionalBlock = dataAccessService.getModelBlock(
+          planungseinheitToCheckFor.asBlock());
+      if (optionalBlock.isEmpty()) {
+        throw new IllegalArgumentException("Block does not exist");
+      }
+      return optionalBlock.get();
     } else {
       return dataAccessService.getPruefungWith(
           planungseinheitToCheckFor.asPruefung().getPruefungsnummer());
@@ -404,7 +412,7 @@ public class ScheduleService {
     if (!dataAccessService.existsBlockWith(planungseinheitToCheck.getBlockId())) {
       throw new IllegalArgumentException("The handed Planungseinheit is not known.");
     }
-    return dataAccessService.getModelBlock(planungseinheitToCheck.asBlock());
+    return dataAccessService.getModelBlock(planungseinheitToCheck.asBlock()).get();
   }
 
   @NotNull
@@ -415,4 +423,37 @@ public class ScheduleService {
     }
     return dataAccessService.getPruefungWith(pruefung.asPruefung().getPruefungsnummer());
   }
+
+
+  public List<ReadOnlyPlanungseinheit> toggleBlockType(ReadOnlyBlock block, Blocktyp changeTo)
+      throws HartesKriteriumException {
+    Optional<Block> optionalBlock = dataAccessService.getModelBlock(block);
+    if (optionalBlock.isEmpty()) {
+      throw new IllegalArgumentException("Block does not exist.");
+    }
+    if (block.getTyp() == changeTo) {
+      return emptyList();
+    }
+    Block modelBlock = optionalBlock.get();
+    if (block.ungeplant()) {
+      modelBlock.setTyp(changeTo);
+      return List.of(converter.convertToROBlock(modelBlock));
+    }
+    Set<Pruefung> affected = restrictionService.getAffectedPruefungen(modelBlock);
+    modelBlock.setTyp(changeTo);
+
+    List<HartesKriteriumAnalyse> hard = restrictionService.checkHarteKriterienAll(
+        affected);
+    if (!hard.isEmpty()) {
+      modelBlock.setTyp(block.getTyp());
+      throw converter.convertHardException(hard);
+    }
+    List<ReadOnlyPlanungseinheit> result = new ArrayList<>();
+    if (affected.isEmpty()) {
+      result.add(converter.convertToROBlock(modelBlock));
+    }
+    result.addAll(calculateScoringForCachedAffected(affected));
+    return result;
+  }
+
 }

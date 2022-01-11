@@ -597,9 +597,8 @@ public class DataAccessService {
     return pruefungsperiode;
   }
 
-  public Block getModelBlock(ReadOnlyBlock block) {
-    // TODO use of Optional (might not exist)?
-    return pruefungsperiode.block(block.getBlockId());
+  public Optional<Block> getModelBlock(ReadOnlyBlock block) {
+    return Optional.ofNullable(pruefungsperiode.block(block.getBlockId()));
   }
 
   public boolean existsBlockWith(int blockId) throws NoPruefungsPeriodeDefinedException {

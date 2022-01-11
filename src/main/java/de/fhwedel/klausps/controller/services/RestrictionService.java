@@ -75,24 +75,20 @@ public class RestrictionService {
     return result;
   }
 
-  /**
-   * @param pruefung
-   * @return
-   */
+
   public Map<Pruefung, List<WeichesKriteriumAnalyse>> checkWeicheKriterienAll(
       Set<Pruefung> pruefung) {
     return pruefung.stream().collect(Collectors.groupingBy(prue -> prue,
         Collectors.flatMapping(prue -> checkWeicheKriterien(prue).stream(), Collectors.toList())));
   }
 
-  /**
-   * @param pruefung
-   * @return
-   */
-  public Map<Pruefung, List<HartesKriteriumAnalyse>> checkHarteKriterienAll(
-      Set<Pruefung> pruefung) {
-    return pruefung.stream().collect(Collectors.groupingBy(prue -> prue,
-        Collectors.flatMapping(prue -> checkHarteKriterien(prue).stream(), Collectors.toList())));
+
+  public List<HartesKriteriumAnalyse> checkHarteKriterienAll(Set<Pruefung> pruefungenToCheck) {
+    List<HartesKriteriumAnalyse> result = new LinkedList<>();
+    for (Pruefung currentToCheck : pruefungenToCheck) {
+      result.addAll(checkHarteKriterien(currentToCheck));
+    }
+    return result;
   }
 
   /**

@@ -1,6 +1,8 @@
 package de.fhwedel.klausps.controller;
 
 import static de.fhwedel.klausps.controller.util.ParameterUtil.noNullParameters;
+import static de.fhwedel.klausps.model.api.Blocktyp.PARALLEL;
+import static de.fhwedel.klausps.model.api.Blocktyp.SEQUENTIAL;
 
 import de.fhwedel.klausps.controller.api.InterfaceController;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
@@ -344,7 +346,7 @@ public class Controller implements InterfaceController {
       throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
     noNullParameters(block);
     ensureAvailabilityOfPruefungsperiode();
-    throw new IllegalStateException("Not implemented yet!");
+    return scheduleService.toggleBlockType(block, PARALLEL);
   }
 
   @Override
@@ -352,7 +354,7 @@ public class Controller implements InterfaceController {
       throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
     noNullParameters(block);
     ensureAvailabilityOfPruefungsperiode();
-    throw new IllegalStateException("Not implemented yet!");
+    return scheduleService.toggleBlockType(block, SEQUENTIAL);
   }
 
   @Override
