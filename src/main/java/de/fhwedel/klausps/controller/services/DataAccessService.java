@@ -627,7 +627,28 @@ public class DataAccessService {
     return pruefungsperiode.planungseinheitenAt(time);
   }
 
-  public void setAnkertag(LocalDate newAnkerTag) {
-    throw new UnsupportedOperationException("Not implemented yet!");
+  public void setAnkertag(LocalDate newAnkerTag)
+      throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
+    noNullParameters(newAnkerTag);
+    checkForPruefungsperiode();
+    ensureNotBeforePruefungsperiode(newAnkerTag);
+    ensureNotAfterPruefungsperiode(newAnkerTag);
+    pruefungsperiode.setAnkertag(newAnkerTag);
+  }
+
+  private void ensureNotBeforePruefungsperiode(LocalDate newAnkerTag)
+      throws IllegalTimeSpanException {
+    if (newAnkerTag.isBefore(pruefungsperiode.getStartdatum())) {
+      throw new IllegalTimeSpanException(
+          "An Ankertag must not be before the start of the Pruefungsperiode.");
+    }
+  }
+
+  private void ensureNotAfterPruefungsperiode(LocalDate newAnkerTag)
+      throws IllegalTimeSpanException {
+    if (newAnkerTag.isAfter(pruefungsperiode.getEnddatum())) {
+      throw new IllegalTimeSpanException(
+          "An Ankertag must not be after the end of the Pruefungsperiode.");
+    }
   }
 }

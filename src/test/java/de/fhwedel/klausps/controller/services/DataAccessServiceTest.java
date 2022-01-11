@@ -48,7 +48,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,11 +55,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class DataAccessServiceTest {
-
-  String pruefungsName = "Computergrafik";
-  String pruefungsNummer = "b123";
-  Duration pruefungsDauer = Duration.ofMinutes(120);
-  Map<Teilnehmerkreis, Integer> teilnehmerKreise = new HashMap<>();
 
   final ReadOnlyPruefung RO_ANALYSIS_UNPLANNED = new PruefungDTOBuilder().withPruefungsName(
       "Analysis").withPruefungsNummer("1").withDauer(Duration.ofMinutes(120)).build();
@@ -1524,6 +1518,62 @@ class DataAccessServiceTest {
   @Test
   void getPlanungseinheitenAt_timeMustNotBeNull() {
     assertThrows(NullPointerException.class, () -> deviceUnderTest.getPlanungseinheitenAt(null));
+  }
+
+  @Test
+  void setAnkertag_ankertagMustNotBeNull() {
+    assertThrows(NullPointerException.class, () -> deviceUnderTest.setAnkertag(null));
+  }
+
+  @Test
+  void setAnkertag_noPruefungsperiode() {
+    deviceUnderTest = new DataAccessService(null);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.setAnkertag(getRandomDate(1L).toLocalDate()));
+  }
+
+  @Test
+  void setAnkertag_beforeStartOfPruefungsperiode() {
+    LocalDate newAnkertag = getRandomDate(1L).toLocalDate();
+    when(pruefungsperiode.getStartdatum()).thenReturn(newAnkertag.plusDays(1));
+    when(pruefungsperiode.getEnddatum()).thenReturn(newAnkertag.plusDays(2));
+    assertThrows(IllegalTimeSpanException.class, () -> deviceUnderTest.setAnkertag(newAnkertag));
+  }
+
+  @Test
+  void setAnkertag_atStartOfPruefungsperiode()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
+    LocalDate newAnkertag = getRandomDate(1L).toLocalDate();
+    when(pruefungsperiode.getStartdatum()).thenReturn(newAnkertag);
+    when(pruefungsperiode.getEnddatum()).thenReturn(newAnkertag.plusDays(1));
+    deviceUnderTest.setAnkertag(newAnkertag);
+  }
+
+  @Test
+  void setAnkertag_afterEndOfPruefungsperiode() {
+    LocalDate newAnkertag = getRandomDate(1L).toLocalDate();
+    when(pruefungsperiode.getStartdatum()).thenReturn(newAnkertag.minusDays(2));
+    when(pruefungsperiode.getEnddatum()).thenReturn(newAnkertag.minusDays(1));
+    assertThrows(IllegalTimeSpanException.class, () -> deviceUnderTest.setAnkertag(newAnkertag));
+  }
+
+  @Test
+  void setAnkertag_atEndOfPruefungsperiode()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
+    LocalDate newAnkertag = getRandomDate(1L).toLocalDate();
+    when(pruefungsperiode.getStartdatum()).thenReturn(newAnkertag.minusDays(2));
+    when(pruefungsperiode.getEnddatum()).thenReturn(newAnkertag);
+    deviceUnderTest.setAnkertag(newAnkertag);
+  }
+
+  @Test
+  void setAnkertag_ankertagIsSetCorrectly()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
+    LocalDate newAnkertag = getRandomDate(1L).toLocalDate();
+    when(pruefungsperiode.getStartdatum()).thenReturn(newAnkertag.minusDays(20));
+    when(pruefungsperiode.getEnddatum()).thenReturn(newAnkertag.plusDays(20));
+    deviceUnderTest.setAnkertag(newAnkertag);
+    verify(pruefungsperiode).setAnkertag(newAnkertag);
   }
 
 }
