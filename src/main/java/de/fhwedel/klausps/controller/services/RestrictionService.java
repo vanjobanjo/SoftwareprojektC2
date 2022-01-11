@@ -9,6 +9,7 @@ import de.fhwedel.klausps.controller.restriction.soft.WeicheRestriktion;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -121,5 +122,9 @@ public class RestrictionService {
           hardRestriction.getAllPotentialConflictingPruefungenWith(planungseinheitToCheckFor));
     }
     return potentiallyConflictingPruefungen;
+  }
+
+  public boolean wouldBeHardConflictAt(LocalDateTime time, Planungseinheit planungseinheit) {
+    throw new UnsupportedOperationException("Not implemented yet!");
   }
 }

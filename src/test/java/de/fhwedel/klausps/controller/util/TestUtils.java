@@ -138,11 +138,11 @@ public class TestUtils {
         random.nextInt(1, 28), random.nextInt(0, 20), random.nextInt(0, 60));
   }
 
-  public static ReadOnlyPruefung getRandomROPruefung(long seed) {
-    return getRandomROPruefungen(seed, 1).get(0);
+  public static ReadOnlyPruefung getRandomUnplannedROPruefung(long seed) {
+    return getRandomUnplannedROPruefungen(seed, 1).get(0);
   }
 
-  public static List<ReadOnlyPruefung> getRandomROPruefungen(long seed, int amount) {
+  public static List<ReadOnlyPruefung> getRandomUnplannedROPruefungen(long seed, int amount) {
     Random random = new Random(seed);
     List<ReadOnlyPruefung> randomPruefungen = new ArrayList<>(amount);
     for (int index = 0; index < amount; index++) {
