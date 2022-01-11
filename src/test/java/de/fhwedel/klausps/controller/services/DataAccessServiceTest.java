@@ -3,6 +3,7 @@ package de.fhwedel.klausps.controller.services;
 import static de.fhwedel.klausps.controller.util.TestFactory.bwlBachelor;
 import static de.fhwedel.klausps.controller.util.TestFactory.infBachelor;
 import static de.fhwedel.klausps.controller.util.TestFactory.infMaster;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomDate;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungenReadOnly;
 import static de.fhwedel.klausps.model.api.Blocktyp.PARALLEL;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -1511,6 +1512,18 @@ class DataAccessServiceTest {
     deviceUnderTest = new DataAccessService(null);
     assertThrows(NoPruefungsPeriodeDefinedException.class,
         () -> deviceUnderTest.existsBlockWith(1));
+  }
+
+  @Test
+  void getPlanungseinheitenAt_noPruefungsperiode() {
+    deviceUnderTest = new DataAccessService(null);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getPlanungseinheitenAt(getRandomDate(1L)));
+  }
+
+  @Test
+  void getPlanungseinheitenAt_timeMustNotBeNull() {
+    assertThrows(NullPointerException.class, () -> deviceUnderTest.getPlanungseinheitenAt(null));
   }
 
 }

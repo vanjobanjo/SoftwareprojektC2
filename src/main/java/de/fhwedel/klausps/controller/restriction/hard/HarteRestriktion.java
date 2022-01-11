@@ -2,6 +2,7 @@ package de.fhwedel.klausps.controller.restriction.hard;
 
 
 import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
 import de.fhwedel.klausps.controller.restriction.Restriktion;
 import de.fhwedel.klausps.controller.services.DataAccessService;
@@ -19,7 +20,6 @@ public abstract class HarteRestriktion extends Restriktion {
   HarteRestriktion(DataAccessService dataAccessService, HartesKriterium kriterium) {
     this.hardRestriction = kriterium;
     this.dataAccessService = dataAccessService;
-
   }
 
   public abstract Optional<HartesKriteriumAnalyse> evaluate(Pruefung pruefung);
@@ -27,6 +27,6 @@ public abstract class HarteRestriktion extends Restriktion {
   public abstract Set<Pruefung> getAllPotentialConflictingPruefungenWith(
       Planungseinheit planungseinheitToCheckFor);
 
-  public abstract boolean wouldBeHardConflictAt(LocalDateTime time,
-      Planungseinheit planungseinheit);
+  public abstract boolean wouldBeHardConflictAt(LocalDateTime time, Planungseinheit planungseinheit)
+      throws NoPruefungsPeriodeDefinedException;
 }

@@ -6,8 +6,15 @@ import static de.fhwedel.klausps.controller.util.TestFactory.RO_HASKELL_UNPLANNE
 import static de.fhwedel.klausps.controller.util.TestFactory.bwlBachelor;
 import static de.fhwedel.klausps.controller.util.TestFactory.getPruefungOfReadOnlyPruefung;
 import static de.fhwedel.klausps.controller.util.TestFactory.infBachelor;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomDate;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungWith;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTeilnehmerkreis;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedPruefung;
+import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -15,6 +22,7 @@ import static org.mockito.Mockito.when;
 
 import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Ausbildungsgrad;
@@ -40,12 +48,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-
+@SuppressWarnings("OptionalGetWithoutIsPresent")
 class TwoKlausurenSameTimeTest {
 
-
   private DataAccessService dataAccessService;
-
+  private TwoKlausurenSameTime deviceUnderTest;
 
   Teilnehmerkreis getTeilnehmerKreis(String name) {
     return new Teilnehmerkreis() {
@@ -71,10 +78,10 @@ class TwoKlausurenSameTimeTest {
     };
   }
 
-
   @BeforeEach
   void setUp() {
     this.dataAccessService = mock(DataAccessService.class);
+    this.deviceUnderTest = new TwoKlausurenSameTime(dataAccessService);
   }
 
   @Test
@@ -236,7 +243,6 @@ class TwoKlausurenSameTimeTest {
 
     Optional<HartesKriteriumAnalyse> should = Optional.empty();
     assertEquals(should, h.evaluate(haskel));
-
   }
 
   @Test
@@ -316,7 +322,6 @@ class TwoKlausurenSameTimeTest {
     assertEquals(setOfConflictPruefunge, analyse.get().getCausingPruefungen());
     assertEquals(setOfConflictTeilnehmer, analyse.get().getAffectedTeilnehmerkreise());
     assertEquals(studends, analyse.get().getAmountAffectedStudents());
-
   }
 
   @Test
@@ -425,9 +430,8 @@ class TwoKlausurenSameTimeTest {
     assertEquals(studends, analyse.get().getAmountAffectedStudents());
   }
 
-
   @Test
-  @DisplayName("HartesKriterium: TwoKlausurenSameTIme in Block Parallel Überschneidung mit kürzere Klausur")
+  @DisplayName("HartesKriterium: TwoKlausurenSameTime in Block Parallel Überschneidung mit kürzerer Klausur")
   void test_Blocke2_Parallen_successful() throws IllegalTimeSpanException {
 
     Planungseinheit blockPlan = mock(Planungseinheit.class);
@@ -1280,10 +1284,94 @@ class TwoKlausurenSameTimeTest {
 
   }
 
-
   private void setNameAndNummer(Pruefung analysis, String name) {
     when(analysis.getPruefungsnummer()).thenReturn(name);
     when(analysis.getName()).thenReturn(name);
     when(analysis.isGeplant()).thenReturn(true);
   }
+
+  @Test
+  void wouldBeHardConflictAt_timeMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.wouldBeHardConflictAt(null, getRandomPlannedPruefung(1L)));
+  }
+
+  @Test
+  void wouldBeHardConflictAt_planungseinheitMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.wouldBeHardConflictAt(getRandomDate(1L), null));
+  }
+
+  @Test
+  void wouldBeHardConflictAt_unPlannedPlanungseinheit_noConflict()
+      throws NoPruefungsPeriodeDefinedException {
+    assertThat(deviceUnderTest.wouldBeHardConflictAt(getRandomDate(1L),
+        getRandomUnplannedPruefung(1L))).isFalse();
+  }
+
+  @Test
+  void wouldBeHardConflictAt_noPlanungseinheitenAtTime() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getPlanungseinheitenAt(any())).thenReturn(emptySet());
+
+    assertThat(deviceUnderTest.wouldBeHardConflictAt(getRandomDate(1L),
+        getRandomUnplannedPruefung(1L))).isFalse();
+  }
+
+  @Test
+  void wouldBeHardConflictAt_onePlanungseinheitWithConflictingTeilnehmerkreis()
+      throws NoPruefungsPeriodeDefinedException {
+    Teilnehmerkreis conflictingTeilnehmerkreis = getRandomTeilnehmerkreis(1L);
+    Pruefung conflictingPruefung = getRandomPruefungWith(1L, conflictingTeilnehmerkreis);
+    Pruefung pruefungToCheckFor = getRandomPruefungWith(2L, conflictingTeilnehmerkreis);
+
+    when(dataAccessService.getPlanungseinheitenAt(any())).thenReturn(Set.of(conflictingPruefung));
+
+    assertThat(
+        deviceUnderTest.wouldBeHardConflictAt(getRandomDate(1L), pruefungToCheckFor)).isTrue();
+  }
+
+  @Test
+  void wouldBeHardConflictAt_multiplePlanungseinheit_oneConflicting()
+      throws NoPruefungsPeriodeDefinedException {
+    Teilnehmerkreis conflictingTeilnehmerkreis = getRandomTeilnehmerkreis(1L);
+    Pruefung conflictingPruefung = getRandomPruefungWith(1L, conflictingTeilnehmerkreis);
+    Set<Planungseinheit> planungseinheitenAtTime = Set.of(conflictingPruefung,
+        getRandomPlannedPruefung(2L), getRandomPlannedPruefung(3L), getRandomPlannedPruefung(4L));
+    Pruefung pruefungToCheckFor = getRandomPruefungWith(2L, conflictingTeilnehmerkreis);
+
+    when(dataAccessService.getPlanungseinheitenAt(any())).thenReturn(planungseinheitenAtTime);
+
+    assertThat(
+        deviceUnderTest.wouldBeHardConflictAt(getRandomDate(1L), pruefungToCheckFor)).isTrue();
+  }
+
+  @Test
+  void wouldBeHardConflictAt_onePlanungseinheit_oneOfManyTeilnehmerkreisConflicting()
+      throws NoPruefungsPeriodeDefinedException {
+    Teilnehmerkreis conflictingTeilnehmerkreis = getRandomTeilnehmerkreis(1L);
+    Pruefung conflictingPruefung = getRandomPruefungWith(1L, conflictingTeilnehmerkreis,
+        getRandomTeilnehmerkreis(2L), getRandomTeilnehmerkreis(3L));
+    Pruefung pruefungToCheckFor = getRandomPruefungWith(2L, conflictingTeilnehmerkreis,
+        getRandomTeilnehmerkreis(4L));
+
+    when(dataAccessService.getPlanungseinheitenAt(any())).thenReturn(Set.of(conflictingPruefung));
+
+    assertThat(
+        deviceUnderTest.wouldBeHardConflictAt(getRandomDate(1L), pruefungToCheckFor)).isTrue();
+  }
+
+  @Test
+  void wouldBeHardConflictAt_planungseinheitToCheckCanNotConflictWithTime()
+      throws NoPruefungsPeriodeDefinedException {
+    // if the planungseinheit to check is planned, it should not interfere
+    Teilnehmerkreis conflictingTeilnehmerkreis = getRandomTeilnehmerkreis(1L);
+    Pruefung pruefungToCheckFor = getRandomPruefungWith(2L, conflictingTeilnehmerkreis);
+
+    when(dataAccessService.getPlanungseinheitenAt(any())).thenReturn(
+        Set.of(getRandomPruefungWith(2L, conflictingTeilnehmerkreis)));
+
+    assertThat(deviceUnderTest.wouldBeHardConflictAt(getRandomDate(1L),
+        getRandomPruefungWith(2L, conflictingTeilnehmerkreis))).isFalse();
+  }
+
 }

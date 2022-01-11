@@ -4,6 +4,7 @@ import static de.fhwedel.klausps.controller.util.ParameterUtil.noNullParameters;
 
 import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.restriction.hard.HarteRestriktion;
 import de.fhwedel.klausps.controller.restriction.soft.WeicheRestriktion;
 import de.fhwedel.klausps.model.api.Block;
@@ -125,7 +126,8 @@ public class RestrictionService {
     return potentiallyConflictingPruefungen;
   }
 
-  public boolean wouldBeHardConflictAt(LocalDateTime time, Planungseinheit planungseinheit) {
+  public boolean wouldBeHardConflictAt(LocalDateTime time, Planungseinheit planungseinheit)
+      throws NoPruefungsPeriodeDefinedException {
     noNullParameters(time, planungseinheit);
     boolean isConflicted = false;
     Iterator<HarteRestriktion> restriktionIterator = hardRestrictions.iterator();
