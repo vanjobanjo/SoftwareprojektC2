@@ -99,7 +99,7 @@ public class DataAccessService {
   //TODO diese Methode muss in ScheduleService #183?
   //TODO Planungseinheit, wenn Prüfung im Block, dann Block sonst Prüfung als Rückgabe
   public void changeDurationOf(ReadOnlyPruefung pruefung, Duration duration)
-     throws IllegalArgumentException {
+      throws IllegalArgumentException {
 
     if (duration.isNegative()) {
       throw new IllegalArgumentException("Die Dauer der Pruefung muss positiv sein.");
@@ -611,4 +611,11 @@ public class DataAccessService {
       throw new NoPruefungsPeriodeDefinedException();
     }
   }
+  public Set<ReadOnlyPlanungseinheit> getAllROPlanungseinheitenBetween(LocalDateTime start,
+      LocalDateTime end)
+      throws IllegalTimeSpanException {
+    return Set.copyOf(
+        converter.convertToROPlanungseinheitCollection(getAllPlanungseinheitenBetween(start, end)));
+  }
+
 }

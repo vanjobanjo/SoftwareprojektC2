@@ -14,6 +14,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
+import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.IOService;
@@ -24,7 +26,9 @@ import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Semestertyp;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
+import java.time.LocalDateTime;
 import java.time.Year;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -117,7 +121,8 @@ class ControllerTest {
   @Test
   void createSemester_unsuccessful() {
     Year year = Year.of(2);
-    assertThrows(NullPointerException.class, () -> deviceUnderTest.createSemester(Semestertyp.SOMMERSEMESTER, null));
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.createSemester(Semestertyp.SOMMERSEMESTER, null));
     assertThrows(NullPointerException.class, () -> deviceUnderTest.createSemester(null, year));
     assertThrows(NullPointerException.class, () -> deviceUnderTest.createSemester(null, null));
   }
@@ -161,6 +166,38 @@ class ControllerTest {
 
     assertThrows(IllegalArgumentException.class,
         () -> deviceUnderTest.getHardConflictedTimes(emptySet(), getRandomUnplannedROPruefung(1L)));
+  }
+
+  @Test
+  void getAllPlanungseinheitenBetween_no_period() throws IllegalTimeSpanException {
+    when(dataAccessService.getAllROPlanungseinheitenBetween(any(), any())).thenReturn(null);
+    LocalDateTime start = LocalDateTime.now();
+    LocalDateTime end = start.plusDays(1L);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getPlanungseinheitenInZeitraum(start, end));
+  }
+
+  @Test
+  void getAllPlanungseinheitenBetween_all_planned_pruefungen()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.isPruefungsperiodeSet()).thenReturn(true);
+    ReadOnlyPruefung roPruefung = getRandomPlannedROPruefung(1L);
+    LocalDateTime start = roPruefung.getTermin().get();
+    LocalDateTime end = start.plusDays(1L);
+    when(dataAccessService.getAllROPlanungseinheitenBetween(start, end)).thenReturn(
+        Set.of(roPruefung));
+    assertThat(deviceUnderTest.getPlanungseinheitenInZeitraum(start, end)).containsOnly(roPruefung);
+  }
+
+  @Test
+  void getAllPlanungseinheitenBetween_illegalTimeSpan() throws IllegalTimeSpanException {
+    LocalDateTime start = LocalDateTime.now();
+    LocalDateTime end = start.plusDays(1L);
+    when(dataAccessService.isPruefungsperiodeSet()).thenReturn(true);
+    when(dataAccessService.getAllROPlanungseinheitenBetween(any(), any())).thenThrow(
+        IllegalTimeSpanException.class);
+    assertThrows(IllegalTimeSpanException.class,
+        () -> deviceUnderTest.getPlanungseinheitenInZeitraum(start, end));
   }
 
 }
