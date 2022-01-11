@@ -558,7 +558,7 @@ public class DataAccessService {
     return result;
   }
 
-  public LocalDate getAnkerPeriode() {
+  public LocalDate getAnkertag() {
     return pruefungsperiode.getAnkertag();
   }
 
@@ -627,4 +627,7 @@ public class DataAccessService {
     return pruefungsperiode.planungseinheitenAt(time);
   }
 
+  public void setAnkertag(LocalDate newAnkerTag) {
+    throw new UnsupportedOperationException("Not implemented yet!");
+  }
 }
