@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
 import de.fhwedel.klausps.controller.restriction.hard.HarteRestriktion;
 import de.fhwedel.klausps.model.api.Planungseinheit;
@@ -52,13 +53,15 @@ class RestrictionServiceTest {
   }
 
   @Test
-  void getPruefungenInHardConflictWith_oneHardRestrictions_noConflicts() {
+  void getPruefungenInHardConflictWith_oneHardRestrictions_noConflicts()
+      throws NoPruefungsPeriodeDefinedException {
     deviceUnderTest.registerHardCriteria(Set.of(oneHardRestrictionThatDoesNotTrigger()));
     assertThat(
         deviceUnderTest.getPruefungenInHardConflictWith(getRandomPlannedPruefung(1L))).isEmpty();
   }
 
-  private HarteRestriktion oneHardRestrictionThatDoesNotTrigger() {
+  private HarteRestriktion oneHardRestrictionThatDoesNotTrigger()
+      throws NoPruefungsPeriodeDefinedException {
     HarteRestriktion restriktion = mock(HarteRestriktion.class);
     when(restriktion.evaluate(any())).thenReturn(Optional.empty());
     when(restriktion.wouldBeHardConflictAt(any(), any())).thenReturn(false);
@@ -66,7 +69,8 @@ class RestrictionServiceTest {
   }
 
   @Test
-  void getPruefungenInHardConflictWith_oneHardRestriction_checkTheOneExistingHardRestriction() {
+  void getPruefungenInHardConflictWith_oneHardRestriction_checkTheOneExistingHardRestriction()
+      throws NoPruefungsPeriodeDefinedException {
     HarteRestriktion hardRestriction = oneHardRestrictionThatDoesNotTrigger();
     Planungseinheit planungseinheitToCheckFor = getRandomPlannedPruefung(1L);
 
@@ -116,7 +120,8 @@ class RestrictionServiceTest {
   }
 
   @Test
-  void wouldBeHardConflictAt_oneHardRestrictionGetsChecked() {
+  void wouldBeHardConflictAt_oneHardRestrictionGetsChecked()
+      throws NoPruefungsPeriodeDefinedException {
     HarteRestriktion hardRestriction = oneHardRestrictionThatDoesNotTrigger();
     deviceUnderTest.registerHardCriteria(Set.of(hardRestriction));
 
@@ -126,7 +131,8 @@ class RestrictionServiceTest {
   }
 
   @Test
-  void wouldBeHardConflictAt_twoHardRestrictionGetChecked() {
+  void wouldBeHardConflictAt_twoHardRestrictionGetChecked()
+      throws NoPruefungsPeriodeDefinedException {
     List<HarteRestriktion> hardRestrictions = List.of(oneHardRestrictionThatDoesNotTrigger(),
         oneHardRestrictionThatDoesNotTrigger());
     deviceUnderTest.registerHardCriteria(new HashSet<>(hardRestrictions));
@@ -140,7 +146,7 @@ class RestrictionServiceTest {
   }
 
   @Test
-  void wouldBeHardConflictAt_conflictIsIndicated() {
+  void wouldBeHardConflictAt_conflictIsIndicated() throws NoPruefungsPeriodeDefinedException {
     List<HarteRestriktion> hardRestrictions = List.of(oneHardRestrictionThatDoesNotTrigger(),
         oneHardRestrictionFailingWouldBeHardConflictAt(), oneHardRestrictionThatDoesNotTrigger());
     deviceUnderTest.registerHardCriteria(new HashSet<>(hardRestrictions));
@@ -149,7 +155,8 @@ class RestrictionServiceTest {
         getRandomPlannedPruefung(1L))).isTrue();
   }
 
-  private HarteRestriktion oneHardRestrictionFailingWouldBeHardConflictAt() {
+  private HarteRestriktion oneHardRestrictionFailingWouldBeHardConflictAt()
+      throws NoPruefungsPeriodeDefinedException {
     HarteRestriktion restriktion = mock(HarteRestriktion.class);
     when(restriktion.wouldBeHardConflictAt(any(), any())).thenReturn(true);
     return restriktion;

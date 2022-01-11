@@ -12,6 +12,7 @@ import static de.fhwedel.klausps.controller.util.TestUtils.getRandomDate;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedROPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTeilnehmerkreis;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedROPruefung;
 import static de.fhwedel.klausps.model.api.Blocktyp.PARALLEL;
 import static de.fhwedel.klausps.model.api.Blocktyp.SEQUENTIAL;
@@ -868,7 +869,9 @@ class ScheduleServiceTest {
   @Test
   void getHardConflictedTimes_checkingUnplannedPruefungResultsInNoBlocking()
       throws NoPruefungsPeriodeDefinedException {
+    Pruefung planungseinheit = getRandomUnplannedPruefung(1L);
     when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
+    when(dataAccessService.getPruefungWith(anyString())).thenReturn(planungseinheit);
     assertThat(deviceUnderTest.getHardConflictedTimes(emptySet(),
         getRandomUnplannedROPruefung(1L))).isEmpty();
   }
@@ -902,7 +905,11 @@ class ScheduleServiceTest {
   @Test
   void getHardConflictedTimes_checkHardCriteriaForEachTimeToCheck_noTimes()
       throws NoPruefungsPeriodeDefinedException {
+    Pruefung planungseinheit = getRandomUnplannedPruefung(1L);
+
+    when(dataAccessService.getPruefungWith(anyString())).thenReturn(planungseinheit);
     when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
+
     deviceUnderTest.getHardConflictedTimes(emptySet(), getRandomUnplannedROPruefung(1L));
     verify(restrictionService, never()).wouldBeHardConflictAt(any(), any());
   }

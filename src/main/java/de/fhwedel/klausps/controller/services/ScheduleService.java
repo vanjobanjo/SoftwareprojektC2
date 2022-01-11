@@ -2,7 +2,6 @@ package de.fhwedel.klausps.controller.services;
 
 import static de.fhwedel.klausps.controller.util.ParameterUtil.noNullParameters;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
 import static java.util.Objects.requireNonNull;
 
 import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
@@ -369,9 +368,7 @@ public class ScheduleService {
       throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
     requireNonNull(timesToCheck);
     requireNonNull(planungseinheitToCheck);
-    if (!planungseinheitToCheck.geplant()) {
-      return emptySet();
-    }
+
     Planungseinheit planungseinheit = getPlanungseinheit(planungseinheitToCheck);
     return calcHardConflictingTimes(timesToCheck, planungseinheit);
   }
@@ -391,7 +388,7 @@ public class ScheduleService {
 
   @NotNull
   private Set<LocalDateTime> calcHardConflictingTimes(@NotNull Set<LocalDateTime> timesToCheck,
-      @NotNull Planungseinheit planungseinheit) {
+      @NotNull Planungseinheit planungseinheit) throws NoPruefungsPeriodeDefinedException {
     Set<LocalDateTime> result = new HashSet<>();
     for (LocalDateTime timeToCheck : timesToCheck) {
       if (restrictionService.wouldBeHardConflictAt(timeToCheck, planungseinheit)) {

@@ -1,5 +1,6 @@
 package de.fhwedel.klausps.controller.services;
 
+import static de.fhwedel.klausps.controller.util.ParameterUtil.noNullParameters;
 import static de.fhwedel.klausps.controller.util.PlanungseinheitUtil.getAllPruefungen;
 import static de.fhwedel.klausps.controller.util.TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung;
 import static java.util.Objects.nonNull;
@@ -611,11 +612,19 @@ public class DataAccessService {
       throw new NoPruefungsPeriodeDefinedException();
     }
   }
+
   public Set<ReadOnlyPlanungseinheit> getAllROPlanungseinheitenBetween(LocalDateTime start,
-      LocalDateTime end)
-      throws IllegalTimeSpanException {
+      LocalDateTime end) throws IllegalTimeSpanException {
     return Set.copyOf(
         converter.convertToROPlanungseinheitCollection(getAllPlanungseinheitenBetween(start, end)));
+  }
+
+  @NotNull
+  public Set<Planungseinheit> getPlanungseinheitenAt(LocalDateTime time)
+      throws NoPruefungsPeriodeDefinedException {
+    noNullParameters(time);
+    checkForPruefungsperiode();
+    return pruefungsperiode.planungseinheitenAt(time);
   }
 
 }
