@@ -166,7 +166,7 @@ public class Controller implements InterfaceController {
       LocalDateTime end) throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
     noNullParameters(start, end);
     ensureAvailabilityOfPruefungsperiode();
-    throw new UnsupportedOperationException("not implemented");
+    return dataAccessService.getAllROPlanungseinheitenBetween(start, end);
   }
 
 
