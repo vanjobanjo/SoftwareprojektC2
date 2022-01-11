@@ -8,6 +8,7 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Planungseinheit;
@@ -37,6 +38,16 @@ public class DataAccessService {
 
   private Pruefungsperiode pruefungsperiode;
   private Converter converter;
+
+  public DataAccessService() {
+    this.pruefungsperiode = null;
+    this.converter = null;
+  }
+
+  public DataAccessService(Pruefungsperiode pruefungsperiode) {
+    this.pruefungsperiode = pruefungsperiode;
+    this.converter = null;
+  }
 
   public void setPruefungsperiode(Pruefungsperiode pruefungsperiode) {
     this.pruefungsperiode = pruefungsperiode;
@@ -499,7 +510,6 @@ public class DataAccessService {
     }
   }
 
-
   public Optional<Block> getBlockTo(Pruefung pruefung) {
     return Optional.ofNullable(pruefungsperiode.block(pruefung));
   }
@@ -514,7 +524,6 @@ public class DataAccessService {
     }
     return allTeilnehmerkreise;
   }
-
 
   public boolean removeTeilnehmerkreis(Pruefung roPruefung,
       Teilnehmerkreis teilnehmerkreis) {
@@ -571,7 +580,6 @@ public class DataAccessService {
     return result;
   }
 
-
   public boolean areInSameBlock(Pruefung pruefung, Pruefung otherPruefung) {
     Optional<Block> pruefungBlock = getBlockTo(pruefung);
     Optional<Block> otherBlock = getBlockTo(otherPruefung);
@@ -589,7 +597,18 @@ public class DataAccessService {
   }
 
   public Block getModelBlock(ReadOnlyBlock block) {
+    // TODO use of Optional (might not exist)?
     return pruefungsperiode.block(block.getBlockId());
   }
 
+  public boolean existsBlockWith(int blockId) throws NoPruefungsPeriodeDefinedException {
+    checkForPruefungsperiode();
+    return pruefungsperiode.block(blockId) != null;
+  }
+
+  private void checkForPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    if (pruefungsperiode == null) {
+      throw new NoPruefungsPeriodeDefinedException();
+    }
+  }
 }
