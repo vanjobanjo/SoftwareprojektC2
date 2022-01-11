@@ -1,5 +1,6 @@
 package de.fhwedel.klausps.controller;
 
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomDate;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedROPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedROPruefung;
 import static java.util.Collections.emptySet;
@@ -26,12 +27,14 @@ import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Semestertyp;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("OptionalGetWithoutIsPresent")
 class ControllerTest {
 
   Controller deviceUnderTest;
@@ -200,6 +203,18 @@ class ControllerTest {
         IllegalTimeSpanException.class);
     assertThrows(IllegalTimeSpanException.class,
         () -> deviceUnderTest.getPlanungseinheitenInZeitraum(start, end));
+  }
+
+  @Test
+  void setAnkerTagPeriode_ankerTagMustNotBeNull() {
+    assertThrows(NullPointerException.class, () -> deviceUnderTest.setAnkerTagPeriode(null));
+  }
+
+  @Test
+  void setAnkerTagPeriode_delegateToDataAccessService()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
+    deviceUnderTest.setAnkerTagPeriode(getRandomDate(1998L).toLocalDate());
+    verify(dataAccessService).setAnkertag(any(LocalDate.class));
   }
 
 }

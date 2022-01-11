@@ -91,7 +91,7 @@ public class Controller implements InterfaceController {
   @Override
   public LocalDate getAnkerPeriode() throws NoPruefungsPeriodeDefinedException {
     ensureAvailabilityOfPruefungsperiode();
-    return dataAccessService.getAnkerPeriode();
+    return dataAccessService.getAnkertag();
   }
 
   @Override
@@ -206,8 +206,7 @@ public class Controller implements InterfaceController {
   public void setAnkerTagPeriode(LocalDate ankertag)
       throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
     noNullParameters(ankertag);
-    ensureAvailabilityOfPruefungsperiode();
-    throw new IllegalStateException("Not implemented yet!");
+    dataAccessService.setAnkertag(ankertag);
   }
 
   @Override

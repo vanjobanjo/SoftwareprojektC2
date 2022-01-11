@@ -1320,7 +1320,7 @@ class DataAccessServiceTest {
   void getAnkertag_test() {
     LocalDate ankertag = LocalDate.of(2022, 2, 2);
     when(pruefungsperiode.getAnkertag()).thenReturn(ankertag);
-    assertThat(deviceUnderTest.getAnkerPeriode()).isEqualTo(ankertag);
+    assertThat(deviceUnderTest.getAnkertag()).isEqualTo(ankertag);
   }
 
   @Test
