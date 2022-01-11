@@ -150,8 +150,10 @@ class ControllerTest {
   }
 
   @Test
-  void getHardConflictedTimes_missingPruefungsperiodeIsDetected() {
-    when(dataAccessService.isPruefungsperiodeSet()).thenReturn(false);
+  void getHardConflictedTimes_missingPruefungsperiodeIsDetected()
+      throws NoPruefungsPeriodeDefinedException {
+    when(scheduleService.getHardConflictedTimes(any(), any())).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
 
     assertThrows(NoPruefungsPeriodeDefinedException.class,
         () -> deviceUnderTest.getHardConflictedTimes(emptySet(), getRandomUnplannedROPruefung(1L)));

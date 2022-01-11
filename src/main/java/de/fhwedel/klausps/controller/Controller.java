@@ -183,7 +183,6 @@ public class Controller implements InterfaceController {
       ReadOnlyPlanungseinheit planungseinheit)
       throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
     noNullParameters(zeitpunkte, planungseinheit);
-    ensureAvailabilityOfPruefungsperiode();
     return scheduleService.getHardConflictedTimes(zeitpunkte, planungseinheit);
   }
 
