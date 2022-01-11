@@ -10,6 +10,7 @@ import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
 import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -128,14 +129,20 @@ public class TestUtils {
     return new PruefungDTOBuilder().withPruefungsName(getRandomString(random, 8))
         .withPruefungsNummer(getRandomString(random, 20))
         .withDauer(Duration.ofMinutes(random.nextInt(60, 150)))
-        .withStartZeitpunkt(getRandomDate(seed)).withAdditionalPruefer(getRandomString(random, 5))
+        .withStartZeitpunkt(getRandomTime(seed)).withAdditionalPruefer(getRandomString(random, 5))
         .withScoring(random.nextInt(0, Integer.MAX_VALUE)).build();
   }
 
-  public static LocalDateTime getRandomDate(long seed) {
+  public static LocalDateTime getRandomTime(long seed) {
     Random random = new Random(seed);
     return LocalDateTime.of(random.nextInt(2000, 2030), random.nextInt(1, 12),
         random.nextInt(1, 28), random.nextInt(0, 20), random.nextInt(0, 60));
+  }
+
+  public static LocalDate getRandomDate(long seed) {
+    Random random = new Random(seed);
+    return LocalDate.of(random.nextInt(2000, 2030), random.nextInt(1, 12),
+        random.nextInt(1, 28));
   }
 
   public static ReadOnlyPruefung getRandomUnplannedROPruefung(long seed) {

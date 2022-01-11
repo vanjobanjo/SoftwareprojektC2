@@ -3,8 +3,8 @@ package de.fhwedel.klausps.controller.services;
 import static de.fhwedel.klausps.controller.util.TestFactory.bwlBachelor;
 import static de.fhwedel.klausps.controller.util.TestFactory.infBachelor;
 import static de.fhwedel.klausps.controller.util.TestFactory.infMaster;
-import static de.fhwedel.klausps.controller.util.TestUtils.getRandomDate;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungenReadOnly;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTime;
 import static de.fhwedel.klausps.model.api.Blocktyp.PARALLEL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -429,7 +429,7 @@ class DataAccessServiceTest {
   void schedulePruefung_noExamTest() {
     when(pruefungsperiode.pruefung(anyString())).thenReturn(null);
     ReadOnlyPruefung somePruefung = getReadOnlyPruefung();
-    LocalDateTime someSchedule = getRandomTime();
+    LocalDateTime someSchedule = getRandomTime(1L);
     assertThrows(IllegalArgumentException.class,
         () -> deviceUnderTest.schedulePruefung(somePruefung, someSchedule));
   }
@@ -1166,7 +1166,6 @@ class DataAccessServiceTest {
             RO_DM_UNPLANNED));
   }
 
-
   @Test
   void addPruefungToBlock_pruefung_does_not_exist() {
     Block modelBlock = new BlockImpl(pruefungsperiode, "b1", Blocktyp.PARALLEL);
@@ -1179,9 +1178,7 @@ class DataAccessServiceTest {
     assertThrows(IllegalArgumentException.class,
         () -> deviceUnderTest.addPruefungToBlock(blockToAddTo,
             RO_ANALYSIS_UNPLANNED));
-
   }
-
 
   @Test
   void addPruefungToBlock_neither_block_nor_pruefung_exist() {
@@ -1192,7 +1189,6 @@ class DataAccessServiceTest {
     assertThrows(IllegalArgumentException.class,
         () -> deviceUnderTest.addPruefungToBlock(blockToAddTo,
             RO_HASKELL_UNPLANNED));
-
   }
 
   @Test
@@ -1209,9 +1205,7 @@ class DataAccessServiceTest {
     Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
     when(pruefungsperiode.getPlanungseinheiten()).thenReturn(Set.of(analysis, haskell, dm));
     assertThat(deviceUnderTest.getAllKlausurenFromPruefer("test")).isEmpty();
-
   }
-
 
   @Test
   void getAllKlausurenFromPruefer_only_one_pruefer() {
@@ -1309,7 +1303,6 @@ class DataAccessServiceTest {
         RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED);
   }
 
-
   @Test
   void getAnkertag_test() {
     LocalDate ankertag = LocalDate.of(2022, 2, 2);
@@ -1327,7 +1320,6 @@ class DataAccessServiceTest {
     analysis.setStartzeitpunkt(LocalDateTime.of(2022, 2, 2, 2, 2));
     when(pruefungsperiode.geplantePruefungen()).thenReturn(Set.of(analysis));
     assertThat(deviceUnderTest.getAnzahlStudentenZeitpunkt(termin)).isZero();
-
   }
 
   @Test
@@ -1344,7 +1336,6 @@ class DataAccessServiceTest {
     analysis.setStartzeitpunkt(termin);
     when(pruefungsperiode.geplantePruefungen()).thenReturn(Set.of(analysis));
     assertThat(deviceUnderTest.getAnzahlStudentenZeitpunkt(termin)).isEqualTo(expectedResult);
-
   }
 
 
@@ -1365,7 +1356,6 @@ class DataAccessServiceTest {
     when(pruefungsperiode.geplantePruefungen()).thenReturn(Set.of(analysis, haskell));
     assertThat(deviceUnderTest.getAnzahlStudentenZeitpunkt(termin.plusMinutes(2 * offset)))
         .isEqualTo(infB_analysis + infB_haskell);
-
   }
 
   @Test
@@ -1385,7 +1375,6 @@ class DataAccessServiceTest {
     when(pruefungsperiode.geplantePruefungen()).thenReturn(Set.of(analysis, haskell));
     assertThat(deviceUnderTest.getAnzahlStudentenZeitpunkt(termin.plusMinutes(offset / 2)))
         .isEqualTo(infB_analysis);
-
   }
 
   @Test
@@ -1400,7 +1389,6 @@ class DataAccessServiceTest {
     when(pruefungsperiode.geplantePruefungen()).thenReturn(Set.of(analysis));
     assertThat(deviceUnderTest.getAnzahlStudentenZeitpunkt(analysis.endzeitpunkt()))
         .isEqualTo(infB_analysis);
-
   }
 
   @Test
@@ -1426,7 +1414,6 @@ class DataAccessServiceTest {
   // ------------------------------------------------------------------------------
   // ---------------------------------- helper ------------------------------------
   // ------------------------------------------------------------------------------
-
 
   private void configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(
       Block modelBlock, LocalDateTime termin, ReadOnlyPruefung... pruefungen) {
@@ -1454,10 +1441,6 @@ class DataAccessServiceTest {
   private ReadOnlyPruefung getReadOnlyPruefung() {
     return new PruefungDTOBuilder().withPruefungsName("Analysis").withPruefungsNummer("b001")
         .withAdditionalPruefer("Harms").withDauer(Duration.ofMinutes(90)).build();
-  }
-
-  private LocalDateTime getRandomTime() {
-    return LocalDateTime.of(2022, 7, 22, 12, 0);
   }
 
   private Pruefung getPruefungOfReadOnlyPruefung(ReadOnlyPruefung roPruefung) {
@@ -1512,7 +1495,7 @@ class DataAccessServiceTest {
   void getPlanungseinheitenAt_noPruefungsperiode() {
     deviceUnderTest = new DataAccessService(null);
     assertThrows(NoPruefungsPeriodeDefinedException.class,
-        () -> deviceUnderTest.getPlanungseinheitenAt(getRandomDate(1L)));
+        () -> deviceUnderTest.getPlanungseinheitenAt(getRandomTime(1L)));
   }
 
   @Test
@@ -1529,12 +1512,12 @@ class DataAccessServiceTest {
   void setAnkertag_noPruefungsperiode() {
     deviceUnderTest = new DataAccessService(null);
     assertThrows(NoPruefungsPeriodeDefinedException.class,
-        () -> deviceUnderTest.setAnkertag(getRandomDate(1L).toLocalDate()));
+        () -> deviceUnderTest.setAnkertag(getRandomTime(1L).toLocalDate()));
   }
 
   @Test
   void setAnkertag_beforeStartOfPruefungsperiode() {
-    LocalDate newAnkertag = getRandomDate(1L).toLocalDate();
+    LocalDate newAnkertag = getRandomTime(1L).toLocalDate();
     when(pruefungsperiode.getStartdatum()).thenReturn(newAnkertag.plusDays(1));
     when(pruefungsperiode.getEnddatum()).thenReturn(newAnkertag.plusDays(2));
     assertThrows(IllegalTimeSpanException.class, () -> deviceUnderTest.setAnkertag(newAnkertag));
@@ -1543,7 +1526,7 @@ class DataAccessServiceTest {
   @Test
   void setAnkertag_atStartOfPruefungsperiode()
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
-    LocalDate newAnkertag = getRandomDate(1L).toLocalDate();
+    LocalDate newAnkertag = getRandomTime(1L).toLocalDate();
     when(pruefungsperiode.getStartdatum()).thenReturn(newAnkertag);
     when(pruefungsperiode.getEnddatum()).thenReturn(newAnkertag.plusDays(1));
     deviceUnderTest.setAnkertag(newAnkertag);
@@ -1551,7 +1534,7 @@ class DataAccessServiceTest {
 
   @Test
   void setAnkertag_afterEndOfPruefungsperiode() {
-    LocalDate newAnkertag = getRandomDate(1L).toLocalDate();
+    LocalDate newAnkertag = getRandomTime(1L).toLocalDate();
     when(pruefungsperiode.getStartdatum()).thenReturn(newAnkertag.minusDays(2));
     when(pruefungsperiode.getEnddatum()).thenReturn(newAnkertag.minusDays(1));
     assertThrows(IllegalTimeSpanException.class, () -> deviceUnderTest.setAnkertag(newAnkertag));
@@ -1560,7 +1543,7 @@ class DataAccessServiceTest {
   @Test
   void setAnkertag_atEndOfPruefungsperiode()
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
-    LocalDate newAnkertag = getRandomDate(1L).toLocalDate();
+    LocalDate newAnkertag = getRandomTime(1L).toLocalDate();
     when(pruefungsperiode.getStartdatum()).thenReturn(newAnkertag.minusDays(2));
     when(pruefungsperiode.getEnddatum()).thenReturn(newAnkertag);
     deviceUnderTest.setAnkertag(newAnkertag);
@@ -1569,7 +1552,7 @@ class DataAccessServiceTest {
   @Test
   void setAnkertag_ankertagIsSetCorrectly()
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
-    LocalDate newAnkertag = getRandomDate(1L).toLocalDate();
+    LocalDate newAnkertag = getRandomTime(1L).toLocalDate();
     when(pruefungsperiode.getStartdatum()).thenReturn(newAnkertag.minusDays(20));
     when(pruefungsperiode.getEnddatum()).thenReturn(newAnkertag.plusDays(20));
     deviceUnderTest.setAnkertag(newAnkertag);

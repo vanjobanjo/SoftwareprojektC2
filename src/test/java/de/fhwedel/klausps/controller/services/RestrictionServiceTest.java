@@ -1,8 +1,8 @@
 package de.fhwedel.klausps.controller.services;
 
-import static de.fhwedel.klausps.controller.util.TestUtils.getRandomDate;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefungen;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTime;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -116,7 +116,7 @@ class RestrictionServiceTest {
   @Test
   void wouldBeHardConflictAt_planungseinheitMustNotBeNull() {
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.wouldBeHardConflictAt(getRandomDate(1L), null));
+        () -> deviceUnderTest.wouldBeHardConflictAt(getRandomTime(1L), null));
   }
 
   @Test
@@ -125,7 +125,7 @@ class RestrictionServiceTest {
     HarteRestriktion hardRestriction = oneHardRestrictionThatDoesNotTrigger();
     deviceUnderTest.registerHardCriteria(Set.of(hardRestriction));
 
-    deviceUnderTest.wouldBeHardConflictAt(getRandomDate(1L), getRandomPlannedPruefung(1L));
+    deviceUnderTest.wouldBeHardConflictAt(getRandomTime(1L), getRandomPlannedPruefung(1L));
     verify(hardRestriction, times(1)).wouldBeHardConflictAt(any(LocalDateTime.class),
         any(Planungseinheit.class));
   }
@@ -137,7 +137,7 @@ class RestrictionServiceTest {
         oneHardRestrictionThatDoesNotTrigger());
     deviceUnderTest.registerHardCriteria(new HashSet<>(hardRestrictions));
 
-    deviceUnderTest.wouldBeHardConflictAt(getRandomDate(1L), getRandomPlannedPruefung(1L));
+    deviceUnderTest.wouldBeHardConflictAt(getRandomTime(1L), getRandomPlannedPruefung(1L));
 
     verify(hardRestrictions.get(0), times(1)).wouldBeHardConflictAt(any(LocalDateTime.class),
         any(Planungseinheit.class));
@@ -151,7 +151,7 @@ class RestrictionServiceTest {
         oneHardRestrictionFailingWouldBeHardConflictAt(), oneHardRestrictionThatDoesNotTrigger());
     deviceUnderTest.registerHardCriteria(new HashSet<>(hardRestrictions));
 
-    assertThat(deviceUnderTest.wouldBeHardConflictAt(getRandomDate(1L),
+    assertThat(deviceUnderTest.wouldBeHardConflictAt(getRandomTime(1L),
         getRandomPlannedPruefung(1L))).isTrue();
   }
 

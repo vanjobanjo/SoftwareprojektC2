@@ -1,7 +1,7 @@
 package de.fhwedel.klausps.controller;
 
-import static de.fhwedel.klausps.controller.util.TestUtils.getRandomDate;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedROPruefung;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTime;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedROPruefung;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -213,7 +213,7 @@ class ControllerTest {
   @Test
   void setAnkerTagPeriode_delegateToDataAccessService()
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
-    deviceUnderTest.setAnkerTagPeriode(getRandomDate(1998L).toLocalDate());
+    deviceUnderTest.setAnkerTagPeriode(getRandomTime(1998L).toLocalDate());
     verify(dataAccessService).setAnkertag(any(LocalDate.class));
   }
 

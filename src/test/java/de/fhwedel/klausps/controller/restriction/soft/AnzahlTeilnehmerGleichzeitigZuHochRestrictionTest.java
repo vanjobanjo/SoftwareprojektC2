@@ -2,11 +2,11 @@ package de.fhwedel.klausps.controller.restriction.soft;
 
 import static de.fhwedel.klausps.controller.util.TestUtils.convertPruefungenToPlanungseinheiten;
 import static de.fhwedel.klausps.controller.util.TestUtils.getPruefungsnummernFromModel;
-import static de.fhwedel.klausps.controller.util.TestUtils.getRandomDate;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefungen;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungenAt;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTeilnehmerkreis;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTime;
 import static de.fhwedel.klausps.model.api.Blocktyp.PARALLEL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -228,7 +228,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
     for (Pruefung pruefung : pruefungen) {
       block.addPruefung(pruefung);
     }
-    block.setStartzeitpunkt(getRandomDate(1L));
+    block.setStartzeitpunkt(getRandomTime(1L));
     return block;
   }
 

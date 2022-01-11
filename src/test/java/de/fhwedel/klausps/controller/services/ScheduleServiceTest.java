@@ -8,10 +8,10 @@ import static de.fhwedel.klausps.controller.util.TestFactory.RO_HASKELL_UNPLANNE
 import static de.fhwedel.klausps.controller.util.TestFactory.bwlMaster;
 import static de.fhwedel.klausps.controller.util.TestFactory.infBachelor;
 import static de.fhwedel.klausps.controller.util.TestFactory.infMaster;
-import static de.fhwedel.klausps.controller.util.TestUtils.getRandomDate;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedROPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTeilnehmerkreis;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTime;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedROPruefung;
 import static de.fhwedel.klausps.model.api.Blocktyp.PARALLEL;
@@ -884,7 +884,7 @@ class ScheduleServiceTest {
     when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
     when(dataAccessService.getPruefungWith(anyString())).thenReturn(pruefungToCheckFor);
 
-    deviceUnderTest.getHardConflictedTimes(Set.of(getRandomDate(1L)),
+    deviceUnderTest.getHardConflictedTimes(Set.of(getRandomTime(1L)),
         converter.convertToReadOnlyPruefung(pruefungToCheckFor));
     verify(restrictionService, times(1)).wouldBeHardConflictAt(any(), any());
   }
@@ -897,7 +897,7 @@ class ScheduleServiceTest {
     when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
     when(dataAccessService.getPruefungWith(anyString())).thenReturn(pruefungToCheckFor);
 
-    deviceUnderTest.getHardConflictedTimes(Set.of(getRandomDate(1L), getRandomDate(2L)),
+    deviceUnderTest.getHardConflictedTimes(Set.of(getRandomTime(1L), getRandomTime(2L)),
         converter.convertToReadOnlyPruefung(pruefungToCheckFor));
     verify(restrictionService, times(2)).wouldBeHardConflictAt(any(), any());
   }
@@ -924,7 +924,7 @@ class ScheduleServiceTest {
     when(restrictionService.wouldBeHardConflictAt(any(), any())).thenReturn(false);
 
     assertThat(deviceUnderTest.getHardConflictedTimes(
-        Set.of(getRandomDate(1L), getRandomDate(2L), getRandomDate(3L)),
+        Set.of(getRandomTime(1L), getRandomTime(2L), getRandomTime(3L)),
         converter.convertToReadOnlyPruefung(pruefungToCheckFor))).isEmpty();
   }
 
@@ -938,7 +938,7 @@ class ScheduleServiceTest {
     when(restrictionService.wouldBeHardConflictAt(any(), any())).thenReturn(false, true, false);
 
     assertThat(deviceUnderTest.getHardConflictedTimes(
-        Set.of(getRandomDate(1L), getRandomDate(2L), getRandomDate(3L)),
+        Set.of(getRandomTime(1L), getRandomTime(2L), getRandomTime(3L)),
         converter.convertToReadOnlyPruefung(pruefungToCheckFor))).hasSize(1);
   }
 
@@ -952,7 +952,7 @@ class ScheduleServiceTest {
     when(restrictionService.wouldBeHardConflictAt(any(), any())).thenReturn(true, true, true);
 
     assertThat(deviceUnderTest.getHardConflictedTimes(
-        Set.of(getRandomDate(1L), getRandomDate(2L), getRandomDate(3L)),
+        Set.of(getRandomTime(1L), getRandomTime(2L), getRandomTime(3L)),
         converter.convertToReadOnlyPruefung(pruefungToCheckFor))).hasSize(3);
   }
 
