@@ -24,9 +24,6 @@ public abstract class AtSameTimeRestriction extends WeicheRestriktion {
 
   // TODO refactor methods to overwrite the methods from WeicheRestriktion
 
-  // TODO use global default
-  protected static final Duration DEFAULT_BUFFER = Duration.ofMinutes(30);
-
   protected final Duration puffer;
 
   protected AtSameTimeRestriction(DataAccessService dataAccessService, WeichesKriterium kriterium,

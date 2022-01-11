@@ -40,8 +40,8 @@ public class AnzahlTeilnehmerGleichzeitigZuHochRestriction extends AtSameTimeRes
   }
 
   public AnzahlTeilnehmerGleichzeitigZuHochRestriction() {
-    this(ServiceProvider.getDataAccessService(), DEFAULT_BUFFER, DEFAULT_MAX_TEILNEHMER_AT_A_TIME,
-        DEFAULT_SCORING_STEP_SIZE);
+    this(ServiceProvider.getDataAccessService(), DEFAULT_BUFFER_BETWEEN_PLANUNGSEINHEITEN,
+        DEFAULT_MAX_TEILNEHMER_AT_A_TIME, DEFAULT_SCORING_STEP_SIZE);
   }
 
   @Override

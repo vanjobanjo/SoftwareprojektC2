@@ -5,6 +5,7 @@ import static de.fhwedel.klausps.controller.util.TeilnehmerkreisUtil.compareAndP
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
+import de.fhwedel.klausps.controller.restriction.Restriktion;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
@@ -14,15 +15,12 @@ import java.util.Optional;
 import java.util.Set;
 import org.jetbrains.annotations.Nullable;
 
-
-public abstract class WeicheRestriktion {
+public abstract class WeicheRestriktion extends Restriktion {
 
   protected final DataAccessService dataAccessService;
   protected final WeichesKriterium kriterium;
 
-  protected WeicheRestriktion(
-      DataAccessService dataAccessService,
-      WeichesKriterium kriterium) {
+  protected WeicheRestriktion(DataAccessService dataAccessService, WeichesKriterium kriterium) {
     this.dataAccessService = dataAccessService;
     this.kriterium = kriterium;
   }
