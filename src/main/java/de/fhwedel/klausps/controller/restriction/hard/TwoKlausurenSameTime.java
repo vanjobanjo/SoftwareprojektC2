@@ -124,6 +124,11 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
     return geplantePruefungen;
   }
 
+  @Override
+  public boolean wouldBeHardConflictAt(LocalDateTime time, Planungseinheit planungseinheit) {
+    throw new UnsupportedOperationException("Not implemented yet!");
+  }
+
   private boolean notSameTeilnehmerkreis(Pruefung x, Planungseinheit planungseinheitToCheckFor) {
 
     for (Teilnehmerkreis teilnehmerkreis : x.getTeilnehmerkreise()) {
