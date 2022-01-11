@@ -6,10 +6,10 @@ import static de.fhwedel.klausps.controller.util.TestFactory.RO_HASKELL_UNPLANNE
 import static de.fhwedel.klausps.controller.util.TestFactory.bwlBachelor;
 import static de.fhwedel.klausps.controller.util.TestFactory.getPruefungOfReadOnlyPruefung;
 import static de.fhwedel.klausps.controller.util.TestFactory.infBachelor;
-import static de.fhwedel.klausps.controller.util.TestUtils.getRandomDate;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungWith;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTeilnehmerkreis;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTime;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedPruefung;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -1299,13 +1299,13 @@ class TwoKlausurenSameTimeTest {
   @Test
   void wouldBeHardConflictAt_planungseinheitMustNotBeNull() {
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.wouldBeHardConflictAt(getRandomDate(1L), null));
+        () -> deviceUnderTest.wouldBeHardConflictAt(getRandomTime(1L), null));
   }
 
   @Test
   void wouldBeHardConflictAt_unPlannedPlanungseinheit_noConflict()
       throws NoPruefungsPeriodeDefinedException {
-    assertThat(deviceUnderTest.wouldBeHardConflictAt(getRandomDate(1L),
+    assertThat(deviceUnderTest.wouldBeHardConflictAt(getRandomTime(1L),
         getRandomUnplannedPruefung(1L))).isFalse();
   }
 
@@ -1313,7 +1313,7 @@ class TwoKlausurenSameTimeTest {
   void wouldBeHardConflictAt_noPlanungseinheitenAtTime() throws NoPruefungsPeriodeDefinedException {
     when(dataAccessService.getPlanungseinheitenAt(any())).thenReturn(emptySet());
 
-    assertThat(deviceUnderTest.wouldBeHardConflictAt(getRandomDate(1L),
+    assertThat(deviceUnderTest.wouldBeHardConflictAt(getRandomTime(1L),
         getRandomUnplannedPruefung(1L))).isFalse();
   }
 
@@ -1327,7 +1327,7 @@ class TwoKlausurenSameTimeTest {
     when(dataAccessService.getPlanungseinheitenAt(any())).thenReturn(Set.of(conflictingPruefung));
 
     assertThat(
-        deviceUnderTest.wouldBeHardConflictAt(getRandomDate(1L), pruefungToCheckFor)).isTrue();
+        deviceUnderTest.wouldBeHardConflictAt(getRandomTime(1L), pruefungToCheckFor)).isTrue();
   }
 
   @Test
@@ -1342,7 +1342,7 @@ class TwoKlausurenSameTimeTest {
     when(dataAccessService.getPlanungseinheitenAt(any())).thenReturn(planungseinheitenAtTime);
 
     assertThat(
-        deviceUnderTest.wouldBeHardConflictAt(getRandomDate(1L), pruefungToCheckFor)).isTrue();
+        deviceUnderTest.wouldBeHardConflictAt(getRandomTime(1L), pruefungToCheckFor)).isTrue();
   }
 
   @Test
@@ -1357,7 +1357,7 @@ class TwoKlausurenSameTimeTest {
     when(dataAccessService.getPlanungseinheitenAt(any())).thenReturn(Set.of(conflictingPruefung));
 
     assertThat(
-        deviceUnderTest.wouldBeHardConflictAt(getRandomDate(1L), pruefungToCheckFor)).isTrue();
+        deviceUnderTest.wouldBeHardConflictAt(getRandomTime(1L), pruefungToCheckFor)).isTrue();
   }
 
   @Test
@@ -1370,7 +1370,7 @@ class TwoKlausurenSameTimeTest {
     when(dataAccessService.getPlanungseinheitenAt(any())).thenReturn(
         Set.of(getRandomPruefungWith(2L, conflictingTeilnehmerkreis)));
 
-    assertThat(deviceUnderTest.wouldBeHardConflictAt(getRandomDate(1L),
+    assertThat(deviceUnderTest.wouldBeHardConflictAt(getRandomTime(1L),
         getRandomPruefungWith(2L, conflictingTeilnehmerkreis))).isFalse();
   }
 
