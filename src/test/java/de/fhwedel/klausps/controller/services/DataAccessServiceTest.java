@@ -5,7 +5,6 @@ import static de.fhwedel.klausps.controller.util.TestFactory.infBachelor;
 import static de.fhwedel.klausps.controller.util.TestFactory.infMaster;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungenReadOnly;
 import static de.fhwedel.klausps.model.api.Blocktyp.PARALLEL;
-import static de.fhwedel.klausps.model.api.Blocktyp.SEQUENTIAL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -28,7 +27,7 @@ import de.fhwedel.klausps.controller.assertions.ReadOnlyBlockAssert;
 import de.fhwedel.klausps.controller.assertions.ReadOnlyPruefungAssert;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
-import de.fhwedel.klausps.controller.helper.Pair;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.util.TestFactory;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Blocktyp;
@@ -1494,4 +1493,24 @@ class DataAccessServiceTest {
     }
     return pruefung;
   }
+
+  @Test
+  void existsBlockWith_exists() throws NoPruefungsPeriodeDefinedException {
+    when(pruefungsperiode.block(anyInt())).thenReturn(mock(Block.class));
+    assertThat(deviceUnderTest.existsBlockWith(1234)).isTrue();
+  }
+
+  @Test
+  void existsBlockWith_doesNotExist() throws NoPruefungsPeriodeDefinedException {
+    when(pruefungsperiode.block(anyInt())).thenReturn(null);
+    assertThat(deviceUnderTest.existsBlockWith(1234)).isFalse();
+  }
+
+  @Test
+  void existsBlockWith_noPruefungsperiode() {
+    deviceUnderTest = new DataAccessService(null);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.existsBlockWith(1));
+  }
+
 }

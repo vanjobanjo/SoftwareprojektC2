@@ -100,11 +100,4 @@ class RestrictionServiceTest {
         HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG);
   }
 
-  /*
-   * Edge cases for getPruefungenInHardConflictWith:
-   * x no hard restriction
-   * - one hard restriction TODO check failing check
-   * O more than one hard restriction
-   */
-
 }

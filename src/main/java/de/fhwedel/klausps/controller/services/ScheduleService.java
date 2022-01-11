@@ -2,6 +2,8 @@ package de.fhwedel.klausps.controller.services;
 
 import static de.fhwedel.klausps.controller.util.ParameterUtil.noNullParameters;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
+import static java.util.Objects.requireNonNull;
 
 import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
@@ -9,6 +11,7 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Planungseinheit;
@@ -362,7 +365,57 @@ public class ScheduleService {
   }
 
   public Set<LocalDateTime> getHardConflictedTimes(Set<LocalDateTime> timesToCheck,
-      ReadOnlyPlanungseinheit planungseinheit) {
-    throw new UnsupportedOperationException("Not implemented yet!");
+      ReadOnlyPlanungseinheit planungseinheitToCheck)
+      throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
+    requireNonNull(timesToCheck);
+    requireNonNull(planungseinheitToCheck);
+    if (!planungseinheitToCheck.geplant()) {
+      return emptySet();
+    }
+    Planungseinheit planungseinheit = getPlanungseinheit(planungseinheitToCheck);
+    return calcHardConflictingTimes(timesToCheck, planungseinheit);
+  }
+
+  @NotNull
+  private Planungseinheit getPlanungseinheit(
+      @NotNull ReadOnlyPlanungseinheit planungseinheitToCheck)
+      throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
+    Planungseinheit planungseinheit;
+    if (planungseinheitToCheck.isBlock()) {
+      planungseinheit = getBlock(planungseinheitToCheck.asBlock());
+    } else {
+      planungseinheit = getPruefung(planungseinheitToCheck.asPruefung());
+    }
+    return planungseinheit;
+  }
+
+  @NotNull
+  private Set<LocalDateTime> calcHardConflictingTimes(@NotNull Set<LocalDateTime> timesToCheck,
+      @NotNull Planungseinheit planungseinheit) {
+    Set<LocalDateTime> result = new HashSet<>();
+    for (LocalDateTime timeToCheck : timesToCheck) {
+      if (restrictionService.wouldBeHardConflictAt(timeToCheck, planungseinheit)) {
+        result.add(timeToCheck);
+      }
+    }
+    return result;
+  }
+
+  @NotNull
+  private Planungseinheit getBlock(@NotNull ReadOnlyBlock planungseinheitToCheck)
+      throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
+    if (!dataAccessService.existsBlockWith(planungseinheitToCheck.getBlockId())) {
+      throw new IllegalArgumentException("The handed Planungseinheit is not known.");
+    }
+    return dataAccessService.getModelBlock(planungseinheitToCheck.asBlock());
+  }
+
+  @NotNull
+  private Planungseinheit getPruefung(@NotNull ReadOnlyPruefung pruefung)
+      throws IllegalArgumentException {
+    if (!dataAccessService.existsPruefungWith(pruefung.getPruefungsnummer())) {
+      throw new IllegalArgumentException("The handed Planungseinheit is not known.");
+    }
+    return dataAccessService.getPruefungWith(pruefung.asPruefung().getPruefungsnummer());
   }
 }

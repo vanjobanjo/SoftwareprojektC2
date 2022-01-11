@@ -1,11 +1,12 @@
 package de.fhwedel.klausps.controller;
 
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedROPruefung;
-import static de.fhwedel.klausps.controller.util.TestUtils.getRandomROPruefung;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedROPruefung;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.times;
@@ -134,12 +135,13 @@ class ControllerTest {
   }
 
   @Test
-  void getHardConflictedTimes_zeitpunktOutOfPeriodeIsContained() {
-    when(dataAccessService.isPruefungsperiodeSet()).thenReturn(true);
+  void getHardConflictedTimes_zeitpunktOutOfPeriodeIsContained()
+      throws NoPruefungsPeriodeDefinedException {
+    pruefungsperiodeIsSet();
     when(scheduleService.getHardConflictedTimes(any(), any())).thenThrow(
         IllegalArgumentException.class);
     assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.getHardConflictedTimes(emptySet(), getRandomROPruefung(1L)));
+        () -> deviceUnderTest.getHardConflictedTimes(emptySet(), getRandomUnplannedROPruefung(1L)));
   }
 
   @Test
@@ -147,7 +149,18 @@ class ControllerTest {
     when(dataAccessService.isPruefungsperiodeSet()).thenReturn(false);
 
     assertThrows(NoPruefungsPeriodeDefinedException.class,
-        () -> deviceUnderTest.getHardConflictedTimes(emptySet(), getRandomROPruefung(1L)));
+        () -> deviceUnderTest.getHardConflictedTimes(emptySet(), getRandomUnplannedROPruefung(1L)));
+  }
+
+  @Test
+  void getHardConflictedTimes_unknwonPruefung() throws NoPruefungsPeriodeDefinedException {
+    pruefungsperiodeIsSet();
+    when(dataAccessService.existsPruefungWith(anyString())).thenReturn(false);
+    when(scheduleService.getHardConflictedTimes(any(), any())).thenThrow(
+        IllegalArgumentException.class);
+
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.getHardConflictedTimes(emptySet(), getRandomUnplannedROPruefung(1L)));
   }
 
 }

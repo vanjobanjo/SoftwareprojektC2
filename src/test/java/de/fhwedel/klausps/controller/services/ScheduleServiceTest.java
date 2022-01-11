@@ -8,9 +8,11 @@ import static de.fhwedel.klausps.controller.util.TestFactory.RO_HASKELL_UNPLANNE
 import static de.fhwedel.klausps.controller.util.TestFactory.bwlMaster;
 import static de.fhwedel.klausps.controller.util.TestFactory.infBachelor;
 import static de.fhwedel.klausps.controller.util.TestFactory.infMaster;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomDate;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
-import static de.fhwedel.klausps.controller.util.TestUtils.getRandomROPruefung;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedROPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTeilnehmerkreis;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedROPruefung;
 import static de.fhwedel.klausps.model.api.Blocktyp.PARALLEL;
 import static de.fhwedel.klausps.model.api.Blocktyp.SEQUENTIAL;
 import static java.util.Collections.emptySet;
@@ -18,8 +20,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -32,6 +36,7 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.model.api.Ausbildungsgrad;
@@ -519,7 +524,7 @@ class ScheduleServiceTest {
   @Test
   void addPruefungToBlock_blockMustNotBeNull() {
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.addPruefungToBlock(null, getRandomROPruefung(12L)));
+        () -> deviceUnderTest.addPruefungToBlock(null, getRandomUnplannedROPruefung(12L)));
   }
 
   @Test
@@ -544,7 +549,7 @@ class ScheduleServiceTest {
 
   @Test
   void addPruefungToBlock_pruefungIsPartOfOtherBlock() {
-    ReadOnlyPruefung pruefung = getRandomROPruefung(1L);
+    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
     ReadOnlyBlock otherBlock = getUnplannedBlockWith1RandomPruefung();
 
     when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(
@@ -556,13 +561,13 @@ class ScheduleServiceTest {
 
   private ReadOnlyBlock getUnplannedBlockWith1RandomPruefung() {
     LocalDateTime startTime = LocalDateTime.of(2022, 1, 7, 11, 11);
-    return new BlockDTO("someName", startTime, Duration.ZERO, Set.of(getRandomROPruefung(1L)),
-        654321, PARALLEL);
+    return new BlockDTO("someName", startTime, Duration.ZERO,
+        Set.of(getRandomUnplannedROPruefung(1L)), 654321, PARALLEL);
   }
 
   @Test
   void addPruefungToBlock_pruefungIsAlreadyInSameBlock() throws HartesKriteriumException {
-    ReadOnlyPruefung pruefung = getRandomROPruefung(1L);
+    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
     ReadOnlyBlock block = getBlockWith(pruefung);
 
     when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(Optional.of(block));
@@ -578,7 +583,7 @@ class ScheduleServiceTest {
   @Test
   void addPruefungToBlock_pruefungIsAlreadyInSameBlock_empty_result()
       throws HartesKriteriumException {
-    ReadOnlyPruefung pruefung = getRandomROPruefung(1L);
+    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
     ReadOnlyBlock block = getBlockWith(pruefung);
 
     when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(Optional.of(block));
@@ -589,7 +594,7 @@ class ScheduleServiceTest {
   @Test
   void addPruefungToBlock_pruefung_block_is_not_planned_no_affected_pruefungen()
       throws HartesKriteriumException {
-    ReadOnlyPruefung pruefung = getRandomROPruefung(1L);
+    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
     ReadOnlyBlock block = getUnplannedBlockWith();
     when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(Optional.empty());
 
@@ -603,7 +608,7 @@ class ScheduleServiceTest {
   @Test
   void addPruefungToBlock_pruefung_block_is_not_planned_no_further_calculation()
       throws HartesKriteriumException {
-    ReadOnlyPruefung pruefung = getRandomROPruefung(1L);
+    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
     ReadOnlyBlock block = getUnplannedBlockWith();
     when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(Optional.empty());
 
@@ -649,7 +654,7 @@ class ScheduleServiceTest {
     Random random = new Random(1L);
     int next = random.nextInt();
     return new HartesKriteriumAnalyse(
-        Set.of(getPruefungOfReadOnlyPruefung(getRandomROPruefung(1L))),
+        Set.of(getPruefungOfReadOnlyPruefung(getRandomUnplannedROPruefung(1L))),
         Set.of(getRandomTeilnehmerkreis(1L)), next, ZWEI_KLAUSUREN_GLEICHZEITIG);
   }
 
@@ -684,14 +689,14 @@ class ScheduleServiceTest {
 
   @Test
   void removePruefungFromBlock_pruefung_empty_block() {
-    ReadOnlyPruefung pruefung = getRandomROPruefung(1L);
+    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
     ReadOnlyBlock block = getBlockWith();
     assertThat(deviceUnderTest.removePruefungFromBlock(block, pruefung)).isEmpty();
   }
 
   @Test
   void removePruefungFromBlock_pruefung_empty_block_remove_pruefung_data_access_doesnt_get_called() {
-    ReadOnlyPruefung pruefung = getRandomROPruefung(1L);
+    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
     ReadOnlyBlock block = getBlockWith();
     deviceUnderTest.removePruefungFromBlock(block, pruefung);
     verify(dataAccessService, times(0)).removePruefungFromBlock(block, pruefung);
@@ -700,7 +705,7 @@ class ScheduleServiceTest {
   @Test
   void removePruefungFromBlock_pruefung_not_in_block() {
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
-    ReadOnlyPruefung pruefungInBlock = getRandomROPruefung(1L);
+    ReadOnlyPruefung pruefungInBlock = getRandomUnplannedROPruefung(1L);
     ReadOnlyBlock block = getBlockWith(pruefungInBlock);
     when(dataAccessService.getPruefungWith(RO_HASKELL_UNPLANNED.getPruefungsnummer())).thenReturn(
         haskell);
@@ -712,13 +717,12 @@ class ScheduleServiceTest {
   @DisplayName("remove pruefung from block - dataAccessService removePruefungFromBlock does not get called")
   void removePruefungFromBlock_pruefung_not_in_block_verify() {
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
-    ReadOnlyPruefung pruefungInBlock = getRandomROPruefung(1L);
+    ReadOnlyPruefung pruefungInBlock = getRandomUnplannedROPruefung(1L);
     ReadOnlyBlock block = getBlockWith(pruefungInBlock);
     when(dataAccessService.getPruefungWith(RO_HASKELL_UNPLANNED.getPruefungsnummer())).thenReturn(
         haskell);
     deviceUnderTest.removePruefungFromBlock(block, RO_HASKELL_UNPLANNED);
     verify(dataAccessService, times(0)).removePruefungFromBlock(any(), any());
-
   }
 
   @Test
@@ -832,6 +836,117 @@ class ScheduleServiceTest {
     assertThat(resultAnalyse.getKriterium()).isEqualTo(UNIFORME_ZEITSLOTS);
     assertThat(resultAnalyse.getTeilnehmer()).containsOnly(infBachelor);
     assertThat(resultAnalyse.getAnzahlBetroffenerStudenten()).isEqualTo(10);
+  }
+
+  @Test
+  void getHardConflictedTimes_timesToCheckMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.getHardConflictedTimes(null, getRandomUnplannedROPruefung(1L)));
+  }
+
+  @Test
+  void getHardConflictedTimes_planungseinheitMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.getHardConflictedTimes(emptySet(), null));
+  }
+
+  @Test
+  void getHardConflictedTimes_planungseinheitIsUnknownPruefung() {
+    when(dataAccessService.existsPruefungWith(any())).thenReturn(false);
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.getHardConflictedTimes(emptySet(), getRandomPlannedROPruefung(1L)));
+  }
+
+  @Test
+  void getHardConflictedTimes_planungseinheitIsUnknownBlock()
+      throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.existsBlockWith(anyInt())).thenReturn(false);
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.getHardConflictedTimes(emptySet(), getEmptyROBlock()));
+  }
+
+  @Test
+  void getHardConflictedTimes_checkingUnplannedPruefungResultsInNoBlocking()
+      throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
+    assertThat(deviceUnderTest.getHardConflictedTimes(emptySet(),
+        getRandomUnplannedROPruefung(1L))).isEmpty();
+  }
+
+  @Test
+  void getHardConflictedTimes_checkHardCriteriaForEachTimeToCheck_oneTime()
+      throws NoPruefungsPeriodeDefinedException {
+    Pruefung pruefungToCheckFor = getRandomPlannedPruefung(1L);
+
+    when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
+    when(dataAccessService.getPruefungWith(anyString())).thenReturn(pruefungToCheckFor);
+
+    deviceUnderTest.getHardConflictedTimes(Set.of(getRandomDate(1L)),
+        converter.convertToReadOnlyPruefung(pruefungToCheckFor));
+    verify(restrictionService, times(1)).wouldBeHardConflictAt(any(), any());
+  }
+
+  @Test
+  void getHardConflictedTimes_checkHardCriteriaForEachTimeToCheck_multipleTimesToCheck()
+      throws NoPruefungsPeriodeDefinedException {
+    Pruefung pruefungToCheckFor = getRandomPlannedPruefung(1L);
+
+    when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
+    when(dataAccessService.getPruefungWith(anyString())).thenReturn(pruefungToCheckFor);
+
+    deviceUnderTest.getHardConflictedTimes(Set.of(getRandomDate(1L), getRandomDate(2L)),
+        converter.convertToReadOnlyPruefung(pruefungToCheckFor));
+    verify(restrictionService, times(2)).wouldBeHardConflictAt(any(), any());
+  }
+
+  @Test
+  void getHardConflictedTimes_checkHardCriteriaForEachTimeToCheck_noTimes()
+      throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
+    deviceUnderTest.getHardConflictedTimes(emptySet(), getRandomUnplannedROPruefung(1L));
+    verify(restrictionService, never()).wouldBeHardConflictAt(any(), any());
+  }
+
+  @Test
+  void getHardConflictedTimes_resultContainsAsManyEntriesAsConflicts_none()
+      throws NoPruefungsPeriodeDefinedException {
+    Pruefung pruefungToCheckFor = getRandomPlannedPruefung(1L);
+
+    when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
+    when(dataAccessService.getPruefungWith(anyString())).thenReturn(pruefungToCheckFor);
+    when(restrictionService.wouldBeHardConflictAt(any(), any())).thenReturn(false);
+
+    assertThat(deviceUnderTest.getHardConflictedTimes(
+        Set.of(getRandomDate(1L), getRandomDate(2L), getRandomDate(3L)),
+        converter.convertToReadOnlyPruefung(pruefungToCheckFor))).isEmpty();
+  }
+
+  @Test
+  void getHardConflictedTimes_resultContainsAsManyEntriesAsConflicts_one()
+      throws NoPruefungsPeriodeDefinedException {
+    Pruefung pruefungToCheckFor = getRandomPlannedPruefung(1L);
+
+    when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
+    when(dataAccessService.getPruefungWith(anyString())).thenReturn(pruefungToCheckFor);
+    when(restrictionService.wouldBeHardConflictAt(any(), any())).thenReturn(false, true, false);
+
+    assertThat(deviceUnderTest.getHardConflictedTimes(
+        Set.of(getRandomDate(1L), getRandomDate(2L), getRandomDate(3L)),
+        converter.convertToReadOnlyPruefung(pruefungToCheckFor))).hasSize(1);
+  }
+
+  @Test
+  void getHardConflictedTimes_resultContainsAsManyEntriesAsConflicts_multiple()
+      throws NoPruefungsPeriodeDefinedException {
+    Pruefung pruefungToCheckFor = getRandomPlannedPruefung(1L);
+
+    when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
+    when(dataAccessService.getPruefungWith(anyString())).thenReturn(pruefungToCheckFor);
+    when(restrictionService.wouldBeHardConflictAt(any(), any())).thenReturn(true, true, true);
+
+    assertThat(deviceUnderTest.getHardConflictedTimes(
+        Set.of(getRandomDate(1L), getRandomDate(2L), getRandomDate(3L)),
+        converter.convertToReadOnlyPruefung(pruefungToCheckFor))).hasSize(3);
   }
 
 }
