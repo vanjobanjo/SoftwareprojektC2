@@ -375,10 +375,11 @@ public class ScheduleService {
     }
   }
 
-  public List<KriteriumsAnalyse> analyseScoring(ReadOnlyPruefung pruefung) {
+  public List<KriteriumsAnalyse> analyseScoring(ReadOnlyPruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung);
     List<WeichesKriteriumAnalyse> analyses = restrictionService.checkWeicheKriterien(
-        dataAccessService.getPruefungWith(pruefung.getPruefungsnummer()));
+        getPruefungIfExistent(pruefung));
     return converter.convertAnalyseList(analyses);
   }
 
