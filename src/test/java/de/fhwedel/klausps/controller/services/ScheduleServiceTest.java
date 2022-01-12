@@ -778,7 +778,14 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void setDauer_Successful() throws HartesKriteriumException {
+  void setDauer_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getPruefung(any())).thenThrow(NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.setDauer(mock(ReadOnlyPruefung.class), Duration.ZERO));
+  }
+
+  @Test
+  void setDauer_Successful() throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     LocalDateTime time = LocalDateTime.of(2021, 8, 12, 8, 0);
     LocalDateTime timeb = LocalDateTime.of(2021, 8, 11, 8, 0);
 
@@ -789,21 +796,19 @@ class ScheduleServiceTest {
     when(dataAccessService.getPruefungsperiode().geplantePruefungen()).thenReturn(
         Set.of(analysis, dm));
 
-    when(dataAccessService.getPruefungWith(RO_ANALYSIS_UNPLANNED.getPruefungsnummer())).thenReturn(
-        analysis);
-    when(dataAccessService.getPruefungWith(RO_DM_UNPLANNED.getPruefungsnummer())).thenReturn(dm);
+    when(dataAccessService.getPruefung(RO_ANALYSIS_UNPLANNED)).thenReturn(Optional.of(analysis));
+    when(dataAccessService.getPruefung(RO_DM_UNPLANNED)).thenReturn(Optional.of(dm));
 
     analysis.setStartzeitpunkt(time);
     dm.setStartzeitpunkt(timeb);
 
     assertThat(analysis.getDauer()).isEqualTo(RO_ANALYSIS_UNPLANNED.getDauer());
     assertThat(deviceUnderTest.setDauer(RO_ANALYSIS_UNPLANNED, Duration.ofMinutes(90))).isEmpty();
-
   }
 
-
   @Test
-  void setDauer_Successful_checkSoft() throws HartesKriteriumException {
+  void setDauer_Successful_checkSoft()
+      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     LocalDateTime time = LocalDateTime.of(2021, 8, 12, 8, 0);
     LocalDateTime timeb = LocalDateTime.of(2021, 8, 11, 8, 0);
 
@@ -814,19 +819,17 @@ class ScheduleServiceTest {
     when(dataAccessService.getPruefungsperiode().geplantePruefungen()).thenReturn(
         Set.of(analysis, dm));
 
-    when(dataAccessService.getPruefungWith(RO_ANALYSIS_UNPLANNED.getPruefungsnummer())).thenReturn(
-        analysis);
-    when(dataAccessService.getPruefungWith(RO_DM_UNPLANNED.getPruefungsnummer())).thenReturn(dm);
+    when(dataAccessService.getPruefung(RO_ANALYSIS_UNPLANNED)).thenReturn(Optional.of(analysis));
+    when(dataAccessService.getPruefung(RO_DM_UNPLANNED)).thenReturn(Optional.of(dm));
     analysis.setStartzeitpunkt(time);
     dm.setStartzeitpunkt(timeb);
 
     assertThat(analysis.getDauer()).isEqualTo(RO_ANALYSIS_UNPLANNED.getDauer());
     assertThat(deviceUnderTest.setDauer(RO_ANALYSIS_UNPLANNED, Duration.ofMinutes(90))).isEmpty();
-
   }
 
   @Test
-  void setDauer_Unsuccessful() {
+  void setDauer_Unsuccessful() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime time = LocalDateTime.of(2021, 8, 12, 8, 0);
     LocalDateTime timeb = LocalDateTime.of(2021, 8, 12, 10, 30);
 
@@ -841,9 +844,8 @@ class ScheduleServiceTest {
     when(dataAccessService.getPruefungsperiode().geplantePruefungen()).thenReturn(
         Set.of(analysis, dm));
 
-    when(dataAccessService.getPruefungWith(RO_ANALYSIS_UNPLANNED.getPruefungsnummer())).thenReturn(
-        analysis);
-    when(dataAccessService.getPruefungWith(RO_DM_UNPLANNED.getPruefungsnummer())).thenReturn(dm);
+    when(dataAccessService.getPruefung(RO_ANALYSIS_UNPLANNED)).thenReturn(Optional.of(analysis));
+    when(dataAccessService.getPruefung(RO_DM_UNPLANNED)).thenReturn(Optional.of(dm));
 
     HartesKriteriumAnalyse hka = new HartesKriteriumAnalyse(Set.of(analysis, dm),
         Set.of(infBachelor), 8, HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG);
@@ -852,7 +854,6 @@ class ScheduleServiceTest {
     assertThat(analysis.getDauer()).isEqualTo(RO_ANALYSIS_UNPLANNED.getDauer());
     assertThrows(HartesKriteriumException.class,
         () -> deviceUnderTest.setDauer(RO_ANALYSIS_UNPLANNED, Duration.ofMinutes(150)));
-
   }
 
   @Test
@@ -860,7 +861,6 @@ class ScheduleServiceTest {
     Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
     when(restrictionService.checkWeicheKriterien(dm)).thenReturn(Collections.emptyList());
     assertThat(deviceUnderTest.analyseScoring(RO_DM_UNPLANNED)).isEmpty();
-
   }
 
   @Test
@@ -1001,7 +1001,6 @@ class ScheduleServiceTest {
         converter.convertToReadOnlyPruefung(pruefungToCheckFor))).hasSize(3);
   }
 
-
   @Test
   void makeBlockSequential_block_is_already_sequential() throws HartesKriteriumException {
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
@@ -1027,7 +1026,6 @@ class ScheduleServiceTest {
 
     assertThat(deviceUnderTest.toggleBlockType(roBlock, SEQUENTIAL)).contains(roBlock);
   }
-
 
   @Test
   void makeBlockSequential_block_does_not_exist() {
@@ -1091,7 +1089,6 @@ class ScheduleServiceTest {
         roBlock, RO_ANALYSIS_UNPLANNED);
   }
 
-
   @Test
   void makeBlockParallel_block_is_already_Parallel() throws HartesKriteriumException {
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
@@ -1117,7 +1114,6 @@ class ScheduleServiceTest {
 
     assertThat(deviceUnderTest.toggleBlockType(roBlock, PARALLEL)).contains(roBlock);
   }
-
 
   @Test
   void makeBlockParallel_block_does_not_exist() {
