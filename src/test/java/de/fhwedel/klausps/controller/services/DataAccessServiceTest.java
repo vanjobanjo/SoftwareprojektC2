@@ -6,6 +6,7 @@ import static de.fhwedel.klausps.controller.util.TestFactory.infMaster;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungenReadOnly;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTime;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedROPruefung;
 import static de.fhwedel.klausps.model.api.Blocktyp.PARALLEL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -1562,6 +1563,32 @@ class DataAccessServiceTest {
     when(pruefungsperiode.getEnddatum()).thenReturn(newAnkertag.plusDays(20));
     deviceUnderTest.setAnkertag(newAnkertag);
     verify(pruefungsperiode).setAnkertag(newAnkertag);
+  }
+
+  @Test
+  void getPruefung_pruefungMustNotBeNull() {
+    assertThrows(NullPointerException.class, () -> deviceUnderTest.getPruefung(null));
+  }
+
+  @Test
+  void getPruefung_noPruefungsperiode() {
+    deviceUnderTest = new DataAccessService(null);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getPruefung(getRandomUnplannedROPruefung(1L)));
+  }
+
+  @Test
+  void getPruefung_doesNotExist() throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
+    when(pruefungsperiode.pruefung(anyString())).thenReturn(null);
+    assertThat(deviceUnderTest.getPruefung(pruefung)).isEmpty();
+  }
+
+  @Test
+  void getPruefung_exists() throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
+    when(pruefungsperiode.pruefung(anyString())).thenReturn(getRandomPlannedPruefung(1L));
+    assertThat(deviceUnderTest.getPruefung(pruefung)).isPresent();
   }
 
 }

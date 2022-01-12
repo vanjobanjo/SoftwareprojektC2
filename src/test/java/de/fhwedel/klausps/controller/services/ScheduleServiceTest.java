@@ -535,6 +535,14 @@ class ScheduleServiceTest {
         () -> deviceUnderTest.addPruefungToBlock(getEmptyROBlock(), null));
   }
 
+  @Test
+  void addPruefungToBlock_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
+    when(dataAccessService.getPruefung(any())).thenThrow(NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.addPruefungToBlock(getEmptyROBlock(), pruefung));
+  }
+
   private ReadOnlyBlock getEmptyROBlock() {
     LocalDateTime startTime = LocalDateTime.of(2022, 1, 7, 11, 11);
     Set<ReadOnlyPruefung> noPruefungen = emptySet();
@@ -584,7 +592,7 @@ class ScheduleServiceTest {
 
   @Test
   void addPruefungToBlock_pruefungIsAlreadyInSameBlock_empty_result()
-      throws HartesKriteriumException {
+      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
     ReadOnlyBlock block = getBlockWith(pruefung);
 
@@ -595,7 +603,7 @@ class ScheduleServiceTest {
 
   @Test
   void addPruefungToBlock_pruefung_block_is_not_planned_no_affected_pruefungen()
-      throws HartesKriteriumException {
+      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
     ReadOnlyBlock block = getUnplannedBlockWith();
     when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(Optional.empty());
@@ -609,7 +617,7 @@ class ScheduleServiceTest {
 
   @Test
   void addPruefungToBlock_pruefung_block_is_not_planned_no_further_calculation()
-      throws HartesKriteriumException {
+      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
     ReadOnlyBlock block = getUnplannedBlockWith();
     when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(Optional.empty());
@@ -619,7 +627,8 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void addPruefungToBlock_pruefung_with_same_teilnehmerkreis_at_same_time() {
+  void addPruefungToBlock_pruefung_with_same_teilnehmerkreis_at_same_time()
+      throws NoPruefungsPeriodeDefinedException {
     LocalDateTime termin = LocalDateTime.of(2022, 1, 2, 8, 0);
 
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
@@ -634,6 +643,7 @@ class ScheduleServiceTest {
     when(restrictionService.checkHarteKriterien(any())).thenReturn(
         List.of(getNewHartesKriteriumAnalyse()));
     when(dataAccessService.addPruefungToBlock(roBlock, RO_ANALYSIS_UNPLANNED)).thenReturn(block);
+    when(dataAccessService.getPruefung(any())).thenReturn(Optional.of(analysis));
 
     assertThrows(HartesKriteriumException.class, () -> deviceUnderTest.addPruefungToBlock(roBlock,
         converter.convertToReadOnlyPruefung(analysis)));
@@ -662,7 +672,8 @@ class ScheduleServiceTest {
 
   @Test
   @DisplayName("addPruefungToBlock - hard restriction - check that pruefung does not get planned")
-  void addPruefungToBlock_pruefung_with_same_teilnehmerkreis_hard_restriction() {
+  void addPruefungToBlock_pruefung_with_same_teilnehmerkreis_hard_restriction()
+      throws NoPruefungsPeriodeDefinedException {
     LocalDateTime termin = LocalDateTime.of(2022, 1, 2, 8, 0);
 
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
@@ -678,12 +689,15 @@ class ScheduleServiceTest {
     when(restrictionService.checkHarteKriterien(any())).thenReturn(
         List.of(getNewHartesKriteriumAnalyse()));
     when(dataAccessService.addPruefungToBlock(roBlock, RO_ANALYSIS_UNPLANNED)).thenReturn(block);
-    when(dataAccessService.getPruefungWith(haskell.getPruefungsnummer())).thenReturn(haskell);
-    when(dataAccessService.getPruefungWith(analysis.getPruefungsnummer())).thenReturn(analysis);
+    when(dataAccessService.getPruefungWith(haskell.getPruefungsnummer())).thenReturn(
+        haskell);// TODO raus
+    when(dataAccessService.getPruefungWith(analysis.getPruefungsnummer())).thenReturn(
+        analysis);// TODO raus
+    when(dataAccessService.getPruefung(RO_HASKELL_UNPLANNED)).thenReturn(Optional.of(haskell));
+    when(dataAccessService.getPruefung(RO_ANALYSIS_UNPLANNED)).thenReturn(Optional.of(analysis));
     when(dataAccessService.removePruefungFromBlock(any(), any())).thenReturn(block);
     try {
       deviceUnderTest.addPruefungToBlock(roBlock, converter.convertToReadOnlyPruefung(analysis));
-
     } catch (HartesKriteriumException hardViolation) {
       verify(dataAccessService, times(1)).removePruefungFromBlock(roBlock, RO_ANALYSIS_UNPLANNED);
     }
@@ -1136,4 +1150,12 @@ class ScheduleServiceTest {
     assertThat(deviceUnderTest.toggleBlockType(roBlock, PARALLEL)).containsExactlyInAnyOrder(
         roBlock, RO_ANALYSIS_UNPLANNED);
   }
+
+  @Test
+  void unschedulePruefung_pruefungDoesNotExist() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getPruefung(any())).thenReturn(Optional.empty());
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.unschedulePruefung(getRandomPlannedROPruefung(1L)));
+  }
+
 }
