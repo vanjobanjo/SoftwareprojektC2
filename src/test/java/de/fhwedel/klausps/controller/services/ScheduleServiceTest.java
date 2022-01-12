@@ -56,9 +56,11 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
@@ -402,14 +404,16 @@ class ScheduleServiceTest {
 
     Set<Teilnehmerkreis> haskelTeilnehmrekeis = new HashSet<>();
     haskelTeilnehmrekeis.add(informatik);
-    int schaetzungInformatik = 8;
 
+    int schaetzungInformatik = 8;
+    Map<Teilnehmerkreis, Integer> teilnehmercount = new HashMap<>();
+    teilnehmercount.put(informatik, schaetzungInformatik);
     Set<Pruefung> conflictedPruefung = new HashSet<>();
     conflictedPruefung.add(haskel);
     conflictedPruefung.add(dm);
 
     HartesKriteriumAnalyse hKA = new HartesKriteriumAnalyse(conflictedPruefung,
-        haskelTeilnehmrekeis, schaetzungInformatik, ZWEI_KLAUSUREN_GLEICHZEITIG);
+        ZWEI_KLAUSUREN_GLEICHZEITIG, teilnehmercount);
 
     List<HartesKriteriumAnalyse> listHard = new ArrayList<>();
     listHard.add(hKA);
@@ -682,9 +686,12 @@ class ScheduleServiceTest {
   private HartesKriteriumAnalyse getNewHartesKriteriumAnalyse() {
     Random random = new Random(1L);
     int next = random.nextInt();
+    Map<Teilnehmerkreis, Integer> teilnehmercount = new HashMap<>();
+    teilnehmercount.put(getRandomTeilnehmerkreis(1L), next);
     return new HartesKriteriumAnalyse(
-        Set.of(getPruefungOfReadOnlyPruefung(getRandomUnplannedROPruefung(1L))),
-        Set.of(getRandomTeilnehmerkreis(1L)), next, ZWEI_KLAUSUREN_GLEICHZEITIG);
+        Set.of(getPruefungOfReadOnlyPruefung(getRandomUnplannedROPruefung(1L)))
+        , ZWEI_KLAUSUREN_GLEICHZEITIG,
+        teilnehmercount);
   }
 
   @Test
@@ -851,8 +858,10 @@ class ScheduleServiceTest {
     when(dataAccessService.getPruefung(RO_ANALYSIS_UNPLANNED)).thenReturn(Optional.of(analysis));
     when(dataAccessService.getPruefung(RO_DM_UNPLANNED)).thenReturn(Optional.of(dm));
 
+    Map<Teilnehmerkreis, Integer> teilnehmerCount = new HashMap<>();
+    teilnehmerCount.put(infBachelor, 8);
     HartesKriteriumAnalyse hka = new HartesKriteriumAnalyse(Set.of(analysis, dm),
-        Set.of(infBachelor), 8, HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG);
+        HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG, teilnehmerCount);
     when(restrictionService.checkHarteKriterien(any())).thenReturn(List.of(hka));
 
     assertThat(analysis.getDauer()).isEqualTo(RO_ANALYSIS_UNPLANNED.getDauer());
@@ -1058,8 +1067,10 @@ class ScheduleServiceTest {
     ReadOnlyBlock roBlock = converter.convertToROBlock(block);
     when(dataAccessService.getModelBlock(roBlock)).thenReturn(Optional.of(block));
     List<HartesKriteriumAnalyse> hardKriterien = new LinkedList<>();
-    hardKriterien.add(new HartesKriteriumAnalyse(Collections.emptySet(), Collections.emptySet(), 0,
-        ZWEI_KLAUSUREN_GLEICHZEITIG));
+
+    Map<Teilnehmerkreis, Integer> teilnehmercount = new HashMap<>();
+    hardKriterien.add(new HartesKriteriumAnalyse(Collections.emptySet(),
+        ZWEI_KLAUSUREN_GLEICHZEITIG, teilnehmercount));
     when(restrictionService.checkHarteKriterienAll(Set.of(analysis, haskell))).thenReturn(
         hardKriterien);
     when(restrictionService.getAffectedPruefungen(any(Block.class))).thenReturn(
@@ -1150,8 +1161,11 @@ class ScheduleServiceTest {
     ReadOnlyBlock roBlock = converter.convertToROBlock(block);
     when(dataAccessService.getModelBlock(roBlock)).thenReturn(Optional.of(block));
     List<HartesKriteriumAnalyse> hardKriterien = new LinkedList<>();
-    hardKriterien.add(new HartesKriteriumAnalyse(Collections.emptySet(), Collections.emptySet(), 0,
-        ZWEI_KLAUSUREN_GLEICHZEITIG));
+
+    Map<Teilnehmerkreis, Integer> teilnehmerCount = new HashMap<>();
+
+    hardKriterien.add(new HartesKriteriumAnalyse(Collections.emptySet(),
+        ZWEI_KLAUSUREN_GLEICHZEITIG, teilnehmerCount));
     when(restrictionService.checkHarteKriterienAll(Set.of(analysis, haskell))).thenReturn(
         hardKriterien);
     when(restrictionService.getAffectedPruefungen(any(Block.class))).thenReturn(

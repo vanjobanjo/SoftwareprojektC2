@@ -18,10 +18,13 @@ import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
 import de.fhwedel.klausps.controller.restriction.hard.HarteRestriktion;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
+import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
@@ -103,8 +106,12 @@ class RestrictionServiceTest {
   }
 
   private HartesKriteriumAnalyse hartesKriteriumAnalyseWith(Collection<Pruefung> pruefungen) {
-    return new HartesKriteriumAnalyse(new HashSet<>(pruefungen), emptySet(), 0,
-        HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG);
+    Map<Teilnehmerkreis, Integer> teilnehmerMap = new HashMap<>();
+    for (Pruefung p : pruefungen) {
+        teilnehmerMap.putAll(p.getSchaetzungen());
+    }
+    return new HartesKriteriumAnalyse(new HashSet<>(pruefungen),
+        HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG, teilnehmerMap);
   }
 
   @Test

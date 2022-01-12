@@ -8,6 +8,7 @@ import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
+import de.fhwedel.klausps.controller.util.TeilnehmerkreisUtil;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Planungseinheit;
@@ -15,9 +16,11 @@ import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
@@ -27,6 +30,8 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
   private final Duration bufferBetweenPlanungseinheiten;
 
   private int countStudents = 0;
+
+  Map<Teilnehmerkreis, Integer> teilnehmerkreisIntegerMap = new HashMap<>();
 
   public TwoKlausurenSameTime() {
     this(ServiceProvider.getDataAccessService());
@@ -45,7 +50,7 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
 
   @Override
   public Optional<HartesKriteriumAnalyse> evaluate(Pruefung pruefung) {
-
+    Map<Teilnehmerkreis, Integer> teilnehmercount = new HashMap<>();
     boolean hartKriterium = false;
     if (pruefung.isGeplant()) {
       LocalDateTime start = pruefung.getStartzeitpunkt().minus(bufferBetweenPlanungseinheiten);
@@ -64,48 +69,72 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
 
       if (testList != null) {
         testList.remove(pruefung);
-
-        Set<Pruefung> pruefungenFromBlock;
         for (Planungseinheit planungseinheit : testList) {
           if (planungseinheit.isBlock()) {
-            Block block = planungseinheit.asBlock();
-            pruefungenFromBlock = block.getPruefungen();
-            if (!pruefungenFromBlock.contains(pruefung)) {
-              if (uebereinStimmendeTeilnehmerkreise(block, pruefung)) {
-                if (block.getTyp() == Blocktyp.SEQUENTIAL) {
-                  for (Pruefung pruefungBlock : pruefungenFromBlock) {
-                    hartKriterium =
-                        getTeilnehmerkreisFromPruefung(pruefung, pruefungBlock,
-                            inConflictROPruefung,
-                            inConflictTeilnehmerkreis) || hartKriterium;
-                  }
-                } else {
-                  for (Pruefung pruefungBlock : pruefungenFromBlock) {
-                    if ((uebereinStimmendeTeilnehmerkreise(pruefungBlock, pruefung))
-                        && !outOfRange(start, end, pruefungBlock)) {
-                      hartKriterium =
-                          getTeilnehmerkreisFromPruefung(pruefung, pruefungBlock,
-                              inConflictROPruefung,
-                              inConflictTeilnehmerkreis) || hartKriterium;
-                    }
-                  }
-                }
-              }
-            }
+            hartKriterium = testForBlockHard(pruefung, hartKriterium, start, inConflictROPruefung,
+                inConflictTeilnehmerkreis, end, planungseinheit, teilnehmercount);
           } else {
             hartKriterium = getTeilnehmerkreisFromPruefung(pruefung, planungseinheit.asPruefung(),
-                inConflictROPruefung, inConflictTeilnehmerkreis) || hartKriterium;
+                inConflictROPruefung, inConflictTeilnehmerkreis, teilnehmercount) || hartKriterium;
           }
         }
         if (hartKriterium) {
           inConflictROPruefung.add(pruefung);
-          HartesKriteriumAnalyse hKA = new HartesKriteriumAnalyse(inConflictROPruefung,
-              inConflictTeilnehmerkreis, countStudents, this.hardRestriction);
+          TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung(teilnehmercount,pruefung.getSchaetzungen());
+          HartesKriteriumAnalyse hKA = new HartesKriteriumAnalyse(inConflictROPruefung, this.hardRestriction, teilnehmercount);
           return Optional.of(hKA);
         }
       }
     }
     return Optional.empty();
+  }
+
+  private boolean testForBlockHard(Pruefung pruefung, boolean hartKriterium, LocalDateTime start,
+      HashSet<Pruefung> inConflictROPruefung, HashSet<Teilnehmerkreis> inConflictTeilnehmerkreis,
+      LocalDateTime end, Planungseinheit planungseinheit,
+      Map<Teilnehmerkreis, Integer> teilnehmerCount) {
+    Set<Pruefung> pruefungenFromBlock;
+    Block block = planungseinheit.asBlock();
+    pruefungenFromBlock = block.getPruefungen();
+    if (!pruefungenFromBlock.contains(pruefung)
+        && (uebereinStimmendeTeilnehmerkreise(block, pruefung))) {
+      if (block.getTyp() == Blocktyp.SEQUENTIAL) {
+        hartKriterium = testForSequentialBlock(pruefung, hartKriterium, inConflictROPruefung,
+            inConflictTeilnehmerkreis, teilnehmerCount, pruefungenFromBlock);
+      } else {
+        hartKriterium = testForParallelBlock(pruefung, hartKriterium, start, inConflictROPruefung,
+            inConflictTeilnehmerkreis, end, teilnehmerCount, pruefungenFromBlock);
+      }
+    }
+    return hartKriterium;
+  }
+
+  private boolean testForParallelBlock(Pruefung pruefung, boolean hartKriterium, LocalDateTime start,
+      HashSet<Pruefung> inConflictROPruefung, HashSet<Teilnehmerkreis> inConflictTeilnehmerkreis,
+      LocalDateTime end, Map<Teilnehmerkreis, Integer> teilnehmerCount,
+      Set<Pruefung> pruefungenFromBlock) {
+    for (Pruefung pruefungBlock : pruefungenFromBlock) {
+      if ((uebereinStimmendeTeilnehmerkreise(pruefungBlock, pruefung))
+          && !outOfRange(start, end, pruefungBlock)) {
+        hartKriterium =
+            getTeilnehmerkreisFromPruefung(pruefung, pruefungBlock,
+                inConflictROPruefung,
+                inConflictTeilnehmerkreis, teilnehmerCount) || hartKriterium;
+      }
+    }
+    return hartKriterium;
+  }
+
+  private boolean testForSequentialBlock(Pruefung pruefung, boolean hartKriterium,
+      HashSet<Pruefung> inConflictROPruefung, HashSet<Teilnehmerkreis> inConflictTeilnehmerkreis,
+      Map<Teilnehmerkreis, Integer> teilnehmerCount, Set<Pruefung> pruefungenFromBlock) {
+    for (Pruefung pruefungBlock : pruefungenFromBlock) {
+      hartKriterium =
+          getTeilnehmerkreisFromPruefung(pruefung, pruefungBlock,
+              inConflictROPruefung,
+              inConflictTeilnehmerkreis, teilnehmerCount) || hartKriterium;
+    }
+    return hartKriterium;
   }
 
   private boolean outOfRange(LocalDateTime start, LocalDateTime end, Pruefung pruefungBlock) {
@@ -195,7 +224,8 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
   }
 
   private boolean getTeilnehmerkreisFromPruefung(Pruefung pruefung, Pruefung toCheck,
-      HashSet<Pruefung> inConflictROPruefung, HashSet<Teilnehmerkreis> inConflictTeilnehmerkreis) {
+      HashSet<Pruefung> inConflictROPruefung, HashSet<Teilnehmerkreis> inConflictTeilnehmerkreis,
+      Map<Teilnehmerkreis, Integer> teilnehmercount) {
     boolean retBool = false;
     Set<Teilnehmerkreis> teilnehmer = pruefung.getTeilnehmerkreise();
     for (Teilnehmerkreis teilnehmerkreis : toCheck.getTeilnehmerkreise()) {
@@ -204,6 +234,19 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
           //hier sollte ein Teilnehmerkreis nur einmal dazu addiert werden.
           countStudents += toCheck.getSchaetzungen().get(teilnehmerkreis);
         }
+
+
+        Integer teilnehmerKreisSchaetzung = teilnehmercount.get(teilnehmerkreis);
+        Integer teilnehmerkreistoCheck = toCheck.getSchaetzungen().get(teilnehmerkreis);
+        if(teilnehmerKreisSchaetzung != null){
+          if(teilnehmerKreisSchaetzung < teilnehmerkreistoCheck){
+            teilnehmercount.replace(teilnehmerkreis,teilnehmerkreistoCheck);
+          }
+        }
+        else{
+          teilnehmercount.put(teilnehmerkreis, teilnehmerkreistoCheck);
+        }
+
         //Hier ist es egal, da es ein Set ist und es nur einmal vorkommen darf
         inConflictTeilnehmerkreis.add(teilnehmerkreis);
         inConflictROPruefung.add(toCheck);
