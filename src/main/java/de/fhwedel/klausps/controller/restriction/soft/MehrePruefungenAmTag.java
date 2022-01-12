@@ -29,8 +29,6 @@ public class MehrePruefungenAmTag extends WeicheRestriktion {
   Set<Teilnehmerkreis> setTeilnehmer = new HashSet<>();
   int countStudents = 0;
   int scoring = 0;
-  KriteriumsAnalyse kA = new KriteriumsAnalyse(setReadyOnly,
-      MEHRERE_PRUEFUNGEN_AM_TAG, setTeilnehmer, countStudents);
 
   protected MehrePruefungenAmTag(DataAccessService dataAccessService) {
     super(dataAccessService, MEHRERE_PRUEFUNGEN_AM_TAG);
@@ -42,6 +40,13 @@ public class MehrePruefungenAmTag extends WeicheRestriktion {
 
   @Override
   public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
+    //TODO schön machen
+    setReadyOnly = new HashSet<>();
+    setPruefung = new HashSet<>();
+    setTeilnehmer = new HashSet<>();
+    countStudents = 0;
+    scoring = 0;
+
     boolean weichesKrierium = false;
     if (pruefung != null && pruefung.isGeplant()) {
 

@@ -103,8 +103,8 @@ class TwoKlausurenSameTimeTest {
     TwoKlausurenSameTime deviceUnderTest = new TwoKlausurenSameTime(dataAccessService);
     HartesKriteriumAnalyse result = deviceUnderTest.evaluate(pruefung1).get();
 
-    assertThat(result.getAffectedTeilnehmerkreise()).contains(bwl);
-    assertThat(result.getAmountAffectedStudents()).isEqualTo(30);
+    assertThat(result.getTeilnehmercount()).containsOnlyKeys(bwl);
+    assertThat(result.getTeilnehmercount().values()).containsOnly(30);
     assertThat(result.getCausingPruefungen()).contains(pruefung1);
     assertThat(result.getCausingPruefungen()).contains(pruefung2);
     assertThat(result.getKriterium()).isEqualTo(HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG);
@@ -181,8 +181,9 @@ class TwoKlausurenSameTimeTest {
     Optional<HartesKriteriumAnalyse> analyse = h.evaluate(haskel);
     assertTrue(analyse.isPresent());
     assertEquals(setOfConflictPruefunge, analyse.get().getCausingPruefungen());
-    assertEquals(setOfConflictTeilnehmer, analyse.get().getAffectedTeilnehmerkreise());
-    assertEquals(studends, analyse.get().getAmountAffectedStudents());
+
+    assertEquals(setOfConflictTeilnehmer, analyse.get().getTeilnehmercount().keySet());
+    assertEquals(studends, analyse.get().getTeilnehmercount().values().stream().reduce(0, Integer::sum));
   }
 
 
@@ -320,8 +321,8 @@ class TwoKlausurenSameTimeTest {
     Optional<HartesKriteriumAnalyse> analyse = h.evaluate(haskel);
     assertTrue(analyse.isPresent());
     assertEquals(setOfConflictPruefunge, analyse.get().getCausingPruefungen());
-    assertEquals(setOfConflictTeilnehmer, analyse.get().getAffectedTeilnehmerkreise());
-    assertEquals(studends, analyse.get().getAmountAffectedStudents());
+    assertEquals(setOfConflictTeilnehmer, analyse.get().getTeilnehmercount().keySet());
+    assertEquals(studends, analyse.get().getTeilnehmercount().values().stream().reduce(0, Integer::sum));
   }
 
   @Test
@@ -426,8 +427,8 @@ class TwoKlausurenSameTimeTest {
     assertTrue(analyse.isPresent());
 
     assertEquals(setOfConflictPruefunge, analyse.get().getCausingPruefungen());
-    assertEquals(setOfConflictTeilnehmerkreis, analyse.get().getAffectedTeilnehmerkreise());
-    assertEquals(studends, analyse.get().getAmountAffectedStudents());
+    assertEquals(setOfConflictTeilnehmerkreis, analyse.get().getTeilnehmercount().keySet());
+    assertEquals(studends, analyse.get().getTeilnehmercount().values().stream().reduce(0, Integer::sum));
   }
 
   @Test
@@ -724,8 +725,8 @@ class TwoKlausurenSameTimeTest {
     Optional<HartesKriteriumAnalyse> analyse = h.evaluate(cPruefung);
     assertTrue(analyse.isPresent());
     assertEquals(setOfConflictPruefunge, analyse.get().getCausingPruefungen());
-    assertEquals(setOfConflictTeilnehmer, analyse.get().getAffectedTeilnehmerkreise());
-    assertEquals(studends, analyse.get().getAmountAffectedStudents());
+    assertEquals(setOfConflictTeilnehmer, analyse.get().getTeilnehmercount().keySet());
+    assertEquals(studends, analyse.get().getTeilnehmercount().values().stream().reduce(0, Integer::sum));
   }
 
   @Test
@@ -1041,8 +1042,8 @@ class TwoKlausurenSameTimeTest {
     Optional<HartesKriteriumAnalyse> analyse = h.evaluate(cPruefung);
     assertTrue(analyse.isPresent());
     assertEquals(setOfConflictPruefunge, analyse.get().getCausingPruefungen());
-    assertEquals(setOfConflictTeilnehmer, analyse.get().getAffectedTeilnehmerkreise());
-    assertEquals(studends, analyse.get().getAmountAffectedStudents());
+    assertEquals(setOfConflictTeilnehmer, analyse.get().getTeilnehmercount().keySet());
+    assertEquals(studends, analyse.get().getTeilnehmercount().values().stream().reduce(0, Integer::sum));
   }
 
 
@@ -1179,8 +1180,8 @@ class TwoKlausurenSameTimeTest {
     Optional<HartesKriteriumAnalyse> analyse = h.evaluate(cPruefung);
     assertTrue(analyse.isPresent());
     assertEquals(setOfConflictPruefunge, analyse.get().getCausingPruefungen());
-    assertEquals(setOfConflictTeilnehmer, analyse.get().getAffectedTeilnehmerkreise());
-    assertEquals(studends, analyse.get().getAmountAffectedStudents());
+    assertEquals(setOfConflictTeilnehmer, analyse.get().getTeilnehmercount().keySet());
+    assertEquals(studends, analyse.get().getTeilnehmercount().values().stream().reduce(0, Integer::sum));
   }
 
   @Test

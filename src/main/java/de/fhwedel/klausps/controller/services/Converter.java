@@ -11,14 +11,18 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
+import de.fhwedel.klausps.controller.util.TeilnehmerkreisUtil;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -124,18 +128,19 @@ public class Converter {
     Set<ReadOnlyPruefung> conflictPruefung = new HashSet<>();
     Set<Teilnehmerkreis> conflictTeilnehmer = new HashSet<>();
     int amountStudents = 0;
+    Map<Teilnehmerkreis, Integer> teilnehmercount = new HashMap<>();
 
     for (HartesKriteriumAnalyse hKA : hard) {
 
       for (Pruefung pruefung : hKA.getCausingPruefungen()) {
         conflictPruefung.add(convertToReadOnlyPruefung(pruefung));
       }
-      for (Teilnehmerkreis teilnehmerkreis : hKA.getAffectedTeilnehmerkreise()) {
-        if (!conflictTeilnehmer.contains(teilnehmerkreis)) {
-          conflictTeilnehmer.add(teilnehmerkreis);
-          amountStudents += hKA.getAmountAffectedStudents();
-        }
-      }
+
+      TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung(teilnehmercount, hKA.getTeilnehmercount());
+    }
+
+    for(Integer count : teilnehmercount.values()){
+      amountStudents += count;
     }
 
     return new HartesKriteriumException(conflictPruefung, conflictTeilnehmer, amountStudents);
