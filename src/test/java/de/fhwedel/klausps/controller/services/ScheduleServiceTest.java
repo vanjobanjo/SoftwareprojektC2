@@ -778,6 +778,14 @@ class ScheduleServiceTest {
   }
 
   @Test
+  void getGeplantePruefungenWithKonflikt_noPruefungsPeriode()
+      throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getPruefung(any())).thenThrow(NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.getGeplantePruefungenWithKonflikt(null));
+  }
+
+  @Test
   void setDauer_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
     when(dataAccessService.getPruefung(any())).thenThrow(NoPruefungsPeriodeDefinedException.class);
     assertThrows(NoPruefungsPeriodeDefinedException.class,

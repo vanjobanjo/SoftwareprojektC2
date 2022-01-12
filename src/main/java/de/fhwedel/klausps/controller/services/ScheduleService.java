@@ -340,7 +340,7 @@ public class ScheduleService {
 
   @NotNull
   public Set<ReadOnlyPruefung> getGeplantePruefungenWithKonflikt(
-      ReadOnlyPlanungseinheit planungseinheitToCheckFor) {
+      ReadOnlyPlanungseinheit planungseinheitToCheckFor) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(planungseinheitToCheckFor);
     Planungseinheit planungseinheit = getAsModel(planungseinheitToCheckFor);
     return new HashSet<>(converter.convertToROPruefungSet(
@@ -361,7 +361,8 @@ public class ScheduleService {
     return affectedPruefungenSoft(pruefungModel);
   }
 
-  private Planungseinheit getAsModel(ReadOnlyPlanungseinheit planungseinheitToCheckFor) {
+  private Planungseinheit getAsModel(ReadOnlyPlanungseinheit planungseinheitToCheckFor)
+      throws NoPruefungsPeriodeDefinedException {
     if (planungseinheitToCheckFor.isBlock()) {
       Optional<Block> optionalBlock = dataAccessService.getModelBlock(
           planungseinheitToCheckFor.asBlock());
@@ -370,8 +371,7 @@ public class ScheduleService {
       }
       return optionalBlock.get();
     } else {
-      return dataAccessService.getPruefungWith(
-          planungseinheitToCheckFor.asPruefung().getPruefungsnummer());
+      return getPruefungIfExistent(planungseinheitToCheckFor.asPruefung());
     }
   }
 
