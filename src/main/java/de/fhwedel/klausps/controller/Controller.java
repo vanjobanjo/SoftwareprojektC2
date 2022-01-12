@@ -263,9 +263,7 @@ public class Controller implements InterfaceController {
 
   @Override
   public ReadOnlyPruefung createPruefung(String ref, String name, String pruefungsNummer,
-      Set<String> pruefer,
-
-      Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreis)
+      Set<String> pruefer, Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreis)
       throws NoPruefungsPeriodeDefinedException {
 
     noNullParameters(name, pruefungsNummer, pruefer, duration, teilnehmerkreis);
