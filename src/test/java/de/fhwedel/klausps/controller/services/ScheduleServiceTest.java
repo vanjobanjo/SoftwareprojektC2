@@ -10,6 +10,7 @@ import static de.fhwedel.klausps.controller.util.TestFactory.infBachelor;
 import static de.fhwedel.klausps.controller.util.TestFactory.infMaster;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedROPruefung;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungWith;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTeilnehmerkreis;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTime;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedPruefung;
@@ -315,7 +316,7 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void removeTeilnehmerkreis() {
+  void removeTeilnehmerkreis() throws NoPruefungsPeriodeDefinedException {
     Teilnehmerkreis informatik = mock(Teilnehmerkreis.class);
 
     ReadOnlyPruefung roHaskel = new PruefungDTOBuilder().withPruefungsName("Haskel")
@@ -323,10 +324,23 @@ class ScheduleServiceTest {
         .withAdditionalTeilnehmerkreis(informatik).build();
 
     when(this.dataAccessService.removeTeilnehmerkreis(any(), any())).thenReturn(true);
-    when(dataAccessService.getPruefungWith(anyString())).thenReturn(
-        getPruefungOfReadOnlyPruefung(roHaskel));
+    when(dataAccessService.getPruefung(any())).thenReturn(
+        Optional.of(getPruefungOfReadOnlyPruefung(roHaskel)));
 
     assertThat(deviceUnderTest.removeTeilnehmerKreis(roHaskel, informatik)).isEmpty();
+  }
+
+  @Test
+  void removeTeilnehmerkreis_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    Teilnehmerkreis informatik = mock(Teilnehmerkreis.class);
+    ReadOnlyPruefung pruefung = converter.convertToReadOnlyPruefung(
+        getRandomPruefungWith(1L, informatik));
+
+    when(this.dataAccessService.removeTeilnehmerkreis(any(), any())).thenReturn(true);
+    when(dataAccessService.getPruefung(any())).thenThrow(NoPruefungsPeriodeDefinedException.class);
+
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.removeTeilnehmerKreis(pruefung, informatik));
   }
 
   @Test

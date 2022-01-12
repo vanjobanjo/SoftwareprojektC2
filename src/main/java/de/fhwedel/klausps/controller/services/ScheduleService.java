@@ -220,8 +220,7 @@ public class ScheduleService {
     }
     if (!block.geplant()) {
       Block resultingBlock = dataAccessService.removePruefungFromBlock(block, pruefung);
-      Pruefung unscheduledPruefung = dataAccessService.getPruefungWith(
-          pruefung.getPruefungsnummer());
+      Pruefung unscheduledPruefung = getPruefungIfExistent(pruefung);
       return new ArrayList<>(
           converter.convertToROPlanungseinheitCollection(resultingBlock, unscheduledPruefung));
     }
@@ -273,15 +272,14 @@ public class ScheduleService {
   }
 
   public List<ReadOnlyPlanungseinheit> removeTeilnehmerKreis(ReadOnlyPruefung roPruefung,
-      Teilnehmerkreis teilnehmerkreis) {
+      Teilnehmerkreis teilnehmerkreis) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(teilnehmerkreis);
     List<ReadOnlyPlanungseinheit> listOfRead = new ArrayList<>();
     if (!roPruefung.getTeilnehmerkreise().contains(teilnehmerkreis)) {
       return listOfRead;
     }
 
-    Pruefung pruefungModel = this.dataAccessService.getPruefungWith(
-        roPruefung.getPruefungsnummer());
+    Pruefung pruefungModel = getPruefungIfExistent(roPruefung);
 
     //Damit man eine Liste hat, wo sich das Scoring ändert
     listOfRead = affectedPruefungenSoft(pruefungModel);
