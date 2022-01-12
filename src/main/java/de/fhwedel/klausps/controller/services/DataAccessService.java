@@ -64,13 +64,15 @@ public class DataAccessService {
 
   public ReadOnlyPruefung createPruefung(String name, String pruefungsNr, String refVWS,
       String pruefer,
-      Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
+      Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreise)
+      throws NoPruefungsPeriodeDefinedException {
     return createPruefung(name, pruefungsNr, refVWS, Set.of(pruefer), duration, teilnehmerkreise);
   }
 
   public ReadOnlyPruefung createPruefung(String name, String pruefungsNr, String refVWS,
       Set<String> pruefer,
-      Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
+      Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreise)
+      throws NoPruefungsPeriodeDefinedException {
 
     if (existsPruefungWith(pruefungsNr)) {
       return null;
@@ -167,7 +169,7 @@ public class DataAccessService {
    */
   boolean exists(ReadOnlyBlock block) {
     if (block.getROPruefungen().isEmpty()) {
-      return emptyBlockExists(block);
+      return blockExists(block);
     } else {
       Optional<Block> modelBlock = searchInModel(block);
       return modelBlock.filter(
@@ -177,15 +179,8 @@ public class DataAccessService {
   }
 
 
-  private boolean emptyBlockExists(ReadOnlyBlock block) {
-    for (Block modelBlock : pruefungsperiode.ungeplanteBloecke()) {
-      // todo add all necessary checks for empty blocks
-      //TODO pruefungsperiode.block(int number); nutzen?
-      if (modelBlock.getId() == block.getBlockId()) {
-        return true;
-      }
-    }
-    return false;
+  private boolean blockExists(ReadOnlyBlock block) {
+    return pruefungsperiode.block(block.getBlockId()) != null;
   }
 
   private Optional<Block> searchInModel(ReadOnlyBlock block) {
@@ -243,7 +238,8 @@ public class DataAccessService {
     return blockModel;
   }
 
-  public ReadOnlyPlanungseinheit changeNameOfPruefung(ReadOnlyPruefung toChange, String name) {
+  public ReadOnlyPlanungseinheit changeNameOfPruefung(ReadOnlyPruefung toChange, String name)
+      throws NoPruefungsPeriodeDefinedException {
     Pruefung pruefung = getPruefungFromModelOrException(toChange.getPruefungsnummer());
     pruefung.setName(name);
 
@@ -253,7 +249,8 @@ public class DataAccessService {
   /*
   Gibt übergeordneten Block oder Pruefung zurück.
    */
-  private ReadOnlyPlanungseinheit getROPlanungseinheitToPruefung(Pruefung pruefung) {
+  private ReadOnlyPlanungseinheit getROPlanungseinheitToPruefung(Pruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException {
     Block block = pruefungsperiode.block(pruefung);
     return block != null ? converter.convertToROBlock(block)
         : converter.convertToReadOnlyPruefung(pruefung);
@@ -268,50 +265,54 @@ public class DataAccessService {
     return pruefungsperiode.geplantePruefungen();
   }
 
-  public Set<ReadOnlyPruefung> getUngeplantePruefungen() {
+  public Set<ReadOnlyPruefung> getUngeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
     return new HashSet<>(
         converter.convertToROPruefungSet(pruefungsperiode.ungeplantePruefungen()));
   }
 
-  public Set<ReadOnlyBlock> getGeplanteBloecke() {
+  public Set<ReadOnlyBlock> getGeplanteBloecke() throws NoPruefungsPeriodeDefinedException {
 
     return new HashSet<>(
         converter.convertToROBlockCollection(pruefungsperiode.geplanteBloecke()));
   }
 
-  public Set<ReadOnlyBlock> getUngeplanteBloecke() {
+  public Set<ReadOnlyBlock> getUngeplanteBloecke() throws NoPruefungsPeriodeDefinedException {
     return new HashSet<>(
         converter.convertToROBlockCollection(pruefungsperiode.ungeplanteBloecke()));
   }
 
-  public Set<ReadOnlyPruefung> ungeplantePruefungenForTeilnehmerkreis(Teilnehmerkreis tk) {
+  public Set<ReadOnlyPruefung> ungeplantePruefungenForTeilnehmerkreis(Teilnehmerkreis tk)
+      throws NoPruefungsPeriodeDefinedException {
     return new HashSet<>(
         converter.convertToROPruefungSet(pruefungsperiode.ungeplantePruefungen().stream()
             .filter(pruefung -> pruefung.getTeilnehmerkreise().contains(tk))
             .collect(Collectors.toSet())));
   }
 
-  public Set<ReadOnlyPruefung> geplantePruefungenForTeilnehmerkreis(Teilnehmerkreis tk) {
+  public Set<ReadOnlyPruefung> geplantePruefungenForTeilnehmerkreis(Teilnehmerkreis tk)
+      throws NoPruefungsPeriodeDefinedException {
     return new HashSet<>(
         converter.convertToROPruefungSet(pruefungsperiode.geplantePruefungen().stream()
             .filter(pruefung -> pruefung.getTeilnehmerkreise().contains(tk))
             .collect(Collectors.toSet())));
   }
 
-  public ReadOnlyPlanungseinheit addPruefer(String pruefungsNummer, String pruefer) {
+  public ReadOnlyPlanungseinheit addPruefer(String pruefungsNummer, String pruefer)
+      throws NoPruefungsPeriodeDefinedException {
     Pruefung pruefung = getPruefungFromModelOrException(pruefungsNummer);
     pruefung.addPruefer(pruefer);
     return getROPlanungseinheitToPruefung(pruefung);
   }
 
-  public ReadOnlyPlanungseinheit removePruefer(String pruefungsNummer, String pruefer) {
+  public ReadOnlyPlanungseinheit removePruefer(String pruefungsNummer, String pruefer)
+      throws NoPruefungsPeriodeDefinedException {
     Pruefung pruefung = getPruefungFromModelOrException(pruefungsNummer);
     pruefung.removePruefer(pruefer);
     return getROPlanungseinheitToPruefung(pruefung);
   }
 
   public ReadOnlyPlanungseinheit setPruefungsnummer(ReadOnlyPruefung pruefung,
-      String pruefungsnummer) {
+      String pruefungsnummer) throws NoPruefungsPeriodeDefinedException {
     Pruefung modelPruefung = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
     if (existsPruefungWith(pruefungsnummer)) {
       throw new IllegalArgumentException("Die angegebene Pruefungsnummer ist bereits vergeben.");
@@ -374,7 +375,8 @@ public class DataAccessService {
   }
 
   // nur fuer ungeplante bloecke aufrufen, wegen SCORING!!!!!
-  public List<ReadOnlyPruefung> deleteBlock(ReadOnlyBlock block) {
+  public List<ReadOnlyPruefung> deleteBlock(ReadOnlyBlock block)
+      throws NoPruefungsPeriodeDefinedException {
     if (block.geplant()) {
       throw new IllegalArgumentException("Nur für ungeplante Blöcke möglich!");
     }
@@ -388,7 +390,8 @@ public class DataAccessService {
     return new LinkedList<>(converter.convertToROPruefungSet(modelPruefungen));
   }
 
-  public ReadOnlyBlock createBlock(String name, ReadOnlyPruefung... pruefungen) {
+  public ReadOnlyBlock createBlock(String name, ReadOnlyPruefung... pruefungen)
+      throws NoPruefungsPeriodeDefinedException {
     if (Arrays.stream(pruefungen).anyMatch(ReadOnlyPlanungseinheit::geplant)) {
       throw new IllegalArgumentException("Einer der übergebenen Prüfungen ist geplant.");
     }
@@ -485,7 +488,7 @@ public class DataAccessService {
 
   public Set<ReadOnlyPruefung> getAllReadOnlyPruefungenBetween(LocalDateTime start,
       LocalDateTime end)
-      throws IllegalTimeSpanException {
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     return Set.copyOf(converter.convertToROPruefungSet(getAllPruefungenBetween(start, end)));
   }
 
@@ -502,7 +505,8 @@ public class DataAccessService {
   }
 
   //TODO kann das hier raus? Evtl? Weil hier an dieser Stelle der Converter genutzt wird.
-  public Optional<ReadOnlyBlock> getBlockTo(ReadOnlyPruefung pruefung) {
+  public Optional<ReadOnlyBlock> getBlockTo(ReadOnlyPruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException {
     String nummer = pruefung.getPruefungsnummer();
 
     if (existsPruefungWith(nummer)) {
@@ -544,13 +548,15 @@ public class DataAccessService {
     return pruefung.addTeilnehmerkreis(teilnehmerkreis, schaetzung);
   }
 
-  public ReadOnlyBlock setNameOfBlock(ReadOnlyBlock block, String name) {
+  public ReadOnlyBlock setNameOfBlock(ReadOnlyBlock block, String name)
+      throws NoPruefungsPeriodeDefinedException {
     Block model = getBlockFromModelOrException(block);
     model.setName(name);
     return converter.convertToROBlock(model);
   }
 
-  public Set<ReadOnlyPruefung> getAllKlausurenFromPruefer(String pruefer) {
+  public Set<ReadOnlyPruefung> getAllKlausurenFromPruefer(String pruefer)
+      throws NoPruefungsPeriodeDefinedException {
     Set<Planungseinheit> planungseinheiten = pruefungsperiode.getPlanungseinheiten();
     Set<ReadOnlyPruefung> result = new HashSet<>();
     Pruefung pruefung;
@@ -620,7 +626,7 @@ public class DataAccessService {
   }
 
   public Set<ReadOnlyPlanungseinheit> getAllROPlanungseinheitenBetween(LocalDateTime start,
-      LocalDateTime end) throws IllegalTimeSpanException {
+      LocalDateTime end) throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     return Set.copyOf(
         converter.convertToROPlanungseinheitCollection(getAllPlanungseinheitenBetween(start, end)));
   }

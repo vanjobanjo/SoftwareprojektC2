@@ -271,7 +271,7 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void unscheduleBlock() {
+  void unscheduleBlock() throws NoPruefungsPeriodeDefinedException {
 
     LocalDateTime now = LocalDateTime.now();
     Pruefung model_analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS);
@@ -575,7 +575,7 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void addPruefungToBlock_pruefungIsPartOfOtherBlock() {
+  void addPruefungToBlock_pruefungIsPartOfOtherBlock() throws NoPruefungsPeriodeDefinedException {
     ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
     ReadOnlyBlock otherBlock = getUnplannedBlockWith1RandomPruefung();
 
@@ -593,7 +593,8 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void addPruefungToBlock_pruefungIsAlreadyInSameBlock() throws HartesKriteriumException {
+  void addPruefungToBlock_pruefungIsAlreadyInSameBlock()
+      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
     ReadOnlyBlock block = getBlockWith(pruefung);
 
@@ -1018,7 +1019,8 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void makeBlockSequential_block_is_already_sequential() throws HartesKriteriumException {
+  void makeBlockSequential_block_is_already_sequential()
+      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
     LocalDateTime termin = LocalDateTime.of(2022, 2, 2, 2, 2, 2);
@@ -1031,7 +1033,8 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void makeBlockSequential_block_is_parallel_but_not_planned() throws HartesKriteriumException {
+  void makeBlockSequential_block_is_parallel_but_not_planned()
+      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
 
@@ -1051,7 +1054,7 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void makeBlockSequential_hard_restriction_failures() {
+  void makeBlockSequential_hard_restriction_failures() throws NoPruefungsPeriodeDefinedException {
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
     LocalDateTime termin = LocalDateTime.of(2022, 2, 2, 2, 2, 2);
@@ -1071,7 +1074,8 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void makeBlockSequential_successful() throws HartesKriteriumException {
+  void makeBlockSequential_successful()
+      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
     LocalDateTime termin = LocalDateTime.of(2022, 2, 2, 2, 2, 2);
@@ -1088,7 +1092,8 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void makeBlockSequential_soft_restrictions() throws HartesKriteriumException {
+  void makeBlockSequential_soft_restrictions()
+      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
     LocalDateTime termin = LocalDateTime.of(2022, 2, 2, 2, 2, 2);
@@ -1106,7 +1111,8 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void makeBlockParallel_block_is_already_Parallel() throws HartesKriteriumException {
+  void makeBlockParallel_block_is_already_Parallel()
+      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
     LocalDateTime termin = LocalDateTime.of(2022, 2, 2, 2, 2, 2);
@@ -1119,7 +1125,8 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void makeBlockParallel_block_is_sequential_but_not_planned() throws HartesKriteriumException {
+  void makeBlockParallel_block_is_sequential_but_not_planned()
+      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
 
@@ -1139,7 +1146,7 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void makeBlockParallel_hard_restriction_failures() {
+  void makeBlockParallel_hard_restriction_failures() throws NoPruefungsPeriodeDefinedException {
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
     LocalDateTime termin = LocalDateTime.of(2022, 2, 2, 2, 2, 2);
@@ -1159,7 +1166,8 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void makeBlockParallel_successful() throws HartesKriteriumException {
+  void makeBlockParallel_successful()
+      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
     LocalDateTime termin = LocalDateTime.of(2022, 2, 2, 2, 2, 2);
@@ -1176,7 +1184,8 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void makeBlockParallel_soft_restrictions() throws HartesKriteriumException {
+  void makeBlockParallel_soft_restrictions()
+      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
     LocalDateTime termin = LocalDateTime.of(2022, 2, 2, 2, 2, 2);

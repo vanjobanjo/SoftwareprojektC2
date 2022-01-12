@@ -178,7 +178,8 @@ class ControllerTest {
   }
 
   @Test
-  void getAllPlanungseinheitenBetween_no_period() throws IllegalTimeSpanException {
+  void getAllPlanungseinheitenBetween_no_period()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     when(dataAccessService.getAllROPlanungseinheitenBetween(any(), any())).thenReturn(null);
     LocalDateTime start = LocalDateTime.now();
     LocalDateTime end = start.plusDays(1L);
@@ -199,7 +200,8 @@ class ControllerTest {
   }
 
   @Test
-  void getAllPlanungseinheitenBetween_illegalTimeSpan() throws IllegalTimeSpanException {
+  void getAllPlanungseinheitenBetween_illegalTimeSpan()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     LocalDateTime start = LocalDateTime.now();
     LocalDateTime end = start.plusDays(1L);
     when(dataAccessService.isPruefungsperiodeSet()).thenReturn(true);
