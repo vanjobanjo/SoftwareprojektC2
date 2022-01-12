@@ -407,7 +407,7 @@ public class ScheduleService {
     if (planungseinheitToCheck.isBlock()) {
       planungseinheit = getBlock(planungseinheitToCheck.asBlock());
     } else {
-      planungseinheit = getPruefung(planungseinheitToCheck.asPruefung());
+      planungseinheit = getPruefungIfExistent(planungseinheitToCheck.asPruefung());
     }
     return planungseinheit;
   }
@@ -433,16 +433,6 @@ public class ScheduleService {
     }
     return block.get();
   }
-
-  @NotNull
-  private Pruefung getPruefung(@NotNull ReadOnlyPruefung pruefung)
-      throws IllegalArgumentException {
-    if (!dataAccessService.existsPruefungWith(pruefung.getPruefungsnummer())) {
-      throw new IllegalArgumentException("The handed Planungseinheit is not known.");
-    }
-    return dataAccessService.getPruefungWith(pruefung.asPruefung().getPruefungsnummer());
-  }
-
 
   public List<ReadOnlyPlanungseinheit> toggleBlockType(ReadOnlyBlock block, Blocktyp changeTo)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
