@@ -865,20 +865,28 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void analyseScoring_no_restriction_violations() {
+  void analyseScoring_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getPruefung(any())).thenThrow(NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.analyseScoring(getRandomPlannedROPruefung(1L)));
+  }
+
+  @Test
+  void analyseScoring_no_restriction_violations() throws NoPruefungsPeriodeDefinedException {
     Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
     when(restrictionService.checkWeicheKriterien(dm)).thenReturn(Collections.emptyList());
+    when(dataAccessService.getPruefung(any())).thenReturn(Optional.of(dm));
     assertThat(deviceUnderTest.analyseScoring(RO_DM_UNPLANNED)).isEmpty();
   }
 
   @Test
-  void analyseScoring_restrictions_violated() {
+  void analyseScoring_restrictions_violated() throws NoPruefungsPeriodeDefinedException {
     Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     WeichesKriteriumAnalyse weichesKriteriumAnalyse = new WeichesKriteriumAnalyse(Set.of(analysis),
         UNIFORME_ZEITSLOTS,
         Set.of(infBachelor), 10, 100);
-    when(dataAccessService.getPruefungWith(RO_DM_UNPLANNED.getPruefungsnummer())).thenReturn(dm);
+    when(dataAccessService.getPruefung(RO_DM_UNPLANNED)).thenReturn(Optional.of(dm));
     when(restrictionService.checkWeicheKriterien(dm)).thenReturn(List.of(weichesKriteriumAnalyse));
 
     List<KriteriumsAnalyse> result = deviceUnderTest.analyseScoring(RO_DM_UNPLANNED);
