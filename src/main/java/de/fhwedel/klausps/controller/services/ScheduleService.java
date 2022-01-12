@@ -348,10 +348,10 @@ public class ScheduleService {
   }
 
   public List<ReadOnlyPlanungseinheit> setDauer(ReadOnlyPruefung pruefung, Duration dauer)
-      throws HartesKriteriumException {
+      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, dauer);
     dataAccessService.changeDurationOf(pruefung, dauer);
-    Pruefung pruefungModel = dataAccessService.getPruefungWith(pruefung.getPruefungsnummer());
+    Pruefung pruefungModel = getPruefungIfExistent(pruefung);
     List<HartesKriteriumAnalyse> hard = restrictionService.checkHarteKriterien(pruefungModel);
 
     if (!hard.isEmpty()) {
