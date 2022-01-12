@@ -48,9 +48,30 @@ public class PruefungenMitVielenAmAnfangRestriction extends WeicheRestriktion {
     if (!pruefung.isGeplant()) {
       return Optional.empty();
     }
+    if (pruefung.getStartzeitpunkt().toLocalDate()
+        .isBefore(dataAccessService.getAnkertag().plusDays(beginAfterAnker.toDays()))) {
+      return Optional.empty();
+    }
+
+    if (shouldBeAtStart(pruefung)) {
+      return Optional.of(new WeichesKriteriumAnalyse(Set.of(pruefung), this.kriterium,
+          pruefung.getTeilnehmerkreise(), pruefung.schaetzung(),
+          this.kriterium.getWert()));
+    }
+
+    return Optional.empty();
+  }
+
+  private boolean shouldBeAtStart(Pruefung pruefung) throws NoPruefungsPeriodeDefinedException {
     Set<Pruefung> plannedPruefungen = dataAccessService.getGeplantePruefungen();
+    int amountPruefungenWithMany = 0;
+    for (Pruefung planned : plannedPruefungen) {
+      if (planned.schaetzung() >= pruefung.schaetzung()) {
+        amountPruefungenWithMany++;
+      }
+    }
+    int percentageMany = 100 * amountPruefungenWithMany / plannedPruefungen.size();
 
-
-    throw new UnsupportedOperationException("not implemented");
+    return percentageMany <= percentage;
   }
 }
