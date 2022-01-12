@@ -20,6 +20,7 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
+import de.fhwedel.klausps.controller.services.Converter;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.IOService;
 import de.fhwedel.klausps.controller.services.ScheduleService;
@@ -49,7 +50,8 @@ class ControllerTest {
     this.dataAccessService = mock(DataAccessService.class);
     this.ioService = mock(IOService.class);
     this.scheduleService = mock(ScheduleService.class);
-    this.deviceUnderTest = new Controller(dataAccessService, ioService, scheduleService);
+    this.deviceUnderTest = new Controller(dataAccessService, ioService, scheduleService,
+        new Converter());
   }
 
   @Test
@@ -257,6 +259,22 @@ class ControllerTest {
     ReadOnlyBlock block = mock(ReadOnlyBlock.class);
     assertThrows(NoPruefungsPeriodeDefinedException.class,
         () -> deviceUnderTest.makeBlockParallel(block));
+  }
+
+  @Test
+  void getGeplantePruefungen_delegateToDataAccessService()
+      throws NoPruefungsPeriodeDefinedException {
+    deviceUnderTest.getGeplantePruefungen();
+    verify(dataAccessService).getGeplantePruefungen();
+  }
+
+  @Test
+  void getGeplantePruefungen_noPruefungsperiode()
+      throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getGeplantePruefungen()).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getGeplantePruefungen());
   }
 
 }

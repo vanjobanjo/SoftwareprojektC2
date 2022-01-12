@@ -38,7 +38,7 @@ public class Converter {
 
   public ReadOnlyBlock convertToROBlock(Block block) {
     Set<ReadOnlyPruefung> pruefungen = new HashSet<>(
-        convertToROPruefungCollection(block.getPruefungen()));
+        convertToROPruefungSet(block.getPruefungen()));
 
     return new BlockDTO(block.getName(),
         block.getStartzeitpunkt(),
@@ -62,9 +62,9 @@ public class Converter {
     }
   }
 
-  public Collection<ReadOnlyPruefung> convertToROPruefungCollection(
+  public Set<ReadOnlyPruefung> convertToROPruefungSet(
       Collection<Pruefung> collection) {
-    Collection<ReadOnlyPruefung> result = new HashSet<>();
+    Set<ReadOnlyPruefung> result = new HashSet<>();
     for (Pruefung pruefung : collection) {
       result.add(convertToReadOnlyPruefung(pruefung));
     }
@@ -110,7 +110,7 @@ public class Converter {
 
   public KriteriumsAnalyse convertAnalyse(WeichesKriteriumAnalyse analyse) {
     return new KriteriumsAnalyse(
-        new HashSet<>(convertToROPruefungCollection(analyse.getCausingPruefungen())),
+        new HashSet<>(convertToROPruefungSet(analyse.getCausingPruefungen())),
         analyse.getKriterium(), analyse.getAffectedTeilnehmerKreise(),
         analyse.getAmountAffectedStudents());
   }

@@ -259,9 +259,9 @@ public class DataAccessService {
         : converter.convertToReadOnlyPruefung(pruefung);
   }
 
-  public Set<ReadOnlyPruefung> getGeplantePruefungen() {
-    return new HashSet<>(
-        converter.convertToROPruefungCollection(pruefungsperiode.geplantePruefungen()));
+  public Set<Pruefung> getGeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
+    checkForPruefungsperiode();
+    return pruefungsperiode.geplantePruefungen();
   }
 
   public Set<Pruefung> getGeplanteModelPruefung() {
@@ -270,7 +270,7 @@ public class DataAccessService {
 
   public Set<ReadOnlyPruefung> getUngeplantePruefungen() {
     return new HashSet<>(
-        converter.convertToROPruefungCollection(pruefungsperiode.ungeplantePruefungen()));
+        converter.convertToROPruefungSet(pruefungsperiode.ungeplantePruefungen()));
   }
 
   public Set<ReadOnlyBlock> getGeplanteBloecke() {
@@ -286,14 +286,14 @@ public class DataAccessService {
 
   public Set<ReadOnlyPruefung> ungeplantePruefungenForTeilnehmerkreis(Teilnehmerkreis tk) {
     return new HashSet<>(
-        converter.convertToROPruefungCollection(pruefungsperiode.ungeplantePruefungen().stream()
+        converter.convertToROPruefungSet(pruefungsperiode.ungeplantePruefungen().stream()
             .filter(pruefung -> pruefung.getTeilnehmerkreise().contains(tk))
             .collect(Collectors.toSet())));
   }
 
   public Set<ReadOnlyPruefung> geplantePruefungenForTeilnehmerkreis(Teilnehmerkreis tk) {
     return new HashSet<>(
-        converter.convertToROPruefungCollection(pruefungsperiode.geplantePruefungen().stream()
+        converter.convertToROPruefungSet(pruefungsperiode.geplantePruefungen().stream()
             .filter(pruefung -> pruefung.getTeilnehmerkreise().contains(tk))
             .collect(Collectors.toSet())));
   }
@@ -378,7 +378,7 @@ public class DataAccessService {
     // removes also the set, so we need a deep copy of the set
     model.removeAllPruefungen();
     pruefungsperiode.removePlanungseinheit(model);
-    return new LinkedList<>(converter.convertToROPruefungCollection(modelPruefungen));
+    return new LinkedList<>(converter.convertToROPruefungSet(modelPruefungen));
   }
 
   public ReadOnlyBlock createBlock(String name, ReadOnlyPruefung... pruefungen) {
@@ -479,7 +479,7 @@ public class DataAccessService {
   public Set<ReadOnlyPruefung> getAllReadOnlyPruefungenBetween(LocalDateTime start,
       LocalDateTime end)
       throws IllegalTimeSpanException {
-    return Set.copyOf(converter.convertToROPruefungCollection(getAllPruefungenBetween(start, end)));
+    return Set.copyOf(converter.convertToROPruefungSet(getAllPruefungenBetween(start, end)));
   }
 
   @NotNull
