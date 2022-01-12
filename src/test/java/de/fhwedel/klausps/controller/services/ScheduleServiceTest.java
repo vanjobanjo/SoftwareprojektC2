@@ -433,10 +433,18 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void setTeilnehmerkreisSchaetzung_not_planned() {
+  void setTeilnehmerkreisSchaetzung_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getPruefung(any())).thenThrow(NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.setTeilnehmerkreisSchaetzung(getRandomUnplannedROPruefung(1L),
+            mock(Teilnehmerkreis.class), 42));
+  }
+
+  @Test
+  void setTeilnehmerkreisSchaetzung_not_planned() throws NoPruefungsPeriodeDefinedException {
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     analysis.addTeilnehmerkreis(infBachelor);
-    when(dataAccessService.getPruefungWith(analysis.getPruefungsnummer())).thenReturn(analysis);
+    when(dataAccessService.getPruefung(RO_ANALYSIS_UNPLANNED)).thenReturn(Optional.of(analysis));
 
     int newSchaetzung = 300;
     deviceUnderTest.setTeilnehmerkreisSchaetzung(RO_ANALYSIS_UNPLANNED, infBachelor, newSchaetzung);
@@ -456,7 +464,7 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void setTeilnehmerkreisSchaetzung_no_conflicts() {
+  void setTeilnehmerkreisSchaetzung_no_conflicts() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime time = LocalDateTime.now();
 
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
@@ -466,8 +474,8 @@ class ScheduleServiceTest {
     dm.addTeilnehmerkreis(infMaster);
     dm.setStartzeitpunkt(time);
 
-    when(dataAccessService.getPruefungWith(analysis.getPruefungsnummer())).thenReturn(analysis);
-    when(dataAccessService.getPruefungWith(dm.getPruefungsnummer())).thenReturn(dm);
+    when(dataAccessService.getPruefung(RO_ANALYSIS_UNPLANNED)).thenReturn(Optional.of(analysis));
+    when(dataAccessService.getPruefung(RO_DM_UNPLANNED)).thenReturn(Optional.of(dm));
 
     int schaetzung = 20;
     assertThat(deviceUnderTest.setTeilnehmerkreisSchaetzung(converter.convertToReadOnlyPruefung(dm),
@@ -475,7 +483,8 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void setTeilnehmerkreisSchaetzung_change_does_not_affect_other_pruefung() {
+  void setTeilnehmerkreisSchaetzung_change_does_not_affect_other_pruefung()
+      throws NoPruefungsPeriodeDefinedException {
     // make sure date is not a Sunday, otherwise restriction could be violated
     LocalDateTime day = LocalDateTime.of(2022, 1, 5, 10, 0);
     LocalDateTime dayAfter = LocalDateTime.now().plusDays(1);
@@ -491,8 +500,8 @@ class ScheduleServiceTest {
     dm.addTeilnehmerkreis(teilnehmerkreis, oldSchaetzung);
     dm.setStartzeitpunkt(dayAfter);
 
-    when(dataAccessService.getPruefungWith(analysis.getPruefungsnummer())).thenReturn(analysis);
-    when(dataAccessService.getPruefungWith(dm.getPruefungsnummer())).thenReturn(dm);
+    when(dataAccessService.getPruefung(RO_ANALYSIS_UNPLANNED)).thenReturn(Optional.of(analysis));
+    when(dataAccessService.getPruefung(RO_DM_UNPLANNED)).thenReturn(Optional.of(dm));
 
     int newSchaetzung = 20;
     assertThat(deviceUnderTest.setTeilnehmerkreisSchaetzung(converter.convertToReadOnlyPruefung(dm),
@@ -503,7 +512,7 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void setTeilnehmerkreisSchaetzung_too_many_students() {
+  void setTeilnehmerkreisSchaetzung_too_many_students() throws NoPruefungsPeriodeDefinedException {
     // make sure date is not a Sunday, otherwise restriction could be violated
     LocalDateTime day = LocalDateTime.of(2022, 1, 5, 10, 0);
     LocalDateTime dayAfter = LocalDateTime.now().plusDays(1);
@@ -519,8 +528,8 @@ class ScheduleServiceTest {
     dm.addTeilnehmerkreis(teilnehmerkreis, oldSchaetzung);
     dm.setStartzeitpunkt(dayAfter);
 
-    when(dataAccessService.getPruefungWith(analysis.getPruefungsnummer())).thenReturn(analysis);
-    when(dataAccessService.getPruefungWith(dm.getPruefungsnummer())).thenReturn(dm);
+    when(dataAccessService.getPruefung(RO_ANALYSIS_UNPLANNED)).thenReturn(Optional.of(analysis));
+    when(dataAccessService.getPruefung(RO_DM_UNPLANNED)).thenReturn(Optional.of(dm));
 
     int newSchaetzung = Integer.MAX_VALUE;
     when(restrictionService.getAffectedPruefungen(dm)).thenReturn(Set.of(dm, analysis));
