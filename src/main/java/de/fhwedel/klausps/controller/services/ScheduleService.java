@@ -314,9 +314,9 @@ public class ScheduleService {
   }
 
   public List<ReadOnlyPlanungseinheit> setTeilnehmerkreisSchaetzung(ReadOnlyPruefung pruefung,
-      Teilnehmerkreis teilnehmerkreis, int schaetzung) {
+      Teilnehmerkreis teilnehmerkreis, int schaetzung) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, teilnehmerkreis);
-    Pruefung modelPruefung = dataAccessService.getPruefungWith(pruefung.getPruefungsnummer());
+    Pruefung modelPruefung = getPruefungIfExistent(pruefung);
     if (!modelPruefung.getTeilnehmerkreise().contains(teilnehmerkreis)) {
       throw new IllegalArgumentException("Pruefung hat keinen Teilnehmerkreis mit diesem Namen.");
     }
