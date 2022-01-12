@@ -15,9 +15,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 
 public class RestrictionService {
@@ -47,7 +45,8 @@ public class RestrictionService {
     hardRestrictions.addAll(restrictions);
   }
 
-  public Set<Pruefung> getAffectedPruefungen(Block block) {
+  public Set<Pruefung> getAffectedPruefungen(Block block)
+      throws NoPruefungsPeriodeDefinedException {
     Set<Pruefung> result = new HashSet<>();
     for (Pruefung pruefung : block.getPruefungen()) {
       result.addAll(getAffectedPruefungen(pruefung));
@@ -55,7 +54,8 @@ public class RestrictionService {
     return result;
   }
 
-  public Set<Pruefung> getAffectedPruefungen(Pruefung pruefung) {
+  public Set<Pruefung> getAffectedPruefungen(Pruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException {
     Set<Pruefung> result = new HashSet<>();
     for (WeichesKriteriumAnalyse w : checkWeicheKriterien(pruefung)) {
       result.addAll(w.getCausingPruefungen());
@@ -69,19 +69,14 @@ public class RestrictionService {
    * @param pruefung Pruefung to check criteria
    * @return WeichesKriteriumAnalysen
    */
-  public List<WeichesKriteriumAnalyse> checkWeicheKriterien(Pruefung pruefung) {
+  public List<WeichesKriteriumAnalyse> checkWeicheKriterien(Pruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException {
     List<WeichesKriteriumAnalyse> result = new LinkedList<>();
-    softRestrictions.forEach(soft -> soft.evaluate(pruefung).ifPresent(result::add));
+    for (WeicheRestriktion soft : softRestrictions) {
+      soft.evaluate(pruefung).ifPresent(result::add);
+    }
     return result;
   }
-
-
-  public Map<Pruefung, List<WeichesKriteriumAnalyse>> checkWeicheKriterienAll(
-      Set<Pruefung> pruefung) {
-    return pruefung.stream().collect(Collectors.groupingBy(prue -> prue,
-        Collectors.flatMapping(prue -> checkWeicheKriterien(prue).stream(), Collectors.toList())));
-  }
-
 
   public List<HartesKriteriumAnalyse> checkHarteKriterienAll(Set<Pruefung> pruefungenToCheck) {
     List<HartesKriteriumAnalyse> result = new LinkedList<>();
@@ -103,7 +98,7 @@ public class RestrictionService {
     return result;
   }
 
-  public int getScoringOfPruefung(Pruefung pruefung) {
+  public int getScoringOfPruefung(Pruefung pruefung) throws NoPruefungsPeriodeDefinedException {
     if (!pruefung.isGeplant()) {
       return 0;
     }

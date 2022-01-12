@@ -17,6 +17,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Pruefung;
@@ -88,7 +89,7 @@ class FreierTagZwischenPruefungenTest {
 
   @Test
   @DisplayName("Prüfung ist nicht geplant")
-  void not_planned() {
+  void not_planned() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime date = LocalDateTime.of(2022, 1, 1, 8, 0);
     Pruefung modelAnalysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     modelAnalysis.addTeilnehmerkreis(bwlBachelor);
@@ -97,7 +98,7 @@ class FreierTagZwischenPruefungenTest {
     modelDM.addTeilnehmerkreis(infBachelor);
     modelDM.setStartzeitpunkt(date);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(modelDM));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(modelDM));
 
     assertThat(deviceUnderTest.evaluate(modelAnalysis)).isEmpty();
   }
@@ -108,7 +109,7 @@ class FreierTagZwischenPruefungenTest {
 
   @Test
   @DisplayName("gleicher Tag + keine Überschneidungen")
-  void same_day_no_overlap() {
+  void same_day_no_overlap() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime date = LocalDateTime.of(2022, 1, 1, 8, 0);
     Pruefung modelAnalysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     modelAnalysis.addTeilnehmerkreis(bwlBachelor);
@@ -117,7 +118,7 @@ class FreierTagZwischenPruefungenTest {
     modelDM.addTeilnehmerkreis(infBachelor);
     modelDM.setStartzeitpunkt(date);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(modelDM, modelAnalysis));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(modelDM, modelAnalysis));
 
     assertThat(deviceUnderTest.evaluate(modelAnalysis)).isEmpty();
   }
@@ -125,7 +126,7 @@ class FreierTagZwischenPruefungenTest {
 
   @Test
   @DisplayName("gleicher Tag + Überschneidungen")
-  void same_day_overlap() {
+  void same_day_overlap() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime date = LocalDateTime.of(2022, 1, 1, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     int amount_infBachelor = 10;
@@ -136,14 +137,14 @@ class FreierTagZwischenPruefungenTest {
     dm.addTeilnehmerkreis(infBachelor);
     dm.setStartzeitpunkt(date);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
 
-    testKriterium(analysis, dm, infBachelor, amount_infBachelor);
+    validateResults(analysis, dm, infBachelor, amount_infBachelor);
   }
 
   @Test
   @DisplayName("gleicher Tag + mehrere Überschneidungen")
-  void same_day_overlap_multiple() {
+  void same_day_overlap_multiple() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime date = LocalDateTime.of(2022, 1, 1, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     int infB = 20;
@@ -160,14 +161,14 @@ class FreierTagZwischenPruefungenTest {
     haskell.addTeilnehmerkreis(bwlBachelor, bwlB);
     haskell.setStartzeitpunkt(date);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis, haskell));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
-    testKriterium(analysis, Set.of(dm, haskell), Set.of(infBachelor, bwlBachelor), affected);
+    validateResults(analysis, Set.of(dm, haskell), Set.of(infBachelor, bwlBachelor), affected);
   }
 
   @Test
   @DisplayName("gleicher Tag + Überschneidungen + block")
-  void same_day_overlap_block() {
+  void same_day_overlap_block() throws NoPruefungsPeriodeDefinedException {
     Pruefungsperiode pruefungsperiode = mock(Pruefungsperiode.class);
     LocalDateTime date = LocalDateTime.of(2022, 1, 1, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
@@ -179,14 +180,14 @@ class FreierTagZwischenPruefungenTest {
     dm.setStartzeitpunkt(date);
     getBlockWithPruefungen(pruefungsperiode, "b", date, analysis, dm);
     when(dataAccessService.areInSameBlock(analysis, dm)).thenReturn(true);
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
 
     assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
   }
 
   @Test
   @DisplayName("gleicher Tag + Überschneidungen + unterschiedliche blöcke")
-  void same_day_overlap_different_blocks() {
+  void same_day_overlap_different_blocks() throws NoPruefungsPeriodeDefinedException {
     Pruefungsperiode pruefungsperiode = mock(Pruefungsperiode.class);
     LocalDateTime date = LocalDateTime.of(2022, 1, 1, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
@@ -200,14 +201,14 @@ class FreierTagZwischenPruefungenTest {
     getBlockWithPruefungen(pruefungsperiode, "b", date, analysis);
     getBlockWithPruefungen(pruefungsperiode, "b2", date, dm);
     when(dataAccessService.areInSameBlock(analysis, dm)).thenReturn(false);
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
 
-    testKriterium(analysis, dm, infBachelor, infB);
+    validateResults(analysis, dm, infBachelor, infB);
   }
 
   @Test
   @DisplayName("gleicher Tag + Überschneidungen + ein Block")
-  void same_day_overlap_one_in_block() {
+  void same_day_overlap_one_in_block() throws NoPruefungsPeriodeDefinedException {
     Pruefungsperiode pruefungsperiode = mock(Pruefungsperiode.class);
     LocalDateTime date = LocalDateTime.of(2022, 1, 1, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
@@ -220,9 +221,9 @@ class FreierTagZwischenPruefungenTest {
     dm.setStartzeitpunkt(date);
     getBlockWithPruefungen(pruefungsperiode, "b", date, analysis);
     when(dataAccessService.areInSameBlock(analysis, dm)).thenReturn(false);
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
 
-    testKriterium(analysis, dm, infBachelor, affected);
+    validateResults(analysis, dm, infBachelor, affected);
   }
 
   // ----------------------------------------------------------------------------
@@ -231,7 +232,7 @@ class FreierTagZwischenPruefungenTest {
 
   @Test
   @DisplayName("Tag davor + keine Überschneidungen")
-  void day_before_no_overlap() {
+  void day_before_no_overlap() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime date = LocalDateTime.of(2022, 1, 1, 8, 0);
     LocalDateTime dayBefore = LocalDateTime.of(2021, 12, 31, 8, 0);
     Pruefung modelAnalysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
@@ -241,7 +242,7 @@ class FreierTagZwischenPruefungenTest {
     modelDM.addTeilnehmerkreis(infBachelor);
     modelDM.setStartzeitpunkt(dayBefore);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(modelDM, modelAnalysis));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(modelDM, modelAnalysis));
 
     assertThat(deviceUnderTest.evaluate(modelAnalysis)).isEmpty();
   }
@@ -249,7 +250,7 @@ class FreierTagZwischenPruefungenTest {
 
   @Test
   @DisplayName("Tag davor + Überschneidungen")
-  void day_before_overlap() {
+  void day_before_overlap() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime date = LocalDateTime.of(2022, 1, 2, 8, 0);
     LocalDateTime dayBefore = LocalDateTime.of(2022, 1, 1, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
@@ -262,13 +263,13 @@ class FreierTagZwischenPruefungenTest {
     dm.addTeilnehmerkreis(infBachelor, affected);
     dm.setStartzeitpunkt(dayBefore);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
-    testKriterium(analysis, dm, infBachelor, affected);
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
+    validateResults(analysis, dm, infBachelor, affected);
   }
 
   @Test
   @DisplayName("Tag davor + mehrere Überschneidungen")
-  void day_before_overlap_multiple() {
+  void day_before_overlap_multiple() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime date = LocalDateTime.of(2022, 1, 2, 8, 0);
     LocalDateTime dayBefore = LocalDateTime.of(2022, 1, 1, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
@@ -285,14 +286,14 @@ class FreierTagZwischenPruefungenTest {
     haskell.addTeilnehmerkreis(bwlBachelor, schaetzung);
     haskell.setStartzeitpunkt(dayBefore);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis, haskell));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
-    testKriterium(analysis, Set.of(dm, haskell), Set.of(infBachelor, bwlBachelor), affected);
+    validateResults(analysis, Set.of(dm, haskell), Set.of(infBachelor, bwlBachelor), affected);
   }
 
   @Test
   @DisplayName("Tag davor + Überschneidungen + jahreswechsel")
-  void day_before_overlap_different_years() {
+  void day_before_overlap_different_years() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime date = LocalDateTime.of(2022, 1, 1, 8, 0);
     LocalDateTime dayBefore = LocalDateTime.of(2021, 12, 31, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
@@ -304,15 +305,15 @@ class FreierTagZwischenPruefungenTest {
     dm.addTeilnehmerkreis(infBachelor, affected);
     dm.setStartzeitpunkt(dayBefore);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
 
-    testKriterium(analysis, dm, infBachelor, affected);
+    validateResults(analysis, dm, infBachelor, affected);
   }
 
 
   @Test
   @DisplayName("Tag davor + Überschneidungen + unterschiedliche blöcke")
-  void day_before_overlap_different_blocks() {
+  void day_before_overlap_different_blocks() throws NoPruefungsPeriodeDefinedException {
     Pruefungsperiode pruefungsperiode = mock(Pruefungsperiode.class);
     LocalDateTime date = LocalDateTime.of(2022, 1, 2, 8, 0);
     LocalDateTime dayBefore = LocalDateTime.of(2022, 1, 1, 8, 0);
@@ -327,9 +328,9 @@ class FreierTagZwischenPruefungenTest {
     getBlockWithPruefungen(pruefungsperiode, "b", date, analysis);
     getBlockWithPruefungen(pruefungsperiode, "b2", date, dm);
     when(dataAccessService.areInSameBlock(analysis, dm)).thenReturn(false);
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
 
-    testKriterium(analysis, dm, infBachelor, affected);
+    validateResults(analysis, dm, infBachelor, affected);
   }
 
   // ----------------------------------------------------------------------------
@@ -338,7 +339,7 @@ class FreierTagZwischenPruefungenTest {
 
   @Test
   @DisplayName("Tag danach + keine Überschneidungen")
-  void day_after_no_overlap() {
+  void day_after_no_overlap() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime dayAfter = LocalDateTime.of(2022, 1, 1, 8, 0);
     LocalDateTime dayBefore = LocalDateTime.of(2021, 12, 31, 8, 0);
     Pruefung modelAnalysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
@@ -348,7 +349,7 @@ class FreierTagZwischenPruefungenTest {
     modelDM.addTeilnehmerkreis(infBachelor);
     modelDM.setStartzeitpunkt(dayAfter);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(modelDM, modelAnalysis));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(modelDM, modelAnalysis));
 
     assertThat(deviceUnderTest.evaluate(modelAnalysis)).isEmpty();
   }
@@ -356,7 +357,7 @@ class FreierTagZwischenPruefungenTest {
 
   @Test
   @DisplayName("Tag danach + Überschneidungen")
-  void day_after_overlap() {
+  void day_after_overlap() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime dayAfter = LocalDateTime.of(2022, 1, 2, 8, 0);
     LocalDateTime dayBefore = LocalDateTime.of(2022, 1, 1, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
@@ -368,14 +369,14 @@ class FreierTagZwischenPruefungenTest {
     dm.addTeilnehmerkreis(infBachelor, affected);
     dm.setStartzeitpunkt(dayAfter);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
 
-    testKriterium(analysis, dm, infBachelor, affected);
+    validateResults(analysis, dm, infBachelor, affected);
   }
 
   @Test
   @DisplayName("Tag danach + Überschneidungen")
-  void day_after_overlap_multiple() {
+  void day_after_overlap_multiple() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime dayAfter = LocalDateTime.of(2022, 1, 2, 8, 0);
     LocalDateTime dayBefore = LocalDateTime.of(2022, 1, 1, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
@@ -393,14 +394,14 @@ class FreierTagZwischenPruefungenTest {
     haskell.addTeilnehmerkreis(bwlBachelor, bwlB);
     haskell.setStartzeitpunkt(dayAfter);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis, haskell));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
-    testKriterium(analysis, Set.of(dm, haskell), Set.of(infBachelor, bwlBachelor), affected);
+    validateResults(analysis, Set.of(dm, haskell), Set.of(infBachelor, bwlBachelor), affected);
   }
 
   @Test
   @DisplayName("Tag danach + Überschneidungen + jahreswechsel")
-  void day_after_overlap_different_years() {
+  void day_after_overlap_different_years() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime dayAfter = LocalDateTime.of(2022, 1, 1, 8, 0);
     LocalDateTime dayBefore = LocalDateTime.of(2021, 12, 31, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
@@ -412,15 +413,15 @@ class FreierTagZwischenPruefungenTest {
     dm.addTeilnehmerkreis(infBachelor, affected);
     dm.setStartzeitpunkt(dayAfter);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
 
-    testKriterium(analysis, dm, infBachelor, affected);
+    validateResults(analysis, dm, infBachelor, affected);
   }
 
 
   @Test
   @DisplayName("Tag danach + Überschneidungen + unterschiedliche blöcke")
-  void day_after_overlap_different_blocks() {
+  void day_after_overlap_different_blocks() throws NoPruefungsPeriodeDefinedException {
     Pruefungsperiode pruefungsperiode = mock(Pruefungsperiode.class);
     LocalDateTime dayAfter = LocalDateTime.of(2022, 1, 2, 8, 0);
     LocalDateTime dayBefore = LocalDateTime.of(2022, 1, 1, 8, 0);
@@ -435,9 +436,9 @@ class FreierTagZwischenPruefungenTest {
     getBlockWithPruefungen(pruefungsperiode, "b", dayBefore, analysis);
     getBlockWithPruefungen(pruefungsperiode, "b2", dayAfter, dm);
     when(dataAccessService.areInSameBlock(analysis, dm)).thenReturn(false);
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
 
-    testKriterium(analysis, dm, infBachelor, affected);
+    validateResults(analysis, dm, infBachelor, affected);
   }
 
   // ----------------------------------------------------------------------------
@@ -446,7 +447,7 @@ class FreierTagZwischenPruefungenTest {
 
   @Test
   @DisplayName("mehr als einen Tag davor + keine Überschneidungen")
-  void more_than_one_day_before_no_overlap() {
+  void more_than_one_day_before_no_overlap() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime date = LocalDateTime.of(2022, 1, 1, 8, 0);
     LocalDateTime earlier = LocalDateTime.of(2021, 12, 12, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
@@ -456,7 +457,7 @@ class FreierTagZwischenPruefungenTest {
     dm.addTeilnehmerkreis(infBachelor);
     dm.setStartzeitpunkt(earlier);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
 
     assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
   }
@@ -464,7 +465,7 @@ class FreierTagZwischenPruefungenTest {
 
   @Test
   @DisplayName("mehr als einen Tag davor + Überschneidungen")
-  void more_than_one_day_before_overlap() {
+  void more_than_one_day_before_overlap() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime date = LocalDateTime.of(2022, 10, 2, 8, 0);
     LocalDateTime earlier = LocalDateTime.of(2022, 9, 15, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
@@ -475,14 +476,14 @@ class FreierTagZwischenPruefungenTest {
     dm.addTeilnehmerkreis(infBachelor);
     dm.setStartzeitpunkt(earlier);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
 
     assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
   }
 
   @Test
   @DisplayName("mehr als einen Tag davor + mehrere Überschneidungen")
-  void more_than_one_day_before_overlap_multiple() {
+  void more_than_one_day_before_overlap_multiple() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime date = LocalDateTime.of(2022, 4, 22, 8, 0);
     LocalDateTime earlier = LocalDateTime.of(2022, 2, 1, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
@@ -496,7 +497,7 @@ class FreierTagZwischenPruefungenTest {
     haskell.addTeilnehmerkreis(bwlBachelor);
     haskell.setStartzeitpunkt(earlier);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis, haskell));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
     assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
   }
@@ -507,7 +508,7 @@ class FreierTagZwischenPruefungenTest {
 
   @Test
   @DisplayName("mehr als einen Tag danach + keine Überschneidungen")
-  void more_than_one_day_after_no_overlap() {
+  void more_than_one_day_after_no_overlap() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime date = LocalDateTime.of(2022, 1, 1, 8, 0);
     LocalDateTime later = LocalDateTime.of(2022, 12, 12, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
@@ -517,7 +518,7 @@ class FreierTagZwischenPruefungenTest {
     dm.addTeilnehmerkreis(infBachelor);
     dm.setStartzeitpunkt(later);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
 
     assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
   }
@@ -525,7 +526,7 @@ class FreierTagZwischenPruefungenTest {
 
   @Test
   @DisplayName("mehr als einen Tag danach + Überschneidungen")
-  void more_than_one_day_after_overlap() {
+  void more_than_one_day_after_overlap() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime date = LocalDateTime.of(2022, 10, 2, 8, 0);
     LocalDateTime later = LocalDateTime.of(2022, 12, 15, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
@@ -536,14 +537,14 @@ class FreierTagZwischenPruefungenTest {
     dm.addTeilnehmerkreis(infBachelor);
     dm.setStartzeitpunkt(later);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
 
     assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
   }
 
   @Test
   @DisplayName("mehr als einen Tag danach + mehrere Überschneidungen")
-  void more_than_one_day_after_overlap_multiple() {
+  void more_than_one_day_after_overlap_multiple() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime date = LocalDateTime.of(2022, 4, 22, 8, 0);
     LocalDateTime later = LocalDateTime.of(2022, 9, 1, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
@@ -557,7 +558,7 @@ class FreierTagZwischenPruefungenTest {
     haskell.addTeilnehmerkreis(bwlBachelor);
     haskell.setStartzeitpunkt(later);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis, haskell));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
     assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
   }
@@ -568,7 +569,7 @@ class FreierTagZwischenPruefungenTest {
 
   @Test
   @DisplayName("einen Tag davor + danach + keine Überschneidungen")
-  void one_day_before_and_after_no_overlap() {
+  void one_day_before_and_after_no_overlap() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime date = LocalDateTime.of(2022, 4, 22, 8, 0);
     LocalDateTime later = LocalDateTime.of(2022, 4, 23, 8, 0);
     LocalDateTime earlier = LocalDateTime.of(2022, 4, 21, 8, 0);
@@ -582,14 +583,14 @@ class FreierTagZwischenPruefungenTest {
     haskell.addTeilnehmerkreis(infPtl);
     haskell.setStartzeitpunkt(later);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis, haskell));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
     assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
   }
 
   @Test
   @DisplayName("einen Tag davor + danach + Überschneidungen")
-  void one_day_before_and_after_overlap() {
+  void one_day_before_and_after_overlap() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime date = LocalDateTime.of(2022, 4, 22, 8, 0);
     LocalDateTime later = LocalDateTime.of(2022, 4, 23, 8, 0);
     LocalDateTime earlier = LocalDateTime.of(2022, 4, 21, 8, 0);
@@ -607,14 +608,14 @@ class FreierTagZwischenPruefungenTest {
     haskell.addTeilnehmerkreis(bwlBachelor, bwlB);
     haskell.setStartzeitpunkt(later);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis, haskell));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
-    testKriterium(analysis, Set.of(dm, haskell), Set.of(bwlBachelor, infBachelor), affected);
+    validateResults(analysis, Set.of(dm, haskell), Set.of(bwlBachelor, infBachelor), affected);
   }
 
   @Test
   @DisplayName("einen Tag davor + danach + Überschneidung davor")
-  void one_day_before_and_after_overlap_before() {
+  void one_day_before_and_after_overlap_before() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime date = LocalDateTime.of(2022, 4, 22, 8, 0);
     LocalDateTime later = LocalDateTime.of(2022, 4, 23, 8, 0);
     LocalDateTime earlier = LocalDateTime.of(2022, 4, 21, 8, 0);
@@ -630,14 +631,14 @@ class FreierTagZwischenPruefungenTest {
     haskell.addTeilnehmerkreis(infPtl, affected);
     haskell.setStartzeitpunkt(later);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis, haskell));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
-    testKriterium(analysis, dm, infBachelor, affected);
+    validateResults(analysis, dm, infBachelor, affected);
   }
 
   @Test
   @DisplayName("einen Tag davor + danach + Überschneidung danach")
-  void one_day_before_and_after_overlap_after() {
+  void one_day_before_and_after_overlap_after() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime date = LocalDateTime.of(2022, 4, 22, 8, 0);
     LocalDateTime later = LocalDateTime.of(2022, 4, 23, 8, 0);
     LocalDateTime earlier = LocalDateTime.of(2022, 4, 21, 8, 0);
@@ -653,14 +654,14 @@ class FreierTagZwischenPruefungenTest {
     haskell.addTeilnehmerkreis(infBachelor, affected);
     haskell.setStartzeitpunkt(later);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis, haskell));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
-    testKriterium(analysis, haskell, infBachelor, affected);
+    validateResults(analysis, haskell, infBachelor, affected);
   }
 
   @Test
   @DisplayName("mehr als einen Tag davor + danach + keine Überschneidungen")
-  void more_than_one_day_before_and_after_no_overlap() {
+  void more_than_one_day_before_and_after_no_overlap() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime date = LocalDateTime.of(2022, 4, 22, 8, 0);
     LocalDateTime later = LocalDateTime.of(2022, 9, 1, 8, 0);
     LocalDateTime earlier = LocalDateTime.of(2022, 1, 1, 8, 0);
@@ -674,14 +675,14 @@ class FreierTagZwischenPruefungenTest {
     haskell.addTeilnehmerkreis(infPtl);
     haskell.setStartzeitpunkt(later);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis, haskell));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
     assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
   }
 
   @Test
   @DisplayName("mehr als einen Tag davor + danach + Überschneidungen")
-  void more_than_one_day_before_and_after_overlap() {
+  void more_than_one_day_before_and_after_overlap() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime date = LocalDateTime.of(2022, 4, 22, 8, 0);
     LocalDateTime later = LocalDateTime.of(2022, 9, 1, 8, 0);
     LocalDateTime earlier = LocalDateTime.of(2022, 1, 1, 8, 0);
@@ -696,14 +697,15 @@ class FreierTagZwischenPruefungenTest {
     haskell.addTeilnehmerkreis(bwlBachelor);
     haskell.setStartzeitpunkt(later);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis, haskell));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
     assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
   }
 
   @Test
   @DisplayName("mehr als einen Tag davor + danach + Überschneidungen davor")
-  void more_than_one_day_before_and_after_overlap_before() {
+  void more_than_one_day_before_and_after_overlap_before()
+      throws NoPruefungsPeriodeDefinedException {
     LocalDateTime date = LocalDateTime.of(2022, 4, 22, 8, 0);
     LocalDateTime later = LocalDateTime.of(2022, 9, 1, 8, 0);
     LocalDateTime earlier = LocalDateTime.of(2022, 1, 1, 8, 0);
@@ -718,14 +720,15 @@ class FreierTagZwischenPruefungenTest {
     haskell.addTeilnehmerkreis(infMaster);
     haskell.setStartzeitpunkt(later);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis, haskell));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
     assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
   }
 
   @Test
   @DisplayName("mehr als einen Tag davor + danach + Überschneidungen danach")
-  void more_than_one_day_before_and_after_overlap_after() {
+  void more_than_one_day_before_and_after_overlap_after()
+      throws NoPruefungsPeriodeDefinedException {
     LocalDateTime date = LocalDateTime.of(2022, 4, 22, 8, 0);
     LocalDateTime later = LocalDateTime.of(2022, 9, 1, 8, 0);
     LocalDateTime earlier = LocalDateTime.of(2022, 1, 1, 8, 0);
@@ -740,14 +743,14 @@ class FreierTagZwischenPruefungenTest {
     haskell.addTeilnehmerkreis(infBachelor);
     haskell.setStartzeitpunkt(later);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis, haskell));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
     assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
   }
 
 
   @Test
-  void overlap_not_all_Teilnehmerkreise() {
+  void overlap_not_all_Teilnehmerkreise() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime dayAfter = LocalDateTime.of(2022, 1, 2, 8, 0);
     LocalDateTime dayBefore = LocalDateTime.of(2022, 1, 1, 8, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
@@ -766,9 +769,9 @@ class FreierTagZwischenPruefungenTest {
     dm.addTeilnehmerkreis(wingMaster, 12);
     dm.setStartzeitpunkt(dayAfter);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
 
-    testKriterium(analysis, Set.of(dm), Set.of(infBachelor, bwlBachelor), affected);
+    validateResults(analysis, Set.of(dm), Set.of(infBachelor, bwlBachelor), affected);
   }
 
   // ----------------------------------------------------------------------------
@@ -776,14 +779,16 @@ class FreierTagZwischenPruefungenTest {
   // ----------------------------------------------------------------------------
 
 
-  private void testKriterium(Pruefung toEvaluate, Pruefung causingPruefungen,
-      Teilnehmerkreis causingTeilnehmerkreise, int affected) {
-    testKriterium(toEvaluate, Set.of(causingPruefungen), Set.of(causingTeilnehmerkreise), affected);
+  private void validateResults(Pruefung toEvaluate, Pruefung causingPruefungen,
+      Teilnehmerkreis causingTeilnehmerkreise, int affected)
+      throws NoPruefungsPeriodeDefinedException {
+    validateResults(toEvaluate, Set.of(causingPruefungen), Set.of(causingTeilnehmerkreise), affected);
   }
 
 
-  private void testKriterium(Pruefung toEvaluate, Set<Pruefung> causingPruefungen,
-      Set<Teilnehmerkreis> causingTeilnehmerkreise, int affected) {
+  private void validateResults(Pruefung toEvaluate, Set<Pruefung> causingPruefungen,
+      Set<Teilnehmerkreis> causingTeilnehmerkreise, int affected)
+      throws NoPruefungsPeriodeDefinedException {
 
     Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(toEvaluate);
     assertThat(result).isPresent();

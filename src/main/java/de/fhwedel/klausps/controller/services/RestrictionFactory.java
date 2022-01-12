@@ -9,6 +9,7 @@ import de.fhwedel.klausps.controller.restriction.soft.AnzahlTeilnehmerGleichzeit
 import de.fhwedel.klausps.controller.restriction.soft.FreierTagZwischenPruefungen;
 import de.fhwedel.klausps.controller.restriction.soft.KeineKlausurAmSonntag;
 import de.fhwedel.klausps.controller.restriction.soft.MehrePruefungenAmTag;
+import de.fhwedel.klausps.controller.restriction.soft.PruefungenMitVielenAmAnfangRestriction;
 import de.fhwedel.klausps.controller.restriction.soft.UniformeZeitslots;
 import de.fhwedel.klausps.controller.restriction.soft.WeicheRestriktion;
 import de.fhwedel.klausps.controller.restriction.soft.WocheVierFuerMaster;
@@ -38,8 +39,8 @@ public class RestrictionFactory {
           new KeineKlausurAmSonntag(),
           new UniformeZeitslots(),
           new MehrePruefungenAmTag(),
-          new WocheVierFuerMaster()
-          // todo register KlausurenMitVielenAmAnfang
+          new WocheVierFuerMaster(),
+          new PruefungenMitVielenAmAnfangRestriction()
       ));
     }
     service.registerSoftCriteria(softRestrictions);

@@ -4,6 +4,7 @@ package de.fhwedel.klausps.controller.restriction.soft;
 import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.UNIFORME_ZEITSLOTS;
 
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Pruefung;
@@ -23,12 +24,13 @@ public class UniformeZeitslots extends WeicheRestriktion {
 
 
   @Override
-  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
+  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException {
     if (!pruefung.isGeplant()) {
       return Optional.empty();
     }
     Set<Pruefung> pruefungenAtSameTime = new HashSet<>(
-        dataAccessService.getGeplanteModelPruefung());
+        dataAccessService.getGeplantePruefungen());
     pruefungenAtSameTime.remove(pruefung);
     pruefungenAtSameTime.removeIf(other ->
         dataAccessService.areInSameBlock(pruefung, other)
