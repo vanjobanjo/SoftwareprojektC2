@@ -288,7 +288,6 @@ public class Controller implements InterfaceController {
   public List<ReadOnlyPlanungseinheit> unschedulePruefung(ReadOnlyPruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung);
-    ensureAvailabilityOfPruefungsperiode();
     return scheduleService.unschedulePruefung(pruefung);
   }
 

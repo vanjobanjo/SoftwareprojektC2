@@ -353,8 +353,15 @@ public class DataAccessService {
   }
 
   public Pruefung getPruefungWith(String pruefungsNummer) {
-    // todo raus, wenn der Converter implementiert ist
+    // todo raus -> Tausch gegen "getPruefung(ROPruefung)"
     return getPruefungFromModelOrException(pruefungsNummer);
+  }
+
+  public Optional<Pruefung> getPruefung(ReadOnlyPruefung readOnlyPruefung)
+      throws NoPruefungsPeriodeDefinedException {
+    noNullParameters(readOnlyPruefung);
+    checkForPruefungsperiode();
+    return Optional.ofNullable(pruefungsperiode.pruefung(readOnlyPruefung.getPruefungsnummer()));
   }
 
   public Optional<LocalDateTime> getStartOfPruefungWith(String pruefungsNummer) {

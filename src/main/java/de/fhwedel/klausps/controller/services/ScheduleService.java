@@ -48,16 +48,17 @@ public class ScheduleService {
    * Nimmt eine uebergebene Pruefung aus der Planung. Übergebene Pruefung muss Teil des
    * Rückgabewertes sein.
    *
-   * @param pruefung Pruefung zum ausplanen
+   * @param pruefungToUnschedule Pruefung zum ausplanen
    * @return Liste von veraenderte Pruefungen
    */
-  public List<ReadOnlyPlanungseinheit> unschedulePruefung(ReadOnlyPruefung pruefung) {
-    noNullParameters(pruefung);
-    Pruefung pruefungModel = dataAccessService.getPruefungWith(pruefung.getPruefungsnummer());
-    Set<Pruefung> affectedPruefungen = restrictionService.getAffectedPruefungen(pruefungModel);
-    pruefungModel = dataAccessService.unschedulePruefung(pruefung);
+  public List<ReadOnlyPlanungseinheit> unschedulePruefung(ReadOnlyPruefung pruefungToUnschedule)
+      throws NoPruefungsPeriodeDefinedException {
+    noNullParameters(pruefungToUnschedule);
+    Pruefung pruefung = getPruefungIfExistent(pruefungToUnschedule);
+    Set<Pruefung> affectedPruefungen = restrictionService.getAffectedPruefungen(pruefung);
+    dataAccessService.unschedulePruefung(pruefungToUnschedule);
     List<ReadOnlyPlanungseinheit> result = calculateScoringForCachedAffected(affectedPruefungen);
-    result.add(converter.convertToReadOnlyPruefung(pruefungModel));
+    result.add(converter.convertToReadOnlyPruefung(pruefung));
     return result;
   }
 
@@ -164,8 +165,20 @@ public class ScheduleService {
     return block == null ? Optional.empty() : Optional.of(converter.convertToROBlock(block));
   }
 
+  @NotNull
+  private Pruefung getPruefungIfExistent(ReadOnlyPruefung pruefungToGet)
+      throws NoPruefungsPeriodeDefinedException {
+    Optional<Pruefung> pruefung = dataAccessService.getPruefung(pruefungToGet);
+    if (pruefung.isEmpty()) {
+      throw new IllegalArgumentException(
+          String.format("Pruefung %s does not exists.", pruefungToGet));
+    }
+    return pruefung.get();
+  }
+
   public List<ReadOnlyPlanungseinheit> addPruefungToBlock(ReadOnlyBlock block,
-      ReadOnlyPruefung pruefung) throws HartesKriteriumException {
+      ReadOnlyPruefung pruefung)
+      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     noNullParameters(block, pruefung);
     if (block.getROPruefungen().contains(pruefung)) {
       return emptyList();
@@ -187,8 +200,8 @@ public class ScheduleService {
   }
 
   private void checkHardCriteriaUndoAddPruefungToBlock(ReadOnlyPruefung pruefung,
-      ReadOnlyBlock block) throws HartesKriteriumException {
-    Pruefung modelPruefung = dataAccessService.getPruefungWith(pruefung.getPruefungsnummer());
+      ReadOnlyBlock block) throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
+    Pruefung modelPruefung = getPruefungIfExistent(pruefung);
     List<HartesKriteriumAnalyse> hardAnalyses = restrictionService.checkHarteKriterien(
         modelPruefung);
     if (!hardAnalyses.isEmpty()) {
@@ -407,16 +420,17 @@ public class ScheduleService {
   }
 
   @NotNull
-  private Planungseinheit getBlock(@NotNull ReadOnlyBlock planungseinheitToCheck)
+  private Block getBlock(@NotNull ReadOnlyBlock blockToGet)
       throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
-    if (!dataAccessService.existsBlockWith(planungseinheitToCheck.getBlockId())) {
+    Optional<Block> block = dataAccessService.getModelBlock(blockToGet.asBlock());
+    if (block.isEmpty()) {
       throw new IllegalArgumentException("The handed Planungseinheit is not known.");
     }
-    return dataAccessService.getModelBlock(planungseinheitToCheck.asBlock()).get();
+    return block.get();
   }
 
   @NotNull
-  private Planungseinheit getPruefung(@NotNull ReadOnlyPruefung pruefung)
+  private Pruefung getPruefung(@NotNull ReadOnlyPruefung pruefung)
       throws IllegalArgumentException {
     if (!dataAccessService.existsPruefungWith(pruefung.getPruefungsnummer())) {
       throw new IllegalArgumentException("The handed Planungseinheit is not known.");
