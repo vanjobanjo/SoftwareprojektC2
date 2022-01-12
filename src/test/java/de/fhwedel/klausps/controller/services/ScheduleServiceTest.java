@@ -322,9 +322,6 @@ class ScheduleServiceTest {
         .withDauer(Duration.ofMinutes(120)).withPruefungsNummer("haskel")
         .withAdditionalTeilnehmerkreis(informatik).build();
 
-    Set<Teilnehmerkreis> haskelTeilnehmrekeis = new HashSet<>();
-    haskelTeilnehmrekeis.add(informatik);
-
     when(this.dataAccessService.removeTeilnehmerkreis(any(), any())).thenReturn(true);
     when(dataAccessService.getPruefungWith(anyString())).thenReturn(
         getPruefungOfReadOnlyPruefung(roHaskel));
@@ -354,9 +351,6 @@ class ScheduleServiceTest {
     List<ReadOnlyPlanungseinheit> listPlanungseinheit = new ArrayList<>();
     listPlanungseinheit.add(roHaskel);
     listPlanungseinheit.add(roDM);
-
-    Set<Teilnehmerkreis> haskelTeilnehmrekeis = new HashSet<>();
-    haskelTeilnehmrekeis.add(informatik);
     int schaetzungInformatik = 8;
 
     Set<Pruefung> conflictedPruefung = new HashSet<>();
@@ -395,10 +389,6 @@ class ScheduleServiceTest {
 
     Pruefung haskel = getPruefungOfReadOnlyPruefung(roHaskel);
     Pruefung dm = getPruefungOfReadOnlyPruefung(roDM);
-
-    List<ReadOnlyPlanungseinheit> listPlanungseinheit = new ArrayList<>();
-    listPlanungseinheit.add(roHaskel);
-    listPlanungseinheit.add(roDM);
 
     Set<Teilnehmerkreis> haskelTeilnehmrekeis = new HashSet<>();
     haskelTeilnehmrekeis.add(informatik);
@@ -704,39 +694,52 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void removePruefungFromBlock_pruefung_empty_block() {
+  void removePruefungFromBlock_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getPruefung(any())).thenThrow(NoPruefungsPeriodeDefinedException.class);
     ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
     ReadOnlyBlock block = getBlockWith();
-    assertThat(deviceUnderTest.removePruefungFromBlock(block, pruefung)).isEmpty();
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.removePruefungFromBlock(block, RO_HASKELL_UNPLANNED));
   }
 
   @Test
-  void removePruefungFromBlock_pruefung_empty_block_remove_pruefung_data_access_doesnt_get_called() {
-    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
+  void removePruefungFromBlock_pruefung_empty_block() throws NoPruefungsPeriodeDefinedException {
+    Pruefung pruefung = getRandomUnplannedPruefung(1L);
     ReadOnlyBlock block = getBlockWith();
-    deviceUnderTest.removePruefungFromBlock(block, pruefung);
-    verify(dataAccessService, times(0)).removePruefungFromBlock(block, pruefung);
+    when(dataAccessService.getPruefung(any())).thenReturn(Optional.of(pruefung));
+    assertThat(deviceUnderTest.removePruefungFromBlock(block,
+        converter.convertToReadOnlyPruefung(pruefung))).isEmpty();
   }
 
   @Test
-  void removePruefungFromBlock_pruefung_not_in_block() {
+  void removePruefungFromBlock_pruefung_empty_block_remove_pruefung_data_access_doesnt_get_called()
+      throws NoPruefungsPeriodeDefinedException {
+    Pruefung pruefung = getRandomUnplannedPruefung(1L);
+    ReadOnlyBlock block = getBlockWith();
+    when(dataAccessService.getPruefung(any())).thenReturn(Optional.of(pruefung));
+    deviceUnderTest.removePruefungFromBlock(block, converter.convertToReadOnlyPruefung(pruefung));
+    verify(dataAccessService, times(0)).removePruefungFromBlock(block,
+        converter.convertToReadOnlyPruefung(pruefung));
+  }
+
+  @Test
+  void removePruefungFromBlock_pruefung_not_in_block() throws NoPruefungsPeriodeDefinedException {
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
     ReadOnlyPruefung pruefungInBlock = getRandomUnplannedROPruefung(1L);
     ReadOnlyBlock block = getBlockWith(pruefungInBlock);
-    when(dataAccessService.getPruefungWith(RO_HASKELL_UNPLANNED.getPruefungsnummer())).thenReturn(
-        haskell);
+    when(dataAccessService.getPruefung(RO_HASKELL_UNPLANNED)).thenReturn(Optional.of(haskell));
     assertThat(deviceUnderTest.removePruefungFromBlock(block, RO_HASKELL_UNPLANNED)).isEmpty();
 
   }
 
   @Test
   @DisplayName("remove pruefung from block - dataAccessService removePruefungFromBlock does not get called")
-  void removePruefungFromBlock_pruefung_not_in_block_verify() {
+  void removePruefungFromBlock_pruefung_not_in_block_verify()
+      throws NoPruefungsPeriodeDefinedException {
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
     ReadOnlyPruefung pruefungInBlock = getRandomUnplannedROPruefung(1L);
     ReadOnlyBlock block = getBlockWith(pruefungInBlock);
-    when(dataAccessService.getPruefungWith(RO_HASKELL_UNPLANNED.getPruefungsnummer())).thenReturn(
-        haskell);
+    when(dataAccessService.getPruefung(RO_HASKELL_UNPLANNED)).thenReturn(Optional.of(haskell));
     deviceUnderTest.removePruefungFromBlock(block, RO_HASKELL_UNPLANNED);
     verify(dataAccessService, times(0)).removePruefungFromBlock(any(), any());
   }

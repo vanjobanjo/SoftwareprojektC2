@@ -211,9 +211,9 @@ public class ScheduleService {
   }
 
   public List<ReadOnlyPlanungseinheit> removePruefungFromBlock(ReadOnlyBlock block,
-      ReadOnlyPruefung pruefung) {
+      ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block, pruefung);
-    Pruefung toRemove = dataAccessService.getPruefungWith(pruefung.getPruefungsnummer());
+    Pruefung toRemove = getPruefungIfExistent(pruefung);
     Optional<Block> toRemoveFrom = dataAccessService.getBlockTo(toRemove);
     if (toRemoveFrom.isEmpty()) {
       return emptyList();
