@@ -455,7 +455,6 @@ class ScheduleServiceTest {
   void setTeilnehmerkreisSchaetzung_teilnehmerkreis_not_part_of_pruefung() {
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     analysis.addTeilnehmerkreis(bwlMaster);
-    when(dataAccessService.getPruefungWith(analysis.getPruefungsnummer())).thenReturn(analysis);
 
     int newSchaetzung = 300;
     assertThrows(IllegalArgumentException.class,
@@ -707,10 +706,6 @@ class ScheduleServiceTest {
     when(restrictionService.checkHarteKriterien(any())).thenReturn(
         List.of(getNewHartesKriteriumAnalyse()));
     when(dataAccessService.addPruefungToBlock(roBlock, RO_ANALYSIS_UNPLANNED)).thenReturn(block);
-    when(dataAccessService.getPruefungWith(haskell.getPruefungsnummer())).thenReturn(
-        haskell);// TODO raus
-    when(dataAccessService.getPruefungWith(analysis.getPruefungsnummer())).thenReturn(
-        analysis);// TODO raus
     when(dataAccessService.getPruefung(RO_HASKELL_UNPLANNED)).thenReturn(Optional.of(haskell));
     when(dataAccessService.getPruefung(RO_ANALYSIS_UNPLANNED)).thenReturn(Optional.of(analysis));
     when(dataAccessService.removePruefungFromBlock(any(), any())).thenReturn(block);
@@ -933,7 +928,7 @@ class ScheduleServiceTest {
       throws NoPruefungsPeriodeDefinedException {
     Pruefung planungseinheit = getRandomUnplannedPruefung(1L);
     when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
-    when(dataAccessService.getPruefungWith(anyString())).thenReturn(planungseinheit);
+    when(dataAccessService.getPruefung(any())).thenReturn(Optional.of(planungseinheit));
     assertThat(deviceUnderTest.getHardConflictedTimes(emptySet(),
         getRandomUnplannedROPruefung(1L))).isEmpty();
   }
@@ -944,7 +939,7 @@ class ScheduleServiceTest {
     Pruefung pruefungToCheckFor = getRandomPlannedPruefung(1L);
 
     when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
-    when(dataAccessService.getPruefungWith(anyString())).thenReturn(pruefungToCheckFor);
+    when(dataAccessService.getPruefung(any())).thenReturn(Optional.of(pruefungToCheckFor));
 
     deviceUnderTest.getHardConflictedTimes(Set.of(getRandomTime(1L)),
         converter.convertToReadOnlyPruefung(pruefungToCheckFor));
@@ -957,7 +952,7 @@ class ScheduleServiceTest {
     Pruefung pruefungToCheckFor = getRandomPlannedPruefung(1L);
 
     when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
-    when(dataAccessService.getPruefungWith(anyString())).thenReturn(pruefungToCheckFor);
+    when(dataAccessService.getPruefung(any())).thenReturn(Optional.of(pruefungToCheckFor));
 
     deviceUnderTest.getHardConflictedTimes(Set.of(getRandomTime(1L), getRandomTime(2L)),
         converter.convertToReadOnlyPruefung(pruefungToCheckFor));
@@ -969,7 +964,7 @@ class ScheduleServiceTest {
       throws NoPruefungsPeriodeDefinedException {
     Pruefung planungseinheit = getRandomUnplannedPruefung(1L);
 
-    when(dataAccessService.getPruefungWith(anyString())).thenReturn(planungseinheit);
+    when(dataAccessService.getPruefung(any())).thenReturn(Optional.of(planungseinheit));
     when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
 
     deviceUnderTest.getHardConflictedTimes(emptySet(), getRandomUnplannedROPruefung(1L));
@@ -982,7 +977,7 @@ class ScheduleServiceTest {
     Pruefung pruefungToCheckFor = getRandomPlannedPruefung(1L);
 
     when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
-    when(dataAccessService.getPruefungWith(anyString())).thenReturn(pruefungToCheckFor);
+    when(dataAccessService.getPruefung(any())).thenReturn(Optional.of(pruefungToCheckFor));
     when(restrictionService.wouldBeHardConflictAt(any(), any())).thenReturn(false);
 
     assertThat(deviceUnderTest.getHardConflictedTimes(
@@ -996,7 +991,7 @@ class ScheduleServiceTest {
     Pruefung pruefungToCheckFor = getRandomPlannedPruefung(1L);
 
     when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
-    when(dataAccessService.getPruefungWith(anyString())).thenReturn(pruefungToCheckFor);
+    when(dataAccessService.getPruefung(any())).thenReturn(Optional.of(pruefungToCheckFor));
     when(restrictionService.wouldBeHardConflictAt(any(), any())).thenReturn(false, true, false);
 
     assertThat(deviceUnderTest.getHardConflictedTimes(
@@ -1010,7 +1005,7 @@ class ScheduleServiceTest {
     Pruefung pruefungToCheckFor = getRandomPlannedPruefung(1L);
 
     when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
-    when(dataAccessService.getPruefungWith(anyString())).thenReturn(pruefungToCheckFor);
+    when(dataAccessService.getPruefung(any())).thenReturn(Optional.of(pruefungToCheckFor));
     when(restrictionService.wouldBeHardConflictAt(any(), any())).thenReturn(true, true, true);
 
     assertThat(deviceUnderTest.getHardConflictedTimes(

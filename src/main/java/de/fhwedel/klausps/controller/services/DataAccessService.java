@@ -353,11 +353,6 @@ public class DataAccessService {
     return end.isAfter(termin.toLocalDate()) || end.isEqual(termin.toLocalDate());
   }
 
-  public Pruefung getPruefungWith(String pruefungsNummer) {
-    // todo raus -> Tausch gegen "getPruefung(ROPruefung)"
-    return getPruefungFromModelOrException(pruefungsNummer);
-  }
-
   public Optional<Pruefung> getPruefung(ReadOnlyPruefung readOnlyPruefung)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(readOnlyPruefung);
