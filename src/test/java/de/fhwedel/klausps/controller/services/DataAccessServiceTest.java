@@ -3,6 +3,7 @@ package de.fhwedel.klausps.controller.services;
 import static de.fhwedel.klausps.controller.util.TestFactory.bwlBachelor;
 import static de.fhwedel.klausps.controller.util.TestFactory.infBachelor;
 import static de.fhwedel.klausps.controller.util.TestFactory.infMaster;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungenReadOnly;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTime;
 import static de.fhwedel.klausps.model.api.Blocktyp.PARALLEL;
@@ -140,16 +141,20 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void getGeplantePruefungenTest() {
-    ReadOnlyPruefung p1 = new PruefungDTOBuilder().withPruefungsName("Hallo").build();
-    ReadOnlyPruefung p2 = new PruefungDTOBuilder().withPruefungsName("Welt").build();
+  void getGeplantePruefungenTest() throws NoPruefungsPeriodeDefinedException {
+    Pruefung p1 = getRandomPlannedPruefung(1L);
+    Pruefung p2 = getRandomPlannedPruefung(2L);
 
-    Pruefung pm1 = getPruefungOfReadOnlyPruefung(p1);
-    Pruefung pm2 = getPruefungOfReadOnlyPruefung(p2);
-    when(pruefungsperiode.geplantePruefungen()).thenReturn(Set.of(pm1, pm2));
-    when(scheduleService.scoringOfPruefung(any(Pruefung.class))).thenReturn(10, 20, 30);
+    when(pruefungsperiode.geplantePruefungen()).thenReturn(Set.of(p1, p2));
 
     assertThat(deviceUnderTest.getGeplantePruefungen()).containsOnly(p1, p2);
+  }
+
+  @Test
+  void getGeplantePruefungen_noPruefungsperiode() {
+    deviceUnderTest = new DataAccessService(null);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getGeplantePruefungen());
   }
 
   @Test

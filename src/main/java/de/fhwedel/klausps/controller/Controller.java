@@ -13,6 +13,7 @@ import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.export.ExportTyp;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
+import de.fhwedel.klausps.controller.services.Converter;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.IOService;
 import de.fhwedel.klausps.controller.services.ScheduleService;
@@ -41,23 +42,24 @@ public class Controller implements InterfaceController {
   private final DataAccessService dataAccessService;
   private final IOService ioService;
   private final ScheduleService scheduleService;
+  private final Converter converter;
 
   public Controller() {
     this(ServiceProvider.getDataAccessService(), ServiceProvider.getIOService(),
-        ServiceProvider.getScheduleService());
+        ServiceProvider.getScheduleService(), new Converter());
   }
 
   public Controller(DataAccessService dataAccessService, IOService ioService,
-      ScheduleService scheduleService) {
+      ScheduleService scheduleService, Converter converter) {
     this.dataAccessService = dataAccessService;
     this.ioService = ioService;
     this.scheduleService = scheduleService;
+    this.converter = converter;
   }
 
   @Override
   public Set<ReadOnlyPruefung> getGeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
-    ensureAvailabilityOfPruefungsperiode();
-    return dataAccessService.getGeplantePruefungen();
+    return converter.convertToROPruefungSet(dataAccessService.getGeplantePruefungen());
   }
 
   @Override

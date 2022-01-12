@@ -332,7 +332,7 @@ public class ScheduleService {
       ReadOnlyPlanungseinheit planungseinheitToCheckFor) {
     noNullParameters(planungseinheitToCheckFor);
     Planungseinheit planungseinheit = getAsModel(planungseinheitToCheckFor);
-    return new HashSet<>(converter.convertToROPruefungCollection(
+    return new HashSet<>(converter.convertToROPruefungSet(
         restrictionService.getPruefungenInHardConflictWith(planungseinheit)));
   }
 
