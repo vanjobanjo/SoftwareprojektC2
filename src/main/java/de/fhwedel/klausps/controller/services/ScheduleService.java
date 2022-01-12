@@ -291,15 +291,15 @@ public class ScheduleService {
   }
 
   public List<ReadOnlyPlanungseinheit> addTeilnehmerkreis(ReadOnlyPruefung roPruefung,
-      Teilnehmerkreis teilnehmerkreis, int schaetzung) throws HartesKriteriumException {
+      Teilnehmerkreis teilnehmerkreis, int schaetzung)
+      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     noNullParameters(roPruefung, teilnehmerkreis);
     List<ReadOnlyPlanungseinheit> listOfRead = new ArrayList<>();
 
     if (roPruefung.getTeilnehmerkreise().contains(teilnehmerkreis)) {
       return listOfRead;
     }
-    Pruefung pruefungModel = this.dataAccessService.getPruefungWith(
-        roPruefung.getPruefungsnummer());
+    Pruefung pruefungModel = getPruefungIfExistent(roPruefung);
 
     if (this.dataAccessService.addTeilnehmerkreis(pruefungModel, teilnehmerkreis, schaetzung)) {
       List<HartesKriteriumAnalyse> hard = restrictionService.checkHarteKriterien(pruefungModel);

@@ -344,7 +344,8 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void addTeilnehmerkreis_successful_withSoft() {
+  void addTeilnehmerkreis_successful_withSoft()
+      throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
     Teilnehmerkreis informatik = mock(Teilnehmerkreis.class);
 
     LocalDateTime date = LocalDateTime.of(2021, 8, 11, 9, 0);
@@ -372,21 +373,16 @@ class ScheduleServiceTest {
     conflictedPruefung.add(dm);
 
     when(restrictionService.getAffectedPruefungen(haskel)).thenReturn(conflictedPruefung);
-    when(this.dataAccessService.getPruefungWith(roHaskel.getPruefungsnummer())).thenReturn(haskel);
+    when(this.dataAccessService.getPruefung(roHaskel)).thenReturn(Optional.of(haskel));
     when(this.dataAccessService.addTeilnehmerkreis(haskel, informatik,
         schaetzungInformatik)).thenReturn(true);
 
-    try {
-      assertThat(deviceUnderTest.addTeilnehmerkreis(roHaskel, informatik,
-          schaetzungInformatik)).containsAll(listPlanungseinheit);
-    } catch (HartesKriteriumException e) {
-      //Sollte hier nicht passieren, deshalb wird sie hier verworfen
-      e.printStackTrace();
-    }
+    assertThat(deviceUnderTest.addTeilnehmerkreis(roHaskel, informatik,
+        schaetzungInformatik)).containsAll(listPlanungseinheit);
   }
 
   @Test
-  void addTeilnehmerkreis_hart() {
+  void addTeilnehmerkreis_hart() throws NoPruefungsPeriodeDefinedException {
     Teilnehmerkreis informatik = mock(Teilnehmerkreis.class);
 
     LocalDateTime date = LocalDateTime.of(2021, 8, 11, 9, 0);
@@ -419,13 +415,21 @@ class ScheduleServiceTest {
     listHard.add(hKA);
     when(restrictionService.checkHarteKriterien(haskel)).thenReturn(listHard);
     when(restrictionService.getAffectedPruefungen(haskel)).thenReturn(conflictedPruefung);
-    when(this.dataAccessService.getPruefungWith(roHaskel.getPruefungsnummer())).thenReturn(haskel);
+    when(this.dataAccessService.getPruefung(roHaskel)).thenReturn(Optional.of(haskel));
     when(this.dataAccessService.addTeilnehmerkreis(haskel, informatik,
         schaetzungInformatik)).thenReturn(true);
 
     assertThrows(HartesKriteriumException.class,
         () -> deviceUnderTest.addTeilnehmerkreis(roHaskel, informatik, schaetzungInformatik));
     assertThat(haskel.getTeilnehmerkreise()).isEmpty();
+  }
+
+  @Test
+  void addTeilnehmerkreis_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getPruefung(any())).thenThrow(NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.addTeilnehmerkreis(getRandomUnplannedROPruefung(1L),
+            mock(Teilnehmerkreis.class), 42));
   }
 
   @Test
