@@ -455,7 +455,9 @@ public class DataAccessService {
     return pruefungsperiode.getStartdatum();
   }
 
-  public LocalDate getEndOfPeriode() {
+  @NotNull
+  public LocalDate getEndOfPeriode() throws NoPruefungsPeriodeDefinedException {
+    checkForPruefungsperiode();
     return pruefungsperiode.getEnddatum();
   }
 

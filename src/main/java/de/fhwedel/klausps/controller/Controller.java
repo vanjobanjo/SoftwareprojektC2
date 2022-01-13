@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import org.jetbrains.annotations.NotNull;
 
 public class Controller implements InterfaceController {
 
@@ -78,13 +79,14 @@ public class Controller implements InterfaceController {
   }
 
   @Override
+  @NotNull
   public LocalDate getStartDatumPeriode() throws NoPruefungsPeriodeDefinedException {
     return dataAccessService.getStartOfPeriode();
   }
 
   @Override
+  @NotNull
   public LocalDate getEndDatumPeriode() throws NoPruefungsPeriodeDefinedException {
-    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getEndOfPeriode();
   }
 

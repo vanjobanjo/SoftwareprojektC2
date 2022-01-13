@@ -1596,10 +1596,17 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void getStartOfPeriode_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+  void getStartOfPeriode_noPruefungsperiode() {
     deviceUnderTest = new DataAccessService(null);
     assertThrows(NoPruefungsPeriodeDefinedException.class,
         () -> deviceUnderTest.getStartOfPeriode());
+  }
+
+  @Test
+  void getEndOfPeriode_noPruefungsperiode() {
+    deviceUnderTest = new DataAccessService(null);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getEndOfPeriode());
   }
 
 }
