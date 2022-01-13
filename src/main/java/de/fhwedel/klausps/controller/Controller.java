@@ -130,8 +130,8 @@ public class Controller implements InterfaceController {
   public Set<ReadOnlyPruefung> getGeplantePruefungenForTeilnehmer(Teilnehmerkreis teilnehmer)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(teilnehmer);
-    ensureAvailabilityOfPruefungsperiode();
-    return dataAccessService.geplantePruefungenForTeilnehmerkreis(teilnehmer);
+    return converter.convertToROPruefungSet(
+        dataAccessService.geplantePruefungenForTeilnehmerkreis(teilnehmer));
   }
 
   @Override

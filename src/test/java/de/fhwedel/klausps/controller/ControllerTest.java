@@ -2,6 +2,7 @@ package de.fhwedel.klausps.controller;
 
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomDate;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedROPruefung;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTeilnehmerkreis;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTime;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedROPruefung;
 import static java.util.Collections.emptySet;
@@ -374,6 +375,21 @@ class ControllerTest {
         NoPruefungsPeriodeDefinedException.class);
     assertThrows(NoPruefungsPeriodeDefinedException.class,
         () -> deviceUnderTest.getAllTeilnehmerKreise());
+  }
+
+  @Test
+  void getGeplantePruefungenForTeilnehmer_teilnehmerMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.getGeplantePruefungenForTeilnehmer(null));
+  }
+
+  @Test
+  void getGeplantePruefungenForTeilnehmer_noPruefungsperiode()
+      throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.geplantePruefungenForTeilnehmerkreis(any())).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getGeplantePruefungenForTeilnehmer(getRandomTeilnehmerkreis(1L)));
   }
 
 }

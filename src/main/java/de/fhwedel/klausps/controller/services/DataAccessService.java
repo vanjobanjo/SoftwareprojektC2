@@ -291,12 +291,13 @@ public class DataAccessService {
             .collect(Collectors.toSet())));
   }
 
-  public Set<ReadOnlyPruefung> geplantePruefungenForTeilnehmerkreis(Teilnehmerkreis tk)
+  public Set<Pruefung> geplantePruefungenForTeilnehmerkreis(Teilnehmerkreis teilnehmerkreis)
       throws NoPruefungsPeriodeDefinedException {
-    return new HashSet<>(
-        converter.convertToROPruefungSet(pruefungsperiode.geplantePruefungen().stream()
-            .filter(pruefung -> pruefung.getTeilnehmerkreise().contains(tk))
-            .collect(Collectors.toSet())));
+    noNullParameters(teilnehmerkreis);
+    checkForPruefungsperiode();
+    return pruefungsperiode.geplantePruefungen().stream()
+        .filter(pruefung -> pruefung.getTeilnehmerkreise().contains(teilnehmerkreis))
+        .collect(Collectors.toSet());
   }
 
   public ReadOnlyPlanungseinheit addPruefer(String pruefungsNummer, String pruefer)

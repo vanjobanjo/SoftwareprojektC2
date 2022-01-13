@@ -6,6 +6,7 @@ import static de.fhwedel.klausps.controller.util.TestFactory.infMaster;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefungen;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungenReadOnly;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTeilnehmerkreis;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTime;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedROPruefung;
@@ -986,8 +987,7 @@ class DataAccessServiceTest {
     analysis.setStartzeitpunkt(LocalDateTime.of(1, 1, 1, 1, 1));
     analysis.addTeilnehmerkreis(bwl);
     when(pruefungsperiode.geplantePruefungen()).thenReturn(Set.of(analysis));
-    assertThat(deviceUnderTest.geplantePruefungenForTeilnehmerkreis(bwl)).containsOnly(
-        TestFactory.RO_ANALYSIS_UNPLANNED);
+    assertThat(deviceUnderTest.geplantePruefungenForTeilnehmerkreis(bwl)).containsOnly(analysis);
   }
 
   @Test
@@ -1012,8 +1012,20 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void addPruefungToBlock_none_scheduled_successful() throws NoPruefungsPeriodeDefinedException {
+  void geplantePruefungenForTeilnehmerkreis_teilnehmerkreisMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.geplantePruefungenForTeilnehmerkreis(null));
+  }
 
+  @Test
+  void geplantePruefungenForTeilnehmerkreis_noPruefungsperiode() {
+    deviceUnderTest = new DataAccessService(null);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.geplantePruefungenForTeilnehmerkreis(getRandomTeilnehmerkreis(1L)));
+  }
+
+  @Test
+  void addPruefungToBlock_none_scheduled_successful() throws NoPruefungsPeriodeDefinedException {
     Block modelBlock = new BlockImpl(pruefungsperiode, "b1", Blocktyp.PARALLEL);
     ReadOnlyBlock blockToAddTo = new BlockDTO("b1", null, null,
         new HashSet<>(), modelBlock.getId(), Blocktyp.PARALLEL);
