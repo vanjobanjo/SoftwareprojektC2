@@ -177,8 +177,8 @@ public class Controller implements InterfaceController {
   public Set<ReadOnlyPruefung> getGeplantePruefungenWithKonflikt(
       ReadOnlyPlanungseinheit planungseinheit) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(planungseinheit);
-    ensureAvailabilityOfPruefungsperiode();
-    return scheduleService.getGeplantePruefungenWithKonflikt(planungseinheit);
+    return converter.convertToROPruefungSet(
+        scheduleService.getGeplantePruefungenWithKonflikt(planungseinheit));
   }
 
   @Override

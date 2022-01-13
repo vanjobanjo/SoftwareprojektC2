@@ -265,6 +265,17 @@ public class ScheduleService {
     }
   }
 
+  @NotNull
+  private List<ReadOnlyPlanungseinheit> affectedPruefungenSoft(Pruefung pruefungModel)
+      throws NoPruefungsPeriodeDefinedException {
+    if (!pruefungModel.isGeplant()) {
+      return new ArrayList<>();
+    }
+    Set<Pruefung> changedScoring = restrictionService.getAffectedPruefungen(pruefungModel);
+    return new LinkedList<>(converter.convertToROPlanungseinheitSet(
+        getPlanungseinheitenWithBlock(changedScoring)));
+  }
+
   public List<ReadOnlyPlanungseinheit> setDauer(ReadOnlyPruefung pruefung, Duration dauer)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, dauer);
@@ -348,12 +359,11 @@ public class ScheduleService {
   }
 
   @NotNull
-  public Set<ReadOnlyPruefung> getGeplantePruefungenWithKonflikt(
+  public Set<Pruefung> getGeplantePruefungenWithKonflikt(
       ReadOnlyPlanungseinheit planungseinheitToCheckFor) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(planungseinheitToCheckFor);
     Planungseinheit planungseinheit = getAsModel(planungseinheitToCheckFor);
-    return new HashSet<>(converter.convertToROPruefungSet(
-        restrictionService.getPruefungenInHardConflictWith(planungseinheit)));
+    return restrictionService.getPruefungenInHardConflictWith(planungseinheit);
   }
 
   private Planungseinheit getAsModel(ReadOnlyPlanungseinheit planungseinheitToCheckFor)
@@ -368,17 +378,6 @@ public class ScheduleService {
     } else {
       return getPruefungIfExistent(planungseinheitToCheckFor.asPruefung());
     }
-  }
-
-  @NotNull
-  private List<ReadOnlyPlanungseinheit> affectedPruefungenSoft(Pruefung pruefungModel)
-      throws NoPruefungsPeriodeDefinedException {
-    if (!pruefungModel.isGeplant()) {
-      return new ArrayList<>();
-    }
-    Set<Pruefung> changedScoring = restrictionService.getAffectedPruefungen(pruefungModel);
-    return new LinkedList<>(converter.convertToROPlanungseinheitSet(
-        getPlanungseinheitenWithBlock(changedScoring)));
   }
 
   public List<KriteriumsAnalyse> analyseScoring(ReadOnlyPruefung pruefung)

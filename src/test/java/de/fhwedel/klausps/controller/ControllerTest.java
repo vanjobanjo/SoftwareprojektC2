@@ -13,7 +13,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -66,24 +65,24 @@ class ControllerTest {
   }
 
   @Test
-  void getGeplantePruefungenWithKonflikt_missingPruefungsperiodeIsDetected() {
-    ReadOnlyPlanungseinheit toCheckFor = getRandomPlannedROPruefung(1L);
-
-    when(dataAccessService.isPruefungsperiodeSet()).thenReturn(false);
-
+  void getGeplantePruefungenWithKonflikt_noPruefungsperiode()
+      throws NoPruefungsPeriodeDefinedException {
+    when(scheduleService.getGeplantePruefungenWithKonflikt(any())).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
     assertThrows(NoPruefungsPeriodeDefinedException.class,
-        () -> deviceUnderTest.getGeplantePruefungenWithKonflikt(toCheckFor));
+        () -> deviceUnderTest.getGeplantePruefungenWithKonflikt(getRandomPlannedROPruefung(1L)));
   }
 
   @Test
-  void getGeplantePruefungenWithKonflikt_useDataAccessServiceOnlyForCheckForPruefungsperiode()
+  void getGeplantePruefungenWithKonflikt_missingPruefungsperiodeIsDetected()
       throws NoPruefungsPeriodeDefinedException {
     ReadOnlyPlanungseinheit toCheckFor = getRandomPlannedROPruefung(1L);
 
-    when(dataAccessService.isPruefungsperiodeSet()).thenReturn(true);
+    when(scheduleService.getGeplantePruefungenWithKonflikt(any())).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
 
-    deviceUnderTest.getGeplantePruefungenWithKonflikt(toCheckFor);
-    verify(dataAccessService, only()).isPruefungsperiodeSet();
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getGeplantePruefungenWithKonflikt(toCheckFor));
   }
 
   @Test
