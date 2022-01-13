@@ -90,7 +90,7 @@ class TwoKlausurenSameTimeTest {
     Duration minutes90 = Duration.ofMinutes(90);
     Pruefung pruefung1 = new PruefungImpl("1", "Pruefung1", "", minutes90, same);
     Pruefung pruefung2 = new PruefungImpl("2", "Pruefung2", "", minutes90, same);
-    Teilnehmerkreis bwl = new TeilnehmerkreisImpl("", "", 1, Ausbildungsgrad.BACHELOR);
+    Teilnehmerkreis bwl = new TeilnehmerkreisImpl("blw", "1", 1, Ausbildungsgrad.BACHELOR);
     pruefung1.addTeilnehmerkreis(bwl, 20);
     pruefung2.addTeilnehmerkreis(bwl, 30);
     List<Planungseinheit> plannedPlanungseinheiten = new LinkedList<>();
