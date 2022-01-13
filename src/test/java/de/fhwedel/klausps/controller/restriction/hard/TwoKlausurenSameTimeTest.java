@@ -1304,14 +1304,16 @@ class TwoKlausurenSameTimeTest {
 
   @Test
   void wouldBeHardConflictAt_timeMustNotBeNull() {
+    Pruefung pruefung = getRandomPlannedPruefung(1L);
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.wouldBeHardConflictAt(null, getRandomPlannedPruefung(1L)));
+        () -> deviceUnderTest.wouldBeHardConflictAt(null, pruefung));
   }
 
   @Test
   void wouldBeHardConflictAt_planungseinheitMustNotBeNull() {
+    LocalDateTime time = getRandomTime(1L);
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.wouldBeHardConflictAt(getRandomTime(1L), null));
+        () -> deviceUnderTest.wouldBeHardConflictAt(time, null));
   }
 
   @Test

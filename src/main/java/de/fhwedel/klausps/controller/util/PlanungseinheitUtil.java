@@ -2,16 +2,16 @@ package de.fhwedel.klausps.controller.util;
 
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
-import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 public class PlanungseinheitUtil {
-private PlanungseinheitUtil() {
-  // util should not be instantiated
-}
+
+  private PlanungseinheitUtil() {
+    // util should not be instantiated
+  }
+
   public static Set<Pruefung> getAllPruefungen(Collection<Planungseinheit> planungseinheiten) {
     Set<Pruefung> result = new HashSet<>();
     for (Planungseinheit planungseinheit : planungseinheiten) {
@@ -23,7 +23,6 @@ private PlanungseinheitUtil() {
     }
     return result;
   }
-
 
 
 }

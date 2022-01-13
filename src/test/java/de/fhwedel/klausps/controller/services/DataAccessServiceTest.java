@@ -281,9 +281,16 @@ class DataAccessServiceTest {
         .hasNotPruefer("Cohen");
   }
 
-  private List<Pruefung> convertPruefungenFromReadonlyToModel(
-      Collection<ReadOnlyPruefung> pruefungen) {
-    return pruefungen.stream().map(this::getPruefungOfReadOnlyPruefung).toList();
+  @Test
+  void changeDurationOf_Successful() throws HartesKriteriumException {
+    ReadOnlyPruefung pruefungRO = getRandomUnplannedROPruefung(1L);
+    Pruefung pruefung = convertPruefungenFromReadonlyToModel(List.of(pruefungRO)).get(0);
+    Duration newDuration = Duration.ofMinutes(120);
+
+    when(pruefungsperiode.pruefung(pruefungRO.getPruefungsnummer())).thenReturn(pruefung);
+    when(scheduleService.changeDuration(pruefung, newDuration)).thenReturn(List.of(pruefung));
+    deviceUnderTest.changeDurationOf(pruefungRO, newDuration);
+    assertThat(pruefung.getDauer()).isEqualTo(newDuration);
   }
 
   @Test
@@ -301,20 +308,9 @@ class DataAccessServiceTest {
         .hasPruefer("Einstein").hasNotPruefer("Cohen");
   }
 
-  @Test
-  void changeDurationOf_Successful() throws HartesKriteriumException {
-    PruefungDTOBuilder pruefungROBuilder = new PruefungDTOBuilder();
-    pruefungROBuilder.withPruefungsName("Analysi");
-    pruefungROBuilder.withDauer(Duration.ofMinutes(90));
-    ReadOnlyPruefung pruefungRO = pruefungROBuilder.build();
-    Pruefung pruefung = convertPruefungenFromReadonlyToModel(List.of(pruefungRO)).get(0);
-    Duration newDuration = Duration.ofMinutes(120);
-
-    assertEquals(pruefungRO.getDauer(), Duration.ofMinutes(90));
-    when(pruefungsperiode.pruefung(pruefungRO.getPruefungsnummer())).thenReturn(pruefung);
-    when(scheduleService.changeDuration(pruefung, newDuration)).thenReturn(List.of(pruefung));
-    deviceUnderTest.changeDurationOf(pruefungRO, newDuration);
-    assertThat(pruefung.getDauer()).isEqualTo(newDuration);
+  private List<Pruefung> convertPruefungenFromReadonlyToModel(
+      Collection<ReadOnlyPruefung> pruefungen) {
+    return pruefungen.stream().map(this::getPruefungOfReadOnlyPruefung).toList();
   }
 
   private Pruefung getPruefungOfReadOnlyPruefung(ReadOnlyPruefung roPruefung) {
@@ -1669,14 +1665,16 @@ class DataAccessServiceTest {
 
   @Test
   void getAllPruefungenBetween_startMustNotBeNull() {
+    LocalDateTime time = getRandomTime(2L);
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.getAllPruefungenBetween(null, getRandomTime(2L)));
+        () -> deviceUnderTest.getAllPruefungenBetween(null, time));
   }
 
   @Test
   void getAllPruefungenBetween_endMustNotBeNull() {
+    LocalDateTime time = getRandomTime(1L);
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.getAllPruefungenBetween(getRandomTime(1L), null));
+        () -> deviceUnderTest.getAllPruefungenBetween(time, null));
   }
 
   @Test
@@ -1689,14 +1687,16 @@ class DataAccessServiceTest {
 
   @Test
   void getAllPlanungseinheitenBetween_startMustNotBeNull() {
+    LocalDateTime time = getRandomTime(2L);
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.getAllPlanungseinheitenBetween(null, getRandomTime(2L)));
+        () -> deviceUnderTest.getAllPlanungseinheitenBetween(null, time));
   }
 
   @Test
   void getAllPlanungseinheitenBetween_endMustNotBeNull() {
+    LocalDateTime time = getRandomTime(1L);
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.getAllPlanungseinheitenBetween(getRandomTime(1L), null));
+        () -> deviceUnderTest.getAllPlanungseinheitenBetween(time, null));
   }
 
   @Test

@@ -255,6 +255,12 @@ public class DataAccessService {
     return pruefungsperiode.geplantePruefungen();
   }
 
+  private void checkForPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    if (pruefungsperiode == null) {
+      throw new NoPruefungsPeriodeDefinedException();
+    }
+  }
+
   public List<Planungseinheit> getAllPlanungseinheitenBetween(LocalDateTime start,
       LocalDateTime end) throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     noNullParameters(start, end);
@@ -263,6 +269,14 @@ public class DataAccessService {
       throw new IllegalTimeSpanException("Der Start liegt nach dem Ende des Zeitslots");
     }
     return List.copyOf(this.getPruefungsperiode().planungseinheitenBetween(start, end));
+  }
+
+  public Pruefungsperiode getPruefungsperiode() {
+    return pruefungsperiode;
+  }
+
+  public void setPruefungsperiode(Pruefungsperiode pruefungsperiode) {
+    this.pruefungsperiode = pruefungsperiode;
   }
 
   @NotNull
@@ -421,8 +435,7 @@ public class DataAccessService {
       throw new IllegalArgumentException("Doppelte Prüfungen im Block!");
     }
 
-    Block blockModel = new BlockImpl(pruefungsperiode, name,
-        Blocktyp.SEQUENTIAL); // TODO bei Erzeugung Sequential?
+    Block blockModel = new BlockImpl(pruefungsperiode, name, Blocktyp.PARALLEL);
     Arrays.stream(pruefungen).forEach(pruefung -> blockModel.addPruefung(
         pruefungsperiode.pruefung(pruefung.getPruefungsnummer())));
     if (!pruefungsperiode.addPlanungseinheit(blockModel)) {
@@ -489,11 +502,6 @@ public class DataAccessService {
   public Semester getSemester() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
     return pruefungsperiode.getSemester();
-  }
-
-  public void setSemester(@NotNull Semester semester) {
-    // TODO model does not support setting the semester
-    throw new UnsupportedOperationException("Not implemented yet!");
   }
 
   //TODO kann das hier raus? Evtl? Weil hier an dieser Stelle der Converter genutzt wird.
@@ -638,20 +646,6 @@ public class DataAccessService {
   public boolean existsBlockWith(int blockId) throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
     return pruefungsperiode.block(blockId) != null;
-  }
-
-  private void checkForPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
-    if (pruefungsperiode == null) {
-      throw new NoPruefungsPeriodeDefinedException();
-    }
-  }
-
-  public Pruefungsperiode getPruefungsperiode() {
-    return pruefungsperiode;
-  }
-
-  public void setPruefungsperiode(Pruefungsperiode pruefungsperiode) {
-    this.pruefungsperiode = pruefungsperiode;
   }
 
   @NotNull

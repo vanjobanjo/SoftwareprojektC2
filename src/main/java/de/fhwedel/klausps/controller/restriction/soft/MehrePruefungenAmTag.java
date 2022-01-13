@@ -61,9 +61,6 @@ public class MehrePruefungenAmTag extends WeicheRestriktion {
         e.printStackTrace();
       }
       Set<Pruefung> pruefungenFromBlock;
-      // TODO wieso wird überprüft, ob ein Ergebnis von "getAllPruefungenBetween" ein Block ist,
-      //  die Methode sorgt ganz explizit dafür, dass die Klausuren in den Blöcken statt der Blöcke
-      //  selbst returned werden
       for (Planungseinheit planungseinheit : testList) {
         //Unterscheidung auf Block
         if (planungseinheit.isBlock()) {

@@ -26,7 +26,6 @@ import de.fhwedel.klausps.controller.services.Converter;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.IOService;
 import de.fhwedel.klausps.controller.services.ScheduleService;
-import de.fhwedel.klausps.controller.util.TestUtils;
 import de.fhwedel.klausps.model.api.Ausbildungsgrad;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Semester;
@@ -123,8 +122,9 @@ class ControllerTest {
 
   @Test
   void createSemester_semesterTypeMustNotBeNull() {
+    Year year = Year.of(2022);
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.createSemester(null, Year.of(2022)));
+        () -> deviceUnderTest.createSemester(null, year));
   }
 
   @Test
@@ -153,8 +153,9 @@ class ControllerTest {
 
   @Test
   void getHardConflictedTimes_zeitpunkteMustNotBeNull() {
-    assertThrows(NullPointerException.class, () -> deviceUnderTest.getHardConflictedTimes(null,
-        TestUtils.getRandomPlannedROPruefung(1L)));
+    ReadOnlyPruefung pruefung = getRandomPlannedROPruefung(1L);
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.getHardConflictedTimes(null, pruefung));
   }
 
   @Test

@@ -24,12 +24,14 @@ class BlockDTOTest {
     TeilnehmerkreisImpl bwl = new TeilnehmerkreisImpl("BWL", "Bla", 10, Ausbildungsgrad.BACHELOR);
     TeilnehmerkreisImpl inf = new TeilnehmerkreisImpl("inf", "Bla", 10, Ausbildungsgrad.BACHELOR);
     PruefungDTO analysis =
-        new PruefungDTOBuilder().withAdditionalTeilnehmerkreisSchaetzung(bwl, 10).build();
+        new PruefungDTOBuilder().withAdditionalTeilnehmerkreisSchaetzung(bwl, 10)
+            .withPruefungsNummer("analysis").build();
 
     PruefungDTO dm =
         new PruefungDTOBuilder()
             .withAdditionalTeilnehmerkreisSchaetzung(inf, 10)
             .withAdditionalTeilnehmerkreisSchaetzung(bwl, 10)
+            .withPruefungsNummer("dm")
             .build();
     Set<ReadOnlyPruefung> dmana = new HashSet<>(Arrays.asList(dm, analysis));
 
@@ -47,7 +49,7 @@ class BlockDTOTest {
   void blockIntegrationtest() {
     TeilnehmerkreisImpl bwl = new TeilnehmerkreisImpl("BWL", "ABC", 4, BACHELOR);
     ReadOnlyPruefung anylsis = new PruefungDTOBuilder().withPruefungsName("Analysis")
-        .withPruefungsName("1").withAdditionalTeilnehmerkreisSchaetzung(bwl, 10).build();
+        .withPruefungsNummer("1").withAdditionalTeilnehmerkreisSchaetzung(bwl, 10).build();
 
     ReadOnlyPruefung dm = new PruefungDTOBuilder(anylsis).withPruefungsName("DM")
         .withPruefungsNummer("2").withAdditionalTeilnehmerkreisSchaetzung(bwl, 10).build();

@@ -28,7 +28,7 @@ public class WocheVierFuerMaster extends WeicheRestriktion {
   }
 
   //Mock Konstruktor
-  WocheVierFuerMaster(DataAccessService dataAccessService, LocalDate start) {
+  WocheVierFuerMaster(DataAccessService dataAccessService) {
     super(dataAccessService, WOCHE_VIER_FUER_MASTER);
   }
 
