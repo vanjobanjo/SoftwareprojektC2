@@ -354,4 +354,12 @@ class ControllerTest {
         () -> deviceUnderTest.getSemester());
   }
 
+  @Test
+  void getAllTeilnehmerKreise_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getAllTeilnehmerkreise()).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getAllTeilnehmerKreise());
+  }
+
 }

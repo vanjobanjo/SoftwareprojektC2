@@ -529,7 +529,8 @@ public class DataAccessService {
     return Optional.ofNullable(pruefungsperiode.block(pruefung));
   }
 
-  public Set<Teilnehmerkreis> getAllTeilnehmerkreise() {
+  public Set<Teilnehmerkreis> getAllTeilnehmerkreise() throws NoPruefungsPeriodeDefinedException {
+    checkForPruefungsperiode();
     Set<Pruefung> allPruefungen = new HashSet<>();
     allPruefungen.addAll(pruefungsperiode.geplantePruefungen());
     allPruefungen.addAll(pruefungsperiode.ungeplantePruefungen());

@@ -116,7 +116,6 @@ public class Controller implements InterfaceController {
 
   @Override
   public Set<Teilnehmerkreis> getAllTeilnehmerKreise() throws NoPruefungsPeriodeDefinedException {
-    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getAllTeilnehmerkreise();
   }
 

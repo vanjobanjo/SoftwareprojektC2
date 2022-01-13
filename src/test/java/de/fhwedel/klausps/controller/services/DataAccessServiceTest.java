@@ -1629,4 +1629,11 @@ class DataAccessServiceTest {
         () -> deviceUnderTest.getSemester());
   }
 
+  @Test
+  void getAllTeilnehmerkreise_noPruefungsperiode() {
+    deviceUnderTest = new DataAccessService(null);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getAllTeilnehmerkreise());
+  }
+
 }
