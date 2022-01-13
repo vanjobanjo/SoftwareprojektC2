@@ -102,7 +102,6 @@ public class Controller implements InterfaceController {
 
   @Override
   public Semester getSemester() throws NoPruefungsPeriodeDefinedException {
-    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getSemester();
   }
 

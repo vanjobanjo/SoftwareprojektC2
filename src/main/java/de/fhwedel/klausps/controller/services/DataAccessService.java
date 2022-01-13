@@ -466,7 +466,8 @@ public class DataAccessService {
     return pruefungsperiode.getKapazitaet();
   }
 
-  public Semester getSemester() {
+  public Semester getSemester() throws NoPruefungsPeriodeDefinedException {
+    checkForPruefungsperiode();
     return pruefungsperiode.getSemester();
   }
 

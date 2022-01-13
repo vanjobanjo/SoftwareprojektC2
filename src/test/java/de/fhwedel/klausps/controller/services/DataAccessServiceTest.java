@@ -1622,4 +1622,11 @@ class DataAccessServiceTest {
         () -> deviceUnderTest.getPeriodenKapazitaet());
   }
 
+  @Test
+  void getSemester_noPruefungsperiode() {
+    deviceUnderTest = new DataAccessService(null);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getSemester());
+  }
+
 }
