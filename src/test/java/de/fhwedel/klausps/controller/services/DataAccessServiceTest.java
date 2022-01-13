@@ -190,26 +190,22 @@ class DataAccessServiceTest {
 
   @Test
   void ungeplanteBloeckeTest() throws NoPruefungsPeriodeDefinedException {
-    ReadOnlyPruefung ro01 = new PruefungDTOBuilder().withPruefungsName("inBlock0")
-        .withPruefungsNummer("123").build();
-    ReadOnlyPruefung ro02 = new PruefungDTOBuilder().withPruefungsName("inBlock1")
-        .withPruefungsNummer("1235").build();
-    Pruefung inBlock0 = getPruefungOfReadOnlyPruefung(ro01);
-    Pruefung inBlock1 = getPruefungOfReadOnlyPruefung(ro02);
+    Pruefung inBlock0 = getRandomUnplannedPruefung(1L);
+    Pruefung inBlock1 = getRandomUnplannedPruefung(2L);
     Block block = new BlockImpl(pruefungsperiode, 1, "name", Blocktyp.PARALLEL);
     block.addPruefung(inBlock0);
     block.addPruefung(inBlock1);
 
-    when(pruefungsperiode.ungeplanteBloecke()).thenReturn(new HashSet<>(List.of(block)));
-    Set<ReadOnlyBlock> ungeplanteBloecke = deviceUnderTest.getUngeplanteBloecke();
+    when(pruefungsperiode.ungeplanteBloecke()).thenReturn(Set.of(block));
 
-    assertThat(ungeplanteBloecke).hasSize(1);
-    ReadOnlyBlock resultBlock = new LinkedList<>(ungeplanteBloecke).get(0);
-    ReadOnlyPruefung ro0 = new LinkedList<>(resultBlock.getROPruefungen()).get(0);
-    ReadOnlyPruefung ro1 = new LinkedList<>(resultBlock.getROPruefungen()).get(1);
-    ReadOnlyBlockAssert.assertThat(resultBlock).containsOnlyPruefungen(ro01, ro02);
-    assertThat(ro0 != ro01 || ro0 != ro02).isTrue();
-    assertThat(ro1 != ro01 || ro1 != ro02).isTrue();
+    assertThat(deviceUnderTest.getUngeplanteBloecke()).hasSize(1);
+  }
+
+  @Test
+  void getUngeplanteBloecke_noPruefungsperiode() {
+    deviceUnderTest = new DataAccessService(null);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getUngeplanteBloecke());
   }
 
   @Test

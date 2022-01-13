@@ -277,9 +277,10 @@ public class DataAccessService {
     return pruefungsperiode.geplanteBloecke();
   }
 
-  public Set<ReadOnlyBlock> getUngeplanteBloecke() throws NoPruefungsPeriodeDefinedException {
-    return new HashSet<>(
-        converter.convertToROBlockSet(pruefungsperiode.ungeplanteBloecke()));
+  @NotNull
+  public Set<Block> getUngeplanteBloecke() throws NoPruefungsPeriodeDefinedException {
+    checkForPruefungsperiode();
+    return pruefungsperiode.ungeplanteBloecke();
   }
 
   public Set<ReadOnlyPruefung> ungeplantePruefungenForTeilnehmerkreis(Teilnehmerkreis tk)
