@@ -586,7 +586,10 @@ public class DataAccessService {
     return pruefungsperiode.getAnkertag();
   }
 
-  public int getAnzahlStudentenZeitpunkt(LocalDateTime zeitpunkt) {
+  public int getAnzahlStudentenZeitpunkt(LocalDateTime zeitpunkt)
+      throws NoPruefungsPeriodeDefinedException {
+    noNullParameters(zeitpunkt);
+    checkForPruefungsperiode();
     HashMap<Teilnehmerkreis, Integer> schaetzungen = new HashMap<>();
     int result = 0;
     for (Pruefung pruefung : pruefungsperiode.geplantePruefungen()) {

@@ -155,7 +155,6 @@ public class Controller implements InterfaceController {
   public int getAnzahlStudentenZeitpunkt(LocalDateTime zeitpunkt)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(zeitpunkt);
-    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getAnzahlStudentenZeitpunkt(zeitpunkt);
   }
 

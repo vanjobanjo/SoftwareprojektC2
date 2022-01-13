@@ -12,6 +12,7 @@ import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedPru
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedROPruefung;
 import static de.fhwedel.klausps.model.api.Blocktyp.PARALLEL;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -750,7 +751,7 @@ class DataAccessServiceTest {
     Pruefung modelAnalysis = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
     Pruefung modelDm = TestFactory.getPruefungOfReadOnlyPruefung(dm);
     LocalDateTime januar = LocalDateTime.of(2021, 1, 1, 1, 1);
-    Block block = TestFactory.configureMock_addPruefungToBlockModel(pruefungsperiode, "Hallo",
+    TestFactory.configureMock_addPruefungToBlockModel(pruefungsperiode, "Hallo",
         januar, modelAnalysis, modelDm);
     TestFactory.configureMock_getPruefungFromPeriode(pruefungsperiode, modelDm, modelAnalysis);
     //-----//
@@ -1342,7 +1343,21 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void getAnzahlStudentenZeitpunkt_no_exam_at_zeitpunkt() {
+  void getAnzahlStudentenZeitpunkt_zeitpunktMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.getAnzahlStudentenZeitpunkt(null));
+  }
+
+  @Test
+  void getAnzahlStudentenZeitpunkt_noPruefungsperiode() {
+    deviceUnderTest = new DataAccessService(null);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getAnzahlStudentenZeitpunkt(getRandomTime(1L)));
+  }
+
+  @Test
+  void getAnzahlStudentenZeitpunkt_no_exam_at_zeitpunkt()
+      throws NoPruefungsPeriodeDefinedException {
     LocalDateTime termin = LocalDateTime.of(2022, 1, 1, 0, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     analysis.setSchaetzung(infBachelor, 20);
@@ -1354,7 +1369,8 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void getAnzahlStudentenZeitpunkt_one_exam_at_time_multiple_teilnehmerkreise() {
+  void getAnzahlStudentenZeitpunkt_one_exam_at_time_multiple_teilnehmerkreise()
+      throws NoPruefungsPeriodeDefinedException {
     LocalDateTime termin = LocalDateTime.of(2022, 2, 2, 2, 2);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     int infB = 20;
@@ -1371,7 +1387,7 @@ class DataAccessServiceTest {
 
 
   @Test
-  void getAnzahlStudentenZeitpunkt_different_exams() {
+  void getAnzahlStudentenZeitpunkt_different_exams() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime termin = LocalDateTime.of(2022, 2, 2, 2, 2);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
@@ -1390,7 +1406,8 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void getAnzahlStudentenZeitpunkt_different_exams_second_has_not_started_yet() {
+  void getAnzahlStudentenZeitpunkt_different_exams_second_has_not_started_yet()
+      throws NoPruefungsPeriodeDefinedException {
     LocalDateTime termin = LocalDateTime.of(2022, 2, 2, 2, 2);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
@@ -1409,7 +1426,7 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void getAnzahlStudentenZeitpunkt_on_endzeitpunkt() {
+  void getAnzahlStudentenZeitpunkt_on_endzeitpunkt() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime termin = LocalDateTime.of(2022, 2, 2, 2, 2);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     int infB_analysis = 10;
@@ -1423,7 +1440,7 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void getAnzahlStudentenZeitpunkt_in_Block() {
+  void getAnzahlStudentenZeitpunkt_in_Block() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime termin = LocalDateTime.of(2022, 2, 2, 2, 2);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
@@ -1487,12 +1504,6 @@ class DataAccessServiceTest {
   private List<Pruefung> convertPruefungenFromReadonlyToModel(
       Collection<ReadOnlyPruefung> pruefungen) {
     return pruefungen.stream().map(this::getPruefungOfReadOnlyPruefung).toList();
-  }
-
-  private Pruefung getPruefungWithPruefer(String pruefer) {
-    Pruefung pruefung = new PruefungImpl("b001", "Analysis", "refNbr", Duration.ofMinutes(70));
-    pruefung.addPruefer(pruefer);
-    return pruefung;
   }
 
   private Pruefung getPruefungWithPruefer(String... pruefer) {
@@ -1560,7 +1571,7 @@ class DataAccessServiceTest {
     LocalDate newAnkertag = getRandomTime(1L).toLocalDate();
     when(pruefungsperiode.getStartdatum()).thenReturn(newAnkertag);
     when(pruefungsperiode.getEnddatum()).thenReturn(newAnkertag.plusDays(1));
-    deviceUnderTest.setAnkertag(newAnkertag);
+    assertDoesNotThrow(() -> deviceUnderTest.setAnkertag(newAnkertag));
   }
 
   @Test
@@ -1577,7 +1588,7 @@ class DataAccessServiceTest {
     LocalDate newAnkertag = getRandomTime(1L).toLocalDate();
     when(pruefungsperiode.getStartdatum()).thenReturn(newAnkertag.minusDays(2));
     when(pruefungsperiode.getEnddatum()).thenReturn(newAnkertag);
-    deviceUnderTest.setAnkertag(newAnkertag);
+    assertDoesNotThrow(() -> deviceUnderTest.setAnkertag(newAnkertag));
   }
 
   @Test
