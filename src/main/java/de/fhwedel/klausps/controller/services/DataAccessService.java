@@ -255,6 +255,16 @@ public class DataAccessService {
     return pruefungsperiode.geplantePruefungen();
   }
 
+  public List<Planungseinheit> getAllPlanungseinheitenBetween(LocalDateTime start,
+      LocalDateTime end) throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
+    noNullParameters(start, end);
+    checkForPruefungsperiode();
+    if (start.isAfter(end)) {
+      throw new IllegalTimeSpanException("Der Start liegt nach dem Ende des Zeitslots");
+    }
+    return List.copyOf(this.getPruefungsperiode().planungseinheitenBetween(start, end));
+  }
+
   @NotNull
   public Set<Pruefung> getAllPruefungenBetween(LocalDateTime start, LocalDateTime end)
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
@@ -486,12 +496,6 @@ public class DataAccessService {
     throw new UnsupportedOperationException("Not implemented yet!");
   }
 
-  private void checkForPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
-    if (pruefungsperiode == null) {
-      throw new NoPruefungsPeriodeDefinedException();
-    }
-  }
-
   //TODO kann das hier raus? Evtl? Weil hier an dieser Stelle der Converter genutzt wird.
   public Optional<ReadOnlyBlock> getBlockTo(ReadOnlyPruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
@@ -636,23 +640,10 @@ public class DataAccessService {
     return pruefungsperiode.block(blockId) != null;
   }
 
-  public Set<ReadOnlyPlanungseinheit> getAllROPlanungseinheitenBetween(LocalDateTime start,
-      LocalDateTime end) throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
-    return Set.copyOf(
-        converter.convertToROPlanungseinheitCollection(getAllPlanungseinheitenBetween(start, end)));
-  }
-
-  public List<Planungseinheit> getAllPlanungseinheitenBetween(LocalDateTime start,
-      LocalDateTime end)
-      throws IllegalTimeSpanException {
-    if (start.isAfter(end)) {
-      throw new IllegalTimeSpanException("Der Start liegt nach dem Ende des Zeitslots");
-    }
-    //TODO hier gucken, ob das hier hin  muss
-   /* if(this.isPruefungsperiodeSet()){
+  private void checkForPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    if (pruefungsperiode == null) {
       throw new NoPruefungsPeriodeDefinedException();
-    }*/
-    return List.copyOf(this.getPruefungsperiode().planungseinheitenBetween(start, end));
+    }
   }
 
   public Pruefungsperiode getPruefungsperiode() {

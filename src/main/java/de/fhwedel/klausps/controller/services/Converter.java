@@ -40,6 +40,15 @@ public class Converter {
     scheduleService = service;
   }
 
+  public Set<ReadOnlyBlock> convertToROBlockSet(
+      Collection<Block> collection) throws NoPruefungsPeriodeDefinedException {
+    Set<ReadOnlyBlock> result = new HashSet<>();
+    for (Block block : collection) {
+      result.add(convertToROBlock(block));
+    }
+    return result;
+  }
+
   public ReadOnlyBlock convertToROBlock(Block block) throws NoPruefungsPeriodeDefinedException {
     Set<ReadOnlyPruefung> pruefungen = new HashSet<>(
         convertToROPruefungSet(block.getPruefungen()));
@@ -52,10 +61,22 @@ public class Converter {
         block.getTyp());
   }
 
-  public ReadOnlyPruefung convertToReadOnlyPruefung(Pruefung pruefung)
-      throws NoPruefungsPeriodeDefinedException {
-    return new PruefungDTOBuilder(pruefung).withScoring(scheduleService.scoringOfPruefung(pruefung))
-        .build();
+  public Set<ReadOnlyPruefung> convertToROPruefungSet(
+      Collection<Pruefung> collection) throws NoPruefungsPeriodeDefinedException {
+    Set<ReadOnlyPruefung> result = new HashSet<>();
+    for (Pruefung pruefung : collection) {
+      result.add(convertToReadOnlyPruefung(pruefung));
+    }
+    return result;
+  }
+
+  public Set<ReadOnlyPlanungseinheit> convertToROPlanungseinheitSet(
+      Collection<Planungseinheit> collection) throws NoPruefungsPeriodeDefinedException {
+    Set<ReadOnlyPlanungseinheit> result = new HashSet<>();
+    for (Planungseinheit planungseinheit : collection) {
+      result.add(convertToReadOnlyPlanungseinheit(planungseinheit));
+    }
+    return result;
   }
 
   public ReadOnlyPlanungseinheit convertToReadOnlyPlanungseinheit(
@@ -67,36 +88,15 @@ public class Converter {
     }
   }
 
-  public Set<ReadOnlyPruefung> convertToROPruefungSet(
-      Collection<Pruefung> collection) throws NoPruefungsPeriodeDefinedException {
-    Set<ReadOnlyPruefung> result = new HashSet<>();
-    for (Pruefung pruefung : collection) {
-      result.add(convertToReadOnlyPruefung(pruefung));
-    }
-    return result;
+  public ReadOnlyPruefung convertToReadOnlyPruefung(Pruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException {
+    return new PruefungDTOBuilder(pruefung).withScoring(scheduleService.scoringOfPruefung(pruefung))
+        .build();
   }
 
-  public Set<ReadOnlyBlock> convertToROBlockSet(
-      Collection<Block> collection) throws NoPruefungsPeriodeDefinedException {
-    Set<ReadOnlyBlock> result = new HashSet<>();
-    for (Block block : collection) {
-      result.add(convertToROBlock(block));
-    }
-    return result;
-  }
-
-  public Collection<ReadOnlyPlanungseinheit> convertToROPlanungseinheitCollection(
-      Collection<Planungseinheit> collection) throws NoPruefungsPeriodeDefinedException {
-    Collection<ReadOnlyPlanungseinheit> result = new HashSet<>();
-    for (Planungseinheit planungseinheit : collection) {
-      result.add(convertToReadOnlyPlanungseinheit(planungseinheit));
-    }
-    return result;
-  }
-
-  public Collection<ReadOnlyPlanungseinheit> convertToROPlanungseinheitCollection(
+  public Set<ReadOnlyPlanungseinheit> convertToROPlanungseinheitSet(
       Planungseinheit... planungseinheiten) throws NoPruefungsPeriodeDefinedException {
-    Collection<ReadOnlyPlanungseinheit> result = new HashSet<>();
+    Set<ReadOnlyPlanungseinheit> result = new HashSet<>();
     for (Planungseinheit planungseinheit : planungseinheiten) {
       result.add(convertToReadOnlyPlanungseinheit(planungseinheit));
     }
@@ -138,7 +138,7 @@ public class Converter {
       TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung(teilnehmercount, hKA.getTeilnehmercount());
     }
 
-    for(Integer count : teilnehmercount.values()){
+    for (Integer count : teilnehmercount.values()) {
       amountStudents += count;
     }
 

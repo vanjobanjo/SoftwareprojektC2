@@ -17,6 +17,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.matchers.IsOneOfMatcher;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Block;
@@ -44,7 +45,7 @@ class AtSameTimeRestrictionTest {
   public DataAccessService dataAccessService;
 
   @BeforeEach
-  public void setUp() {
+  public void setUp() throws NoPruefungsPeriodeDefinedException {
     this.dataAccessService = mock(DataAccessService.class);
     MockSettings mockSettings = withSettings().useConstructor(this.dataAccessService,
         ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH, ZERO);
@@ -54,7 +55,7 @@ class AtSameTimeRestrictionTest {
 
   @Test
   @DisplayName("Checking an unplanned pruefung results in no violation")
-  void evaluate_callWithUnplannedPruefung() {
+  void evaluate_callWithUnplannedPruefung() throws NoPruefungsPeriodeDefinedException {
     Pruefung pruefung = getRandomUnplannedPruefung(5L);
     when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Collections.emptySet());
     assertThat(deviceUnderTest.evaluate(pruefung)).isEmpty();
@@ -62,7 +63,7 @@ class AtSameTimeRestrictionTest {
 
   @Test
   @DisplayName("Multiple pruefungen do not violate the restriction when not at the same time")
-  void evaluate_noSimultaneousPruefungen() {
+  void evaluate_noSimultaneousPruefungen() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
     LocalDateTime startSecondPruefung = startFirstPruefung.plusMinutes(180);
     LocalDateTime startThirdPruefung = startSecondPruefung.plusMinutes(180);
@@ -77,7 +78,8 @@ class AtSameTimeRestrictionTest {
   }
 
   @Test
-  void evaluate_violatedRestrictionResultsInAnalyse() throws IllegalTimeSpanException {
+  void evaluate_violatedRestrictionResultsInAnalyse()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
     List<Planungseinheit> pruefungen = convertPruefungenToPlanungseinheiten(
         getRandomPruefungenAt(5L, startFirstPruefung, startFirstPruefung.plusMinutes(15),
@@ -91,7 +93,8 @@ class AtSameTimeRestrictionTest {
   }
 
   @Test
-  void evaluate_violatedRestrictionResultsInAnalyse_() throws IllegalTimeSpanException {
+  void evaluate_violatedRestrictionResultsInAnalyse_()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
     List<Planungseinheit> pruefungen = convertPruefungenToPlanungseinheiten(
         getRandomPruefungenAt(5L, startFirstPruefung, startFirstPruefung.plusMinutes(15),
@@ -105,7 +108,8 @@ class AtSameTimeRestrictionTest {
   }
 
   @Test
-  void evaluate_notViolatedRestrictionResultsInNoAnalyse() throws IllegalTimeSpanException {
+  void evaluate_notViolatedRestrictionResultsInNoAnalyse()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
     List<Planungseinheit> pruefungen = convertPruefungenToPlanungseinheiten(
         getRandomPruefungenAt(5L, startFirstPruefung, startFirstPruefung.plusMinutes(15),
@@ -119,7 +123,8 @@ class AtSameTimeRestrictionTest {
   }
 
   @Test
-  void evaluate_checkedPruefungIsInBlock_parallel() throws IllegalTimeSpanException {
+  void evaluate_checkedPruefungIsInBlock_parallel()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     // when checking for a pruefung use the start and end time of the pruefung itself when the blocks type is parallel
     Block block = getParallelBlockWith3Pruefungen().asBlock();
     List<Pruefung> pruefungenInBlock = new ArrayList<>(block.getPruefungen());
@@ -142,7 +147,8 @@ class AtSameTimeRestrictionTest {
   }
 
   @Test
-  void evaluate_checkedPruefungIsInBlock_sequential() throws IllegalTimeSpanException {
+  void evaluate_checkedPruefungIsInBlock_sequential()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     // when checking for a pruefung use the start and end time of its block if the blocks type is sequential
     Block block = getSequentialBlockWith3Pruefungen().asBlock();
     List<Pruefung> pruefungenInBlock = new ArrayList<>(block.getPruefungen());
@@ -165,7 +171,8 @@ class AtSameTimeRestrictionTest {
   }
 
   @Test
-  void sequentialBlocksOverlapBecauseOfAdditiveDuration() throws IllegalTimeSpanException {
+  void sequentialBlocksOverlapBecauseOfAdditiveDuration()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     // test that sequential blocks are detected as overlapping with the checked pruefung if none of
     // the contained pruefungen overlaps but the combined time does.
     Block block = getSequentialBlockWithTotalDurationOf5Hours().asBlock();

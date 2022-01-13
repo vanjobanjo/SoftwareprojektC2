@@ -1,6 +1,7 @@
 package de.fhwedel.klausps.controller;
 
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomDate;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedROPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTeilnehmerkreis;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTime;
@@ -9,6 +10,7 @@ import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.only;
@@ -18,7 +20,6 @@ import static org.mockito.Mockito.when;
 
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
-import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.Converter;
@@ -27,6 +28,7 @@ import de.fhwedel.klausps.controller.services.IOService;
 import de.fhwedel.klausps.controller.services.ScheduleService;
 import de.fhwedel.klausps.controller.util.TestUtils;
 import de.fhwedel.klausps.model.api.Ausbildungsgrad;
+import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Semestertyp;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
@@ -34,7 +36,7 @@ import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
-import java.util.Set;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -45,14 +47,16 @@ class ControllerTest {
   DataAccessService dataAccessService;
   IOService ioService;
   ScheduleService scheduleService;
+  Converter converter;
 
   @BeforeEach
   public void setUp() {
     this.dataAccessService = mock(DataAccessService.class);
     this.ioService = mock(IOService.class);
     this.scheduleService = mock(ScheduleService.class);
+    this.converter = mock(Converter.class);
     this.deviceUnderTest = new Controller(dataAccessService, ioService, scheduleService,
-        new Converter());
+        converter);
   }
 
   @Test
@@ -192,7 +196,8 @@ class ControllerTest {
   @Test
   void getAllPlanungseinheitenBetween_no_period()
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
-    when(dataAccessService.getAllROPlanungseinheitenBetween(any(), any())).thenReturn(null);
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
     LocalDateTime start = LocalDateTime.now();
     LocalDateTime end = start.plusDays(1L);
     assertThrows(NoPruefungsPeriodeDefinedException.class,
@@ -203,21 +208,45 @@ class ControllerTest {
   void getAllPlanungseinheitenBetween_all_planned_pruefungen()
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     when(dataAccessService.isPruefungsperiodeSet()).thenReturn(true);
-    ReadOnlyPruefung roPruefung = getRandomPlannedROPruefung(1L);
-    LocalDateTime start = roPruefung.getTermin().get();
+    Pruefung pruefung = getRandomPlannedPruefung(1L);
+    LocalDateTime start = pruefung.getStartzeitpunkt();
     LocalDateTime end = start.plusDays(1L);
-    when(dataAccessService.getAllROPlanungseinheitenBetween(start, end)).thenReturn(
-        Set.of(roPruefung));
-    assertThat(deviceUnderTest.getPlanungseinheitenInZeitraum(start, end)).containsOnly(roPruefung);
+    when(dataAccessService.getAllPlanungseinheitenBetween(start, end)).thenReturn(
+        List.of(pruefung));
+    when(converter.convertToROPlanungseinheitSet(anyCollection())).thenCallRealMethod();
+    deviceUnderTest.getPlanungseinheitenInZeitraum(start, end);
+    verify(converter).convertToROPlanungseinheitSet(anyCollection());
+    assertThat(deviceUnderTest.getPlanungseinheitenInZeitraum(start, end)).hasSize(1);
+  }
+
+  @Test
+  void getPlanungseinheitenInZeitraum_startMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.getPlanungseinheitenInZeitraum(null, getRandomTime(2L)));
+  }
+
+  @Test
+  void getPlanungseinheitenInZeitraum_endMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.getPlanungseinheitenInZeitraum(getRandomTime(1L), null));
+  }
+
+  @Test
+  void getPlanungseinheitenInZeitraum_noPruefungsperiode()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.getPlanungseinheitenInZeitraum(getRandomTime(1L), null));
   }
 
   @Test
   void getAllPlanungseinheitenBetween_illegalTimeSpan()
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     LocalDateTime start = LocalDateTime.now();
-    LocalDateTime end = start.plusDays(1L);
+    LocalDateTime end = start.minusDays(1L);
     when(dataAccessService.isPruefungsperiodeSet()).thenReturn(true);
-    when(dataAccessService.getAllROPlanungseinheitenBetween(any(), any())).thenThrow(
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenThrow(
         IllegalTimeSpanException.class);
     assertThrows(IllegalTimeSpanException.class,
         () -> deviceUnderTest.getPlanungseinheitenInZeitraum(start, end));

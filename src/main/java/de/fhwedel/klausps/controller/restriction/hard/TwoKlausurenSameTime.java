@@ -46,7 +46,8 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
   }
 
   @Override
-  public Optional<HartesKriteriumAnalyse> evaluate(Pruefung pruefung) {
+  public Optional<HartesKriteriumAnalyse> evaluate(Pruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException {
     if (pruefung.isGeplant()) {
       //Setzen von den start und end Termin, wo das Kriterium verletzt werden könnte
       LocalDateTime start = pruefung.getStartzeitpunkt().minus(bufferBetweenPlanungseinheiten);
@@ -62,7 +63,7 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
   }
 
   private List<Planungseinheit> tryToGetAllPlanungseinheitenBetween(LocalDateTime start,
-      LocalDateTime end) {
+      LocalDateTime end) throws NoPruefungsPeriodeDefinedException {
     try {
       return dataAccessService.getAllPlanungseinheitenBetween(start, end);
     } catch (IllegalTimeSpanException e) {

@@ -169,8 +169,8 @@ public class Controller implements InterfaceController {
   public Set<ReadOnlyPlanungseinheit> getPlanungseinheitenInZeitraum(LocalDateTime start,
       LocalDateTime end) throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
     noNullParameters(start, end);
-    ensureAvailabilityOfPruefungsperiode();
-    return dataAccessService.getAllROPlanungseinheitenBetween(start, end);
+    return converter.convertToROPlanungseinheitSet(
+        dataAccessService.getAllPlanungseinheitenBetween(start, end));
   }
 
   @Override

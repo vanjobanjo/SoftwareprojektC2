@@ -54,7 +54,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
 
   @Test
   @DisplayName("A single Pruefung can not violate the restriction")
-  void evaluate_onlyCheckedPruefungIsPlanned() {
+  void evaluate_onlyCheckedPruefungIsPlanned() throws NoPruefungsPeriodeDefinedException {
     Pruefung pruefung = getRandomPlannedPruefung(5L);
     when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(pruefung));
 
@@ -63,7 +63,8 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
 
   @Test
   @DisplayName("More pruefungen at a time than allowed results in presence of result")
-  void evaluate_onePruefungMoreAtATimeThanAllowed_getCollision() throws IllegalTimeSpanException {
+  void evaluate_onePruefungMoreAtATimeThanAllowed_getCollision()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2);
     LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
     List<Planungseinheit> pruefungen = convertPruefungenToPlanungseinheiten(
@@ -78,7 +79,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
   @Test
   @DisplayName("Result of multiple overlapping pruefungen contains correct pruefungen")
   void evaluate_onePruefungMoreAtATimeThanAllowed_analysisContainsCorrectPruefungen()
-      throws IllegalTimeSpanException {
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     // set the max amount of simultaneous pruefungen to 2
     this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2);
     LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
@@ -95,7 +96,8 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
 
   @Test
   @DisplayName("Violations are detected when pruefungen have identical time slots")
-  void evaluate_onePruefungMoreAtATimeThanAllowed_equalIntervals() throws IllegalTimeSpanException {
+  void evaluate_onePruefungMoreAtATimeThanAllowed_equalIntervals()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     // set the max amount of simultaneous pruefungen to 1
     this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1);
     List<Pruefung> pruefungen = get2PruefungenOnSameInterval();
@@ -120,7 +122,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
   @Test
   @DisplayName("Violations are detected when pruefungen overlap partly")
   void evaluate_onePruefungMoreAtATimeThanAllowed_overlappingIntervals()
-      throws IllegalTimeSpanException {
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     // set the max amount of simultaneous pruefungen to 1
     this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1);
     List<Pruefung> pruefungen = get2PruefungenWithOneOverlappingTheOther();
@@ -142,7 +144,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
   @Test
   @DisplayName("Violations are detected when one pruefungs time-slot contains anotherones")
   void evaluate_onePruefungMoreAtATimeThanAllowed_intervalContainingOtherInterval()
-      throws IllegalTimeSpanException {
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     // set the max amount of simultaneous pruefungen to 1
     this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1);
     List<Pruefung> pruefungen = get2PruefungenWithOneContainedByOther();
@@ -167,7 +169,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
   @Test
   @DisplayName("Violations with overlapping pruefungen show the correct pruefungen in result")
   void evaluate_onePruefungMoreAtATimeThanAllowed_analysisContainsCorrectTeilnehmerkreise()
-      throws IllegalTimeSpanException {
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     // set the max amount of simultaneous pruefungen to 2
     this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2);
     LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
@@ -195,7 +197,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
   @Test
   @DisplayName("Directly overlapping pruefungen cause no violation when less than limit")
   void evaluate_asManyPruefungenAtSameTimeAsAllowed_twoDirectlyOverlapping()
-      throws IllegalTimeSpanException {
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     // set the max amount of simultaneous pruefungen to 2
     this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2);
     LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
@@ -211,7 +213,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
   @Test
   @DisplayName("Two sequential pruefungen both overlapping with third one without exceeding the limit")
   void evaluate_asManyPruefungenAtSameTimeAsAllowed_twoAfterEachOtherOverlappingWithThird()
-      throws IllegalTimeSpanException {
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     // aaaa bbbb
     //   ccccc
     Duration puffer = Duration.ofMinutes(30);
@@ -242,7 +244,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
   @Test
   @DisplayName("Violations detected when sequential pruefungen do not maintain buffer")
   void evaluate_morePlanungseinheitenThanPermitted_pruefungenCloserThanBufferButNotOverlapping()
-      throws IllegalTimeSpanException {
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     Duration puffer = Duration.ofMinutes(10);
     this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1,
         puffer);
@@ -269,7 +271,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
   @Test
   @DisplayName("Adjacent pruefungen are accepted when buffer is 0")
   void evaluate_morePlanungseinheitenThanPermitted_noBufferPlanungseinheitenAdjacent()
-      throws IllegalTimeSpanException {
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     Duration puffer = Duration.ZERO;
     this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1,
         puffer);
@@ -297,7 +299,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
   @Test
   @DisplayName("Adjacent pruefungen maintaining buffer cause no violation")
   void evaluate_morePlanungseinheitenThanPermitted_planungseinheitenAdjacent()
-      throws IllegalTimeSpanException {
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     Duration buffer = Duration.ofMinutes(30);
     this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1,
         buffer);
@@ -323,7 +325,8 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
 
   @Test
   @DisplayName("The minimal scoring corresponds with the factor of this criteria")
-  void evaluate_scoringForMinimalViolation() throws IllegalTimeSpanException {
+  void evaluate_scoringForMinimalViolation()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     Duration buffer = Duration.ofMinutes(30);
     this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1,
         buffer);
@@ -343,7 +346,8 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
 
   @Test
   @DisplayName("Affected students correspond with sum students per distinct teilnehmerkreis")
-  void evaluate_sumOfTeilnehmerkreisschaetzungen() throws IllegalTimeSpanException {
+  void evaluate_sumOfTeilnehmerkreisschaetzungen()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     List<Pruefung> pruefungen = get2PruefungenWithDistinctTeilnehmerkreiseWithSchaetzung(5, 12);
     int expectedTeilnehmerAmount = 5 + 12;
 
@@ -375,7 +379,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
   @Test
   @DisplayName("Affected students: For each ambiguous teilnehmerkreis the one with the highest amount of students counts")
   void evaluate_sumOfTeilnehmerkreisschaetzungen_onlyCountHighestValueOfTeilnehmerkreis()
-      throws IllegalTimeSpanException {
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1);
     List<Pruefung> pruefungen = get2PruefungenWithSameTeilnehmerkreiseWithSchaetzung(5, 12);
     int expectedTeilnehmerAmount = 12;
@@ -407,7 +411,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
   @Test
   @DisplayName("Conflicts do not get caught when the checked pruefung is not involved")
   void evaluate_moreAtSameTimeThatAllowedButRequestedNotInvolvedInConflict()
-      throws IllegalTimeSpanException {
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     // max 2 pruefungen at a time and no buffer
     this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2,
         Duration.ZERO);

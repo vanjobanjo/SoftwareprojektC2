@@ -78,7 +78,8 @@ public class RestrictionService {
     return result;
   }
 
-  public List<HartesKriteriumAnalyse> checkHarteKriterienAll(Set<Pruefung> pruefungenToCheck) {
+  public List<HartesKriteriumAnalyse> checkHarteKriterienAll(Set<Pruefung> pruefungenToCheck)
+      throws NoPruefungsPeriodeDefinedException {
     List<HartesKriteriumAnalyse> result = new LinkedList<>();
     for (Pruefung currentToCheck : pruefungenToCheck) {
       result.addAll(checkHarteKriterien(currentToCheck));
@@ -92,9 +93,12 @@ public class RestrictionService {
    * @param pruefung Pruefung to check criteria
    * @return HartesKriteriumAnalysen
    */
-  public List<HartesKriteriumAnalyse> checkHarteKriterien(Pruefung pruefung) {
+  public List<HartesKriteriumAnalyse> checkHarteKriterien(Pruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException {
     List<HartesKriteriumAnalyse> result = new LinkedList<>();
-    hardRestrictions.forEach(hard -> hard.evaluate(pruefung).ifPresent(result::add));
+    for (HarteRestriktion hard : hardRestrictions) {
+      hard.evaluate(pruefung).ifPresent(result::add);
+    }
     return result;
   }
 

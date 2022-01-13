@@ -5,6 +5,7 @@ import static de.fhwedel.klausps.model.api.Blocktyp.SEQUENTIAL;
 
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Block;
@@ -34,7 +35,8 @@ public abstract class AtSameTimeRestriction extends WeicheRestriktion {
 
   @Override
   @NotNull
-  public Optional<WeichesKriteriumAnalyse> evaluate(@NotNull Pruefung pruefung) {
+  public Optional<WeichesKriteriumAnalyse> evaluate(@NotNull Pruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException {
     if (!pruefung.isGeplant()) {
       return Optional.empty();
     }
@@ -61,7 +63,7 @@ public abstract class AtSameTimeRestriction extends WeicheRestriktion {
 
   @NotNull
   private List<Planungseinheit> tryToGetAllPlanungseinheitenBetween(@NotNull LocalDateTime from,
-      @NotNull LocalDateTime to) {
+      @NotNull LocalDateTime to) throws NoPruefungsPeriodeDefinedException {
     try {
       return dataAccessService.getAllPlanungseinheitenBetween(from, to);
     } catch (IllegalTimeSpanException e) {

@@ -62,10 +62,41 @@ public class ScheduleService {
     return result;
   }
 
-  private List<ReadOnlyPlanungseinheit> calculateScoringForCachedAffected(Set<Pruefung> affected)
+  @NotNull
+  private List<ReadOnlyPlanungseinheit> affectedPruefungenSoft(Block blockModel)
       throws NoPruefungsPeriodeDefinedException {
-    return new ArrayList<>(
-        converter.convertToROPlanungseinheitCollection(getPlanungseinheitenWithBlock(affected)));
+    if (!blockModel.isGeplant()) {
+      return emptyList();
+    }
+    Set<Pruefung> changedScoring = new HashSet<>();
+    for (Pruefung p : blockModel.getPruefungen()) {
+      changedScoring.addAll(restrictionService.getAffectedPruefungen(p));
+    }
+    return new LinkedList<>(converter.convertToROPlanungseinheitSet(
+        getPlanungseinheitenWithBlock(changedScoring)));
+  }
+
+  public List<ReadOnlyPlanungseinheit> removePruefungFromBlock(ReadOnlyBlock block,
+      ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException {
+    noNullParameters(block, pruefung);
+    Pruefung toRemove = getPruefungIfExistent(pruefung);
+    Optional<Block> toRemoveFrom = dataAccessService.getBlockTo(toRemove);
+    if (toRemoveFrom.isEmpty()) {
+      return emptyList();
+    }
+    if (!block.geplant()) {
+      Block resultingBlock = dataAccessService.removePruefungFromBlock(block, pruefung);
+      Pruefung unscheduledPruefung = getPruefungIfExistent(pruefung);
+      return new ArrayList<>(
+          converter.convertToROPlanungseinheitSet(resultingBlock, unscheduledPruefung));
+    }
+
+    Set<Pruefung> affectedPruefungen = restrictionService.getAffectedPruefungen(toRemove);
+    Block blockWithoutPruefung = dataAccessService.removePruefungFromBlock(block, pruefung);
+    List<ReadOnlyPlanungseinheit> result = calculateScoringForCachedAffected(affectedPruefungen);
+    result.add(converter.convertToReadOnlyPlanungseinheit(blockWithoutPruefung));
+    return result;
+
   }
 
   private Set<Planungseinheit> getPlanungseinheitenWithBlock(Set<Pruefung> pruefungen) {
@@ -108,17 +139,14 @@ public class ScheduleService {
   }
 
   @NotNull
-  private List<ReadOnlyPlanungseinheit> affectedPruefungenSoft(Block blockModel)
+  private Pruefung getPruefungIfExistent(ReadOnlyPruefung pruefungToGet)
       throws NoPruefungsPeriodeDefinedException {
-    if (!blockModel.isGeplant()) {
-      return emptyList();
+    Optional<Pruefung> pruefung = dataAccessService.getPruefung(pruefungToGet);
+    if (pruefung.isEmpty()) {
+      throw new IllegalArgumentException(
+          String.format("Pruefung %s does not exists.", pruefungToGet));
     }
-    Set<Pruefung> changedScoring = new HashSet<>();
-    for (Pruefung p : blockModel.getPruefungen()) {
-      changedScoring.addAll(restrictionService.getAffectedPruefungen(p));
-    }
-    return new LinkedList<>(converter.convertToROPlanungseinheitCollection(
-        getPlanungseinheitenWithBlock(changedScoring)));
+    return pruefung.get();
   }
 
   public List<ReadOnlyPlanungseinheit> unscheduleBlock(ReadOnlyBlock block)
@@ -169,17 +197,6 @@ public class ScheduleService {
     return block == null ? Optional.empty() : Optional.of(converter.convertToROBlock(block));
   }
 
-  @NotNull
-  private Pruefung getPruefungIfExistent(ReadOnlyPruefung pruefungToGet)
-      throws NoPruefungsPeriodeDefinedException {
-    Optional<Pruefung> pruefung = dataAccessService.getPruefung(pruefungToGet);
-    if (pruefung.isEmpty()) {
-      throw new IllegalArgumentException(
-          String.format("Pruefung %s does not exists.", pruefungToGet));
-    }
-    return pruefung.get();
-  }
-
   public List<ReadOnlyPlanungseinheit> addPruefungToBlock(ReadOnlyBlock block,
       ReadOnlyPruefung pruefung)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
@@ -214,27 +231,10 @@ public class ScheduleService {
     }
   }
 
-  public List<ReadOnlyPlanungseinheit> removePruefungFromBlock(ReadOnlyBlock block,
-      ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException {
-    noNullParameters(block, pruefung);
-    Pruefung toRemove = getPruefungIfExistent(pruefung);
-    Optional<Block> toRemoveFrom = dataAccessService.getBlockTo(toRemove);
-    if (toRemoveFrom.isEmpty()) {
-      return emptyList();
-    }
-    if (!block.geplant()) {
-      Block resultingBlock = dataAccessService.removePruefungFromBlock(block, pruefung);
-      Pruefung unscheduledPruefung = getPruefungIfExistent(pruefung);
-      return new ArrayList<>(
-          converter.convertToROPlanungseinheitCollection(resultingBlock, unscheduledPruefung));
-    }
-
-    Set<Pruefung> affectedPruefungen = restrictionService.getAffectedPruefungen(toRemove);
-    Block blockWithoutPruefung = dataAccessService.removePruefungFromBlock(block, pruefung);
-    List<ReadOnlyPlanungseinheit> result = calculateScoringForCachedAffected(affectedPruefungen);
-    result.add(converter.convertToReadOnlyPlanungseinheit(blockWithoutPruefung));
-    return result;
-
+  private List<ReadOnlyPlanungseinheit> calculateScoringForCachedAffected(Set<Pruefung> affected)
+      throws NoPruefungsPeriodeDefinedException {
+    return new ArrayList<>(
+        converter.convertToROPlanungseinheitSet(getPlanungseinheitenWithBlock(affected)));
   }
 
   /**
@@ -265,15 +265,18 @@ public class ScheduleService {
     }
   }
 
-  @NotNull
-  private List<ReadOnlyPlanungseinheit> affectedPruefungenSoft(Pruefung pruefungModel)
-      throws NoPruefungsPeriodeDefinedException {
-    if (!pruefungModel.isGeplant()) {
-      return new ArrayList<>();
+  public List<ReadOnlyPlanungseinheit> setDauer(ReadOnlyPruefung pruefung, Duration dauer)
+      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
+    noNullParameters(pruefung, dauer);
+    dataAccessService.changeDurationOf(pruefung, dauer);
+    Pruefung pruefungModel = getPruefungIfExistent(pruefung);
+    List<HartesKriteriumAnalyse> hard = restrictionService.checkHarteKriterien(pruefungModel);
+
+    if (!hard.isEmpty()) {
+      dataAccessService.changeDurationOf(pruefung, pruefung.getDauer());
+      throw converter.convertHardException(hard);
     }
-    Set<Pruefung> changedScoring = restrictionService.getAffectedPruefungen(pruefungModel);
-    return new LinkedList<>(converter.convertToROPlanungseinheitCollection(
-        getPlanungseinheitenWithBlock(changedScoring)));
+    return affectedPruefungenSoft(pruefungModel);
   }
 
   public List<ReadOnlyPlanungseinheit> removeTeilnehmerKreis(ReadOnlyPruefung roPruefung,
@@ -353,20 +356,6 @@ public class ScheduleService {
         restrictionService.getPruefungenInHardConflictWith(planungseinheit)));
   }
 
-  public List<ReadOnlyPlanungseinheit> setDauer(ReadOnlyPruefung pruefung, Duration dauer)
-      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
-    noNullParameters(pruefung, dauer);
-    dataAccessService.changeDurationOf(pruefung, dauer);
-    Pruefung pruefungModel = getPruefungIfExistent(pruefung);
-    List<HartesKriteriumAnalyse> hard = restrictionService.checkHarteKriterien(pruefungModel);
-
-    if (!hard.isEmpty()) {
-      dataAccessService.changeDurationOf(pruefung, pruefung.getDauer());
-      throw converter.convertHardException(hard);
-    }
-    return affectedPruefungenSoft(pruefungModel);
-  }
-
   private Planungseinheit getAsModel(ReadOnlyPlanungseinheit planungseinheitToCheckFor)
       throws NoPruefungsPeriodeDefinedException {
     if (planungseinheitToCheckFor.isBlock()) {
@@ -379,6 +368,17 @@ public class ScheduleService {
     } else {
       return getPruefungIfExistent(planungseinheitToCheckFor.asPruefung());
     }
+  }
+
+  @NotNull
+  private List<ReadOnlyPlanungseinheit> affectedPruefungenSoft(Pruefung pruefungModel)
+      throws NoPruefungsPeriodeDefinedException {
+    if (!pruefungModel.isGeplant()) {
+      return new ArrayList<>();
+    }
+    Set<Pruefung> changedScoring = restrictionService.getAffectedPruefungen(pruefungModel);
+    return new LinkedList<>(converter.convertToROPlanungseinheitSet(
+        getPlanungseinheitenWithBlock(changedScoring)));
   }
 
   public List<KriteriumsAnalyse> analyseScoring(ReadOnlyPruefung pruefung)

@@ -410,10 +410,14 @@ class DataAccessServiceTest {
         () -> deviceUnderTest.scheduleBlock(blockToSchedule, termin));
   }
 
-  private void configureMock_getPruefungToROPruefung(ReadOnlyPruefung... pruefungen) {
+  private void configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(
+      Block modelBlock, LocalDateTime termin, ReadOnlyPruefung... pruefungen) {
     for (ReadOnlyPruefung p : pruefungen) {
       Pruefung temp = getPruefungOfReadOnlyPruefung(p);
+      modelBlock.addPruefung(temp);
+      modelBlock.setStartzeitpunkt(termin);
       when(pruefungsperiode.pruefung(p.getPruefungsnummer())).thenReturn(temp);
+      when(pruefungsperiode.block(temp)).thenReturn(modelBlock);
     }
   }
 
@@ -624,6 +628,13 @@ class DataAccessServiceTest {
     assertThat(ro.getROPruefungen()).containsOnly(RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
   }
 
+  private void configureMock_getPruefungToROPruefung(ReadOnlyPruefung... pruefungen) {
+    for (ReadOnlyPruefung p : pruefungen) {
+      Pruefung temp = getPruefungOfReadOnlyPruefung(p);
+      when(pruefungsperiode.pruefung(p.getPruefungsnummer())).thenReturn(temp);
+    }
+  }
+
   @Test
   @DisplayName("successfully remove pruefung from scheduled block, only one pruefung in block")
   void removePruefungFromBlockPlannedBlock() throws NoPruefungsPeriodeDefinedException {
@@ -701,7 +712,7 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void getBetween() {
+  void getBetween() throws NoPruefungsPeriodeDefinedException {
 
     LocalDateTime start = LocalDateTime.of(2021, 8, 11, 9, 0);
     LocalDateTime end = LocalDateTime.of(2021, 8, 11, 10, 0);
@@ -763,7 +774,8 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void getPlanungseinheitenBetween() throws IllegalTimeSpanException {
+  void getPlanungseinheitenBetween()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
 
     LocalDateTime start = LocalDateTime.of(2021, 8, 11, 9, 0);
     LocalDateTime end = LocalDateTime.of(2021, 8, 11, 10, 0);
@@ -929,17 +941,6 @@ class DataAccessServiceTest {
     // assertions
     ReadOnlyBlockAssert.assertThat(expectedBlock).isSameAs(converter.convertToROBlock(actualBlock));
     assertThat(actualBlock.isGeplant()).isTrue();
-  }
-
-  private void configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(
-      Block modelBlock, LocalDateTime termin, ReadOnlyPruefung... pruefungen) {
-    for (ReadOnlyPruefung p : pruefungen) {
-      Pruefung temp = getPruefungOfReadOnlyPruefung(p);
-      modelBlock.addPruefung(temp);
-      modelBlock.setStartzeitpunkt(termin);
-      when(pruefungsperiode.pruefung(p.getPruefungsnummer())).thenReturn(temp);
-      when(pruefungsperiode.block(temp)).thenReturn(modelBlock);
-    }
   }
 
   @Test
@@ -1683,6 +1684,26 @@ class DataAccessServiceTest {
     deviceUnderTest = new DataAccessService(null);
     assertThrows(NoPruefungsPeriodeDefinedException.class,
         () -> deviceUnderTest.getAllPruefungenBetween(getRandomTime(1L),
+            getRandomTime(1L).plusHours(1)));
+  }
+
+  @Test
+  void getAllPlanungseinheitenBetween_startMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.getAllPlanungseinheitenBetween(null, getRandomTime(2L)));
+  }
+
+  @Test
+  void getAllPlanungseinheitenBetween_endMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.getAllPlanungseinheitenBetween(getRandomTime(1L), null));
+  }
+
+  @Test
+  void getAllPlanungseinheitenBetween_noPruefungsperiode() {
+    deviceUnderTest = new DataAccessService(null);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getAllPlanungseinheitenBetween(getRandomTime(1L),
             getRandomTime(1L).plusHours(1)));
   }
 
