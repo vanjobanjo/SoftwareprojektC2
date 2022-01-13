@@ -92,7 +92,6 @@ public class Controller implements InterfaceController {
 
   @Override
   public LocalDate getAnkerPeriode() throws NoPruefungsPeriodeDefinedException {
-    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getAnkertag();
   }
 

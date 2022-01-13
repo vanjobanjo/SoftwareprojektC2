@@ -572,7 +572,9 @@ public class DataAccessService {
     return result;
   }
 
-  public LocalDate getAnkertag() {
+  @NotNull
+  public LocalDate getAnkertag() throws NoPruefungsPeriodeDefinedException {
+    checkForPruefungsperiode();
     return pruefungsperiode.getAnkertag();
   }
 
