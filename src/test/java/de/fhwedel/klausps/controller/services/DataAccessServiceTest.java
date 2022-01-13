@@ -1314,10 +1314,16 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void getAnkertag_test() {
+  void getAnkertag_test() throws NoPruefungsPeriodeDefinedException {
     LocalDate ankertag = LocalDate.of(2022, 2, 2);
     when(pruefungsperiode.getAnkertag()).thenReturn(ankertag);
     assertThat(deviceUnderTest.getAnkertag()).isEqualTo(ankertag);
+  }
+
+  @Test
+  void getAnkertag_noPruefungsperiode() {
+    deviceUnderTest = new DataAccessService(null);
+    assertThrows(NoPruefungsPeriodeDefinedException.class, () -> deviceUnderTest.getAnkertag());
   }
 
   @Test
