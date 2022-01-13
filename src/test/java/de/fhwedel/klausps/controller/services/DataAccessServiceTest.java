@@ -4,8 +4,10 @@ import static de.fhwedel.klausps.controller.util.TestFactory.bwlBachelor;
 import static de.fhwedel.klausps.controller.util.TestFactory.infBachelor;
 import static de.fhwedel.klausps.controller.util.TestFactory.infMaster;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefungen;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungenReadOnly;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTime;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedROPruefung;
 import static de.fhwedel.klausps.model.api.Blocktyp.PARALLEL;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -159,55 +161,51 @@ class DataAccessServiceTest {
   }
 
   @Test
+  void getUngeplantePruefungen_noPruefungsperiode() {
+    deviceUnderTest = new DataAccessService(null);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getUngeplantePruefungen());
+  }
+
+  @Test
   void ungeplanteKlausurenTest() throws NoPruefungsPeriodeDefinedException {
-    PruefungDTO p1 = new PruefungDTOBuilder().withPruefungsName("Hallo").build();
-    PruefungDTO p2 = new PruefungDTOBuilder().withPruefungsName("Welt").build();
-    Pruefung pm1 = getPruefungOfReadOnlyPruefung(p1);
-    Pruefung pm2 = getPruefungOfReadOnlyPruefung(p2);
+    Pruefung pm1 = getRandomUnplannedPruefung(1L);
+    Pruefung pm2 = getRandomUnplannedPruefung(2L);
 
     when(pruefungsperiode.ungeplantePruefungen()).thenReturn(Set.of(pm1, pm2));
 
-    Set<ReadOnlyPruefung> result = deviceUnderTest.getUngeplantePruefungen();
-    assertThat(result).containsOnly(p1, p2);
+    Set<Pruefung> result = deviceUnderTest.getUngeplantePruefungen();
+    assertThat(result).containsOnly(pm1, pm2);
   }
 
   @Test
   void geplanteBloeckeTest() throws NoPruefungsPeriodeDefinedException {
-    List<ReadOnlyPruefung> pruefungen = getRandomPruefungenReadOnly(1234, 2);
-    List<Pruefung> pruefungenFromModel = convertPruefungenFromReadonlyToModel(pruefungen);
-    Block initialBlock = new BlockImpl(pruefungsperiode, 1, "name", Blocktyp.PARALLEL);
-    pruefungenFromModel.forEach(initialBlock::addPruefung);
+    List<Pruefung> pruefungen = getRandomPlannedPruefungen(1234, 2);
+    Block block = new BlockImpl(pruefungsperiode, 1, "name", Blocktyp.PARALLEL);
+    pruefungen.forEach(block::addPruefung);
 
-    when(pruefungsperiode.geplanteBloecke()).thenReturn(Set.of(initialBlock));
-
-    Set<ReadOnlyBlock> blockController = deviceUnderTest.getGeplanteBloecke();
-    ReadOnlyBlock resultingBlock = blockController.stream().toList().get(0);
-    ReadOnlyBlockAssert.assertThat(resultingBlock)
-        .containsOnlyPruefungen(pruefungen.toArray(new ReadOnlyPruefung[0]));
+    when(pruefungsperiode.geplanteBloecke()).thenReturn(Set.of(block));
+    assertThat(deviceUnderTest.getGeplanteBloecke()).hasSize(1);
   }
 
   @Test
   void ungeplanteBloeckeTest() throws NoPruefungsPeriodeDefinedException {
-    ReadOnlyPruefung ro01 = new PruefungDTOBuilder().withPruefungsName("inBlock0")
-        .withPruefungsNummer("123").build();
-    ReadOnlyPruefung ro02 = new PruefungDTOBuilder().withPruefungsName("inBlock1")
-        .withPruefungsNummer("1235").build();
-    Pruefung inBlock0 = getPruefungOfReadOnlyPruefung(ro01);
-    Pruefung inBlock1 = getPruefungOfReadOnlyPruefung(ro02);
+    Pruefung inBlock0 = getRandomUnplannedPruefung(1L);
+    Pruefung inBlock1 = getRandomUnplannedPruefung(2L);
     Block block = new BlockImpl(pruefungsperiode, 1, "name", Blocktyp.PARALLEL);
     block.addPruefung(inBlock0);
     block.addPruefung(inBlock1);
 
-    when(pruefungsperiode.ungeplanteBloecke()).thenReturn(new HashSet<>(List.of(block)));
-    Set<ReadOnlyBlock> ungeplanteBloecke = deviceUnderTest.getUngeplanteBloecke();
+    when(pruefungsperiode.ungeplanteBloecke()).thenReturn(Set.of(block));
 
-    assertThat(ungeplanteBloecke).hasSize(1);
-    ReadOnlyBlock resultBlock = new LinkedList<>(ungeplanteBloecke).get(0);
-    ReadOnlyPruefung ro0 = new LinkedList<>(resultBlock.getROPruefungen()).get(0);
-    ReadOnlyPruefung ro1 = new LinkedList<>(resultBlock.getROPruefungen()).get(1);
-    ReadOnlyBlockAssert.assertThat(resultBlock).containsOnlyPruefungen(ro01, ro02);
-    assertThat(ro0 != ro01 || ro0 != ro02).isTrue();
-    assertThat(ro1 != ro01 || ro1 != ro02).isTrue();
+    assertThat(deviceUnderTest.getUngeplanteBloecke()).hasSize(1);
+  }
+
+  @Test
+  void getUngeplanteBloecke_noPruefungsperiode() {
+    deviceUnderTest = new DataAccessService(null);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getUngeplanteBloecke());
   }
 
   @Test
@@ -1595,6 +1593,20 @@ class DataAccessServiceTest {
     ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
     when(pruefungsperiode.pruefung(anyString())).thenReturn(getRandomPlannedPruefung(1L));
     assertThat(deviceUnderTest.getPruefung(pruefung)).isPresent();
+  }
+
+  @Test
+  void getStartOfPeriode_noPruefungsperiode() {
+    deviceUnderTest = new DataAccessService(null);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getStartOfPeriode());
+  }
+
+  @Test
+  void getEndOfPeriode_noPruefungsperiode() {
+    deviceUnderTest = new DataAccessService(null);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getEndOfPeriode());
   }
 
 }

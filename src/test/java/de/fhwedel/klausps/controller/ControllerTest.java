@@ -279,4 +279,44 @@ class ControllerTest {
         () -> deviceUnderTest.getGeplantePruefungen());
   }
 
+  @Test
+  void getUngeplantePruefungen_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getUngeplantePruefungen()).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getUngeplantePruefungen());
+  }
+
+  @Test
+  void getGeplanteBloecke_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getGeplanteBloecke()).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getGeplanteBloecke());
+  }
+
+  @Test
+  void getUngeplanteBloecke_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getUngeplanteBloecke()).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getUngeplanteBloecke());
+  }
+
+  @Test
+  void getStartDatumPeriode_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getStartOfPeriode()).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getStartDatumPeriode());
+  }
+
+  @Test
+  void getEndDatumPeriode_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getEndOfPeriode()).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getEndDatumPeriode());
+  }
+
 }

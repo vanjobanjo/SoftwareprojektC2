@@ -19,7 +19,6 @@ import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -77,9 +76,9 @@ public class Converter {
     return result;
   }
 
-  public Collection<ReadOnlyBlock> convertToROBlockCollection(
+  public Set<ReadOnlyBlock> convertToROBlockSet(
       Collection<Block> collection) throws NoPruefungsPeriodeDefinedException {
-    Collection<ReadOnlyBlock> result = new HashSet<>();
+    Set<ReadOnlyBlock> result = new HashSet<>();
     for (Block block : collection) {
       result.add(convertToROBlock(block));
     }

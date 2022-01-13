@@ -265,20 +265,22 @@ public class DataAccessService {
     return pruefungsperiode.geplantePruefungen();
   }
 
-  public Set<ReadOnlyPruefung> getUngeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
-    return new HashSet<>(
-        converter.convertToROPruefungSet(pruefungsperiode.ungeplantePruefungen()));
+  @NotNull
+  public Set<Pruefung> getUngeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
+    checkForPruefungsperiode();
+    return pruefungsperiode.ungeplantePruefungen();
   }
 
-  public Set<ReadOnlyBlock> getGeplanteBloecke() throws NoPruefungsPeriodeDefinedException {
-
-    return new HashSet<>(
-        converter.convertToROBlockCollection(pruefungsperiode.geplanteBloecke()));
+  @NotNull
+  public Set<Block> getGeplanteBloecke() throws NoPruefungsPeriodeDefinedException {
+    checkForPruefungsperiode();
+    return pruefungsperiode.geplanteBloecke();
   }
 
-  public Set<ReadOnlyBlock> getUngeplanteBloecke() throws NoPruefungsPeriodeDefinedException {
-    return new HashSet<>(
-        converter.convertToROBlockCollection(pruefungsperiode.ungeplanteBloecke()));
+  @NotNull
+  public Set<Block> getUngeplanteBloecke() throws NoPruefungsPeriodeDefinedException {
+    checkForPruefungsperiode();
+    return pruefungsperiode.ungeplanteBloecke();
   }
 
   public Set<ReadOnlyPruefung> ungeplantePruefungenForTeilnehmerkreis(Teilnehmerkreis tk)
@@ -447,11 +449,15 @@ public class DataAccessService {
     return modelBlock;
   }
 
-  public LocalDate getStartOfPeriode() {
+  @NotNull
+  public LocalDate getStartOfPeriode() throws NoPruefungsPeriodeDefinedException {
+    checkForPruefungsperiode();
     return pruefungsperiode.getStartdatum();
   }
 
-  public LocalDate getEndOfPeriode() {
+  @NotNull
+  public LocalDate getEndOfPeriode() throws NoPruefungsPeriodeDefinedException {
+    checkForPruefungsperiode();
     return pruefungsperiode.getEnddatum();
   }
 

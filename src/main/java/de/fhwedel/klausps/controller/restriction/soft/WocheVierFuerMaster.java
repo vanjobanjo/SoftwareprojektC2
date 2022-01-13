@@ -6,6 +6,7 @@ import static de.fhwedel.klausps.model.api.Ausbildungsgrad.BACHELOR;
 import static de.fhwedel.klausps.model.api.Ausbildungsgrad.MASTER;
 
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
@@ -21,12 +22,18 @@ public class WocheVierFuerMaster extends WeicheRestriktion {
 
   private static final int WEEK_FOUR = 4;
   private static final int DAYS_WEEK = 7;
-  private final LocalDate startPeriode;
-
+  private LocalDate startPeriode;
 
   public WocheVierFuerMaster() {
     super(ServiceProvider.getDataAccessService(), WOCHE_VIER_FUER_MASTER);
-    startPeriode = ServiceProvider.getDataAccessService().getStartOfPeriode();
+    try {
+      // TODO das kann nicht im Konstruktor gesetzt werden weil die Klasse instanziiert wird bevor
+      //  es eine Pruefungsperiode geben kann.
+      //  Generell ist von Instanzvariablen in Restriktionen abzusehen.
+      startPeriode = ServiceProvider.getDataAccessService().getStartOfPeriode();
+    } catch (NoPruefungsPeriodeDefinedException e) {
+      e.printStackTrace();
+    }
   }
 
   //Mock Konstruktor

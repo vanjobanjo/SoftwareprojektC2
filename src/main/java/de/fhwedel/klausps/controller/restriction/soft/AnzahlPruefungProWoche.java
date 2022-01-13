@@ -3,8 +3,8 @@ package de.fhwedel.klausps.controller.restriction.soft;
 import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE;
 
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
-import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
@@ -28,7 +28,7 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion {
   private static final int DAYS_WEEK_DEFAULT = 7;
   private final int limit;
 
-  private final LocalDate startPeriode;
+  private LocalDate startPeriode;
   // the set contains all pruefungen of the week, also the sibblings in the block
   private Map<Integer, Set<Pruefung>> weekPruefungMap;
 
@@ -37,15 +37,17 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion {
       DataAccessService dataAccessService,
       final int LIMIT_TEST) {
     super(dataAccessService, ANZAHL_PRUEFUNGEN_PRO_WOCHE);
-    startPeriode = dataAccessService.getStartOfPeriode();
-    weekPruefungMap = weekMapOfPruefung(dataAccessService.getGeplanteModelPruefung(), startPeriode);
+    try {
+      // TODO das kann nicht im Konstruktor gesetzt werden weil die Klasse instanziiert wird bevor
+      //  es eine Pruefungsperiode geben kann.
+      //  Generell ist von Instanzvariablen in Restriktionen abzusehen.
+      startPeriode = dataAccessService.getStartOfPeriode();
+      weekPruefungMap = weekMapOfPruefung(dataAccessService.getGeplanteModelPruefung(),
+          startPeriode);
+    } catch (NoPruefungsPeriodeDefinedException e) {
+      e.printStackTrace();
+    }
     limit = LIMIT_TEST;
-  }
-
-  public AnzahlPruefungProWoche() {
-    super(ServiceProvider.getDataAccessService(), ANZAHL_PRUEFUNGEN_PRO_WOCHE);
-    startPeriode = dataAccessService.getStartOfPeriode();
-    limit = LIMIT_DEFAULT;
   }
 
   Map<Integer, Set<Pruefung>> weekMapOfPruefung(Set<Pruefung> geplantePruefung,
