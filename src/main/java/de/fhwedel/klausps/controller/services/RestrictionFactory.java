@@ -3,7 +3,6 @@ package de.fhwedel.klausps.controller.services;
 
 import de.fhwedel.klausps.controller.restriction.hard.HarteRestriktion;
 import de.fhwedel.klausps.controller.restriction.hard.TwoKlausurenSameTime;
-import de.fhwedel.klausps.controller.restriction.soft.AnzahlPruefungProWocheTeilnehmerkreis;
 import de.fhwedel.klausps.controller.restriction.soft.AnzahlPruefungenGleichzeitigRestriktion;
 import de.fhwedel.klausps.controller.restriction.soft.AnzahlTeilnehmerGleichzeitigZuHochRestriction;
 import de.fhwedel.klausps.controller.restriction.soft.FreierTagZwischenPruefungen;
@@ -12,7 +11,6 @@ import de.fhwedel.klausps.controller.restriction.soft.MehrePruefungenAmTag;
 import de.fhwedel.klausps.controller.restriction.soft.PruefungenMitVielenAmAnfangRestriction;
 import de.fhwedel.klausps.controller.restriction.soft.UniformeZeitslots;
 import de.fhwedel.klausps.controller.restriction.soft.WeicheRestriktion;
-import de.fhwedel.klausps.controller.restriction.soft.WocheVierFuerMaster;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -31,15 +29,16 @@ public class RestrictionFactory {
   private static void registerSoftCriteria(RestrictionService service) {
     if (softRestrictions.isEmpty()) {
       softRestrictions.addAll(Set.of(
+          // TODO restriktionen aktivieren wenn wieder funktionsfähig
           // new AnzahlPruefungProWoche(), deprecated.
-          new AnzahlPruefungProWocheTeilnehmerkreis(),
+          //new AnzahlPruefungProWocheTeilnehmerkreis(),
           new AnzahlPruefungenGleichzeitigRestriktion(),
           new AnzahlTeilnehmerGleichzeitigZuHochRestriction(),
           new FreierTagZwischenPruefungen(),
           new KeineKlausurAmSonntag(),
           new UniformeZeitslots(),
           new MehrePruefungenAmTag(),
-          new WocheVierFuerMaster(),
+          //new WocheVierFuerMaster(),
           new PruefungenMitVielenAmAnfangRestriction()
       ));
     }

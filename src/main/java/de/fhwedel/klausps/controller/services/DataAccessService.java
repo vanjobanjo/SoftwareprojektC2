@@ -449,7 +449,9 @@ public class DataAccessService {
     return modelBlock;
   }
 
-  public LocalDate getStartOfPeriode() {
+  @NotNull
+  public LocalDate getStartOfPeriode() throws NoPruefungsPeriodeDefinedException {
+    checkForPruefungsperiode();
     return pruefungsperiode.getStartdatum();
   }
 

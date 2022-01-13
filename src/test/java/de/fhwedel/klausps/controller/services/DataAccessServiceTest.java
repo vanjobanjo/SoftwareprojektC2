@@ -1595,4 +1595,11 @@ class DataAccessServiceTest {
     assertThat(deviceUnderTest.getPruefung(pruefung)).isPresent();
   }
 
+  @Test
+  void getStartOfPeriode_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    deviceUnderTest = new DataAccessService(null);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getStartOfPeriode());
+  }
+
 }

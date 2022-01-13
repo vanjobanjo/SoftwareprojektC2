@@ -79,7 +79,6 @@ public class Controller implements InterfaceController {
 
   @Override
   public LocalDate getStartDatumPeriode() throws NoPruefungsPeriodeDefinedException {
-    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getStartOfPeriode();
   }
 
