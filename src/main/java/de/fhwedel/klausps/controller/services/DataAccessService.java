@@ -283,12 +283,14 @@ public class DataAccessService {
     return pruefungsperiode.ungeplanteBloecke();
   }
 
-  public Set<ReadOnlyPruefung> ungeplantePruefungenForTeilnehmerkreis(Teilnehmerkreis tk)
+  @NotNull
+  public Set<Pruefung> ungeplantePruefungenForTeilnehmerkreis(Teilnehmerkreis teilnehmerkreis)
       throws NoPruefungsPeriodeDefinedException {
-    return new HashSet<>(
-        converter.convertToROPruefungSet(pruefungsperiode.ungeplantePruefungen().stream()
-            .filter(pruefung -> pruefung.getTeilnehmerkreise().contains(tk))
-            .collect(Collectors.toSet())));
+    noNullParameters(teilnehmerkreis);
+    checkForPruefungsperiode();
+    return pruefungsperiode.ungeplantePruefungen().stream()
+        .filter(pruefung -> pruefung.getTeilnehmerkreise().contains(teilnehmerkreis))
+        .collect(Collectors.toSet());
   }
 
   public Set<Pruefung> geplantePruefungenForTeilnehmerkreis(Teilnehmerkreis teilnehmerkreis)

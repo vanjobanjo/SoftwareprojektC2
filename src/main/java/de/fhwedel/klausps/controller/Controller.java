@@ -135,11 +135,12 @@ public class Controller implements InterfaceController {
   }
 
   @Override
+  @NotNull
   public Set<ReadOnlyPruefung> getUngeplantePruefungenForTeilnehmer(Teilnehmerkreis teilnehmer)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(teilnehmer);
-    ensureAvailabilityOfPruefungsperiode();
-    return dataAccessService.ungeplantePruefungenForTeilnehmerkreis(teilnehmer);
+    return converter.convertToROPruefungSet(
+        dataAccessService.ungeplantePruefungenForTeilnehmerkreis(teilnehmer));
   }
 
   @Override
@@ -149,7 +150,6 @@ public class Controller implements InterfaceController {
     ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getAnzahlStudentenZeitpunkt(zeitpunkt);
   }
-
 
   @Override
   public Set<ReadOnlyPruefung> getPruefungenInZeitraum(LocalDateTime start, LocalDateTime end)

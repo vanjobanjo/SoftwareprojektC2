@@ -392,4 +392,19 @@ class ControllerTest {
         () -> deviceUnderTest.getGeplantePruefungenForTeilnehmer(getRandomTeilnehmerkreis(1L)));
   }
 
+  @Test
+  void getUngeplantePruefungenForTeilnehmer_teilnehmerMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.getUngeplantePruefungenForTeilnehmer(null));
+  }
+
+  @Test
+  void getUngeplantePruefungenForTeilnehmer_noPruefungsperiode()
+      throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.ungeplantePruefungenForTeilnehmerkreis(any())).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getUngeplantePruefungenForTeilnehmer(getRandomTeilnehmerkreis(1L)));
+  }
+
 }

@@ -975,8 +975,7 @@ class DataAccessServiceTest {
         TestFactory.RO_ANALYSIS_UNPLANNED);
     analysis.addTeilnehmerkreis(bwl);
     when(pruefungsperiode.ungeplantePruefungen()).thenReturn(Set.of(analysis));
-    assertThat(deviceUnderTest.ungeplantePruefungenForTeilnehmerkreis(bwl)).containsOnly(
-        TestFactory.RO_ANALYSIS_UNPLANNED);
+    assertThat(deviceUnderTest.ungeplantePruefungenForTeilnehmerkreis(bwl)).containsOnly(analysis);
   }
 
   @Test
@@ -1650,6 +1649,19 @@ class DataAccessServiceTest {
     deviceUnderTest = new DataAccessService(null);
     assertThrows(NoPruefungsPeriodeDefinedException.class,
         () -> deviceUnderTest.getAllTeilnehmerkreise());
+  }
+
+  @Test
+  void ungeplantePruefungenForTeilnehmerkreis_teilnehmerkreisMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.ungeplantePruefungenForTeilnehmerkreis(null));
+  }
+
+  @Test
+  void ungeplantePruefungenForTeilnehmerkreis_noPruefungsperiode() {
+    deviceUnderTest = new DataAccessService(null);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.ungeplantePruefungenForTeilnehmerkreis(getRandomTeilnehmerkreis(1L)));
   }
 
 }
