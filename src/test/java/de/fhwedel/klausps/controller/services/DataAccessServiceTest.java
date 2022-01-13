@@ -6,6 +6,7 @@ import static de.fhwedel.klausps.controller.util.TestFactory.infMaster;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungenReadOnly;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTime;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedROPruefung;
 import static de.fhwedel.klausps.model.api.Blocktyp.PARALLEL;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -159,16 +160,21 @@ class DataAccessServiceTest {
   }
 
   @Test
+  void getUngeplantePruefungen_noPruefungsperiode() {
+    deviceUnderTest = new DataAccessService(null);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getUngeplantePruefungen());
+  }
+
+  @Test
   void ungeplanteKlausurenTest() throws NoPruefungsPeriodeDefinedException {
-    PruefungDTO p1 = new PruefungDTOBuilder().withPruefungsName("Hallo").build();
-    PruefungDTO p2 = new PruefungDTOBuilder().withPruefungsName("Welt").build();
-    Pruefung pm1 = getPruefungOfReadOnlyPruefung(p1);
-    Pruefung pm2 = getPruefungOfReadOnlyPruefung(p2);
+    Pruefung pm1 = getRandomUnplannedPruefung(1L);
+    Pruefung pm2 = getRandomUnplannedPruefung(2L);
 
     when(pruefungsperiode.ungeplantePruefungen()).thenReturn(Set.of(pm1, pm2));
 
-    Set<ReadOnlyPruefung> result = deviceUnderTest.getUngeplantePruefungen();
-    assertThat(result).containsOnly(p1, p2);
+    Set<Pruefung> result = deviceUnderTest.getUngeplantePruefungen();
+    assertThat(result).containsOnly(pm1, pm2);
   }
 
   @Test

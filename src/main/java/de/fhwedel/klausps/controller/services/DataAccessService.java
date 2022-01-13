@@ -265,9 +265,9 @@ public class DataAccessService {
     return pruefungsperiode.geplantePruefungen();
   }
 
-  public Set<ReadOnlyPruefung> getUngeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
-    return new HashSet<>(
-        converter.convertToROPruefungSet(pruefungsperiode.ungeplantePruefungen()));
+  public Set<Pruefung> getUngeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
+    checkForPruefungsperiode();
+    return pruefungsperiode.ungeplantePruefungen();
   }
 
   public Set<ReadOnlyBlock> getGeplanteBloecke() throws NoPruefungsPeriodeDefinedException {

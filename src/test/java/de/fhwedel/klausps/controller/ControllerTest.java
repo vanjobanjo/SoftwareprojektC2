@@ -279,4 +279,12 @@ class ControllerTest {
         () -> deviceUnderTest.getGeplantePruefungen());
   }
 
+  @Test
+  void getUngeplantePruefungen_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getUngeplantePruefungen()).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getUngeplantePruefungen());
+  }
+
 }
