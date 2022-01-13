@@ -83,7 +83,8 @@ class AnzahlPruefungProWocheTest {
     //mock must be configured before constructor call
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
 
-    assertThat(deviceUnderTest.isAboveTheWeekLimit(haskell_0_isNotPlanned_ShouldBePlanned_At)).isTrue();
+    assertThat(deviceUnderTest.isAboveTheWeekLimit(haskell_0_isNotPlanned_ShouldBePlanned_At,
+        Set.of(haskell_0_isNotPlanned_ShouldBePlanned_At, dm_0, mathe_0))).isTrue();
   }
 
   @Test
@@ -105,9 +106,9 @@ class AnzahlPruefungProWocheTest {
 
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
 
-    assertThat(deviceUnderTest.isAboveTheWeekLimit(haskell_1)).isFalse();
-    assertThat(deviceUnderTest.isAboveTheWeekLimit(mathe_0)).isTrue();
-    assertThat(deviceUnderTest.isAboveTheWeekLimit(dm_0)).isTrue();
+    assertThat(deviceUnderTest.isAboveTheWeekLimit(haskell_1, Set.of(haskell_1))).isFalse();
+    assertThat(deviceUnderTest.isAboveTheWeekLimit(mathe_0, Set.of(mathe_0, dm_0))).isTrue();
+    assertThat(deviceUnderTest.isAboveTheWeekLimit(dm_0, Set.of(mathe_0, dm_0))).isTrue();
   }
 
 

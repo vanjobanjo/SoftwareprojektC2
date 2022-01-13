@@ -58,7 +58,7 @@ class AnzahlPruefungProWocheTeilnehmerkreisTest {
     //mock must be configured before constructor call
     this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreis(accessService, LIMIT_PER_WEEK);
 
-    assertThat(deviceUnderTest.isAboveLimit(mathe_0, bwl)).isTrue();
+    assertThat(deviceUnderTest.evaluate(mathe_0)).isPresent();
   }
 
   @Test
