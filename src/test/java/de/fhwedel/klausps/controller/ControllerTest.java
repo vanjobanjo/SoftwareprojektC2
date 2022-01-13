@@ -116,13 +116,24 @@ class ControllerTest {
   }
 
   @Test
+  void createSemester_semesterTypeMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.createSemester(null, Year.of(2022)));
+  }
+
+  @Test
+  void createSemester_yearMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.createSemester(Semestertyp.SOMMERSEMESTER, null));
+  }
+
+  @Test
   void createSemester_successful() {
     Semester createdSemester = deviceUnderTest.createSemester(Semestertyp.WINTERSEMESTER,
         Year.of(2022));
     assertThat(createdSemester).isNotNull();
     assertThat(createdSemester.getJahr()).isEqualTo(Year.of(2022));
     assertThat(createdSemester.getTyp()).isEqualTo(Semestertyp.WINTERSEMESTER);
-
   }
 
   @Test
@@ -325,6 +336,30 @@ class ControllerTest {
         NoPruefungsPeriodeDefinedException.class);
     assertThrows(NoPruefungsPeriodeDefinedException.class,
         () -> deviceUnderTest.getAnkerPeriode());
+  }
+
+  @Test
+  void getKapazitaetPeriode_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getPeriodenKapazitaet()).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getKapazitaetPeriode());
+  }
+
+  @Test
+  void getSemester_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getSemester()).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getSemester());
+  }
+
+  @Test
+  void getAllTeilnehmerKreise_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getAllTeilnehmerkreise()).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getAllTeilnehmerKreise());
   }
 
 }

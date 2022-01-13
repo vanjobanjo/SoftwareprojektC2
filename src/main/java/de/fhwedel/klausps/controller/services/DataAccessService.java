@@ -461,11 +461,13 @@ public class DataAccessService {
     return pruefungsperiode.getEnddatum();
   }
 
-  public int getPeriodenKapazitaet() {
+  public int getPeriodenKapazitaet() throws NoPruefungsPeriodeDefinedException {
+    checkForPruefungsperiode();
     return pruefungsperiode.getKapazitaet();
   }
 
-  public Semester getSemester() {
+  public Semester getSemester() throws NoPruefungsPeriodeDefinedException {
+    checkForPruefungsperiode();
     return pruefungsperiode.getSemester();
   }
 
@@ -527,7 +529,8 @@ public class DataAccessService {
     return Optional.ofNullable(pruefungsperiode.block(pruefung));
   }
 
-  public Set<Teilnehmerkreis> getAllTeilnehmerkreise() {
+  public Set<Teilnehmerkreis> getAllTeilnehmerkreise() throws NoPruefungsPeriodeDefinedException {
+    checkForPruefungsperiode();
     Set<Pruefung> allPruefungen = new HashSet<>();
     allPruefungen.addAll(pruefungsperiode.geplantePruefungen());
     allPruefungen.addAll(pruefungsperiode.ungeplantePruefungen());

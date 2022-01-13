@@ -97,17 +97,17 @@ public class Controller implements InterfaceController {
 
   @Override
   public int getKapazitaetPeriode() throws NoPruefungsPeriodeDefinedException {
-    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getPeriodenKapazitaet();
   }
 
   @Override
+  @NotNull
   public Semester getSemester() throws NoPruefungsPeriodeDefinedException {
-    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getSemester();
   }
 
   @Override
+  @NotNull
   public Semester createSemester(Semestertyp typ, Year year) {
     noNullParameters(typ, year);
     return new SemesterImpl(typ, year);
@@ -116,7 +116,6 @@ public class Controller implements InterfaceController {
 
   @Override
   public Set<Teilnehmerkreis> getAllTeilnehmerKreise() throws NoPruefungsPeriodeDefinedException {
-    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getAllTeilnehmerkreise();
   }
 
