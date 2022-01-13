@@ -19,6 +19,7 @@ import static org.mockito.Mockito.when;
 
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.Converter;
@@ -36,6 +37,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -157,8 +159,9 @@ class ControllerTest {
 
   @Test
   void getHardConflictedTimes_planungseinheitMustNotBeNull() {
+    Set<LocalDateTime> times = emptySet();
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.getHardConflictedTimes(emptySet(), null));
+        () -> deviceUnderTest.getHardConflictedTimes(times, null));
   }
 
   @Test
@@ -167,8 +170,11 @@ class ControllerTest {
     pruefungsperiodeIsSet();
     when(scheduleService.getHardConflictedTimes(any(), any())).thenThrow(
         IllegalArgumentException.class);
+
+    Set<LocalDateTime> times = emptySet();
+    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
     assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.getHardConflictedTimes(emptySet(), getRandomUnplannedROPruefung(1L)));
+        () -> deviceUnderTest.getHardConflictedTimes(times, pruefung));
   }
 
   @Test
@@ -188,8 +194,10 @@ class ControllerTest {
     when(scheduleService.getHardConflictedTimes(any(), any())).thenThrow(
         IllegalArgumentException.class);
 
+    Set<LocalDateTime> times = emptySet();
+    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
     assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.getHardConflictedTimes(emptySet(), getRandomUnplannedROPruefung(1L)));
+        () -> deviceUnderTest.getHardConflictedTimes(times, pruefung));
   }
 
   @Test
@@ -220,14 +228,16 @@ class ControllerTest {
 
   @Test
   void getPlanungseinheitenInZeitraum_startMustNotBeNull() {
+    LocalDateTime end = getRandomTime(2L);
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.getPlanungseinheitenInZeitraum(null, getRandomTime(2L)));
+        () -> deviceUnderTest.getPlanungseinheitenInZeitraum(null, end));
   }
 
   @Test
   void getPlanungseinheitenInZeitraum_endMustNotBeNull() {
+    LocalDateTime start = getRandomTime(1L);
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.getPlanungseinheitenInZeitraum(getRandomTime(1L), null));
+        () -> deviceUnderTest.getPlanungseinheitenInZeitraum(start, null));
   }
 
   @Test
@@ -235,8 +245,9 @@ class ControllerTest {
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenThrow(
         NoPruefungsPeriodeDefinedException.class);
+    LocalDateTime start = getRandomTime(1L);
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.getPlanungseinheitenInZeitraum(getRandomTime(1L), null));
+        () -> deviceUnderTest.getPlanungseinheitenInZeitraum(start, null));
   }
 
   @Test
@@ -265,14 +276,16 @@ class ControllerTest {
 
   @Test
   void setDatumPeriode_startDatumMustNotBeNull() {
+    LocalDate end = getRandomDate(1L);
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.setDatumPeriode(null, getRandomDate(1L)));
+        () -> deviceUnderTest.setDatumPeriode(null, end));
   }
 
   @Test
   void setDatumPeriode_endDatumMustNotBeNull() {
+    LocalDate start = getRandomDate(1L);
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.setDatumPeriode(getRandomDate(1L), null));
+        () -> deviceUnderTest.setDatumPeriode(start, null));
   }
 
 
@@ -450,14 +463,16 @@ class ControllerTest {
 
   @Test
   void getPruefungenInZeitraum_startpunktMustNotBeNull() {
+    LocalDateTime end = getRandomTime(2L);
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.getPruefungenInZeitraum(null, getRandomTime(2L)));
+        () -> deviceUnderTest.getPruefungenInZeitraum(null, end));
   }
 
   @Test
   void getPruefungenInZeitraum_endpunktMustNotBeNull() {
+    LocalDateTime start = getRandomTime(1L);
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.getPruefungenInZeitraum(getRandomTime(1L), null));
+        () -> deviceUnderTest.getPruefungenInZeitraum(start, null));
   }
 
   @Test

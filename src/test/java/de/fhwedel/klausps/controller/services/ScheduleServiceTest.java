@@ -125,8 +125,9 @@ class ScheduleServiceTest {
         RO_ANALYSIS, RO_HASKELL);
 
     //Block doesn't exist
+    LocalDateTime termin = START_PERIOD.atTime(_1000);
     assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.scheduleBlock(inCosistentBlock, START_PERIOD.atTime(_1000)));
+        () -> deviceUnderTest.scheduleBlock(inCosistentBlock, termin));
   }
 
   private Pruefung getPruefungOfReadOnlyPruefung(ReadOnlyPruefung roPruefung) {
@@ -250,8 +251,9 @@ class ScheduleServiceTest {
         RO_ANALYSIS, RO_HASKELL);
 
     //Exam 3 Haskell doesn't exist
+    LocalDateTime termin = START_PERIOD.atTime(_1000);
     assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.scheduleBlock(inCosistentBlock, START_PERIOD.atTime(_1000)));
+        () -> deviceUnderTest.scheduleBlock(inCosistentBlock, termin));
   }
 
   @Test
@@ -268,8 +270,9 @@ class ScheduleServiceTest {
     ReadOnlyBlock emptyROBlock = getROBlockFromROPruefungen("Empty", null);
 
     // Not allowed schedule empty block
+    LocalDateTime termin = START_PERIOD.atTime(_1000);
     assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.scheduleBlock(emptyROBlock, START_PERIOD.atTime(_1000)));
+        () -> deviceUnderTest.scheduleBlock(emptyROBlock, termin));
   }
 
   @Test
@@ -545,14 +548,22 @@ class ScheduleServiceTest {
 
   @Test
   void addPruefungToBlock_blockMustNotBeNull() {
+    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(12L);
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.addPruefungToBlock(null, getRandomUnplannedROPruefung(12L)));
+        () -> deviceUnderTest.addPruefungToBlock(null, pruefung));
   }
 
   @Test
   void addPruefungToBlock_pruefungMustNotBeNull() {
+    ReadOnlyBlock emptyBlock = getEmptyROBlock();
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.addPruefungToBlock(getEmptyROBlock(), null));
+        () -> deviceUnderTest.addPruefungToBlock(emptyBlock, null));
+  }
+
+  private ReadOnlyBlock getEmptyROBlock() {
+    LocalDateTime startTime = LocalDateTime.of(2022, 1, 7, 11, 11);
+    Set<ReadOnlyPruefung> noPruefungen = emptySet();
+    return new BlockDTO("someName", startTime, Duration.ZERO, noPruefungen, 123456, PARALLEL);
   }
 
   @Test
@@ -563,18 +574,12 @@ class ScheduleServiceTest {
         () -> deviceUnderTest.addPruefungToBlock(getEmptyROBlock(), pruefung));
   }
 
-  private ReadOnlyBlock getEmptyROBlock() {
-    LocalDateTime startTime = LocalDateTime.of(2022, 1, 7, 11, 11);
-    Set<ReadOnlyPruefung> noPruefungen = emptySet();
-    return new BlockDTO("someName", startTime, Duration.ZERO, noPruefungen, 123456, PARALLEL);
-  }
-
   @Test
   void addPruefungToBlock_plannedPruefungenMayNotBeAddedToBlocks() {
-    Pruefung pruefung = getRandomPlannedPruefung(1L);
+    ReadOnlyPruefung pruefung = getRandomPlannedROPruefung(1L);
+    ReadOnlyBlock emptyBlock = getEmptyROBlock();
     assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.addPruefungToBlock(getEmptyROBlock(),
-            converter.convertToReadOnlyPruefung(pruefung)));
+        () -> deviceUnderTest.addPruefungToBlock(emptyBlock, pruefung));
   }
 
   @Test
@@ -585,8 +590,9 @@ class ScheduleServiceTest {
     when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(
         Optional.of(otherBlock));
 
+    ReadOnlyBlock emptyBlock = getEmptyROBlock();
     assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.addPruefungToBlock(getEmptyROBlock(), pruefung));
+        () -> deviceUnderTest.addPruefungToBlock(emptyBlock, pruefung));
   }
 
   private ReadOnlyBlock getUnplannedBlockWith1RandomPruefung() {
@@ -907,29 +913,35 @@ class ScheduleServiceTest {
 
   @Test
   void getHardConflictedTimes_timesToCheckMustNotBeNull() {
+    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.getHardConflictedTimes(null, getRandomUnplannedROPruefung(1L)));
+        () -> deviceUnderTest.getHardConflictedTimes(null, pruefung));
   }
 
   @Test
   void getHardConflictedTimes_planungseinheitMustNotBeNull() {
+    Set<LocalDateTime> times = emptySet();
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.getHardConflictedTimes(emptySet(), null));
+        () -> deviceUnderTest.getHardConflictedTimes(times, null));
   }
 
   @Test
   void getHardConflictedTimes_planungseinheitIsUnknownPruefung() {
     when(dataAccessService.existsPruefungWith(any())).thenReturn(false);
+    Set<LocalDateTime> times = emptySet();
+    ReadOnlyPruefung pruefung = getRandomPlannedROPruefung(1L);
     assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.getHardConflictedTimes(emptySet(), getRandomPlannedROPruefung(1L)));
+        () -> deviceUnderTest.getHardConflictedTimes(times, pruefung));
   }
 
   @Test
   void getHardConflictedTimes_planungseinheitIsUnknownBlock()
       throws NoPruefungsPeriodeDefinedException {
     when(dataAccessService.existsBlockWith(anyInt())).thenReturn(false);
+    Set<LocalDateTime> times = emptySet();
+    ReadOnlyBlock block = getEmptyROBlock();
     assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.getHardConflictedTimes(emptySet(), getEmptyROBlock()));
+        () -> deviceUnderTest.getHardConflictedTimes(times, block));
   }
 
   @Test
@@ -1053,8 +1065,9 @@ class ScheduleServiceTest {
   @Test
   void makeBlockSequential_block_does_not_exist() {
     when(dataAccessService.getModelBlock(any())).thenReturn(Optional.empty());
+    ReadOnlyBlock block = getEmptyROBlock();
     assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.toggleBlockType(any(), SEQUENTIAL));
+        () -> deviceUnderTest.toggleBlockType(block, SEQUENTIAL));
   }
 
   @Test
@@ -1147,8 +1160,9 @@ class ScheduleServiceTest {
   @Test
   void makeBlockParallel_block_does_not_exist() {
     when(dataAccessService.getModelBlock(any())).thenReturn(Optional.empty());
+    ReadOnlyBlock block = getEmptyROBlock();
     assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.toggleBlockType(any(), PARALLEL));
+        () -> deviceUnderTest.toggleBlockType(block, PARALLEL));
   }
 
   @Test
@@ -1214,8 +1228,9 @@ class ScheduleServiceTest {
   @Test
   void unschedulePruefung_pruefungDoesNotExist() throws NoPruefungsPeriodeDefinedException {
     when(dataAccessService.getPruefung(any())).thenReturn(Optional.empty());
+    ReadOnlyPruefung pruefung = getRandomPlannedROPruefung(1L);
     assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.unschedulePruefung(getRandomPlannedROPruefung(1L)));
+        () -> deviceUnderTest.unschedulePruefung(pruefung));
   }
 
 }

@@ -54,7 +54,7 @@ class BlockDTOTest {
     ReadOnlyBlock block = new BlockDTO("Mathe DM", null, Duration.ZERO, Set.of(anylsis, dm), 1,
         SEQUENTIAL);
     assertThat(block.getTeilnehmerKreisSchaetzung()).containsKey(bwl);
-    assertThat(block.getTeilnehmerKreisSchaetzung().get(bwl)).isEqualTo(10);
+    assertThat(block.getTeilnehmerKreisSchaetzung()).containsEntry(bwl, 10);
     assertThat(block.getTeilnehmerKreisSchaetzung()).hasSize(1);
   }
 }
