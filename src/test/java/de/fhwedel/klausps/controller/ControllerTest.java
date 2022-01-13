@@ -266,7 +266,6 @@ class ControllerTest {
     assertThrows(NullPointerException.class, () -> deviceUnderTest.makeBlockParallel(null));
   }
 
-
   @Test
   void makeBlockParallel__no_pruefungsperiode_defined() {
     when(dataAccessService.isPruefungsperiodeSet()).thenReturn(false);
@@ -419,6 +418,28 @@ class ControllerTest {
         NoPruefungsPeriodeDefinedException.class);
     assertThrows(NoPruefungsPeriodeDefinedException.class,
         () -> deviceUnderTest.getAnzahlStudentenZeitpunkt(getRandomTime(1L)));
+  }
+
+  @Test
+  void getPruefungenInZeitraum_startpunktMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.getPruefungenInZeitraum(null, getRandomTime(2L)));
+  }
+
+  @Test
+  void getPruefungenInZeitraum_endpunktMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.getPruefungenInZeitraum(getRandomTime(1L), null));
+  }
+
+  @Test
+  void getPruefungenInZeitraum_noPruefungsperiode()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getAllPruefungenBetween(any(), any())).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getPruefungenInZeitraum(getRandomTime(1L),
+            getRandomTime(1L).plusHours(1)));
   }
 
 }

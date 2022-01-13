@@ -17,6 +17,7 @@ import de.fhwedel.klausps.controller.answers.BlockFromPruefungAnswer;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.assertions.WeicheKriteriumsAnalyseAssert;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Block;
@@ -438,7 +439,8 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
 
   @Test
   @DisplayName("Pruefungen exceeding the maximal amount do not violate the restriction when in one block")
-  void evaluate_morePruefungenThanAllowedButAllInSameBlock() throws IllegalTimeSpanException {
+  void evaluate_morePruefungenThanAllowedButAllInSameBlock()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1,
         Duration.ZERO);
     Block block = getBlockWith3Pruefungen().asBlock();
@@ -466,7 +468,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
   @Test
   @DisplayName("Pruefungen in a block are count as one for check of the limit")
   void evaluate_morePruefungenThanAllowed_validAsSomePruefungenAreTogetherInABlock()
-      throws IllegalTimeSpanException {
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2,
         Duration.ZERO);
     Block block = getBlockWith3Pruefungen().asBlock();
@@ -484,7 +486,8 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
 
   @Test
   @DisplayName("Multiple overlapping blocks do not violate restriction when their amount does not exceed the limit")
-  void evaluate_morePruefungenThanAllowed_twoOverlappingBlocks() throws IllegalTimeSpanException {
+  void evaluate_morePruefungenThanAllowed_twoOverlappingBlocks()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2,
         Duration.ZERO);
     List<Block> planungseinheiten = get2OverlappingBloecke();

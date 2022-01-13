@@ -50,10 +50,6 @@ public class DataAccessService {
     this.converter = null;
   }
 
-  public void setPruefungsperiode(Pruefungsperiode pruefungsperiode) {
-    this.pruefungsperiode = pruefungsperiode;
-  }
-
   public void setConverter(Converter converter) {
     this.converter = converter;
   }
@@ -161,7 +157,6 @@ public class DataAccessService {
     return pruefungsperiode.block(block.getBlockId());
   }
 
-
   /**
    * Checks the consistency of a ReadOnlyBlock
    *
@@ -177,7 +172,6 @@ public class DataAccessService {
           .isPresent();
     }
   }
-
 
   private boolean blockExists(ReadOnlyBlock block) {
     return pruefungsperiode.block(block.getBlockId()) != null;
@@ -259,6 +253,19 @@ public class DataAccessService {
   public Set<Pruefung> getGeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
     return pruefungsperiode.geplantePruefungen();
+  }
+
+  @NotNull
+  public Set<Pruefung> getAllPruefungenBetween(LocalDateTime start, LocalDateTime end)
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
+    noNullParameters(start, end);
+    checkForPruefungsperiode();
+    if (start.isAfter(end)) {
+      throw new IllegalTimeSpanException("Der Start liegt nach dem Ende des Zeitslots");
+    }
+    Set<Planungseinheit> planungseinheitenBetween = pruefungsperiode.planungseinheitenBetween(start,
+        end);
+    return getAllPruefungen(planungseinheitenBetween);
   }
 
   public Set<Pruefung> getGeplanteModelPruefung() {
@@ -479,35 +486,10 @@ public class DataAccessService {
     throw new UnsupportedOperationException("Not implemented yet!");
   }
 
-  public List<Planungseinheit> getAllPlanungseinheitenBetween(LocalDateTime start,
-      LocalDateTime end)
-      throws IllegalTimeSpanException {
-    if (start.isAfter(end)) {
-      throw new IllegalTimeSpanException("Der Start liegt nach dem Ende des Zeitslots");
-    }
-    //TODO hier gucken, ob das hier hin  muss
-   /* if(this.isPruefungsperiodeSet()){
+  private void checkForPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    if (pruefungsperiode == null) {
       throw new NoPruefungsPeriodeDefinedException();
-    }*/
-    return List.copyOf(this.getPruefungsperiode().planungseinheitenBetween(start, end));
-  }
-
-  public Set<ReadOnlyPruefung> getAllReadOnlyPruefungenBetween(LocalDateTime start,
-      LocalDateTime end)
-      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
-    return Set.copyOf(converter.convertToROPruefungSet(getAllPruefungenBetween(start, end)));
-  }
-
-  @NotNull
-  public Set<Pruefung> getAllPruefungenBetween(@NotNull LocalDateTime start,
-      @NotNull LocalDateTime end)
-      throws IllegalTimeSpanException {
-    if (start.isAfter(end)) {
-      throw new IllegalTimeSpanException("Der Start liegt nach dem Ende des Zeitslots");
     }
-    Set<Planungseinheit> planungseinheitenBetween = pruefungsperiode.planungseinheitenBetween(start,
-        end);
-    return getAllPruefungen(planungseinheitenBetween);
   }
 
   //TODO kann das hier raus? Evtl? Weil hier an dieser Stelle der Converter genutzt wird.
@@ -586,6 +568,31 @@ public class DataAccessService {
     return pruefungsperiode.getAnkertag();
   }
 
+  public void setAnkertag(LocalDate newAnkerTag)
+      throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
+    noNullParameters(newAnkerTag);
+    checkForPruefungsperiode();
+    ensureNotBeforePruefungsperiode(newAnkerTag);
+    ensureNotAfterPruefungsperiode(newAnkerTag);
+    pruefungsperiode.setAnkertag(newAnkerTag);
+  }
+
+  private void ensureNotBeforePruefungsperiode(LocalDate newAnkerTag)
+      throws IllegalTimeSpanException {
+    if (newAnkerTag.isBefore(pruefungsperiode.getStartdatum())) {
+      throw new IllegalTimeSpanException(
+          "An Ankertag must not be before the start of the Pruefungsperiode.");
+    }
+  }
+
+  private void ensureNotAfterPruefungsperiode(LocalDate newAnkerTag)
+      throws IllegalTimeSpanException {
+    if (newAnkerTag.isAfter(pruefungsperiode.getEnddatum())) {
+      throw new IllegalTimeSpanException(
+          "An Ankertag must not be after the end of the Pruefungsperiode.");
+    }
+  }
+
   public int getAnzahlStudentenZeitpunkt(LocalDateTime zeitpunkt)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(zeitpunkt);
@@ -620,10 +627,6 @@ public class DataAccessService {
     return pruefungBlock.equals(otherBlock);
   }
 
-  public Pruefungsperiode getPruefungsperiode() {
-    return pruefungsperiode;
-  }
-
   public Optional<Block> getModelBlock(ReadOnlyBlock block) {
     return Optional.ofNullable(pruefungsperiode.block(block.getBlockId()));
   }
@@ -633,16 +636,31 @@ public class DataAccessService {
     return pruefungsperiode.block(blockId) != null;
   }
 
-  private void checkForPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
-    if (pruefungsperiode == null) {
-      throw new NoPruefungsPeriodeDefinedException();
-    }
-  }
-
   public Set<ReadOnlyPlanungseinheit> getAllROPlanungseinheitenBetween(LocalDateTime start,
       LocalDateTime end) throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     return Set.copyOf(
         converter.convertToROPlanungseinheitCollection(getAllPlanungseinheitenBetween(start, end)));
+  }
+
+  public List<Planungseinheit> getAllPlanungseinheitenBetween(LocalDateTime start,
+      LocalDateTime end)
+      throws IllegalTimeSpanException {
+    if (start.isAfter(end)) {
+      throw new IllegalTimeSpanException("Der Start liegt nach dem Ende des Zeitslots");
+    }
+    //TODO hier gucken, ob das hier hin  muss
+   /* if(this.isPruefungsperiodeSet()){
+      throw new NoPruefungsPeriodeDefinedException();
+    }*/
+    return List.copyOf(this.getPruefungsperiode().planungseinheitenBetween(start, end));
+  }
+
+  public Pruefungsperiode getPruefungsperiode() {
+    return pruefungsperiode;
+  }
+
+  public void setPruefungsperiode(Pruefungsperiode pruefungsperiode) {
+    this.pruefungsperiode = pruefungsperiode;
   }
 
   @NotNull
@@ -651,30 +669,5 @@ public class DataAccessService {
     noNullParameters(time);
     checkForPruefungsperiode();
     return pruefungsperiode.planungseinheitenAt(time);
-  }
-
-  public void setAnkertag(LocalDate newAnkerTag)
-      throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
-    noNullParameters(newAnkerTag);
-    checkForPruefungsperiode();
-    ensureNotBeforePruefungsperiode(newAnkerTag);
-    ensureNotAfterPruefungsperiode(newAnkerTag);
-    pruefungsperiode.setAnkertag(newAnkerTag);
-  }
-
-  private void ensureNotBeforePruefungsperiode(LocalDate newAnkerTag)
-      throws IllegalTimeSpanException {
-    if (newAnkerTag.isBefore(pruefungsperiode.getStartdatum())) {
-      throw new IllegalTimeSpanException(
-          "An Ankertag must not be before the start of the Pruefungsperiode.");
-    }
-  }
-
-  private void ensureNotAfterPruefungsperiode(LocalDate newAnkerTag)
-      throws IllegalTimeSpanException {
-    if (newAnkerTag.isAfter(pruefungsperiode.getEnddatum())) {
-      throw new IllegalTimeSpanException(
-          "An Ankertag must not be after the end of the Pruefungsperiode.");
-    }
   }
 }

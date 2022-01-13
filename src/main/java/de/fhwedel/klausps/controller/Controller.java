@@ -162,8 +162,7 @@ public class Controller implements InterfaceController {
   public Set<ReadOnlyPruefung> getPruefungenInZeitraum(LocalDateTime start, LocalDateTime end)
       throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
     noNullParameters(start, end);
-    ensureAvailabilityOfPruefungsperiode();
-    return dataAccessService.getAllReadOnlyPruefungenBetween(start, end);
+    return converter.convertToROPruefungSet(dataAccessService.getAllPruefungenBetween(start, end));
   }
 
   @Override
@@ -173,7 +172,6 @@ public class Controller implements InterfaceController {
     ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getAllROPlanungseinheitenBetween(start, end);
   }
-
 
   @Override
   public Set<ReadOnlyPruefung> getGeplantePruefungenWithKonflikt(
