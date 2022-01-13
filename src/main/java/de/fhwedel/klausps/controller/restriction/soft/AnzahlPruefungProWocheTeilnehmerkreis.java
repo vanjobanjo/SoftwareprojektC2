@@ -33,27 +33,51 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
     limit = LIMIT_TEST;
   }
 
+  /**
+   * Public constructor
+   */
   public AnzahlPruefungProWocheTeilnehmerkreis() {
     super(ServiceProvider.getDataAccessService(), ANZAHL_PRUEFUNGEN_PRO_WOCHE);
     limit = LIMIT_DEFAULT;
   }
 
-  Map<Integer, Set<Pruefung>> weekMapOfPruefung(Set<Pruefung> geplantePruefung,
+  /**
+   * Creates a Map, Pruefungen grouped by scheduled week. Week 0 is the first week of the startPeriode.
+   * @param scheduledPruefungen schedule Pruefungen
+   * @param startPeriode start of the periode
+   * @return Map with Pruefungen grouped by week of Pruefung.
+   */
+  Map<Integer, Set<Pruefung>> weekMapOfPruefung(Set<Pruefung> scheduledPruefungen,
       LocalDate startPeriode) {
-    return geplantePruefung.stream().collect(
+    return scheduledPruefungen.stream().collect(
         Collectors.groupingBy(pruefung -> getWeek(startPeriode, pruefung), Collectors.toSet()));
   }
 
+  /**
+   * @return scheduled week of the passed pruefung.
+   */
   private int getWeek(LocalDate startPeriode, Pruefung pruefung) {
     return (pruefung.getStartzeitpunkt().getDayOfYear() - startPeriode.getDayOfYear())
         / DAYS_WEEK_DEFAULT;
   }
 
+  /**
+   * @return the amount of the passed Teilnehmerkreis, in the given set of Pruefung.
+   */
   private int countOfTeilnehmerkreis(Teilnehmerkreis tk, Set<Pruefung> pruefungen) {
     return (int) pruefungen.stream().filter(pruefung -> pruefung.getTeilnehmerkreise().contains(tk))
         .count();
   }
 
+  /**
+   * Evaluation for the Anzahl Prufung Pro Woche Teilnehmerkreis.
+   * Will concate the analysen when there was another violation.
+   * @param pruefung Pruefung to check the violation
+   * @param tk a Teilnehmerkreis of the passed Pruefung to check
+   * @param analyse an other violation of the same pruefung
+   * @param pruefungenSameWeek Pruefungen which are scheduled in the same week
+   * @return a optional WeichesKriteriumsAnalyse when there is a violation.
+   */
   private Optional<WeichesKriteriumAnalyse> evaluateForTkConcat(Pruefung pruefung,
       Teilnehmerkreis tk,
       Optional<WeichesKriteriumAnalyse> analyse,
@@ -79,6 +103,12 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
         analyse);
   }
 
+  /**
+   * Will concat two analyse
+   * @param newAnalyse is always present
+   * @param oldAnalyse could be empty
+   * @return WeichesKriteriumsAnalyse
+   */
   private Optional<WeichesKriteriumAnalyse> concatAnalyse(
       WeichesKriteriumAnalyse newAnalyse, Optional<WeichesKriteriumAnalyse> oldAnalyse) {
     assert newAnalyse != null;
