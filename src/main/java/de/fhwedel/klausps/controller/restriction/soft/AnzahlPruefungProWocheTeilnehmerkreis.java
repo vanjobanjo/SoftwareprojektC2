@@ -25,30 +25,17 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
   private static final int DAYS_WEEK_DEFAULT = 7;
   private final int limit;
 
-  private LocalDate startPeriode;
-  // the set contains all pruefungen of the week, also the sibblings in the block
-  private Map<Integer, Set<Pruefung>> weekPruefungMap;
-
-  public AnzahlPruefungProWocheTeilnehmerkreis() {
-    this(ServiceProvider.getDataAccessService(), LIMIT_DEFAULT);
-  }
-
   //Mock Konstruktor
   AnzahlPruefungProWocheTeilnehmerkreis(
       DataAccessService dataAccessService,
       final int LIMIT_TEST) {
     super(dataAccessService, ANZAHL_PRUEFUNGEN_PRO_WOCHE);
-    try {
-      // TODO das kann nicht im Konstruktor gesetzt werden weil die Klasse instanziiert wird bevor
-      //  es eine Pruefungsperiode geben kann.
-      //  Generell ist von Instanzvariablen in Restriktionen abzusehen.
-      startPeriode = dataAccessService.getStartOfPeriode();
-      weekPruefungMap = weekMapOfPruefung(dataAccessService.getGeplanteModelPruefung(),
-          startPeriode);
-    } catch (NoPruefungsPeriodeDefinedException e) {
-      e.printStackTrace();
-    }
     limit = LIMIT_TEST;
+  }
+
+  public AnzahlPruefungProWocheTeilnehmerkreis() {
+    super(ServiceProvider.getDataAccessService(), ANZAHL_PRUEFUNGEN_PRO_WOCHE);
+    limit = LIMIT_DEFAULT;
   }
 
   Map<Integer, Set<Pruefung>> weekMapOfPruefung(Set<Pruefung> geplantePruefung,
@@ -69,11 +56,10 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
 
   private Optional<WeichesKriteriumAnalyse> evaluateForTkConcat(Pruefung pruefung,
       Teilnehmerkreis tk,
-      Optional<WeichesKriteriumAnalyse> analyse) {
+      Optional<WeichesKriteriumAnalyse> analyse,
+      Set<Pruefung> pruefungenSameWeek) {
     assert pruefung.getTeilnehmerkreise().contains(tk);
 
-    int week = getWeek(startPeriode, pruefung);
-    Set<Pruefung> pruefungenSameWeek = weekPruefungMap.get(week);
     Optional<Block> blockOpt = dataAccessService.getBlockTo(pruefung);
     if (blockOpt.isPresent()) {
       pruefungenSameWeek = filterSiblingsOfPruefung(pruefung, pruefungenSameWeek);
@@ -116,24 +102,26 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
 
   @Override
   public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
-    weekPruefungMap = weekMapOfPruefung(dataAccessService.getGeplanteModelPruefung(), startPeriode);
+
+    Map<Integer, Set<Pruefung>> weekPruefungMap;
+    LocalDate start;
+
+    try {
+      start = dataAccessService.getStartOfPeriode();
+      weekPruefungMap = weekMapOfPruefung(dataAccessService.getGeplanteModelPruefung(), start);
+    } catch (NoPruefungsPeriodeDefinedException e) {
+      return Optional.empty();
+    }
+
     Optional<WeichesKriteriumAnalyse> analyseForTks = Optional.empty();
     for (Teilnehmerkreis tk : pruefung.getTeilnehmerkreise()) {
-      analyseForTks = evaluateForTkConcat(pruefung, tk, analyseForTks);
+      int week = getWeek(start, pruefung);
+      Set<Pruefung> pruefungenScheduleSameWeek = weekPruefungMap.get(week);
+      analyseForTks = evaluateForTkConcat(pruefung, tk, analyseForTks,
+          pruefungenScheduleSameWeek);
     }
     return analyseForTks;
   }
-
-  boolean isAboveLimit(Pruefung pruefung, Teilnehmerkreis tk) {
-    int week = getWeek(startPeriode, pruefung);
-    Set<Pruefung> pruefungen = weekPruefungMap.get(week);
-    Optional<Block> blockOpt = dataAccessService.getBlockTo(pruefung);
-    if (blockOpt.isPresent()) {
-      pruefungen = filterSiblingsOfPruefung(pruefung, pruefungen);
-    }
-    return countOfTeilnehmerkreis(tk, pruefungen) >= limit;
-  }
-
 
   /**
    * Filters the block siblings of the passed pruefung. When the passed pruefung doesn't belong to

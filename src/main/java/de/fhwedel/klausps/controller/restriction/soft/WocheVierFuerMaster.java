@@ -22,24 +22,14 @@ public class WocheVierFuerMaster extends WeicheRestriktion {
 
   private static final int WEEK_FOUR = 4;
   private static final int DAYS_WEEK = 7;
-  private LocalDate startPeriode;
 
   public WocheVierFuerMaster() {
     super(ServiceProvider.getDataAccessService(), WOCHE_VIER_FUER_MASTER);
-    try {
-      // TODO das kann nicht im Konstruktor gesetzt werden weil die Klasse instanziiert wird bevor
-      //  es eine Pruefungsperiode geben kann.
-      //  Generell ist von Instanzvariablen in Restriktionen abzusehen.
-      startPeriode = ServiceProvider.getDataAccessService().getStartOfPeriode();
-    } catch (NoPruefungsPeriodeDefinedException e) {
-      e.printStackTrace();
-    }
   }
 
   //Mock Konstruktor
   WocheVierFuerMaster(DataAccessService dataAccessService, LocalDate start) {
     super(dataAccessService, WOCHE_VIER_FUER_MASTER);
-    startPeriode = start;
   }
 
   //if the pruefung is on week 4 and one of the tk is not master, this function returns true.
@@ -48,6 +38,15 @@ public class WocheVierFuerMaster extends WeicheRestriktion {
     if (!dataAccessService.terminIsInPeriod(pruefung.getStartzeitpunkt())) {
       throw new IllegalArgumentException("Prüfung ist nicht in Periode.");
     }
+
+    LocalDate startPeriode;
+
+    try {
+      startPeriode = dataAccessService.getStartOfPeriode();
+    } catch (NoPruefungsPeriodeDefinedException e) {
+      return false;
+    }
+
     return getWeek(startPeriode, pruefung.getStartzeitpunkt().toLocalDate()) == WEEK_FOUR
         && (pruefung.getAusbildungsgrade().contains(BACHELOR)
         || pruefung.getAusbildungsgrade().contains(AUSBILDUNG));
@@ -62,6 +61,7 @@ public class WocheVierFuerMaster extends WeicheRestriktion {
    */
   @Override
   public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
+
     if (!isWeekFourContainsNotOnlyMaster(pruefung)) {
       return Optional.empty();
     }
