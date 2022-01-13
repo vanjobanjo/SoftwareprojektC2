@@ -69,8 +69,7 @@ public class Controller implements InterfaceController {
 
   @Override
   public Set<ReadOnlyBlock> getGeplanteBloecke() throws NoPruefungsPeriodeDefinedException {
-    ensureAvailabilityOfPruefungsperiode();
-    return dataAccessService.getGeplanteBloecke();
+    return converter.convertToROBlockSet(dataAccessService.getGeplanteBloecke());
   }
 
   @Override

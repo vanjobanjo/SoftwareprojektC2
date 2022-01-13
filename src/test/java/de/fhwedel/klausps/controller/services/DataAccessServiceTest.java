@@ -4,6 +4,7 @@ import static de.fhwedel.klausps.controller.util.TestFactory.bwlBachelor;
 import static de.fhwedel.klausps.controller.util.TestFactory.infBachelor;
 import static de.fhwedel.klausps.controller.util.TestFactory.infMaster;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefungen;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungenReadOnly;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTime;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedPruefung;
@@ -179,17 +180,12 @@ class DataAccessServiceTest {
 
   @Test
   void geplanteBloeckeTest() throws NoPruefungsPeriodeDefinedException {
-    List<ReadOnlyPruefung> pruefungen = getRandomPruefungenReadOnly(1234, 2);
-    List<Pruefung> pruefungenFromModel = convertPruefungenFromReadonlyToModel(pruefungen);
-    Block initialBlock = new BlockImpl(pruefungsperiode, 1, "name", Blocktyp.PARALLEL);
-    pruefungenFromModel.forEach(initialBlock::addPruefung);
+    List<Pruefung> pruefungen = getRandomPlannedPruefungen(1234, 2);
+    Block block = new BlockImpl(pruefungsperiode, 1, "name", Blocktyp.PARALLEL);
+    pruefungen.forEach(block::addPruefung);
 
-    when(pruefungsperiode.geplanteBloecke()).thenReturn(Set.of(initialBlock));
-
-    Set<ReadOnlyBlock> blockController = deviceUnderTest.getGeplanteBloecke();
-    ReadOnlyBlock resultingBlock = blockController.stream().toList().get(0);
-    ReadOnlyBlockAssert.assertThat(resultingBlock)
-        .containsOnlyPruefungen(pruefungen.toArray(new ReadOnlyPruefung[0]));
+    when(pruefungsperiode.geplanteBloecke()).thenReturn(Set.of(block));
+    assertThat(deviceUnderTest.getGeplanteBloecke()).hasSize(1);
   }
 
   @Test
