@@ -101,11 +101,13 @@ public class Controller implements InterfaceController {
   }
 
   @Override
+  @NotNull
   public Semester getSemester() throws NoPruefungsPeriodeDefinedException {
     return dataAccessService.getSemester();
   }
 
   @Override
+  @NotNull
   public Semester createSemester(Semestertyp typ, Year year) {
     noNullParameters(typ, year);
     return new SemesterImpl(typ, year);

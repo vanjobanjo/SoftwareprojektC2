@@ -116,13 +116,24 @@ class ControllerTest {
   }
 
   @Test
+  void createSemester_semesterTypeMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.createSemester(null, Year.of(2022)));
+  }
+
+  @Test
+  void createSemester_yearMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.createSemester(Semestertyp.SOMMERSEMESTER, null));
+  }
+
+  @Test
   void createSemester_successful() {
     Semester createdSemester = deviceUnderTest.createSemester(Semestertyp.WINTERSEMESTER,
         Year.of(2022));
     assertThat(createdSemester).isNotNull();
     assertThat(createdSemester.getJahr()).isEqualTo(Year.of(2022));
     assertThat(createdSemester.getTyp()).isEqualTo(Semestertyp.WINTERSEMESTER);
-
   }
 
   @Test
