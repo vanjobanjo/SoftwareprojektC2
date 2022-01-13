@@ -24,6 +24,7 @@ import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Semestertyp;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.api.exporter.ExportException;
+import de.fhwedel.klausps.model.api.importer.ImportException;
 import de.fhwedel.klausps.model.impl.SemesterImpl;
 import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
 import java.io.IOException;
@@ -407,9 +408,9 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public void importPeriode(Path path) {
+  public void importPeriode(Path path) throws ImportException, IOException {
     noNullParameters(path);
-    throw new IllegalStateException("Not implemented yet!");
+    ioService.importPeriode(path);
   }
 
   @Override
