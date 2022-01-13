@@ -7,18 +7,15 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
-import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
-import de.fhwedel.klausps.controller.restriction.hard.TwoKlausurenSameTime;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
-import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -44,7 +41,7 @@ class MehrePruefungenAmTagTest {
 
 
   @Test
-  void klausurSameDay() {
+  void klausurSameDay() throws NoPruefungsPeriodeDefinedException {
 
     MehrePruefungenAmTag mehrePruefungenAmTag = new MehrePruefungenAmTag(dataAccessService);
 
@@ -139,7 +136,7 @@ class MehrePruefungenAmTagTest {
 
 
   @Test
-  void klausurSameDay_TestWithBloeck() {
+  void klausurSameDay_TestWithBloeck() throws NoPruefungsPeriodeDefinedException {
 
     MehrePruefungenAmTag mehrePruefungenAmTag = new MehrePruefungenAmTag(dataAccessService);
 

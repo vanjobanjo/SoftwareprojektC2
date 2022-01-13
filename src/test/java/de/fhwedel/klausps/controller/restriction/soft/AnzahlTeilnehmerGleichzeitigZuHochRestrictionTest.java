@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 
 import de.fhwedel.klausps.controller.assertions.WeicheKriteriumsAnalyseAssert;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Block;
@@ -49,7 +50,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
 
   @Test
   void restrictionNotViolatedWhenSlightlyLessStudentsThanPermitted_onePruefung_oneTeilnehmerkreis()
-      throws IllegalTimeSpanException {
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     Pruefung pruefung = getRandomPlannedPruefung(1L);
     pruefung.addTeilnehmerkreis(getRandomTeilnehmerkreis(1L), 200);
 
@@ -61,7 +62,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
 
   @Test
   void restrictionNotViolatedWhenSlightlyLessStudentsThanPermitted_onePruefung_multipleTeilnehmerkreise()
-      throws IllegalTimeSpanException {
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     Pruefung pruefung = getRandomPlannedPruefung(1L);
     pruefung.addTeilnehmerkreis(getRandomTeilnehmerkreis(1L), 100);
     pruefung.addTeilnehmerkreis(getRandomTeilnehmerkreis(2L), 51);
@@ -75,7 +76,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
 
   @Test
   void restrictionNotViolatedWhenSlightlyLessStudentsThanPermitted_multiplePruefungen()
-      throws IllegalTimeSpanException {
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     List<Pruefung> pruefungen = get3PruefungenWithTotal200Students();
 
     when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
@@ -99,7 +100,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
 
   @Test
   void restrictionNotViolatedWhenSlightlyLessStudentsThanPermitted_multiplePruefungenInOneBlock()
-      throws IllegalTimeSpanException {
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     List<Pruefung> pruefungen = get3PruefungenWithTotal200Students();
     Block block = getBlockWith(pruefungen);
 
@@ -120,7 +121,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
 
   @Test
   void restrictionViolatedWhenSlightlyMoreStudentsThanPermitted_onePruefung_oneTeilnehmerkreis()
-      throws IllegalTimeSpanException {
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     List<Planungseinheit> planungseinheiten = new ArrayList<>(1);
     planungseinheiten.add(getRandomPlannedPruefung(1L));
     planungseinheiten.add(planungseinheiten.get(0));
@@ -135,7 +136,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
 
   @Test
   void restrictionViolatedWhenSlightlyMoreStudentsThanPermitted_onePruefung_multipleTeilnehmerkreise()
-      throws IllegalTimeSpanException {
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     Pruefung pruefung = getRandomPlannedPruefung(1L);
     pruefung.addTeilnehmerkreis(getRandomTeilnehmerkreis(1L), 101);
     pruefung.addTeilnehmerkreis(getRandomTeilnehmerkreis(2L), 51);
@@ -150,7 +151,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
 
   @Test
   void restrictionViolatedWhenSlightlyMoreStudentsThanPermitted_multiplePruefungen()
-      throws IllegalTimeSpanException {
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     List<Pruefung> pruefungen = get3PruefungenWithTotal201Students();
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
@@ -174,7 +175,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
 
   @Test
   void restrictionViolatedWhenSlightlyMoreStudentsThanPermitted_multiplePruefungenInOneBlock()
-      throws IllegalTimeSpanException {
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     List<Pruefung> pruefungen = get3PruefungenWithTotal201Students();
     Block block = getBlockWith(pruefungen);
     block.setStartzeitpunkt(LocalDateTime.of(1999, 11, 12, 13, 14));
@@ -188,7 +189,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
 
   @Test
   void oneTeilnehmerMoreAtATimeThanAllowed_analysisContainsCorrectPruefungen()
-      throws IllegalTimeSpanException {
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     List<Pruefung> pruefungen = get3OverlappingPruefungenWith201Teilnehmer();
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
@@ -211,7 +212,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
 
   @Test
   void oneTeilnehmerMoreAtATimeThanAllowed_analysisContainsCorrectPruefungen_fromBlock()
-      throws IllegalTimeSpanException {
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     Block block = getBlockWithPlanungseinheitenWithMoreThan200Teilnehmer();
     Pruefung pruefungToTest = block.getPruefungen().iterator().next();
 
@@ -233,7 +234,8 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
   }
 
   @Test
-  void correctAmountOfStudents_oneMoreThanAllowed() throws IllegalTimeSpanException {
+  void correctAmountOfStudents_oneMoreThanAllowed()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     List<Pruefung> pruefungen = get3OverlappingPruefungenWith201Teilnehmer();
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
@@ -245,7 +247,8 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
   }
 
   @Test
-  void correctAmountOfStudents_wayMoreThanAllowed() throws IllegalTimeSpanException {
+  void correctAmountOfStudents_wayMoreThanAllowed()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     List<Pruefung> pruefungen = get3OverlappingPruefungenWith999Teilnehmer();
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
@@ -267,7 +270,8 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
   }
 
   @Test
-  void evaluate_scoringForMinimalViolation() throws IllegalTimeSpanException {
+  void evaluate_scoringForMinimalViolation()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     List<Pruefung> pruefungen = get3PruefungenWithTotal201Students();
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
@@ -283,7 +287,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
 
   @Test
   void evaluate_scoringForMinimalViolation_nonDefaultScoringSteps()
-      throws IllegalTimeSpanException {
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     this.deviceUnderTest = new AnzahlTeilnehmerGleichzeitigZuHochRestriction(this.dataAccessService,
         Duration.ZERO, 50, 3);
     List<Pruefung> pruefungen = get3PruefungenWithTotal51Students();
@@ -292,24 +296,6 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
         convertPruefungenToPlanungseinheiten(pruefungen));
 
     int expectedScoring = WeichesKriterium.ANZAHL_TEILNEHMER_GLEICHZEITIG_ZU_HOCH.getWert();
-
-    assertThat((deviceUnderTest.evaluate(pruefungen.get(0)).get().getDeltaScoring())).isEqualTo(
-        expectedScoring);
-    assertThat((deviceUnderTest.evaluate(pruefungen.get(1)).get().getDeltaScoring())).isEqualTo(
-        expectedScoring);
-  }
-
-  @Test
-  void evaluate_scoringForMinimalViolation_nonDefaultScoringSteps_highScoring()
-      throws IllegalTimeSpanException {
-    this.deviceUnderTest = new AnzahlTeilnehmerGleichzeitigZuHochRestriction(this.dataAccessService,
-        Duration.ZERO, 10, 3);
-    List<Pruefung> pruefungen = get3PruefungenWithTotal51Students();
-
-    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        convertPruefungenToPlanungseinheiten(pruefungen));
-
-    int expectedScoring = 14 * WeichesKriterium.ANZAHL_TEILNEHMER_GLEICHZEITIG_ZU_HOCH.getWert();
 
     assertThat((deviceUnderTest.evaluate(pruefungen.get(0)).get().getDeltaScoring())).isEqualTo(
         expectedScoring);
@@ -330,7 +316,26 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
   }
 
   @Test
-  void evaluate_secondLowestScoring() throws IllegalTimeSpanException {
+  void evaluate_scoringForMinimalViolation_nonDefaultScoringSteps_highScoring()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
+    this.deviceUnderTest = new AnzahlTeilnehmerGleichzeitigZuHochRestriction(this.dataAccessService,
+        Duration.ZERO, 10, 3);
+    List<Pruefung> pruefungen = get3PruefungenWithTotal51Students();
+
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        convertPruefungenToPlanungseinheiten(pruefungen));
+
+    int expectedScoring = 14 * WeichesKriterium.ANZAHL_TEILNEHMER_GLEICHZEITIG_ZU_HOCH.getWert();
+
+    assertThat((deviceUnderTest.evaluate(pruefungen.get(0)).get().getDeltaScoring())).isEqualTo(
+        expectedScoring);
+    assertThat((deviceUnderTest.evaluate(pruefungen.get(1)).get().getDeltaScoring())).isEqualTo(
+        expectedScoring);
+  }
+
+  @Test
+  void evaluate_secondLowestScoring()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     this.deviceUnderTest = new AnzahlTeilnehmerGleichzeitigZuHochRestriction(this.dataAccessService,
         Duration.ZERO, 200, 10);
     List<Pruefung> pruefungen = get3PruefungenWithTotal211Students();
@@ -360,14 +365,16 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
 
   @Test
   void nonPositiveStepSizeNotAllowed_zero() {
-    assertThrows(IllegalArgumentException.class, () -> this.deviceUnderTest = new AnzahlTeilnehmerGleichzeitigZuHochRestriction(this.dataAccessService,
-        Duration.ZERO, 200, 0));
+    assertThrows(IllegalArgumentException.class,
+        () -> this.deviceUnderTest = new AnzahlTeilnehmerGleichzeitigZuHochRestriction(
+            this.dataAccessService, Duration.ZERO, 200, 0));
   }
 
   @Test
   void nonPositiveStepSizeNotAllowed_negative() {
-    assertThrows(IllegalArgumentException.class, () -> this.deviceUnderTest = new AnzahlTeilnehmerGleichzeitigZuHochRestriction(this.dataAccessService,
-        Duration.ZERO, 200, -1));
+    assertThrows(IllegalArgumentException.class,
+        () -> this.deviceUnderTest = new AnzahlTeilnehmerGleichzeitigZuHochRestriction(
+            this.dataAccessService, Duration.ZERO, 200, -1));
   }
 
 }

@@ -3,7 +3,6 @@ package de.fhwedel.klausps.controller.services;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefungen;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTime;
-import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -85,7 +84,8 @@ class RestrictionServiceTest {
   }
 
   @Test
-  void getPruefungenInHardConflictWith_oneHardRestriction_resultContainsPruefungenFromRestrictionAnalysis() {
+  void getPruefungenInHardConflictWith_oneHardRestriction_resultContainsPruefungenFromRestrictionAnalysis()
+      throws NoPruefungsPeriodeDefinedException {
     Set<Pruefung> pruefungenToFailWith = new HashSet<>(getRandomPlannedPruefungen(11L, 3));
     HarteRestriktion hardRestriction = oneHardRestrictionThatDoesFailWith(pruefungenToFailWith);
     Planungseinheit planungseinheitToCheckFor = getRandomPlannedPruefung(1L);
@@ -98,7 +98,8 @@ class RestrictionServiceTest {
         planungseinheitToCheckFor)).containsExactlyInAnyOrderElementsOf(pruefungenToFailWith);
   }
 
-  private HarteRestriktion oneHardRestrictionThatDoesFailWith(Collection<Pruefung> pruefungen) {
+  private HarteRestriktion oneHardRestrictionThatDoesFailWith(Collection<Pruefung> pruefungen)
+      throws NoPruefungsPeriodeDefinedException {
     HarteRestriktion restriktion = mock(HarteRestriktion.class);
     when(restriktion.evaluate(any())).thenReturn(
         Optional.of(hartesKriteriumAnalyseWith(pruefungen)));
@@ -108,7 +109,7 @@ class RestrictionServiceTest {
   private HartesKriteriumAnalyse hartesKriteriumAnalyseWith(Collection<Pruefung> pruefungen) {
     Map<Teilnehmerkreis, Integer> teilnehmerMap = new HashMap<>();
     for (Pruefung p : pruefungen) {
-        teilnehmerMap.putAll(p.getSchaetzungen());
+      teilnehmerMap.putAll(p.getSchaetzungen());
     }
     return new HartesKriteriumAnalyse(new HashSet<>(pruefungen),
         HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG, teilnehmerMap);
@@ -116,14 +117,16 @@ class RestrictionServiceTest {
 
   @Test
   void wouldBeHardConflictAt_timeMustNotBeNull() {
+    Pruefung pruefung = getRandomPlannedPruefung(1L);
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.wouldBeHardConflictAt(null, getRandomPlannedPruefung(1L)));
+        () -> deviceUnderTest.wouldBeHardConflictAt(null, pruefung));
   }
 
   @Test
   void wouldBeHardConflictAt_planungseinheitMustNotBeNull() {
+    LocalDateTime time = getRandomTime(1L);
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.wouldBeHardConflictAt(getRandomTime(1L), null));
+        () -> deviceUnderTest.wouldBeHardConflictAt(time, null));
   }
 
   @Test

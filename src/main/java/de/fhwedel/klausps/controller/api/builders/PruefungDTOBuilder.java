@@ -1,5 +1,7 @@
 package de.fhwedel.klausps.controller.api.builders;
 
+import static de.fhwedel.klausps.controller.util.ParameterUtil.noNullParameters;
+
 import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.model.api.Pruefung;
@@ -13,13 +15,13 @@ import java.util.Set;
 
 public class PruefungDTOBuilder {
 
-  private static final String PRUEUNGS_NUMMER_DEFAULT = "";
+  private static final String PRUEUNGS_NUMMER_DEFAULT = null;
   private static final String PRUEFUNGS_NAME_DEFAULT = "";
   private static final Duration DAUER_DEFAULT = Duration.ofMinutes(60);
   private static final LocalDateTime START_ZEITPUNKT_DEFAULT = null;
   private static final int SCORING_DEFAULT = 0;
-  private final Set<String> PRUEFER_DEFAULT = new HashSet<>();
-  private final Map<Teilnehmerkreis, Integer> TEILNEHMERKREIS_SCHAETZUNG_DEFAULT = new HashMap<>();
+  private final Set<String> prueferDefault = new HashSet<>();
+  private final Map<Teilnehmerkreis, Integer> teilnehmerkreisSchaetzungDefault = new HashMap<>();
   private String pruefungsNummer;
   private String pruefungsName;
   private Map<Teilnehmerkreis, Integer> teilnehmerkreisSchaetzung;
@@ -32,15 +34,13 @@ public class PruefungDTOBuilder {
    * Builder Konstruktor
    */
   public PruefungDTOBuilder() {
-    // todo Pruefungsnummer muss eindeutig sein,
-    //  daher sollte kein leerer String vergeben werden können
     this.pruefungsNummer = PRUEUNGS_NUMMER_DEFAULT;
     this.pruefungsName = PRUEFUNGS_NAME_DEFAULT;
-    this.teilnehmerkreisSchaetzung = TEILNEHMERKREIS_SCHAETZUNG_DEFAULT;
+    this.teilnehmerkreisSchaetzung = teilnehmerkreisSchaetzungDefault;
     this.dauer = DAUER_DEFAULT;
     this.startZeitpunkt = START_ZEITPUNKT_DEFAULT;
     this.scoring = SCORING_DEFAULT;
-    this.pruefer = PRUEFER_DEFAULT;
+    this.pruefer = prueferDefault;
   }
 
   public PruefungDTOBuilder(PruefungDTO pruefung) {
@@ -73,9 +73,18 @@ public class PruefungDTOBuilder {
     this.pruefer = pruefung.getPruefer();
   }
 
-  public PruefungDTOBuilder withPruefungsNummer(String pruefungsNummer) {
+  public PruefungDTOBuilder withPruefungsNummer(String pruefungsNummer)
+      throws IllegalArgumentException {
+    noNullParameters(pruefungsNummer);
+    checkIsNotEmpty(pruefungsNummer);
     this.pruefungsNummer = pruefungsNummer;
     return this;
+  }
+
+  private void checkIsNotEmpty(String pruefungsNummer) {
+    if (pruefungsNummer.isEmpty()) {
+      throw new IllegalArgumentException("Pruefungsnummer can not be empty.");
+    }
   }
 
   public PruefungDTOBuilder withPruefungsName(String pruefungsName) {

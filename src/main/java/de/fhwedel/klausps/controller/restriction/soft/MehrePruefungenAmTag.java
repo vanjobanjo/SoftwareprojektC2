@@ -6,7 +6,7 @@ import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
-import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Planungseinheit;
@@ -17,7 +17,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import org.jetbrains.annotations.NotNull;
 
 public class MehrePruefungenAmTag extends WeicheRestriktion {
@@ -39,7 +38,8 @@ public class MehrePruefungenAmTag extends WeicheRestriktion {
   }
 
   @Override
-  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
+  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException {
     //TODO schön machen
     setReadyOnly = new HashSet<>();
     setPruefung = new HashSet<>();
@@ -61,9 +61,6 @@ public class MehrePruefungenAmTag extends WeicheRestriktion {
         e.printStackTrace();
       }
       Set<Pruefung> pruefungenFromBlock;
-      // TODO wieso wird überprüft, ob ein Ergebnis von "getAllPruefungenBetween" ein Block ist,
-      //  die Methode sorgt ganz explizit dafür, dass die Klausuren in den Blöcken statt der Blöcke
-      //  selbst returned werden
       for (Planungseinheit planungseinheit : testList) {
         //Unterscheidung auf Block
         if (planungseinheit.isBlock()) {

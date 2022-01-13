@@ -155,7 +155,6 @@ public class Controller implements InterfaceController {
   public int getAnzahlStudentenZeitpunkt(LocalDateTime zeitpunkt)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(zeitpunkt);
-    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getAnzahlStudentenZeitpunkt(zeitpunkt);
   }
 
@@ -163,25 +162,23 @@ public class Controller implements InterfaceController {
   public Set<ReadOnlyPruefung> getPruefungenInZeitraum(LocalDateTime start, LocalDateTime end)
       throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
     noNullParameters(start, end);
-    ensureAvailabilityOfPruefungsperiode();
-    return dataAccessService.getAllReadOnlyPruefungenBetween(start, end);
+    return converter.convertToROPruefungSet(dataAccessService.getAllPruefungenBetween(start, end));
   }
 
   @Override
   public Set<ReadOnlyPlanungseinheit> getPlanungseinheitenInZeitraum(LocalDateTime start,
       LocalDateTime end) throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
     noNullParameters(start, end);
-    ensureAvailabilityOfPruefungsperiode();
-    return dataAccessService.getAllROPlanungseinheitenBetween(start, end);
+    return converter.convertToROPlanungseinheitSet(
+        dataAccessService.getAllPlanungseinheitenBetween(start, end));
   }
-
 
   @Override
   public Set<ReadOnlyPruefung> getGeplantePruefungenWithKonflikt(
       ReadOnlyPlanungseinheit planungseinheit) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(planungseinheit);
-    ensureAvailabilityOfPruefungsperiode();
-    return scheduleService.getGeplantePruefungenWithKonflikt(planungseinheit);
+    return converter.convertToROPruefungSet(
+        scheduleService.getGeplantePruefungenWithKonflikt(planungseinheit));
   }
 
   @Override

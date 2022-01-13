@@ -85,7 +85,8 @@ class TwoKlausurenSameTimeTest {
   }
 
   @Test
-  void violationTwoPruefungParallelTest() throws IllegalTimeSpanException {
+  void violationTwoPruefungParallelTest()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     LocalDateTime same = LocalDateTime.of(2000, 1, 1, 1, 0);
     Duration minutes90 = Duration.ofMinutes(90);
     Pruefung pruefung1 = new PruefungImpl("1", "Pruefung1", "", minutes90, same);
@@ -111,7 +112,7 @@ class TwoKlausurenSameTimeTest {
   }
 
   @Test
-  void twoKlausurenSameTimeTest_twoSameTime() {
+  void twoKlausurenSameTimeTest_twoSameTime() throws NoPruefungsPeriodeDefinedException {
 
     Planungseinheit analysisPL = mock(Pruefung.class);
     Planungseinheit haskelPL = mock(Pruefung.class);
@@ -188,7 +189,7 @@ class TwoKlausurenSameTimeTest {
 
 
   @Test
-  void twoKlausurenSameTime_NotSameTime() {
+  void twoKlausurenSameTime_NotSameTime() throws NoPruefungsPeriodeDefinedException {
 
     Planungseinheit analysisPL = mock(Planungseinheit.class);
     Planungseinheit haskelPL = mock(Planungseinheit.class);
@@ -232,6 +233,8 @@ class TwoKlausurenSameTimeTest {
 
       //start kann nicht vor ende liegen, da ich das berechne
       e.printStackTrace();
+    } catch (NoPruefungsPeriodeDefinedException e) {
+      e.printStackTrace();
     }
 
     Duration duration = Duration.ofMinutes(120);
@@ -247,7 +250,7 @@ class TwoKlausurenSameTimeTest {
   }
 
   @Test
-  void twoKlausurenSameTime_ThreeSameTime() {
+  void twoKlausurenSameTime_ThreeSameTime() throws NoPruefungsPeriodeDefinedException {
 
     Planungseinheit analysisPL = mock(Pruefung.class);
     Planungseinheit haskelPL = mock(Pruefung.class);
@@ -326,7 +329,8 @@ class TwoKlausurenSameTimeTest {
   }
 
   @Test
-  void twoKlausurenSameTime_ThreeSameTime_two_DiffrentTeilnehmerkreis() {
+  void twoKlausurenSameTime_ThreeSameTime_two_DiffrentTeilnehmerkreis()
+      throws NoPruefungsPeriodeDefinedException {
 
     Planungseinheit analysisPL = mock(Pruefung.class);
     Planungseinheit haskelPL = mock(Pruefung.class);
@@ -433,7 +437,8 @@ class TwoKlausurenSameTimeTest {
 
   @Test
   @DisplayName("HartesKriterium: TwoKlausurenSameTime in Block Parallel Überschneidung mit kürzerer Klausur")
-  void test_Blocke2_Parallen_successful() throws IllegalTimeSpanException {
+  void test_Blocke2_Parallen_successful()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
 
     Planungseinheit blockPlan = mock(Planungseinheit.class);
 
@@ -531,7 +536,8 @@ class TwoKlausurenSameTimeTest {
 
   @Test
   @DisplayName("HartesKriterium: TwoKlausurenSameTIme in Block Parallel Überschneidung mit kürzere Klausur Block liegt nach Pruefung")
-  void test_Blocke2_Parallen_successful_Pruefung_Vor_Block() throws IllegalTimeSpanException {
+  void test_Blocke2_Parallen_successful_Pruefung_Vor_Block()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
 
     Planungseinheit blockPlan = mock(Planungseinheit.class);
 
@@ -628,7 +634,8 @@ class TwoKlausurenSameTimeTest {
 
 
   @Test
-  void test_Blocke2_SEQUENTIAL() throws IllegalTimeSpanException {
+  void test_Blocke2_SEQUENTIAL()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
 
     Planungseinheit blockPlan = mock(Planungseinheit.class);
 
@@ -730,7 +737,8 @@ class TwoKlausurenSameTimeTest {
   }
 
   @Test
-  void test_Blocke2_Parallel_No_SameTeilnehmerkreise() throws IllegalTimeSpanException {
+  void test_Blocke2_Parallel_No_SameTeilnehmerkreise()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
 
     Planungseinheit blockPlan = mock(Planungseinheit.class);
 
@@ -822,7 +830,8 @@ class TwoKlausurenSameTimeTest {
 
 
   @Test
-  void test_Blocke2_SEQUENTIAL_No_SameTeilnehmerkreise() throws IllegalTimeSpanException {
+  void test_Blocke2_SEQUENTIAL_No_SameTeilnehmerkreise()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
 
     Planungseinheit blockPlan = mock(Planungseinheit.class);
 
@@ -915,7 +924,8 @@ class TwoKlausurenSameTimeTest {
 
 
   @Test
-  void test_Blocke2_Sequential_LotPruefugnen() throws IllegalTimeSpanException {
+  void test_Blocke2_Sequential_LotPruefugnen()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
 
     Planungseinheit blockPlan = mock(Planungseinheit.class);
 
@@ -1048,7 +1058,8 @@ class TwoKlausurenSameTimeTest {
 
 
   @Test
-  void test_Blocke2_PARALLEL_LotPruefugnen() throws IllegalTimeSpanException {
+  void test_Blocke2_PARALLEL_LotPruefugnen()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
 
     Planungseinheit blockPlan = mock(Planungseinheit.class);
 
@@ -1293,14 +1304,16 @@ class TwoKlausurenSameTimeTest {
 
   @Test
   void wouldBeHardConflictAt_timeMustNotBeNull() {
+    Pruefung pruefung = getRandomPlannedPruefung(1L);
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.wouldBeHardConflictAt(null, getRandomPlannedPruefung(1L)));
+        () -> deviceUnderTest.wouldBeHardConflictAt(null, pruefung));
   }
 
   @Test
   void wouldBeHardConflictAt_planungseinheitMustNotBeNull() {
+    LocalDateTime time = getRandomTime(1L);
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.wouldBeHardConflictAt(getRandomTime(1L), null));
+        () -> deviceUnderTest.wouldBeHardConflictAt(time, null));
   }
 
   @Test

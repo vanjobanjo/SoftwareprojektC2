@@ -22,7 +22,8 @@ public abstract class HarteRestriktion extends Restriktion {
     this.dataAccessService = dataAccessService;
   }
 
-  public abstract Optional<HartesKriteriumAnalyse> evaluate(Pruefung pruefung);
+  public abstract Optional<HartesKriteriumAnalyse> evaluate(Pruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException;
 
   public abstract Set<Pruefung> getAllPotentialConflictingPruefungenWith(
       Planungseinheit planungseinheitToCheckFor);
