@@ -1615,4 +1615,11 @@ class DataAccessServiceTest {
         () -> deviceUnderTest.getEndOfPeriode());
   }
 
+  @Test
+  void getPeriodenKapazitaet_noPruefungsperiode() {
+    deviceUnderTest = new DataAccessService(null);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getPeriodenKapazitaet());
+  }
+
 }

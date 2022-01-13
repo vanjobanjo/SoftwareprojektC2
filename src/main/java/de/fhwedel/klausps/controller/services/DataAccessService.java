@@ -461,7 +461,8 @@ public class DataAccessService {
     return pruefungsperiode.getEnddatum();
   }
 
-  public int getPeriodenKapazitaet() {
+  public int getPeriodenKapazitaet() throws NoPruefungsPeriodeDefinedException {
+    checkForPruefungsperiode();
     return pruefungsperiode.getKapazitaet();
   }
 

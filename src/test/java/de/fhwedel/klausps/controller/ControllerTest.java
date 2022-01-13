@@ -327,4 +327,12 @@ class ControllerTest {
         () -> deviceUnderTest.getAnkerPeriode());
   }
 
+  @Test
+  void getKapazitaetPeriode_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getPeriodenKapazitaet()).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getKapazitaetPeriode());
+  }
+
 }

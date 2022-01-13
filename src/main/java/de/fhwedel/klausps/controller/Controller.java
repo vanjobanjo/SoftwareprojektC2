@@ -97,7 +97,6 @@ public class Controller implements InterfaceController {
 
   @Override
   public int getKapazitaetPeriode() throws NoPruefungsPeriodeDefinedException {
-    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getPeriodenKapazitaet();
   }
 
