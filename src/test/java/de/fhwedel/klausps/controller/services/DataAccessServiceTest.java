@@ -6,6 +6,7 @@ import static de.fhwedel.klausps.controller.util.TestFactory.infMaster;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefungen;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungenReadOnly;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTeilnehmerkreis;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTime;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedROPruefung;
@@ -974,8 +975,7 @@ class DataAccessServiceTest {
         TestFactory.RO_ANALYSIS_UNPLANNED);
     analysis.addTeilnehmerkreis(bwl);
     when(pruefungsperiode.ungeplantePruefungen()).thenReturn(Set.of(analysis));
-    assertThat(deviceUnderTest.ungeplantePruefungenForTeilnehmerkreis(bwl)).containsOnly(
-        TestFactory.RO_ANALYSIS_UNPLANNED);
+    assertThat(deviceUnderTest.ungeplantePruefungenForTeilnehmerkreis(bwl)).containsOnly(analysis);
   }
 
   @Test
@@ -986,8 +986,7 @@ class DataAccessServiceTest {
     analysis.setStartzeitpunkt(LocalDateTime.of(1, 1, 1, 1, 1));
     analysis.addTeilnehmerkreis(bwl);
     when(pruefungsperiode.geplantePruefungen()).thenReturn(Set.of(analysis));
-    assertThat(deviceUnderTest.geplantePruefungenForTeilnehmerkreis(bwl)).containsOnly(
-        TestFactory.RO_ANALYSIS_UNPLANNED);
+    assertThat(deviceUnderTest.geplantePruefungenForTeilnehmerkreis(bwl)).containsOnly(analysis);
   }
 
   @Test
@@ -1012,8 +1011,20 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void addPruefungToBlock_none_scheduled_successful() throws NoPruefungsPeriodeDefinedException {
+  void geplantePruefungenForTeilnehmerkreis_teilnehmerkreisMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.geplantePruefungenForTeilnehmerkreis(null));
+  }
 
+  @Test
+  void geplantePruefungenForTeilnehmerkreis_noPruefungsperiode() {
+    deviceUnderTest = new DataAccessService(null);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.geplantePruefungenForTeilnehmerkreis(getRandomTeilnehmerkreis(1L)));
+  }
+
+  @Test
+  void addPruefungToBlock_none_scheduled_successful() throws NoPruefungsPeriodeDefinedException {
     Block modelBlock = new BlockImpl(pruefungsperiode, "b1", Blocktyp.PARALLEL);
     ReadOnlyBlock blockToAddTo = new BlockDTO("b1", null, null,
         new HashSet<>(), modelBlock.getId(), Blocktyp.PARALLEL);
@@ -1187,7 +1198,6 @@ class DataAccessServiceTest {
 
   @Test
   void addPruefungToBlock_neither_block_nor_pruefung_exist() {
-
     ReadOnlyBlock blockToAddTo = new BlockDTO("b1", null, null,
         new HashSet<>(), 1, Blocktyp.PARALLEL);
 
@@ -1197,10 +1207,15 @@ class DataAccessServiceTest {
   }
 
   @Test
+  void getAllKlausurenFromPruefer_prueferMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.getAllKlausurenFromPruefer(null));
+  }
+
+  @Test
   void getAllKlausurenFromPruefer_no_pruefungen() throws NoPruefungsPeriodeDefinedException {
     when(pruefungsperiode.getPlanungseinheiten()).thenReturn(Collections.emptySet());
     assertThat(deviceUnderTest.getAllKlausurenFromPruefer("test")).isEmpty();
-
   }
 
   @Test
@@ -1634,6 +1649,19 @@ class DataAccessServiceTest {
     deviceUnderTest = new DataAccessService(null);
     assertThrows(NoPruefungsPeriodeDefinedException.class,
         () -> deviceUnderTest.getAllTeilnehmerkreise());
+  }
+
+  @Test
+  void ungeplantePruefungenForTeilnehmerkreis_teilnehmerkreisMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.ungeplantePruefungenForTeilnehmerkreis(null));
+  }
+
+  @Test
+  void ungeplantePruefungenForTeilnehmerkreis_noPruefungsperiode() {
+    deviceUnderTest = new DataAccessService(null);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.ungeplantePruefungenForTeilnehmerkreis(getRandomTeilnehmerkreis(1L)));
   }
 
 }

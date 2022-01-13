@@ -283,20 +283,23 @@ public class DataAccessService {
     return pruefungsperiode.ungeplanteBloecke();
   }
 
-  public Set<ReadOnlyPruefung> ungeplantePruefungenForTeilnehmerkreis(Teilnehmerkreis tk)
+  @NotNull
+  public Set<Pruefung> ungeplantePruefungenForTeilnehmerkreis(Teilnehmerkreis teilnehmerkreis)
       throws NoPruefungsPeriodeDefinedException {
-    return new HashSet<>(
-        converter.convertToROPruefungSet(pruefungsperiode.ungeplantePruefungen().stream()
-            .filter(pruefung -> pruefung.getTeilnehmerkreise().contains(tk))
-            .collect(Collectors.toSet())));
+    noNullParameters(teilnehmerkreis);
+    checkForPruefungsperiode();
+    return pruefungsperiode.ungeplantePruefungen().stream()
+        .filter(pruefung -> pruefung.getTeilnehmerkreise().contains(teilnehmerkreis))
+        .collect(Collectors.toSet());
   }
 
-  public Set<ReadOnlyPruefung> geplantePruefungenForTeilnehmerkreis(Teilnehmerkreis tk)
+  public Set<Pruefung> geplantePruefungenForTeilnehmerkreis(Teilnehmerkreis teilnehmerkreis)
       throws NoPruefungsPeriodeDefinedException {
-    return new HashSet<>(
-        converter.convertToROPruefungSet(pruefungsperiode.geplantePruefungen().stream()
-            .filter(pruefung -> pruefung.getTeilnehmerkreise().contains(tk))
-            .collect(Collectors.toSet())));
+    noNullParameters(teilnehmerkreis);
+    checkForPruefungsperiode();
+    return pruefungsperiode.geplantePruefungen().stream()
+        .filter(pruefung -> pruefung.getTeilnehmerkreise().contains(teilnehmerkreis))
+        .collect(Collectors.toSet());
   }
 
   public ReadOnlyPlanungseinheit addPruefer(String pruefungsNummer, String pruefer)
@@ -559,8 +562,10 @@ public class DataAccessService {
     return converter.convertToROBlock(model);
   }
 
+  @NotNull
   public Set<ReadOnlyPruefung> getAllKlausurenFromPruefer(String pruefer)
       throws NoPruefungsPeriodeDefinedException {
+    noNullParameters(pruefer);
     Set<Planungseinheit> planungseinheiten = pruefungsperiode.getPlanungseinheiten();
     Set<ReadOnlyPruefung> result = new HashSet<>();
     Pruefung pruefung;

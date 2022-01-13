@@ -59,21 +59,25 @@ public class Controller implements InterfaceController {
   }
 
   @Override
+  @NotNull
   public Set<ReadOnlyPruefung> getGeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
     return converter.convertToROPruefungSet(dataAccessService.getGeplantePruefungen());
   }
 
   @Override
+  @NotNull
   public Set<ReadOnlyPruefung> getUngeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
     return converter.convertToROPruefungSet(dataAccessService.getUngeplantePruefungen());
   }
 
   @Override
+  @NotNull
   public Set<ReadOnlyBlock> getGeplanteBloecke() throws NoPruefungsPeriodeDefinedException {
     return converter.convertToROBlockSet(dataAccessService.getGeplanteBloecke());
   }
 
   @Override
+  @NotNull
   public Set<ReadOnlyBlock> getUngeplanteBloecke() throws NoPruefungsPeriodeDefinedException {
     return converter.convertToROBlockSet(dataAccessService.getUngeplanteBloecke());
   }
@@ -91,6 +95,7 @@ public class Controller implements InterfaceController {
   }
 
   @Override
+  @NotNull
   public LocalDate getAnkerPeriode() throws NoPruefungsPeriodeDefinedException {
     return dataAccessService.getAnkertag();
   }
@@ -113,35 +118,36 @@ public class Controller implements InterfaceController {
     return new SemesterImpl(typ, year);
   }
 
-
   @Override
+  @NotNull
   public Set<Teilnehmerkreis> getAllTeilnehmerKreise() throws NoPruefungsPeriodeDefinedException {
     return dataAccessService.getAllTeilnehmerkreise();
   }
 
-
   @Override
+  @NotNull
   public Set<ReadOnlyPruefung> getAllKlausurenFromPruefer(String pruefer)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefer);
-    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getAllKlausurenFromPruefer(pruefer);
   }
 
   @Override
+  @NotNull
   public Set<ReadOnlyPruefung> getGeplantePruefungenForTeilnehmer(Teilnehmerkreis teilnehmer)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(teilnehmer);
-    ensureAvailabilityOfPruefungsperiode();
-    return dataAccessService.geplantePruefungenForTeilnehmerkreis(teilnehmer);
+    return converter.convertToROPruefungSet(
+        dataAccessService.geplantePruefungenForTeilnehmerkreis(teilnehmer));
   }
 
   @Override
+  @NotNull
   public Set<ReadOnlyPruefung> getUngeplantePruefungenForTeilnehmer(Teilnehmerkreis teilnehmer)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(teilnehmer);
-    ensureAvailabilityOfPruefungsperiode();
-    return dataAccessService.ungeplantePruefungenForTeilnehmerkreis(teilnehmer);
+    return converter.convertToROPruefungSet(
+        dataAccessService.ungeplantePruefungenForTeilnehmerkreis(teilnehmer));
   }
 
   @Override
@@ -151,7 +157,6 @@ public class Controller implements InterfaceController {
     ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getAnzahlStudentenZeitpunkt(zeitpunkt);
   }
-
 
   @Override
   public Set<ReadOnlyPruefung> getPruefungenInZeitraum(LocalDateTime start, LocalDateTime end)

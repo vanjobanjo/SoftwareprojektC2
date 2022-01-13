@@ -16,6 +16,7 @@ import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -46,19 +47,11 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
 
   @Override
   public Optional<HartesKriteriumAnalyse> evaluate(Pruefung pruefung) {
-
     if (pruefung.isGeplant()) {
-
       //Setzen von den start und end Termin, wo das Kriterium verletzt werden könnte
       LocalDateTime start = pruefung.getStartzeitpunkt().minus(bufferBetweenPlanungseinheiten);
       LocalDateTime end = getEndTime(pruefung);
-      List<Planungseinheit> testList = null;
-      try {
-        testList = dataAccessService.getAllPlanungseinheitenBetween(start, end);
-      } catch (IllegalTimeSpanException e) {
-        //start kann nicht vor ende liegen, da ich das berechne
-        e.printStackTrace();
-      }
+      List<Planungseinheit> testList = tryToGetAllPlanungseinheitenBetween(start, end);
       Optional<HartesKriteriumAnalyse> hKA = checkforPlanungseinheitenHartesKriterium(
           pruefung, start, end, testList);
       if (hKA.isPresent()) {
@@ -66,6 +59,17 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
       }
     }
     return Optional.empty();
+  }
+
+  private List<Planungseinheit> tryToGetAllPlanungseinheitenBetween(LocalDateTime start,
+      LocalDateTime end) {
+    try {
+      return dataAccessService.getAllPlanungseinheitenBetween(start, end);
+    } catch (IllegalTimeSpanException e) {
+      //start kann nicht vor ende liegen, da ich das berechne
+      e.printStackTrace();
+      return Collections.emptyList();
+    }
   }
 
 
@@ -103,7 +107,6 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
         }
       }
       hKA = testAndCreateNewHartesKriterumAnalyse(teilnehmercount, inConflictROPruefung);
-
     }
     return hKA;
   }
@@ -156,7 +159,6 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
             teilnehmerCount, inConflictROPruefung);
       }
     }
-
   }
 
   /**
@@ -347,7 +349,6 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
         //Hier ist es egal, da es ein Set ist und es nur einmal vorkommen darf
         inConflictROPruefung.add(pruefung);
         inConflictROPruefung.add(toCheck);
-
       }
     }
     if (!inConflictROPruefung.isEmpty()) {

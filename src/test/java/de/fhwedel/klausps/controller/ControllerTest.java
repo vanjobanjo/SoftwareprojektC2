@@ -2,6 +2,7 @@ package de.fhwedel.klausps.controller;
 
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomDate;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedROPruefung;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTeilnehmerkreis;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTime;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedROPruefung;
 import static java.util.Collections.emptySet;
@@ -355,11 +356,55 @@ class ControllerTest {
   }
 
   @Test
+  void getAllKlausurenFromPruefer_prueferMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.getAllKlausurenFromPruefer(null));
+  }
+
+  @Test
+  void getAllKlausurenFromPruefer_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getAllKlausurenFromPruefer(anyString())).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getAllKlausurenFromPruefer("name"));
+  }
+
+  @Test
   void getAllTeilnehmerKreise_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
     when(dataAccessService.getAllTeilnehmerkreise()).thenThrow(
         NoPruefungsPeriodeDefinedException.class);
     assertThrows(NoPruefungsPeriodeDefinedException.class,
         () -> deviceUnderTest.getAllTeilnehmerKreise());
+  }
+
+  @Test
+  void getGeplantePruefungenForTeilnehmer_teilnehmerMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.getGeplantePruefungenForTeilnehmer(null));
+  }
+
+  @Test
+  void getGeplantePruefungenForTeilnehmer_noPruefungsperiode()
+      throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.geplantePruefungenForTeilnehmerkreis(any())).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getGeplantePruefungenForTeilnehmer(getRandomTeilnehmerkreis(1L)));
+  }
+
+  @Test
+  void getUngeplantePruefungenForTeilnehmer_teilnehmerMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.getUngeplantePruefungenForTeilnehmer(null));
+  }
+
+  @Test
+  void getUngeplantePruefungenForTeilnehmer_noPruefungsperiode()
+      throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.ungeplantePruefungenForTeilnehmerkreis(any())).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getUngeplantePruefungenForTeilnehmer(getRandomTeilnehmerkreis(1L)));
   }
 
 }
