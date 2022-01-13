@@ -1187,7 +1187,6 @@ class DataAccessServiceTest {
 
   @Test
   void addPruefungToBlock_neither_block_nor_pruefung_exist() {
-
     ReadOnlyBlock blockToAddTo = new BlockDTO("b1", null, null,
         new HashSet<>(), 1, Blocktyp.PARALLEL);
 
@@ -1197,10 +1196,15 @@ class DataAccessServiceTest {
   }
 
   @Test
+  void getAllKlausurenFromPruefer_prueferMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.getAllKlausurenFromPruefer(null));
+  }
+
+  @Test
   void getAllKlausurenFromPruefer_no_pruefungen() throws NoPruefungsPeriodeDefinedException {
     when(pruefungsperiode.getPlanungseinheiten()).thenReturn(Collections.emptySet());
     assertThat(deviceUnderTest.getAllKlausurenFromPruefer("test")).isEmpty();
-
   }
 
   @Test

@@ -355,6 +355,20 @@ class ControllerTest {
   }
 
   @Test
+  void getAllKlausurenFromPruefer_prueferMustNotBeNull() {
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.getAllKlausurenFromPruefer(null));
+  }
+
+  @Test
+  void getAllKlausurenFromPruefer_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getAllKlausurenFromPruefer(anyString())).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getAllKlausurenFromPruefer("name"));
+  }
+
+  @Test
   void getAllTeilnehmerKreise_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
     when(dataAccessService.getAllTeilnehmerkreise()).thenThrow(
         NoPruefungsPeriodeDefinedException.class);

@@ -113,18 +113,16 @@ public class Controller implements InterfaceController {
     return new SemesterImpl(typ, year);
   }
 
-
   @Override
   public Set<Teilnehmerkreis> getAllTeilnehmerKreise() throws NoPruefungsPeriodeDefinedException {
     return dataAccessService.getAllTeilnehmerkreise();
   }
 
-
   @Override
+  @NotNull
   public Set<ReadOnlyPruefung> getAllKlausurenFromPruefer(String pruefer)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefer);
-    ensureAvailabilityOfPruefungsperiode();
     return dataAccessService.getAllKlausurenFromPruefer(pruefer);
   }
 

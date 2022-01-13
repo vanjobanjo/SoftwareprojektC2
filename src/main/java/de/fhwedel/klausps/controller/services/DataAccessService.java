@@ -559,8 +559,10 @@ public class DataAccessService {
     return converter.convertToROBlock(model);
   }
 
+  @NotNull
   public Set<ReadOnlyPruefung> getAllKlausurenFromPruefer(String pruefer)
       throws NoPruefungsPeriodeDefinedException {
+    noNullParameters(pruefer);
     Set<Planungseinheit> planungseinheiten = pruefungsperiode.getPlanungseinheiten();
     Set<ReadOnlyPruefung> result = new HashSet<>();
     Pruefung pruefung;
