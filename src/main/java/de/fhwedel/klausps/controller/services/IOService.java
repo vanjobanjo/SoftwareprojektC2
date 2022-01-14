@@ -29,12 +29,6 @@ public class IOService {
     this.dataAccessService = dataAccessService;
   }
 
-  public void createEmptyPeriode(
-      Semester semester, LocalDate start, LocalDate end, LocalDate ankertag, int kapazitaet) {
-    dataAccessService.setPruefungsperiode(
-        new PruefungsperiodeImpl(semester, start, end, ankertag, kapazitaet));
-  }
-
   public void exportPeriode(Path path, ExportTyp typ) throws IOException, ExportException {
     noNullParameters(path, typ);
     Exporter export;
@@ -72,9 +66,7 @@ public class IOService {
       throw new ImportException(
           "Prüfungsperiode konnte nicht erstellt werden, alle Änderungen wurden rückgängig gemacht.");
     }
-
   }
-
 
   public void createEmptyAndAdoptPeriode(Semester semester, LocalDate start, LocalDate end,
       LocalDate ankertag, int kapazitaet, Path path)
@@ -85,8 +77,12 @@ public class IOService {
     Pruefungsperiode adoptFrom = importer.importFrom(path);
     createEmptyPeriode(semester, start, end, ankertag, kapazitaet);
     dataAccessService.adoptPruefungstermine(adoptFrom);
-
   }
 
+  public void createEmptyPeriode(
+      Semester semester, LocalDate start, LocalDate end, LocalDate ankertag, int kapazitaet) {
+    dataAccessService.setPruefungsperiode(
+        new PruefungsperiodeImpl(semester, start, end, ankertag, kapazitaet));
+  }
 
 }

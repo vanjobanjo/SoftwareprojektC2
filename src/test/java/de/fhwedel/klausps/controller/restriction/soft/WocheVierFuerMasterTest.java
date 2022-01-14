@@ -16,8 +16,6 @@ import java.time.LocalTime;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 class WocheVierFuerMasterTest {
 
@@ -48,12 +46,33 @@ class WocheVierFuerMasterTest {
     assertThat(deviceUnderTest.isWeekFourContainsNotOnlyMaster(modelanalysis)).isTrue();
   }
 
-  @ParameterizedTest
-  @ValueSource(ints = {5, 3, 2})
-  void analysisBachelorIsOnWeekXTest(int week) {
+  @Test
+  void analysisBachelorIsOnWeek5Test() {
     deviceUnderTest = new WocheVierFuerMaster(accessService);
     ReadOnlyPruefung analysis = TestFactory.RO_ANALYSIS_UNPLANNED;
-    LocalDate week4 = START_PERIODE.plusDays(7 * week);
+    LocalDate week4 = START_PERIODE.plusDays(7 * 5);
+    analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
+    Pruefung modelanalysis = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
+    modelanalysis.addTeilnehmerkreis(TestFactory.infBachelor, 20);
+    assertThat(deviceUnderTest.isWeekFourContainsNotOnlyMaster(modelanalysis)).isFalse();
+  }
+
+  @Test
+  void analysisBachelorIsOnWeek3Test() {
+    deviceUnderTest = new WocheVierFuerMaster(accessService);
+    ReadOnlyPruefung analysis = TestFactory.RO_ANALYSIS_UNPLANNED;
+    LocalDate week4 = START_PERIODE.plusDays(7 * 3);
+    analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
+    Pruefung modelanalysis = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
+    modelanalysis.addTeilnehmerkreis(TestFactory.infBachelor, 20);
+    assertThat(deviceUnderTest.isWeekFourContainsNotOnlyMaster(modelanalysis)).isFalse();
+  }
+
+  @Test
+  void analysisBachelorIsOnWeek2Test() {
+    deviceUnderTest = new WocheVierFuerMaster(accessService);
+    ReadOnlyPruefung analysis = TestFactory.RO_ANALYSIS_UNPLANNED;
+    LocalDate week4 = START_PERIODE.plusDays(7 * 2);
     analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
     Pruefung modelanalysis = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
     modelanalysis.addTeilnehmerkreis(TestFactory.infBachelor, 20);
