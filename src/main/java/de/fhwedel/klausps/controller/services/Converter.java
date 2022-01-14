@@ -77,11 +77,20 @@ public class Converter {
       result.add(convertToReadOnlyPruefung(pruefung));
     }
     return result;
-  }
+ }
 
   public Set<ReadOnlyPlanungseinheit> convertToROPlanungseinheitSet(
       Collection<Planungseinheit> collection) throws NoPruefungsPeriodeDefinedException {
     Set<ReadOnlyPlanungseinheit> result = new HashSet<>();
+    for (Planungseinheit planungseinheit : collection) {
+      result.add(convertToReadOnlyPlanungseinheit(planungseinheit));
+    }
+    return result;
+  }
+
+  public List<ReadOnlyPlanungseinheit> convertToROPlanungseinheitList(
+      Collection<Planungseinheit> collection) throws NoPruefungsPeriodeDefinedException {
+    List<ReadOnlyPlanungseinheit> result = new ArrayList<>(collection.size());
     for (Planungseinheit planungseinheit : collection) {
       result.add(convertToReadOnlyPlanungseinheit(planungseinheit));
     }
