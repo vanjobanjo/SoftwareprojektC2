@@ -58,7 +58,7 @@ class AtSameTimeRestrictionTest {
   @DisplayName("Checking an unplanned pruefung results in no violation")
   void evaluate_callWithUnplannedPruefung() throws NoPruefungsPeriodeDefinedException {
     Pruefung pruefung = getRandomUnplannedPruefung(5L);
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Collections.emptySet());
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Collections.emptySet());
     assertThat(deviceUnderTest.evaluate(pruefung)).isEmpty();
   }
 
@@ -71,7 +71,7 @@ class AtSameTimeRestrictionTest {
     List<Pruefung> pruefungen = getRandomPruefungenAt(5L, startFirstPruefung, startSecondPruefung,
         startThirdPruefung);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Collections.emptySet());
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Collections.emptySet());
 
     assertThat(deviceUnderTest.evaluate(pruefungen.get(0))).isEmpty();
     assertThat(deviceUnderTest.evaluate(pruefungen.get(1))).isEmpty();

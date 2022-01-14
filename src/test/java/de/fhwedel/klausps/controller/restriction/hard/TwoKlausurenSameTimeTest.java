@@ -516,7 +516,7 @@ class TwoKlausurenSameTimeTest {
     Pruefung haskel = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
     Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(analysis, haskel));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(analysis, haskel));
 
     analysis.setStartzeitpunkt(timeA);
     haskel.setStartzeitpunkt(timeB);
@@ -538,7 +538,7 @@ class TwoKlausurenSameTimeTest {
     Pruefung haskel = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
     Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(analysis, haskel));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(analysis, haskel));
 
     analysis.setStartzeitpunkt(timeA);
     haskel.setStartzeitpunkt(timeB);
@@ -559,7 +559,7 @@ class TwoKlausurenSameTimeTest {
     Pruefung haskel = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
     Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(analysis, haskel));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(analysis, haskel));
 
     analysis.setStartzeitpunkt(timeA);
     haskel.setStartzeitpunkt(timeB);
@@ -583,7 +583,7 @@ class TwoKlausurenSameTimeTest {
 
     Pruefungsperiode pruefungsperiode = mock(Pruefungsperiode.class);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(analysis));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(analysis));
     when(pruefungsperiode.ungeplantePruefungen()).thenReturn(Set.of(haskel));
 
     analysis.setStartzeitpunkt(timeA);
