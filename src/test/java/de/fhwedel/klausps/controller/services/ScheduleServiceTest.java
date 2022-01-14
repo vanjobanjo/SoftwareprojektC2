@@ -976,7 +976,7 @@ class ScheduleServiceTest {
 
     deviceUnderTest.getHardConflictedTimes(Set.of(getRandomTime(1L)),
         converter.convertToReadOnlyPruefung(pruefungToCheckFor));
-    verify(restrictionService, times(1)).wouldBeHardConflictAt(any(), any());
+    verify(restrictionService, times(1)).wouldBeHardConflictIfStartedAt(any(), any());
   }
 
   @Test
@@ -989,7 +989,7 @@ class ScheduleServiceTest {
 
     deviceUnderTest.getHardConflictedTimes(Set.of(getRandomTime(1L), getRandomTime(2L)),
         converter.convertToReadOnlyPruefung(pruefungToCheckFor));
-    verify(restrictionService, times(2)).wouldBeHardConflictAt(any(), any());
+    verify(restrictionService, times(2)).wouldBeHardConflictIfStartedAt(any(), any());
   }
 
   @Test
@@ -1001,7 +1001,7 @@ class ScheduleServiceTest {
     when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
 
     deviceUnderTest.getHardConflictedTimes(emptySet(), getRandomUnplannedROPruefung(1L));
-    verify(restrictionService, never()).wouldBeHardConflictAt(any(), any());
+    verify(restrictionService, never()).wouldBeHardConflictIfStartedAt(any(), any());
   }
 
   @Test
@@ -1011,7 +1011,7 @@ class ScheduleServiceTest {
 
     when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
     when(dataAccessService.getPruefung(any())).thenReturn(Optional.of(pruefungToCheckFor));
-    when(restrictionService.wouldBeHardConflictAt(any(), any())).thenReturn(false);
+    when(restrictionService.wouldBeHardConflictIfStartedAt(any(), any())).thenReturn(false);
 
     assertThat(deviceUnderTest.getHardConflictedTimes(
         Set.of(getRandomTime(1L), getRandomTime(2L), getRandomTime(3L)),
@@ -1025,7 +1025,8 @@ class ScheduleServiceTest {
 
     when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
     when(dataAccessService.getPruefung(any())).thenReturn(Optional.of(pruefungToCheckFor));
-    when(restrictionService.wouldBeHardConflictAt(any(), any())).thenReturn(false, true, false);
+    when(restrictionService.wouldBeHardConflictIfStartedAt(any(), any())).thenReturn(false, true,
+        false);
 
     assertThat(deviceUnderTest.getHardConflictedTimes(
         Set.of(getRandomTime(1L), getRandomTime(2L), getRandomTime(3L)),
@@ -1039,7 +1040,8 @@ class ScheduleServiceTest {
 
     when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
     when(dataAccessService.getPruefung(any())).thenReturn(Optional.of(pruefungToCheckFor));
-    when(restrictionService.wouldBeHardConflictAt(any(), any())).thenReturn(true, true, true);
+    when(restrictionService.wouldBeHardConflictIfStartedAt(any(), any())).thenReturn(true, true,
+        true);
 
     assertThat(deviceUnderTest.getHardConflictedTimes(
         Set.of(getRandomTime(1L), getRandomTime(2L), getRandomTime(3L)),

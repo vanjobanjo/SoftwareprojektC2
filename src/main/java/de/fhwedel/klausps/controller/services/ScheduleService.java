@@ -72,6 +72,51 @@ public class ScheduleService {
     return result;
   }
 
+  private void checkHardCriteriaUndoAddPruefungToBlock(ReadOnlyPruefung pruefung,
+      ReadOnlyBlock block) throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
+    Pruefung modelPruefung = getPruefungIfExistent(pruefung);
+    List<HartesKriteriumAnalyse> hardAnalyses = restrictionService.checkHarteKriterien(
+        modelPruefung);
+    if (!hardAnalyses.isEmpty()) {
+      removePruefungFromBlock(block, pruefung);
+      throw converter.convertHardException(hardAnalyses);
+    }
+  }
+
+  @NotNull
+  private Pruefung getPruefungIfExistent(ReadOnlyPruefung pruefungToGet)
+      throws NoPruefungsPeriodeDefinedException {
+    Optional<Pruefung> pruefung = dataAccessService.getPruefung(pruefungToGet);
+    if (pruefung.isEmpty()) {
+      throw new IllegalArgumentException(
+          String.format("Pruefung %s does not exists.", pruefungToGet));
+    }
+    return pruefung.get();
+  }
+
+  public List<ReadOnlyPlanungseinheit> removePruefungFromBlock(ReadOnlyBlock block,
+      ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException {
+    noNullParameters(block, pruefung);
+    Pruefung toRemove = getPruefungIfExistent(pruefung);
+    Optional<Block> toRemoveFrom = dataAccessService.getBlockTo(toRemove);
+    if (toRemoveFrom.isEmpty()) {
+      return emptyList();
+    }
+    if (!block.geplant()) {
+      Block resultingBlock = dataAccessService.removePruefungFromBlock(block, pruefung);
+      Pruefung unscheduledPruefung = getPruefungIfExistent(pruefung);
+      return new ArrayList<>(
+          converter.convertToROPlanungseinheitSet(resultingBlock, unscheduledPruefung));
+    }
+
+    Set<Pruefung> affectedPruefungen = restrictionService.getAffectedPruefungen(toRemove);
+    Block blockWithoutPruefung = dataAccessService.removePruefungFromBlock(block, pruefung);
+    List<ReadOnlyPlanungseinheit> result = calculateScoringForCachedAffected(affectedPruefungen);
+    result.add(converter.convertToReadOnlyPlanungseinheit(blockWithoutPruefung));
+    return result;
+
+  }
+
   public List<ReadOnlyPlanungseinheit> addPruefungToBlock(ReadOnlyBlock block,
       ReadOnlyPruefung pruefung)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
@@ -93,6 +138,12 @@ public class ScheduleService {
     Block newBlock = dataAccessService.addPruefungToBlock(block, pruefung);
     checkHardCriteriaUndoAddPruefungToBlock(pruefung, block);
     return affectedPruefungenSoft(newBlock);
+  }
+
+  private List<ReadOnlyPlanungseinheit> calculateScoringForCachedAffected(Set<Pruefung> affected)
+      throws NoPruefungsPeriodeDefinedException {
+    return new ArrayList<>(
+        converter.convertToROPlanungseinheitSet(getPlanungseinheitenWithBlock(affected)));
   }
 
   @NotNull
@@ -149,29 +200,6 @@ public class ScheduleService {
     }
   }
 
-  public List<ReadOnlyPlanungseinheit> removePruefungFromBlock(ReadOnlyBlock block,
-      ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException {
-    noNullParameters(block, pruefung);
-    Pruefung toRemove = getPruefungIfExistent(pruefung);
-    Optional<Block> toRemoveFrom = dataAccessService.getBlockTo(toRemove);
-    if (toRemoveFrom.isEmpty()) {
-      return emptyList();
-    }
-    if (!block.geplant()) {
-      Block resultingBlock = dataAccessService.removePruefungFromBlock(block, pruefung);
-      Pruefung unscheduledPruefung = getPruefungIfExistent(pruefung);
-      return new ArrayList<>(
-          converter.convertToROPlanungseinheitSet(resultingBlock, unscheduledPruefung));
-    }
-
-    Set<Pruefung> affectedPruefungen = restrictionService.getAffectedPruefungen(toRemove);
-    Block blockWithoutPruefung = dataAccessService.removePruefungFromBlock(block, pruefung);
-    List<ReadOnlyPlanungseinheit> result = calculateScoringForCachedAffected(affectedPruefungen);
-    result.add(converter.convertToReadOnlyPlanungseinheit(blockWithoutPruefung));
-    return result;
-
-  }
-
   public List<ReadOnlyPlanungseinheit> unscheduleBlock(ReadOnlyBlock block)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block);
@@ -218,34 +246,6 @@ public class ScheduleService {
     noNullParameters(pruefung);
     Block block = dataAccessService.deletePruefung(pruefung);
     return block == null ? Optional.empty() : Optional.of(converter.convertToROBlock(block));
-  }
-
-  @NotNull
-  private Pruefung getPruefungIfExistent(ReadOnlyPruefung pruefungToGet)
-      throws NoPruefungsPeriodeDefinedException {
-    Optional<Pruefung> pruefung = dataAccessService.getPruefung(pruefungToGet);
-    if (pruefung.isEmpty()) {
-      throw new IllegalArgumentException(
-          String.format("Pruefung %s does not exists.", pruefungToGet));
-    }
-    return pruefung.get();
-  }
-
-  private void checkHardCriteriaUndoAddPruefungToBlock(ReadOnlyPruefung pruefung,
-      ReadOnlyBlock block) throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
-    Pruefung modelPruefung = getPruefungIfExistent(pruefung);
-    List<HartesKriteriumAnalyse> hardAnalyses = restrictionService.checkHarteKriterien(
-        modelPruefung);
-    if (!hardAnalyses.isEmpty()) {
-      removePruefungFromBlock(block, pruefung);
-      throw converter.convertHardException(hardAnalyses);
-    }
-  }
-
-  private List<ReadOnlyPlanungseinheit> calculateScoringForCachedAffected(Set<Pruefung> affected)
-      throws NoPruefungsPeriodeDefinedException {
-    return new ArrayList<>(
-        converter.convertToROPlanungseinheitSet(getPlanungseinheitenWithBlock(affected)));
   }
 
   /**
@@ -426,9 +426,9 @@ public class ScheduleService {
   private Set<LocalDateTime> calcHardConflictingTimes(@NotNull Set<LocalDateTime> timesToCheck,
       @NotNull Planungseinheit planungseinheit) throws NoPruefungsPeriodeDefinedException {
     Set<LocalDateTime> result = new HashSet<>();
-    for (LocalDateTime timeToCheck : timesToCheck) {
-      if (restrictionService.wouldBeHardConflictAt(timeToCheck, planungseinheit)) {
-        result.add(timeToCheck);
+    for (LocalDateTime startTimeToCheck : timesToCheck) {
+      if (restrictionService.wouldBeHardConflictIfStartedAt(startTimeToCheck, planungseinheit)) {
+        result.add(startTimeToCheck);
       }
     }
     return result;
@@ -504,20 +504,6 @@ public class ScheduleService {
     }
   }
 
-  private boolean unscheduleConflictingPruefungFromAdoptedPeriode()
-      throws NoPruefungsPeriodeDefinedException {
-    boolean foundConflicts = false;
-    Set<Planungseinheit> plannedPruefungen = sortPlanungseinheitenByStartzeitpunkt(
-        dataAccessService.getGeplantePruefungen());
-    for (Planungseinheit pruefung : plannedPruefungen) {
-      if (!restrictionService.checkHarteKriterien(pruefung.asPruefung()).isEmpty()) {
-        foundConflicts = true;
-        pruefung.setStartzeitpunkt(null);
-      }
-    }
-    return foundConflicts;
-  }
-
   private boolean unscheduleConflictingBlocksFromAdoptedPeriode()
       throws NoPruefungsPeriodeDefinedException {
     boolean foundConflicts = false;
@@ -532,6 +518,19 @@ public class ScheduleService {
     return foundConflicts;
   }
 
+  private boolean unscheduleConflictingPruefungFromAdoptedPeriode()
+      throws NoPruefungsPeriodeDefinedException {
+    boolean foundConflicts = false;
+    Set<Planungseinheit> plannedPruefungen = sortPlanungseinheitenByStartzeitpunkt(
+        dataAccessService.getGeplantePruefungen());
+    for (Planungseinheit pruefung : plannedPruefungen) {
+      if (!restrictionService.checkHarteKriterien(pruefung.asPruefung()).isEmpty()) {
+        foundConflicts = true;
+        pruefung.setStartzeitpunkt(null);
+      }
+    }
+    return foundConflicts;
+  }
 
   private Set<Planungseinheit> sortPlanungseinheitenByStartzeitpunkt(
       Set<? extends Planungseinheit> planungseinheiten) {
