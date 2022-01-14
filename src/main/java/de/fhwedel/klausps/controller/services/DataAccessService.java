@@ -264,7 +264,7 @@ public class DataAccessService {
     return getAllPruefungen(planungseinheitenBetween);
   }
 
-  public Set<Pruefung> getGeplanteModelPruefung() {
+  public Set<Pruefung> getPlannedPruefungen() {
     return pruefungsperiode.geplantePruefungen();
   }
 

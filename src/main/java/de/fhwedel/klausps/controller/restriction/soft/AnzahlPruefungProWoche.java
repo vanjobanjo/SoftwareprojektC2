@@ -65,7 +65,7 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion {
     }
 
     Map<Integer, Set<Pruefung>> weekPruefungMap = weekMapOfPruefung(
-        dataAccessService.getGeplanteModelPruefung(), start);
+        dataAccessService.getPlannedPruefungen(), start);
 
     int scheduledWeekOfPruefung = getWeek(start, pruefung);
     if (!isAboveTheWeekLimit(pruefung, weekPruefungMap.get(scheduledWeekOfPruefung))) {

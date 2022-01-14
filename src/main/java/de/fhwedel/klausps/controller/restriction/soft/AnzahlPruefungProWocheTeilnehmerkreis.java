@@ -80,7 +80,7 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
 
     try {
       start = dataAccessService.getStartOfPeriode();
-      weekPruefungMap = weekMapOfPruefung(dataAccessService.getGeplanteModelPruefung(), start);
+      weekPruefungMap = weekMapOfPruefung(dataAccessService.getPlannedPruefungen(), start);
     } catch (NoPruefungsPeriodeDefinedException e) {
       return Optional.empty();
     }

@@ -57,7 +57,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
   @DisplayName("A single Pruefung can not violate the restriction")
   void evaluate_onlyCheckedPruefungIsPlanned() throws NoPruefungsPeriodeDefinedException {
     Pruefung pruefung = getRandomPlannedPruefung(5L);
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Set.of(pruefung));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(pruefung));
 
     assertThat(deviceUnderTest.evaluate(pruefung)).isEmpty();
   }

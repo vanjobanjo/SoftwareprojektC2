@@ -11,10 +11,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
@@ -28,15 +30,20 @@ import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.IOService;
 import de.fhwedel.klausps.controller.services.ScheduleService;
 import de.fhwedel.klausps.model.api.Ausbildungsgrad;
+import de.fhwedel.klausps.model.api.Block;
+import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Pruefung;
+import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Semestertyp;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
+import de.fhwedel.klausps.model.impl.BlockImpl;
 import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
+import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -290,6 +297,15 @@ class ControllerTest {
         () -> deviceUnderTest.setDatumPeriode(start, null));
   }
 
+  @Test
+  void setDatumPeriode_delegateToScheduleService()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
+    LocalDate start = getRandomDate(1L);
+    LocalDate end = start.plusDays(28);
+    deviceUnderTest.setDatumPeriode(start, end);
+    verify(scheduleService).setDatumPeriode(start, end);
+    verifyNoInteractions(dataAccessService);
+  }
 
   @Test
   void makeBlockSequential_parameters_must_not_be_null() {
@@ -502,6 +518,26 @@ class ControllerTest {
   }
 
   @Test
+  void getBlockOfPruefung_pruefungNotInBlock() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(Optional.empty());
+    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
+    assertThat(deviceUnderTest.getBlockOfPruefung(pruefung)).isNotPresent();
+  }
+
+  @Test
+  void getBlockOfPruefung_pruefungIsInBlock() throws NoPruefungsPeriodeDefinedException {
+    Block block = emptyBlock();
+    when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(Optional.of(block));
+    when(converter.convertToROBlock(any())).thenCallRealMethod();
+    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
+    assertThat(deviceUnderTest.getBlockOfPruefung(pruefung)).isPresent();
+  }
+
+  private Block emptyBlock() {
+    return new BlockImpl(mock(Pruefungsperiode.class), 42, "blockName", Blocktyp.PARALLEL);
+  }
+
+  @Test
   void setDauer_pruefungMustNotBeNull() {
     Duration duration = Duration.ZERO;
     assertThrows(NullPointerException.class, () -> deviceUnderTest.setDauer(null, duration));
@@ -522,6 +558,14 @@ class ControllerTest {
     Duration duration = Duration.ZERO;
     assertThrows(NoPruefungsPeriodeDefinedException.class,
         () -> deviceUnderTest.setDauer(pruefung, duration));
+  }
+
+  @Test
+  void setKapazitaetPeriode_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    when(scheduleService.setKapazitaetPeriode(anyInt())).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.setKapazitaetPeriode(111));
   }
 
 }

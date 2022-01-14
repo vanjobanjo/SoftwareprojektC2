@@ -45,16 +45,16 @@ public class RestrictionService {
     hardRestrictions.addAll(restrictions);
   }
 
-  public Set<Pruefung> getAffectedPruefungen(Block block)
+  public Set<Pruefung> getPruefungenAffectedBy(Block block)
       throws NoPruefungsPeriodeDefinedException {
     Set<Pruefung> result = new HashSet<>();
     for (Pruefung pruefung : block.getPruefungen()) {
-      result.addAll(getAffectedPruefungen(pruefung));
+      result.addAll(getPruefungenAffectedBy(pruefung));
     }
     return result;
   }
 
-  public Set<Pruefung> getAffectedPruefungen(Pruefung pruefung)
+  public Set<Pruefung> getPruefungenAffectedBy(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     Set<Pruefung> result = new HashSet<>();
     for (WeichesKriteriumAnalyse w : checkWeicheKriterien(pruefung)) {
