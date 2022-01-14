@@ -11,6 +11,8 @@ import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungWith
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTeilnehmerkreis;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTime;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedPruefung;
+import static de.fhwedel.klausps.model.api.Blocktyp.PARALLEL;
+import static de.fhwedel.klausps.model.api.Blocktyp.SEQUENTIAL;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -32,14 +34,14 @@ import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
+import de.fhwedel.klausps.model.impl.BlockImpl;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
 import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -53,35 +55,13 @@ class TwoKlausurenSameTimeTest {
 
   private DataAccessService dataAccessService;
   private TwoKlausurenSameTime deviceUnderTest;
-
-  Teilnehmerkreis getTeilnehmerKreis(String name) {
-    return new Teilnehmerkreis() {
-      @Override
-      public String getStudiengang() {
-        return name;
-      }
-
-      @Override
-      public String getPruefungsordnung() {
-        return "1";
-      }
-
-      @Override
-      public int getFachsemester() {
-        return 0;
-      }
-
-      @Override
-      public Ausbildungsgrad getAusbildungsgrad() {
-        return null;
-      }
-    };
-  }
+  private Pruefungsperiode pruefungsperiode;
 
   @BeforeEach
   void setUp() {
     this.dataAccessService = mock(DataAccessService.class);
     this.deviceUnderTest = new TwoKlausurenSameTime(dataAccessService);
+    this.pruefungsperiode = mock(Pruefungsperiode.class);
   }
 
   @Test
@@ -94,12 +74,8 @@ class TwoKlausurenSameTimeTest {
     Teilnehmerkreis bwl = new TeilnehmerkreisImpl("blw", "1", 1, Ausbildungsgrad.BACHELOR);
     pruefung1.addTeilnehmerkreis(bwl, 20);
     pruefung2.addTeilnehmerkreis(bwl, 30);
-    List<Planungseinheit> plannedPlanungseinheiten = new LinkedList<>();
-    plannedPlanungseinheiten.add(pruefung1);
-    plannedPlanungseinheiten.add(pruefung2);
-
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        plannedPlanungseinheiten);
+        List.of(pruefung1, pruefung2));
     when(dataAccessService.getBlockTo(pruefung1)).thenReturn(Optional.empty());
     TwoKlausurenSameTime deviceUnderTest = new TwoKlausurenSameTime(dataAccessService);
     HartesKriteriumAnalyse result = deviceUnderTest.evaluate(pruefung1).get();
@@ -112,524 +88,199 @@ class TwoKlausurenSameTimeTest {
   }
 
   @Test
-  void twoKlausurenSameTimeTest_twoSameTime() throws NoPruefungsPeriodeDefinedException {
-
-    Planungseinheit analysisPL = mock(Pruefung.class);
-    Planungseinheit haskelPL = mock(Pruefung.class);
-
-    Pruefung analysis = mock(Pruefung.class);
-    Pruefung haskel = mock(Pruefung.class);
-
-    setNameAndNummer(analysis, "analysis");
-    setNameAndNummer(haskel, "haskel");
-
-    when(analysis.isGeplant()).thenReturn(true);
-    when(haskel.isGeplant()).thenReturn(true);
-
-    Set<Teilnehmerkreis> teilnehmer = new HashSet<>();
-    Teilnehmerkreis informatik = getTeilnehmerKreis("Informatik");
-
-    teilnehmer.add(informatik);
-
-    when(analysis.getTeilnehmerkreise()).thenReturn(teilnehmer);
-    when(haskel.getTeilnehmerkreise()).thenReturn(teilnehmer);
-
-    ArrayList<Planungseinheit> listOfPruefungen = new ArrayList<>();
-    listOfPruefungen.add(analysisPL);
-    listOfPruefungen.add(haskelPL);
-
-    Set<Pruefung> setOfConflictPruefunge = new HashSet<>();
-
-    setOfConflictPruefunge.add(analysis);
-    setOfConflictPruefunge.add(haskel);
-
-    Set<Teilnehmerkreis> setOfConflictTeilnehmer = new HashSet<>();
-    setOfConflictTeilnehmer.add(informatik);
-
-    int studends = 8;
-
-    Map<Teilnehmerkreis, Integer> teilnehmerCount = new HashMap<>();
-    teilnehmerCount.put(informatik, 8);
-
-    when(haskel.getSchaetzungen()).thenReturn(teilnehmerCount);
-    when(analysis.getSchaetzungen()).thenReturn(teilnehmerCount);
-    when(haskel.getTeilnehmerkreise()).thenReturn(setOfConflictTeilnehmer);
-    when(analysis.getTeilnehmerkreise()).thenReturn(setOfConflictTeilnehmer);
-
+  void twoKlausurenSameTimeTest_twoSameTime()
+      throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
     LocalDateTime start = LocalDateTime.of(2021, 8, 11, 9, 0);
-
-    when(analysisPL.asPruefung()).thenReturn(analysis);
-    when(haskelPL.asPruefung()).thenReturn(haskel);
-    // when(pruefungsperiode.planungseinheitenBetween(start, start.plusMinutes(120))).thenReturn(setOfPruefungen);
-
-    try {
-      when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-          listOfPruefungen);
-    } catch (IllegalTimeSpanException e) {
-
-      //start kann nicht vor ende liegen, da ich das berechne
-      e.printStackTrace();
-    }
-
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    analysis.setStartzeitpunkt(start);
+    haskell.setStartzeitpunkt(start);
     Duration duration = Duration.ofMinutes(120);
+    analysis.setDauer(duration);
+    haskell.setDauer(duration);
 
-    when(haskel.getTeilnehmerkreise()).thenReturn(teilnehmer);
-    when(haskel.getStartzeitpunkt()).thenReturn(start);
-    when(haskel.getDauer()).thenReturn(duration);
+    int students = 8;
+    analysis.addTeilnehmerkreis(infBachelor, students);
+    haskell.addTeilnehmerkreis(infBachelor, students);
 
-    TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        List.of(analysis, haskell));
 
-    Optional<HartesKriteriumAnalyse> analyse = h.evaluate(haskel);
+    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluate(haskell);
+
     assertTrue(analyse.isPresent());
-    assertEquals(setOfConflictPruefunge, analyse.get().getCausingPruefungen());
+    assertEquals(Set.of(analysis, haskell), analyse.get().getCausingPruefungen());
 
-    assertEquals(setOfConflictTeilnehmer, analyse.get().getTeilnehmercount().keySet());
-    assertEquals(studends, analyse.get().getTeilnehmercount().values().stream().reduce(0, Integer::sum));
+    assertEquals(Set.of(infBachelor), analyse.get().getTeilnehmercount().keySet());
+    assertEquals(students,
+        analyse.get().getTeilnehmercount().values().stream().reduce(0, Integer::sum));
   }
 
 
   @Test
-  void twoKlausurenSameTime_NotSameTime() throws NoPruefungsPeriodeDefinedException {
-
-    Planungseinheit analysisPL = mock(Planungseinheit.class);
-    Planungseinheit haskelPL = mock(Planungseinheit.class);
-
-    Pruefung analysis = mock(Pruefung.class);
-    Pruefung haskel = mock(Pruefung.class);
-
-    setNameAndNummer(analysis, "analysis");
-    setNameAndNummer(haskel, "haskel");
-
-    Set<Teilnehmerkreis> teilnehmer = new HashSet<>();
-    Teilnehmerkreis informatik = getTeilnehmerKreis("Informatik");
-
-    teilnehmer.add(informatik);
-
-    when(analysis.getTeilnehmerkreise()).thenReturn(teilnehmer);
-    when(haskel.getTeilnehmerkreise()).thenReturn(teilnehmer);
-
-    ArrayList<Planungseinheit> listOfPruefungen = new ArrayList<>();
-
-    Set<Teilnehmerkreis> setOfConflictTeilnehmer = new HashSet<>();
-
-    Map<Teilnehmerkreis, Integer> teilnehmerCount = new HashMap<>();
-    teilnehmerCount.put(informatik, 8);
-
-    when(haskel.getSchaetzungen()).thenReturn(teilnehmerCount);
-    when(analysis.getSchaetzungen()).thenReturn(teilnehmerCount);
-    when(haskel.getTeilnehmerkreise()).thenReturn(setOfConflictTeilnehmer);
-    when(analysis.getTeilnehmerkreise()).thenReturn(setOfConflictTeilnehmer);
+  void twoKlausurenSameTime_NotSameTime_one_not_planned()
+      throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
 
     LocalDateTime start = LocalDateTime.of(2021, 8, 11, 9, 0);
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
 
-    when(analysisPL.asPruefung()).thenReturn(analysis);
-    when(haskelPL.asPruefung()).thenReturn(haskel);
-    // when(pruefungsperiode.planungseinheitenBetween(start, start.plusMinutes(120))).thenReturn(setOfPruefungen);
-
-    try {
-      when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-          listOfPruefungen);
-    } catch (IllegalTimeSpanException e) {
-
-      //start kann nicht vor ende liegen, da ich das berechne
-      e.printStackTrace();
-    } catch (NoPruefungsPeriodeDefinedException e) {
-      e.printStackTrace();
-    }
-
+    haskell.setStartzeitpunkt(start);
     Duration duration = Duration.ofMinutes(120);
+    analysis.setDauer(duration);
+    haskell.setDauer(duration);
 
-    when(haskel.getTeilnehmerkreise()).thenReturn(teilnehmer);
-    when(haskel.getStartzeitpunkt()).thenReturn(start);
-    when(haskel.getDauer()).thenReturn(duration);
+    int students = 8;
+    analysis.addTeilnehmerkreis(infBachelor, students);
+    haskell.addTeilnehmerkreis(infBachelor, students);
 
-    TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        Collections.emptyList());
 
-    Optional<HartesKriteriumAnalyse> should = Optional.empty();
-    assertEquals(should, h.evaluate(haskel));
+    assertThat(deviceUnderTest.evaluate(haskell)).isEmpty();
   }
 
   @Test
-  void twoKlausurenSameTime_ThreeSameTime() throws NoPruefungsPeriodeDefinedException {
-
-    Planungseinheit analysisPL = mock(Pruefung.class);
-    Planungseinheit haskelPL = mock(Pruefung.class);
-    Planungseinheit dmPL = mock(Pruefung.class);
-
-    Pruefung analysis = mock(Pruefung.class);
-    Pruefung haskel = mock(Pruefung.class);
-    Pruefung dm = mock(Pruefung.class);
-
-    setNameAndNummer(analysis, "analysis");
-    setNameAndNummer(haskel, "haskel");
-    setNameAndNummer(dm, "dm");
-
-    Set<Teilnehmerkreis> teilnehmer = new HashSet<>();
-    Teilnehmerkreis informatik = getTeilnehmerKreis("Informatik");
-
-    teilnehmer.add(informatik);
-
-    when(analysis.getTeilnehmerkreise()).thenReturn(teilnehmer);
-    when(haskel.getTeilnehmerkreise()).thenReturn(teilnehmer);
-    when(dm.getTeilnehmerkreise()).thenReturn(teilnehmer);
-
-    ArrayList<Planungseinheit> listOfPruefungen = new ArrayList<>();
-    listOfPruefungen.add(dmPL);
-    listOfPruefungen.add(haskelPL);
-    listOfPruefungen.add(analysisPL);
-
-    Set<Pruefung> setOfConflictPruefunge = new HashSet<>();
-    setOfConflictPruefunge.add(dm);
-    setOfConflictPruefunge.add(analysis);
-    setOfConflictPruefunge.add(haskel);
-
-    Set<Teilnehmerkreis> setOfConflictTeilnehmer = new HashSet<>();
-    setOfConflictTeilnehmer.add(informatik);
-
-    int studends = 8;
-
-    Map<Teilnehmerkreis, Integer> teilnehmerCount = new HashMap<>();
-    teilnehmerCount.put(informatik, 8);
-
-    when(haskel.getSchaetzungen()).thenReturn(teilnehmerCount);
-    when(analysis.getSchaetzungen()).thenReturn(teilnehmerCount);
-    when(dm.getSchaetzungen()).thenReturn(teilnehmerCount);
-
-    when(haskel.getTeilnehmerkreise()).thenReturn(setOfConflictTeilnehmer);
-    when(analysis.getTeilnehmerkreise()).thenReturn(setOfConflictTeilnehmer);
-    when(dm.getTeilnehmerkreise()).thenReturn(setOfConflictTeilnehmer);
-
+  void twoKlausurenSameTime_ThreeSameTime()
+      throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
     LocalDateTime start = LocalDateTime.of(2021, 8, 11, 9, 0);
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
 
-    when(analysisPL.asPruefung()).thenReturn(analysis);
-    when(haskelPL.asPruefung()).thenReturn(haskel);
-    when(dmPL.asPruefung()).thenReturn(dm);
-    // when(pruefungsperiode.planungseinheitenBetween(start, start.plusMinutes(120))).thenReturn(setOfPruefungen);
+    int students = 8;
+    analysis.addTeilnehmerkreis(infBachelor, students);
+    haskell.addTeilnehmerkreis(infBachelor, students);
+    dm.addTeilnehmerkreis(infBachelor, students);
 
-    try {
-      when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-          listOfPruefungen);
-    } catch (IllegalTimeSpanException e) {
-      //start kann nicht vor ende liegen, da ich das berechne
-      e.printStackTrace();
-    }
+    analysis.setStartzeitpunkt(start);
+    haskell.setStartzeitpunkt(start);
+    dm.setStartzeitpunkt(start);
 
-    Duration duration = Duration.ofMinutes(120);
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        List.of(analysis, haskell, dm));
 
-    when(haskel.getTeilnehmerkreise()).thenReturn(teilnehmer);
-    when(haskel.getStartzeitpunkt()).thenReturn(start);
-    when(haskel.getDauer()).thenReturn(duration);
+    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluate(haskell);
 
-    TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
-    Optional<HartesKriteriumAnalyse> analyse = h.evaluate(haskel);
-    assertTrue(analyse.isPresent());
-    assertEquals(setOfConflictPruefunge, analyse.get().getCausingPruefungen());
-    assertEquals(setOfConflictTeilnehmer, analyse.get().getTeilnehmercount().keySet());
-    assertEquals(studends, analyse.get().getTeilnehmercount().values().stream().reduce(0, Integer::sum));
+    assertThat(analyse).isPresent();
+    assertThat(analyse.get().getCausingPruefungen()).containsOnly(dm, analysis, haskell);
+    assertThat(analyse.get().getTeilnehmercount()).containsOnlyKeys(infBachelor);
+    assertThat(
+        analyse.get().getTeilnehmercount().values().stream().reduce(0, Integer::sum)).isEqualTo(
+        students);
   }
 
   @Test
-  void twoKlausurenSameTime_ThreeSameTime_two_DiffrentTeilnehmerkreis()
-      throws NoPruefungsPeriodeDefinedException {
-
-    Planungseinheit analysisPL = mock(Pruefung.class);
-    Planungseinheit haskelPL = mock(Pruefung.class);
-    Planungseinheit dmPL = mock(Pruefung.class);
-
-    Pruefung analysis = mock(Pruefung.class);
-    Pruefung haskel = mock(Pruefung.class);
-    Pruefung dm = mock(Pruefung.class);
-
-    setNameAndNummer(analysis, "analysis");
-    setNameAndNummer(haskel, "haskel");
-    setNameAndNummer(dm, "dm");
-
-    Set<Teilnehmerkreis> teilnehmer1 = new HashSet<>();
-    Teilnehmerkreis informatik = getTeilnehmerKreis("Informatik");
-    teilnehmer1.add(informatik);
-
-    Set<Teilnehmerkreis> teilnehmer2 = new HashSet<>();
-    Teilnehmerkreis irgendwasMitMedien = getTeilnehmerKreis("irgendwasMitMedien");
-    teilnehmer2.add(irgendwasMitMedien);
-
-    Set<Teilnehmerkreis> teilnehmer3 = new HashSet<>();
-    teilnehmer3.add(irgendwasMitMedien);
-    teilnehmer3.add(informatik);
-
-    when(analysis.getTeilnehmerkreise()).thenReturn(teilnehmer1);
-    when(dm.getTeilnehmerkreise()).thenReturn(teilnehmer2);
-    when(haskel.getTeilnehmerkreise()).thenReturn(teilnehmer3);
-
-    Set<Pruefung> setOfConflictPruefunge = new HashSet<>();
-    setOfConflictPruefunge.add(dm);
-    setOfConflictPruefunge.add(analysis);
-    setOfConflictPruefunge.add(haskel);
-
-    Set<Teilnehmerkreis> setOfConflictTeilnehmerkreis = new HashSet<>();
-    setOfConflictTeilnehmerkreis.add(informatik);
-    setOfConflictTeilnehmerkreis.add(irgendwasMitMedien);
-
-    Set<Teilnehmerkreis> haskelTeilnehmer3 = new HashSet<>();
-    haskelTeilnehmer3.add(informatik);
-    haskelTeilnehmer3.add(irgendwasMitMedien);
-
-    Set<Teilnehmerkreis> analysisTeilnehmer1 = new HashSet<>();
-    analysisTeilnehmer1.add(informatik);
-
-    Set<Teilnehmerkreis> dmTeilnehmer2 = new HashSet<>();
-
-    dmTeilnehmer2.add(irgendwasMitMedien);
-
-    int studends = 16;
-
-    Map<Teilnehmerkreis, Integer> teilnehmerCount1 = new HashMap<>();
-    teilnehmerCount1.put(informatik, 8);
-
-    Map<Teilnehmerkreis, Integer> teilnehmerCount2 = new HashMap<>();
-    teilnehmerCount2.put(irgendwasMitMedien, 8);
-
-    Map<Teilnehmerkreis, Integer> teilnehmerCount3 = new HashMap<>();
-    teilnehmerCount3.put(irgendwasMitMedien, 8);
-    teilnehmerCount3.put(informatik, 8);
-
-    when(analysis.getSchaetzungen()).thenReturn(teilnehmerCount1);
-    when(dm.getSchaetzungen()).thenReturn(teilnehmerCount2);
-    when(haskel.getSchaetzungen()).thenReturn(teilnehmerCount3);
-
-    when(analysis.getTeilnehmerkreise()).thenReturn(analysisTeilnehmer1);
-    when(dm.getTeilnehmerkreise()).thenReturn(dmTeilnehmer2);
-    when(haskel.getTeilnehmerkreise()).thenReturn(haskelTeilnehmer3);
+  void twoKlausurenSameTime_ThreeSameTime_two_DifferentTeilnehmerkreise()
+      throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
 
     LocalDateTime start = LocalDateTime.of(2021, 8, 11, 9, 0);
-
-    when(analysisPL.asPruefung()).thenReturn(analysis);
-    when(haskelPL.asPruefung()).thenReturn(haskel);
-    when(dmPL.asPruefung()).thenReturn(dm);
-    // when(pruefungsperiode.planungseinheitenBetween(start, start.plusMinutes(120))).thenReturn(setOfPruefungen);
-
-    ArrayList<Planungseinheit> listOfPruefungen = new ArrayList<>();
-    listOfPruefungen.add(dmPL);
-    listOfPruefungen.add(haskelPL);
-    listOfPruefungen.add(analysisPL);
-
-    try {
-      when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-          listOfPruefungen);
-    } catch (IllegalTimeSpanException e) {
-      //start kann nicht vor ende liegen, da ich das berechne
-      e.printStackTrace();
-    }
-
     Duration duration = Duration.ofMinutes(120);
 
-    when(haskel.getStartzeitpunkt()).thenReturn(start);
-    when(haskel.getDauer()).thenReturn(duration);
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
 
-    TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
+    int students = 8;
+    analysis.addTeilnehmerkreis(infBachelor, students);
+    dm.addTeilnehmerkreis(bwlBachelor, students);
+    haskell.addTeilnehmerkreis(infBachelor, students);
+    haskell.addTeilnehmerkreis(bwlBachelor, students);
 
-    Optional<HartesKriteriumAnalyse> analyse = h.evaluate(haskel);
-    assertTrue(analyse.isPresent());
+    analysis.setStartzeitpunkt(start);
+    haskell.setStartzeitpunkt(start);
+    dm.setStartzeitpunkt(start);
 
-    assertEquals(setOfConflictPruefunge, analyse.get().getCausingPruefungen());
-    assertEquals(setOfConflictTeilnehmerkreis, analyse.get().getTeilnehmercount().keySet());
-    assertEquals(studends, analyse.get().getTeilnehmercount().values().stream().reduce(0, Integer::sum));
+    analysis.setDauer(duration);
+    haskell.setDauer(duration);
+    dm.setDauer(duration);
+
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        List.of(analysis, haskell, dm));
+
+    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluate(haskell);
+    assertThat(analyse).isPresent();
+
+    assertThat(analyse.get().getCausingPruefungen()).containsOnly(dm, analysis, haskell);
+    assertThat(analyse.get().getTeilnehmercount()).containsOnlyKeys(infBachelor, bwlBachelor);
+    assertThat(
+        analyse.get().getTeilnehmercount().values().stream().reduce(0, Integer::sum))
+        .isEqualTo(16);
   }
 
   @Test
   @DisplayName("HartesKriterium: TwoKlausurenSameTime in Block Parallel Überschneidung mit kürzerer Klausur")
-  void test_Blocke2_Parallen_successful()
+  void test_Blocke2_Parallel_successful()
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
-
-    Planungseinheit blockPlan = mock(Planungseinheit.class);
-
-    when(blockPlan.isBlock()).thenReturn(true);
-
-    Block blockA = mock(Block.class);
-
-    when(blockPlan.asBlock()).thenReturn(blockA);
-    when(blockA.getTyp()).thenReturn(Blocktyp.PARALLEL);
 
     LocalDateTime startBlock = LocalDateTime.of(2021, 8, 1, 8, 0);
     Duration pruefungADuration = Duration.ofMinutes(59);
     Duration pruefungBDuration = Duration.ofMinutes(180);
     Duration pruefungCDuration = Duration.ofMinutes(59);
 
-    Planungseinheit a = mock(Planungseinheit.class);
-    Planungseinheit b = mock(Planungseinheit.class);
-    Planungseinheit c = mock(Planungseinheit.class);
+    Pruefung aPruefung = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung bPruefung = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    Pruefung cPruefung = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
 
-    Pruefung aPruefung = mock(Pruefung.class);
-    Pruefung bPruefung = mock(Pruefung.class);
-    Pruefung cPruefung = mock(Pruefung.class);
+    aPruefung.setDauer(pruefungADuration);
+    bPruefung.setDauer(pruefungBDuration);
+    cPruefung.setDauer(pruefungCDuration);
 
-    when(aPruefung.endzeitpunkt()).thenReturn(startBlock.plus(pruefungADuration));
-    when(bPruefung.endzeitpunkt()).thenReturn(startBlock.plus(pruefungBDuration));
-    when(cPruefung.endzeitpunkt()).thenReturn(startBlock.plusMinutes(90).plus(pruefungCDuration));
+    Block blockA2 = new BlockImpl(pruefungsperiode, "name", PARALLEL);
+    blockA2.addPruefung(bPruefung);
+    blockA2.addPruefung(aPruefung);
 
-    Set<Pruefung> blockSetPruefungen = new HashSet<>();
-    blockSetPruefungen.add(bPruefung);
-    blockSetPruefungen.add(aPruefung);
+    blockA2.setStartzeitpunkt(startBlock);
+    cPruefung.setStartzeitpunkt(startBlock.plusMinutes(90));
 
-    when(blockA.getPruefungen()).thenReturn(blockSetPruefungen);
-    when(blockA.isBlock()).thenReturn(true);
+    int students = 8;
 
-    when(aPruefung.isGeplant()).thenReturn(true);
-    when(bPruefung.isGeplant()).thenReturn(true);
-    when(cPruefung.isGeplant()).thenReturn(true);
+    aPruefung.addTeilnehmerkreis(infBachelor, students);
+    bPruefung.addTeilnehmerkreis(bwlBachelor, students);
+    cPruefung.addTeilnehmerkreis(infBachelor, students);
 
-    when(a.asPruefung()).thenReturn(aPruefung);
-    when(b.asPruefung()).thenReturn(bPruefung);
-    when(c.asPruefung()).thenReturn(cPruefung);
-
-    when(aPruefung.getDauer()).thenReturn(pruefungADuration);
-    when(bPruefung.getDauer()).thenReturn(pruefungBDuration);
-    when(cPruefung.getDauer()).thenReturn(pruefungCDuration);
-
-    when(blockA.getStartzeitpunkt()).thenReturn(startBlock);
-    when(aPruefung.getStartzeitpunkt()).thenReturn(startBlock);
-    when(bPruefung.getStartzeitpunkt()).thenReturn(startBlock);
-
-    //Fängt eine Stunde später erst an
-    when(cPruefung.getStartzeitpunkt()).thenReturn(startBlock.plusMinutes(90));
-
-    Set<Teilnehmerkreis> acTeilnehmerkreisSet = new HashSet<>();
-    Set<Teilnehmerkreis> bTeilnehmerkreisSet = new HashSet<>();
-    Set<Teilnehmerkreis> blockTeilnehmerkreisSet = new HashSet<>();
-
-    Teilnehmerkreis informatik = mock(Teilnehmerkreis.class);
-    Teilnehmerkreis bwl = mock(Teilnehmerkreis.class);
-
-    blockTeilnehmerkreisSet.add(informatik);
-    blockTeilnehmerkreisSet.add(bwl);
-    bTeilnehmerkreisSet.add(bwl);
-    acTeilnehmerkreisSet.add(informatik);
-
-    Map<Teilnehmerkreis, Integer> acTeilnehmerKreis = new HashMap<>();
-    acTeilnehmerKreis.put(informatik, 8);
-
-    Map<Teilnehmerkreis, Integer> bTeilnehmerKreis = new HashMap<>();
-    bTeilnehmerKreis.put(bwl, 8);
-
-    when(aPruefung.getSchaetzungen()).thenReturn(acTeilnehmerKreis);
-    when(cPruefung.getSchaetzungen()).thenReturn(acTeilnehmerKreis);
-    when(bPruefung.getSchaetzungen()).thenReturn(bTeilnehmerKreis);
-
-    when(cPruefung.getTeilnehmerkreise()).thenReturn(acTeilnehmerkreisSet);
-    when(aPruefung.getTeilnehmerkreise()).thenReturn(acTeilnehmerkreisSet);
-    when(blockA.getTeilnehmerkreise()).thenReturn(blockTeilnehmerkreisSet);
-
-    when(bPruefung.getTeilnehmerkreise()).thenReturn(bTeilnehmerkreisSet);
-
-    when(blockA.getDauer()).thenReturn(Duration.ofMinutes(60));
-
-    ArrayList<Planungseinheit> listToReturn = new ArrayList<>();
-    listToReturn.add(blockPlan);
     when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        listToReturn);
+        List.of(blockA2));
 
-    TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
-
-    Optional<HartesKriteriumAnalyse> analyse = h.evaluate(cPruefung);
-    assertTrue(analyse.isEmpty());
+    assertThat(deviceUnderTest.evaluate(cPruefung)).isEmpty();
   }
 
 
   @Test
   @DisplayName("HartesKriterium: TwoKlausurenSameTIme in Block Parallel Überschneidung mit kürzere Klausur Block liegt nach Pruefung")
-  void test_Blocke2_Parallen_successful_Pruefung_Vor_Block()
+  void test_Blocke2_Parallel_successful_Pruefung_Vor_Block()
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
-
-    Planungseinheit blockPlan = mock(Planungseinheit.class);
-
-    when(blockPlan.isBlock()).thenReturn(true);
-
-    Block blockA = mock(Block.class);
-
-    when(blockPlan.asBlock()).thenReturn(blockA);
-    when(blockA.getTyp()).thenReturn(Blocktyp.PARALLEL);
 
     LocalDateTime startBlock = LocalDateTime.of(2021, 8, 1, 9, 30);
     Duration pruefungADuration = Duration.ofMinutes(59);
     Duration pruefungBDuration = Duration.ofMinutes(180);
     Duration pruefungCDuration = Duration.ofMinutes(59);
 
-    Planungseinheit a = mock(Planungseinheit.class);
-    Planungseinheit b = mock(Planungseinheit.class);
-    Planungseinheit c = mock(Planungseinheit.class);
+    Block blockA = new BlockImpl(pruefungsperiode, "name", PARALLEL);
 
-    Pruefung aPruefung = mock(Pruefung.class);
-    Pruefung bPruefung = mock(Pruefung.class);
-    Pruefung cPruefung = mock(Pruefung.class);
+    Pruefung aPruefung = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung bPruefung = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    Pruefung cPruefung = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
 
-    when(aPruefung.endzeitpunkt()).thenReturn(startBlock.plus(pruefungADuration));
-    when(bPruefung.endzeitpunkt()).thenReturn(startBlock.plus(pruefungBDuration));
-    when(cPruefung.endzeitpunkt()).thenReturn(startBlock.minusMinutes(90).plus(pruefungCDuration));
+    aPruefung.setDauer(pruefungADuration);
+    bPruefung.setDauer(pruefungBDuration);
+    cPruefung.setDauer(pruefungCDuration);
 
-    Set<Pruefung> blockSetPruefungen = new HashSet<>();
-    blockSetPruefungen.add(bPruefung);
-    blockSetPruefungen.add(aPruefung);
+    int students = 8;
 
-    when(blockA.getPruefungen()).thenReturn(blockSetPruefungen);
-    when(blockA.isBlock()).thenReturn(true);
+    aPruefung.addTeilnehmerkreis(infBachelor, students);
+    bPruefung.addTeilnehmerkreis(bwlBachelor, students);
+    cPruefung.addTeilnehmerkreis(infBachelor, students);
 
-    when(aPruefung.isGeplant()).thenReturn(true);
-    when(bPruefung.isGeplant()).thenReturn(true);
-    when(cPruefung.isGeplant()).thenReturn(true);
+    blockA.addPruefung(aPruefung);
+    blockA.addPruefung(bPruefung);
+    blockA.setStartzeitpunkt(startBlock);
+    cPruefung.setStartzeitpunkt(startBlock.plusMinutes(90));
 
-    when(a.asPruefung()).thenReturn(aPruefung);
-    when(b.asPruefung()).thenReturn(bPruefung);
-    when(c.asPruefung()).thenReturn(cPruefung);
-
-    when(aPruefung.getDauer()).thenReturn(pruefungADuration);
-    when(bPruefung.getDauer()).thenReturn(pruefungBDuration);
-    when(cPruefung.getDauer()).thenReturn(pruefungCDuration);
-
-    when(blockA.getStartzeitpunkt()).thenReturn(startBlock);
-    when(aPruefung.getStartzeitpunkt()).thenReturn(startBlock);
-    when(bPruefung.getStartzeitpunkt()).thenReturn(startBlock);
-
-    //Fängt eine Stunde später erst an
-    when(cPruefung.getStartzeitpunkt()).thenReturn(startBlock.minusMinutes(90));
-
-    Set<Teilnehmerkreis> acTeilnehmerkreisSet = new HashSet<>();
-    Set<Teilnehmerkreis> bTeilnehmerkreisSet = new HashSet<>();
-    Set<Teilnehmerkreis> blockTeilnehmerkreisSet = new HashSet<>();
-
-    Teilnehmerkreis informatik = mock(Teilnehmerkreis.class);
-    Teilnehmerkreis bwl = mock(Teilnehmerkreis.class);
-
-    blockTeilnehmerkreisSet.add(informatik);
-    blockTeilnehmerkreisSet.add(bwl);
-    bTeilnehmerkreisSet.add(bwl);
-    acTeilnehmerkreisSet.add(informatik);
-
-    Map<Teilnehmerkreis, Integer> acTeilnehmerKreis = new HashMap<>();
-    acTeilnehmerKreis.put(informatik, 8);
-
-    Map<Teilnehmerkreis, Integer> bTeilnehmerKreis = new HashMap<>();
-    bTeilnehmerKreis.put(bwl, 8);
-
-    when(aPruefung.getSchaetzungen()).thenReturn(acTeilnehmerKreis);
-    when(cPruefung.getSchaetzungen()).thenReturn(acTeilnehmerKreis);
-    when(bPruefung.getSchaetzungen()).thenReturn(bTeilnehmerKreis);
-
-    when(cPruefung.getTeilnehmerkreise()).thenReturn(acTeilnehmerkreisSet);
-    when(aPruefung.getTeilnehmerkreise()).thenReturn(acTeilnehmerkreisSet);
-    when(blockA.getTeilnehmerkreise()).thenReturn(blockTeilnehmerkreisSet);
-
-    when(bPruefung.getTeilnehmerkreise()).thenReturn(bTeilnehmerkreisSet);
-
-    when(blockA.getDauer()).thenReturn(Duration.ofMinutes(60));
-
-    ArrayList<Planungseinheit> listToReturn = new ArrayList<>();
-    listToReturn.add(blockPlan);
     when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        listToReturn);
+        List.of(blockA));
 
-    TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
-
-    Optional<HartesKriteriumAnalyse> analyse = h.evaluate(cPruefung);
-    assertTrue(analyse.isEmpty());
+    assertThat(deviceUnderTest.evaluate(cPruefung)).isEmpty();
   }
 
 
@@ -637,193 +288,79 @@ class TwoKlausurenSameTimeTest {
   void test_Blocke2_SEQUENTIAL()
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
 
-    Planungseinheit blockPlan = mock(Planungseinheit.class);
-
-    when(blockPlan.isBlock()).thenReturn(true);
-
-    Block blockA = mock(Block.class);
-
-    when(blockPlan.asBlock()).thenReturn(blockA);
-    when(blockA.getTyp()).thenReturn(Blocktyp.SEQUENTIAL);
-
     LocalDateTime startBlock = LocalDateTime.of(2021, 8, 1, 8, 0);
     Duration pruefungADuration = Duration.ofMinutes(60);
     Duration pruefungBDuration = Duration.ofMinutes(90);
     Duration pruefungCDuration = Duration.ofMinutes(60);
 
-    Planungseinheit a = mock(Planungseinheit.class);
-    Planungseinheit b = mock(Planungseinheit.class);
-    Planungseinheit c = mock(Planungseinheit.class);
+    Block blockA = new BlockImpl(pruefungsperiode, "name", SEQUENTIAL);
 
-    Pruefung aPruefung = mock(Pruefung.class);
-    Pruefung bPruefung = mock(Pruefung.class);
-    Pruefung cPruefung = mock(Pruefung.class);
+    Pruefung aPruefung = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung bPruefung = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    Pruefung cPruefung = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
 
-    Set<Pruefung> blockSetPruefungen = new HashSet<>();
-    blockSetPruefungen.add(bPruefung);
-    blockSetPruefungen.add(aPruefung);
+    aPruefung.setDauer(pruefungADuration);
+    bPruefung.setDauer(pruefungBDuration);
+    cPruefung.setDauer(pruefungCDuration);
 
-    when(blockA.getPruefungen()).thenReturn(blockSetPruefungen);
-    when(blockA.isBlock()).thenReturn(true);
+    int students = 8;
+    aPruefung.addTeilnehmerkreis(infBachelor, students);
+    bPruefung.addTeilnehmerkreis(bwlBachelor, students);
+    cPruefung.addTeilnehmerkreis(infBachelor, students);
 
-    when(aPruefung.isGeplant()).thenReturn(true);
-    when(bPruefung.isGeplant()).thenReturn(true);
-    when(cPruefung.isGeplant()).thenReturn(true);
+    blockA.addPruefung(aPruefung);
+    blockA.addPruefung(bPruefung);
 
-    when(a.asPruefung()).thenReturn(aPruefung);
-    when(b.asPruefung()).thenReturn(bPruefung);
-    when(c.asPruefung()).thenReturn(cPruefung);
+    blockA.setStartzeitpunkt(startBlock);
+    cPruefung.setStartzeitpunkt(startBlock.plusMinutes(60));
 
-    when(aPruefung.getDauer()).thenReturn(pruefungADuration);
-    when(bPruefung.getDauer()).thenReturn(pruefungBDuration);
-    when(cPruefung.getDauer()).thenReturn(pruefungCDuration);
-
-    when(blockA.getStartzeitpunkt()).thenReturn(startBlock);
-    when(aPruefung.getStartzeitpunkt()).thenReturn(startBlock);
-    when(bPruefung.getStartzeitpunkt()).thenReturn(startBlock);
-
-    //Fängt eine Stunde später erst an
-    when(cPruefung.getStartzeitpunkt()).thenReturn(startBlock.plusMinutes(60));
-
-    Set<Teilnehmerkreis> acTeilnehmerkreisSet = new HashSet<>();
-    Set<Teilnehmerkreis> bTeilnehmerkreisSet = new HashSet<>();
-    Set<Teilnehmerkreis> blockTeilnehmerkreisSet = new HashSet<>();
-
-    Teilnehmerkreis informatik = mock(Teilnehmerkreis.class);
-    Teilnehmerkreis bwl = mock(Teilnehmerkreis.class);
-
-    blockTeilnehmerkreisSet.add(informatik);
-    blockTeilnehmerkreisSet.add(bwl);
-    bTeilnehmerkreisSet.add(bwl);
-    acTeilnehmerkreisSet.add(informatik);
-
-    Map<Teilnehmerkreis, Integer> acTeilnehmerKreis = new HashMap<>();
-    acTeilnehmerKreis.put(informatik, 8);
-
-    Map<Teilnehmerkreis, Integer> bTeilnehmerKreis = new HashMap<>();
-    bTeilnehmerKreis.put(bwl, 8);
-
-    when(aPruefung.getSchaetzungen()).thenReturn(acTeilnehmerKreis);
-    when(cPruefung.getSchaetzungen()).thenReturn(acTeilnehmerKreis);
-    when(bPruefung.getSchaetzungen()).thenReturn(bTeilnehmerKreis);
-
-    when(cPruefung.getTeilnehmerkreise()).thenReturn(acTeilnehmerkreisSet);
-    when(aPruefung.getTeilnehmerkreise()).thenReturn(acTeilnehmerkreisSet);
-    when(blockA.getTeilnehmerkreise()).thenReturn(blockTeilnehmerkreisSet);
-
-    when(bPruefung.getTeilnehmerkreise()).thenReturn(bTeilnehmerkreisSet);
-
-    when(blockA.getDauer()).thenReturn(Duration.ofMinutes(60));
-
-    ArrayList<Planungseinheit> listToReturn = new ArrayList<>();
-    listToReturn.add(blockPlan);
     when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        listToReturn);
+        List.of(blockA));
 
-    Set<Pruefung> setOfConflictPruefunge = new HashSet<>();
-    setOfConflictPruefunge.add(cPruefung);
-    setOfConflictPruefunge.add(aPruefung);
-    Set<Teilnehmerkreis> setOfConflictTeilnehmer = new HashSet<>();
-    setOfConflictTeilnehmer.add(informatik);
-
-    int studends = 8;
-
-    TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
-    Optional<HartesKriteriumAnalyse> analyse = h.evaluate(cPruefung);
-    assertTrue(analyse.isPresent());
-    assertEquals(setOfConflictPruefunge, analyse.get().getCausingPruefungen());
-    assertEquals(setOfConflictTeilnehmer, analyse.get().getTeilnehmercount().keySet());
-    assertEquals(studends, analyse.get().getTeilnehmercount().values().stream().reduce(0, Integer::sum));
+    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluate(cPruefung);
+    assertThat(analyse).isPresent();
+    assertThat(analyse.get().getCausingPruefungen()).containsOnly(cPruefung, aPruefung);
+    assertThat(analyse.get().getTeilnehmercount()).containsOnlyKeys(infBachelor);
+    assertThat(
+        analyse.get().getTeilnehmercount().values().stream().reduce(0, Integer::sum))
+        .isEqualTo(students);
   }
 
   @Test
   void test_Blocke2_Parallel_No_SameTeilnehmerkreise()
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
 
-    Planungseinheit blockPlan = mock(Planungseinheit.class);
-
-    when(blockPlan.isBlock()).thenReturn(true);
-
-    Block blockA = mock(Block.class);
-
-    when(blockPlan.asBlock()).thenReturn(blockA);
-    when(blockA.getTyp()).thenReturn(Blocktyp.PARALLEL);
-
     LocalDateTime startBlock = LocalDateTime.of(2021, 8, 1, 8, 0);
     Duration pruefungADuration = Duration.ofMinutes(60);
     Duration pruefungBDuration = Duration.ofMinutes(90);
     Duration pruefungCDuration = Duration.ofMinutes(60);
 
-    Planungseinheit a = mock(Planungseinheit.class);
-    Planungseinheit b = mock(Planungseinheit.class);
-    Planungseinheit c = mock(Planungseinheit.class);
 
-    Pruefung aPruefung = mock(Pruefung.class);
-    Pruefung bPruefung = mock(Pruefung.class);
-    Pruefung cPruefung = mock(Pruefung.class);
+    Block blockA2 = new BlockImpl(pruefungsperiode, "name", PARALLEL);
 
-    Set<Pruefung> blockSetPruefungen = new HashSet<>();
-    blockSetPruefungen.add(bPruefung);
-    blockSetPruefungen.add(aPruefung);
+    Pruefung aPruefung2 = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung bPruefung2 = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    Pruefung cPruefung2 = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
 
-    when(blockA.getPruefungen()).thenReturn(blockSetPruefungen);
-    when(blockA.isBlock()).thenReturn(true);
+    aPruefung2.setDauer(pruefungADuration);
+    bPruefung2.setDauer(pruefungBDuration);
+    cPruefung2.setDauer(pruefungCDuration);
 
-    when(aPruefung.isGeplant()).thenReturn(true);
-    when(bPruefung.isGeplant()).thenReturn(true);
-    when(cPruefung.isGeplant()).thenReturn(true);
+    int students = 8;
+    aPruefung2.addTeilnehmerkreis(bwlBachelor, students);
+    bPruefung2.addTeilnehmerkreis(bwlBachelor, students);
+    cPruefung2.addTeilnehmerkreis(infBachelor, students);
 
-    when(a.asPruefung()).thenReturn(aPruefung);
-    when(b.asPruefung()).thenReturn(bPruefung);
-    when(c.asPruefung()).thenReturn(cPruefung);
+    blockA2.addPruefung(aPruefung2);
+    blockA2.addPruefung(bPruefung2);
 
-    when(aPruefung.getDauer()).thenReturn(pruefungADuration);
-    when(bPruefung.getDauer()).thenReturn(pruefungBDuration);
-    when(cPruefung.getDauer()).thenReturn(pruefungCDuration);
+    blockA2.setStartzeitpunkt(startBlock);
+    cPruefung2.setStartzeitpunkt(startBlock.plusMinutes(60));
 
-    when(blockA.getStartzeitpunkt()).thenReturn(startBlock);
-    when(aPruefung.getStartzeitpunkt()).thenReturn(startBlock);
-    when(bPruefung.getStartzeitpunkt()).thenReturn(startBlock);
-
-    //Fängt eine Stunde später erst an
-    when(cPruefung.getStartzeitpunkt()).thenReturn(startBlock.plusMinutes(60));
-
-    Set<Teilnehmerkreis> abTeilnehmerkreisSet = new HashSet<>();
-    Set<Teilnehmerkreis> cTeilnehmerkreisSet = new HashSet<>();
-    Set<Teilnehmerkreis> blockTeilnehmerkreisSet = new HashSet<>();
-
-    Teilnehmerkreis informatik = mock(Teilnehmerkreis.class);
-    Teilnehmerkreis bwl = mock(Teilnehmerkreis.class);
-
-    blockTeilnehmerkreisSet.add(bwl);
-    abTeilnehmerkreisSet.add(bwl);
-    cTeilnehmerkreisSet.add(informatik);
-
-    Map<Teilnehmerkreis, Integer> acTeilnehmerKreis = new HashMap<>();
-    acTeilnehmerKreis.put(informatik, 8);
-
-    Map<Teilnehmerkreis, Integer> bTeilnehmerKreis = new HashMap<>();
-    bTeilnehmerKreis.put(bwl, 8);
-
-    when(aPruefung.getSchaetzungen()).thenReturn(acTeilnehmerKreis);
-    when(cPruefung.getSchaetzungen()).thenReturn(acTeilnehmerKreis);
-    when(bPruefung.getSchaetzungen()).thenReturn(bTeilnehmerKreis);
-
-    when(cPruefung.getTeilnehmerkreise()).thenReturn(cTeilnehmerkreisSet);
-    when(aPruefung.getTeilnehmerkreise()).thenReturn(abTeilnehmerkreisSet);
-    when(blockA.getTeilnehmerkreise()).thenReturn(blockTeilnehmerkreisSet);
-
-    when(bPruefung.getTeilnehmerkreise()).thenReturn(abTeilnehmerkreisSet);
-
-    when(blockA.getDauer()).thenReturn(Duration.ofMinutes(60));
-
-    ArrayList<Planungseinheit> listToReturn = new ArrayList<>();
-    listToReturn.add(blockPlan);
     when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        listToReturn);
+        List.of(blockA2));
 
-    TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
-    Optional<HartesKriteriumAnalyse> analyse = h.evaluate(cPruefung);
+    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluate(cPruefung2);
     assertTrue(analyse.isEmpty());
 
   }
@@ -911,30 +448,18 @@ class TwoKlausurenSameTimeTest {
 
     when(blockA.getDauer()).thenReturn(Duration.ofMinutes(60));
 
-    ArrayList<Planungseinheit> listToReturn = new ArrayList<>();
-    listToReturn.add(blockPlan);
     when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        listToReturn);
+        List.of(blockPlan));
 
-    TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
-    Optional<HartesKriteriumAnalyse> analyse = h.evaluate(cPruefung);
+    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluate(cPruefung);
     assertTrue(analyse.isEmpty());
 
   }
 
 
   @Test
-  void test_Blocke2_Sequential_LotPruefugnen()
+  void test_Blocke2_Sequential_LotPruefungen()
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
-
-    Planungseinheit blockPlan = mock(Planungseinheit.class);
-
-    when(blockPlan.isBlock()).thenReturn(true);
-
-    Block blockA = mock(Block.class);
-
-    when(blockPlan.asBlock()).thenReturn(blockA);
-    when(blockA.getTyp()).thenReturn(Blocktyp.SEQUENTIAL);
 
     LocalDateTime startBlock = LocalDateTime.of(2021, 8, 1, 8, 0);
     Duration pruefungADuration = Duration.ofMinutes(60);
@@ -943,122 +468,57 @@ class TwoKlausurenSameTimeTest {
     Duration pruefungDDuration = Duration.ofMinutes(60);
     Duration pruefungEDuration = Duration.ofMinutes(60);
 
-    Planungseinheit a = mock(Planungseinheit.class);
-    Planungseinheit b = mock(Planungseinheit.class);
-    Planungseinheit c = mock(Planungseinheit.class);
-    Planungseinheit d = mock(Planungseinheit.class);
-    Planungseinheit e = mock(Planungseinheit.class);
 
-    Pruefung aPruefung = mock(Pruefung.class);
-    Pruefung bPruefung = mock(Pruefung.class);
-    Pruefung cPruefung = mock(Pruefung.class);
-    Pruefung dPruefung = mock(Pruefung.class);
-    Pruefung ePruefung = mock(Pruefung.class);
+    Block blockA2 = new BlockImpl(pruefungsperiode, "name", SEQUENTIAL);
 
-    Set<Pruefung> blockSetPruefungen = new HashSet<>();
-    blockSetPruefungen.add(bPruefung);
-    blockSetPruefungen.add(aPruefung);
-    blockSetPruefungen.add(dPruefung);
-    blockSetPruefungen.add(ePruefung);
+    Pruefung aPruefung2 = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    aPruefung2.setDauer(pruefungADuration);
+    Pruefung bPruefung2 = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+    aPruefung2.setDauer(pruefungBDuration);
+    Pruefung cPruefung2 = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    aPruefung2.setDauer(pruefungCDuration);
+    Pruefung dPruefung2 = new PruefungImpl("4", "aud", "abcde", pruefungDDuration);
+    Pruefung ePruefung2 = new PruefungImpl("5", "sp", "abcdefg", pruefungEDuration);
 
-    when(blockA.getPruefungen()).thenReturn(blockSetPruefungen);
-    when(blockA.isBlock()).thenReturn(true);
+    int students = 8;
+    aPruefung2.addTeilnehmerkreis(infBachelor, students);
+    bPruefung2.addTeilnehmerkreis(infBachelor, students);
+    cPruefung2.addTeilnehmerkreis(infBachelor, students);
+    dPruefung2.addTeilnehmerkreis(infBachelor, students);
+    ePruefung2.addTeilnehmerkreis(infBachelor, students);
 
-    when(aPruefung.isGeplant()).thenReturn(true);
-    when(bPruefung.isGeplant()).thenReturn(true);
-    when(cPruefung.isGeplant()).thenReturn(true);
-    when(ePruefung.isGeplant()).thenReturn(true);
-    when(dPruefung.isGeplant()).thenReturn(true);
+    aPruefung2.addTeilnehmerkreis(bwlBachelor, students);
+    bPruefung2.addTeilnehmerkreis(bwlBachelor, students);
+    cPruefung2.addTeilnehmerkreis(bwlBachelor, students);
+    dPruefung2.addTeilnehmerkreis(bwlBachelor, students);
+    ePruefung2.addTeilnehmerkreis(bwlBachelor, students);
 
-    when(a.asPruefung()).thenReturn(aPruefung);
-    when(b.asPruefung()).thenReturn(bPruefung);
-    when(c.asPruefung()).thenReturn(cPruefung);
-    when(d.asPruefung()).thenReturn(dPruefung);
-    when(e.asPruefung()).thenReturn(ePruefung);
+    blockA2.addPruefung(aPruefung2);
+    blockA2.addPruefung(bPruefung2);
+    blockA2.addPruefung(dPruefung2);
+    blockA2.addPruefung(ePruefung2);
 
-    when(aPruefung.getDauer()).thenReturn(pruefungADuration);
-    when(bPruefung.getDauer()).thenReturn(pruefungBDuration);
-    when(cPruefung.getDauer()).thenReturn(pruefungCDuration);
-    when(dPruefung.getDauer()).thenReturn(pruefungDDuration);
-    when(ePruefung.getDauer()).thenReturn(pruefungEDuration);
+    blockA2.setStartzeitpunkt(startBlock);
+    cPruefung2.setStartzeitpunkt(startBlock.plusMinutes(60));
 
-    when(blockA.getStartzeitpunkt()).thenReturn(startBlock);
-    when(aPruefung.getStartzeitpunkt()).thenReturn(startBlock);
-    when(bPruefung.getStartzeitpunkt()).thenReturn(startBlock);
-    when(ePruefung.getStartzeitpunkt()).thenReturn(startBlock);
-    when(dPruefung.getStartzeitpunkt()).thenReturn(startBlock);
-
-    //Fängt eine Stunde später erst an
-    when(cPruefung.getStartzeitpunkt()).thenReturn(startBlock.plusMinutes(60));
-
-    Set<Teilnehmerkreis> abdeTeilnehmerkreisSet = new HashSet<>();
-    Set<Teilnehmerkreis> cTeilnehmerkreisSet = new HashSet<>();
-    Set<Teilnehmerkreis> blockTeilnehmerkreisSet = new HashSet<>();
-
-    Teilnehmerkreis informatik = mock(Teilnehmerkreis.class);
-    Teilnehmerkreis bwl = mock(Teilnehmerkreis.class);
-
-    blockTeilnehmerkreisSet.add(informatik);
-    blockTeilnehmerkreisSet.add(bwl);
-    abdeTeilnehmerkreisSet.add(bwl);
-    abdeTeilnehmerkreisSet.add(informatik);
-
-    cTeilnehmerkreisSet.add(informatik);
-    cTeilnehmerkreisSet.add(bwl);
-
-    Map<Teilnehmerkreis, Integer> abdeTeilnehmerKreis = new HashMap<>();
-    abdeTeilnehmerKreis.put(informatik, 8);
-    abdeTeilnehmerKreis.put(bwl, 8);
-
-    Map<Teilnehmerkreis, Integer> cTeilnehmerKreis = new HashMap<>();
-    cTeilnehmerKreis.put(bwl, 8);
-    cTeilnehmerKreis.put(informatik, 8);
-
-    when(aPruefung.getSchaetzungen()).thenReturn(abdeTeilnehmerKreis);
-    when(bPruefung.getSchaetzungen()).thenReturn(abdeTeilnehmerKreis);
-    when(cPruefung.getSchaetzungen()).thenReturn(cTeilnehmerKreis);
-    when(dPruefung.getSchaetzungen()).thenReturn(abdeTeilnehmerKreis);
-    when(ePruefung.getSchaetzungen()).thenReturn(abdeTeilnehmerKreis);
-
-    when(cPruefung.getTeilnehmerkreise()).thenReturn(cTeilnehmerkreisSet);
-    when(aPruefung.getTeilnehmerkreise()).thenReturn(abdeTeilnehmerkreisSet);
-    when(blockA.getTeilnehmerkreise()).thenReturn(blockTeilnehmerkreisSet);
-
-    when(bPruefung.getTeilnehmerkreise()).thenReturn(abdeTeilnehmerkreisSet);
-    when(ePruefung.getTeilnehmerkreise()).thenReturn(abdeTeilnehmerkreisSet);
-    when(dPruefung.getTeilnehmerkreise()).thenReturn(abdeTeilnehmerkreisSet);
-
-    when(blockA.getDauer()).thenReturn(Duration.ofMinutes(60));
-
-    ArrayList<Planungseinheit> listToReturn = new ArrayList<>();
-    listToReturn.add(blockPlan);
     when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        listToReturn);
+        List.of(blockA2));
 
-    Set<Pruefung> setOfConflictPruefunge = new HashSet<>();
-    setOfConflictPruefunge.add(cPruefung);
-    setOfConflictPruefunge.add(aPruefung);
-    setOfConflictPruefunge.add(bPruefung);
-    setOfConflictPruefunge.add(dPruefung);
-    setOfConflictPruefunge.add(ePruefung);
+    int affectedStudents = 16;
 
-    Set<Teilnehmerkreis> setOfConflictTeilnehmer = new HashSet<>();
-    setOfConflictTeilnehmer.add(informatik);
-    setOfConflictTeilnehmer.add(bwl);
-
-    int studends = 16;
-
-    TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
-    Optional<HartesKriteriumAnalyse> analyse = h.evaluate(cPruefung);
-    assertTrue(analyse.isPresent());
-    assertEquals(setOfConflictPruefunge, analyse.get().getCausingPruefungen());
-    assertEquals(setOfConflictTeilnehmer, analyse.get().getTeilnehmercount().keySet());
-    assertEquals(studends, analyse.get().getTeilnehmercount().values().stream().reduce(0, Integer::sum));
+    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluate(cPruefung2);
+    assertThat(analyse).isPresent();
+    assertThat(analyse.get().getCausingPruefungen()).containsOnly(aPruefung2, bPruefung2,
+        cPruefung2, dPruefung2, ePruefung2);
+    assertThat(analyse.get().getTeilnehmercount()).containsOnlyKeys(infBachelor, bwlBachelor);
+    assertThat(
+        analyse.get().getTeilnehmercount().values().stream().reduce(0, Integer::sum))
+        .isEqualTo(affectedStudents);
   }
 
 
   @Test
-  void test_Blocke2_PARALLEL_LotPruefugnen()
+  void test_Blocke2_PARALLEL_LotPruefungen()
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
 
     Planungseinheit blockPlan = mock(Planungseinheit.class);
@@ -1068,7 +528,7 @@ class TwoKlausurenSameTimeTest {
     Block blockA = mock(Block.class);
 
     when(blockPlan.asBlock()).thenReturn(blockA);
-    when(blockA.getTyp()).thenReturn(Blocktyp.PARALLEL);
+    when(blockA.getTyp()).thenReturn(PARALLEL);
 
     LocalDateTime startBlock = LocalDateTime.of(2021, 8, 1, 8, 0);
     Duration pruefungADuration = Duration.ofMinutes(60);
@@ -1169,40 +629,35 @@ class TwoKlausurenSameTimeTest {
 
     when(blockA.getDauer()).thenReturn(Duration.ofMinutes(60));
 
-    ArrayList<Planungseinheit> listToReturn = new ArrayList<>();
-    listToReturn.add(blockPlan);
     when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        listToReturn);
+        List.of(blockPlan));
 
-    Set<Pruefung> setOfConflictPruefunge = new HashSet<>();
-    setOfConflictPruefunge.add(cPruefung);
-    setOfConflictPruefunge.add(aPruefung);
-    setOfConflictPruefunge.add(bPruefung);
-    setOfConflictPruefunge.add(dPruefung);
-    setOfConflictPruefunge.add(ePruefung);
+    Set<Pruefung> setOfConflictPruefungen = new HashSet<>();
+    setOfConflictPruefungen.add(cPruefung);
+    setOfConflictPruefungen.add(aPruefung);
+    setOfConflictPruefungen.add(bPruefung);
+    setOfConflictPruefungen.add(dPruefung);
+    setOfConflictPruefungen.add(ePruefung);
 
     Set<Teilnehmerkreis> setOfConflictTeilnehmer = new HashSet<>();
     setOfConflictTeilnehmer.add(informatik);
     setOfConflictTeilnehmer.add(bwl);
 
-    int studends = 16;
+    int students = 16;
 
-    TwoKlausurenSameTime h = new TwoKlausurenSameTime(this.dataAccessService);
-    Optional<HartesKriteriumAnalyse> analyse = h.evaluate(cPruefung);
+    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluate(cPruefung);
     assertTrue(analyse.isPresent());
-    assertEquals(setOfConflictPruefunge, analyse.get().getCausingPruefungen());
+    assertEquals(setOfConflictPruefungen, analyse.get().getCausingPruefungen());
     assertEquals(setOfConflictTeilnehmer, analyse.get().getTeilnehmercount().keySet());
-    assertEquals(studends, analyse.get().getTeilnehmercount().values().stream().reduce(0, Integer::sum));
+    assertEquals(students,
+        analyse.get().getTeilnehmercount().values().stream().reduce(0, Integer::sum));
   }
 
   @Test
-  void getAllPotentialConflictingPruefungenWith_Successfull() {
-
-    TwoKlausurenSameTime tkst = new TwoKlausurenSameTime(dataAccessService);
+  void getAllPotentialConflictingPruefungenWith_Successful() {
 
     LocalDateTime timeA = LocalDateTime.of(2022, 8, 11, 8, 0);
     LocalDateTime timeB = LocalDateTime.of(2022, 8, 12, 8, 0);
-    LocalDateTime timeC = LocalDateTime.of(2022, 8, 13, 8, 0);
 
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     Pruefung haskel = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
@@ -1217,13 +672,12 @@ class TwoKlausurenSameTimeTest {
     haskel.addTeilnehmerkreis(infBachelor, 8);
     dm.addTeilnehmerkreis(infBachelor, 8);
 
-    assertThat(tkst.getAllPotentialConflictingPruefungenWith(dm)).contains(analysis, haskel);
+    assertThat(deviceUnderTest.getAllPotentialConflictingPruefungenWith(dm)).contains(analysis,
+        haskel);
   }
 
   @Test
-  void getAllPotentialConflictingPruefungenWith_Successfull_NotSameTeilnehmerkreis() {
-
-    TwoKlausurenSameTime tkst = new TwoKlausurenSameTime(dataAccessService);
+  void getAllPotentialConflictingPruefungenWith_Successful_NotSameTeilnehmerkreis() {
 
     LocalDateTime timeA = LocalDateTime.of(2022, 8, 11, 8, 0);
     LocalDateTime timeB = LocalDateTime.of(2022, 8, 12, 8, 0);
@@ -1241,11 +695,11 @@ class TwoKlausurenSameTimeTest {
     haskel.addTeilnehmerkreis(infBachelor, 8);
     dm.addTeilnehmerkreis(bwlBachelor, 8);
 
-    assertThat(tkst.getAllPotentialConflictingPruefungenWith(dm)).isEmpty();
+    assertThat(deviceUnderTest.getAllPotentialConflictingPruefungenWith(dm)).isEmpty();
   }
 
   @Test
-  void getAllPotentialConflictingPruefungenWith_Successfull_someTeilnehmerkreis() {
+  void getAllPotentialConflictingPruefungenWith_Successful_someTeilnehmerkreis() {
 
     TwoKlausurenSameTime tkst = new TwoKlausurenSameTime(dataAccessService);
 
@@ -1270,12 +724,9 @@ class TwoKlausurenSameTimeTest {
 
 
   @Test
-  void getAllPotentialConflictingPruefungenWith_Successfull_sameTeilnehmerkreisButNotgeplant() {
-
-    TwoKlausurenSameTime tkst = new TwoKlausurenSameTime(dataAccessService);
+  void getAllPotentialConflictingPruefungenWith_Successful_sameTeilnehmerkreisButNotGeplant() {
 
     LocalDateTime timeA = LocalDateTime.of(2022, 8, 11, 8, 0);
-    LocalDateTime timeB = LocalDateTime.of(2022, 8, 12, 8, 0);
 
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     Pruefung haskel = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
@@ -1292,15 +743,10 @@ class TwoKlausurenSameTimeTest {
     haskel.addTeilnehmerkreis(bwlBachelor, 8);
     dm.addTeilnehmerkreis(bwlBachelor, 8);
 
-    assertThat(tkst.getAllPotentialConflictingPruefungenWith(dm)).isEmpty();
+    assertThat(deviceUnderTest.getAllPotentialConflictingPruefungenWith(dm)).isEmpty();
 
   }
 
-  private void setNameAndNummer(Pruefung analysis, String name) {
-    when(analysis.getPruefungsnummer()).thenReturn(name);
-    when(analysis.getName()).thenReturn(name);
-    when(analysis.isGeplant()).thenReturn(true);
-  }
 
   @Test
   void wouldBeHardConflictAt_timeMustNotBeNull() {
@@ -1379,7 +825,6 @@ class TwoKlausurenSameTimeTest {
       throws NoPruefungsPeriodeDefinedException {
     // if the planungseinheit to check is planned, it should not interfere
     Teilnehmerkreis conflictingTeilnehmerkreis = getRandomTeilnehmerkreis(1L);
-    Pruefung pruefungToCheckFor = getRandomPruefungWith(2L, conflictingTeilnehmerkreis);
 
     when(dataAccessService.getPlanungseinheitenAt(any())).thenReturn(
         Set.of(getRandomPruefungWith(2L, conflictingTeilnehmerkreis)));
