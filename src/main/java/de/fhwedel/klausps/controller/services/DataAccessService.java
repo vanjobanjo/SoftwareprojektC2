@@ -47,7 +47,6 @@ public class DataAccessService {
     this.pruefungsperiode = pruefungsperiode;
   }
 
-
   public void setKapazitaetPeriode(int kapazitaet) {
     pruefungsperiode.setKapazitaet(kapazitaet);
   }
@@ -88,18 +87,6 @@ public class DataAccessService {
 
   public boolean isPruefungsperiodeSet() {
     return nonNull(pruefungsperiode);
-  }
-
-  public void changeDurationOf(ReadOnlyPruefung pruefung, Duration duration)
-      throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
-
-    if (duration.isNegative()) {
-      throw new IllegalArgumentException("Die Dauer der Pruefung muss positiv sein.");
-    }
-
-    Pruefung toChangeDuration = getPruefungFromModelOrException(pruefung);
-
-    toChangeDuration.setDauer(duration);
   }
 
   private Pruefung getPruefungFromModelOrException(ReadOnlyPruefung pruefung)
