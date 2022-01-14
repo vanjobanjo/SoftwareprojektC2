@@ -131,7 +131,7 @@ public class Controller implements InterfaceController {
   public Set<ReadOnlyPruefung> getAllKlausurenFromPruefer(String pruefer)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefer);
-    return dataAccessService.getAllKlausurenFromPruefer(pruefer);
+    return converter.convertToROPruefungSet(dataAccessService.getAllKlausurenFromPruefer(pruefer));
   }
 
   @Override
@@ -237,7 +237,8 @@ public class Controller implements InterfaceController {
       String pruefungsnummer) throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, pruefungsnummer);
     ensureAvailabilityOfPruefungsperiode();
-    return dataAccessService.setPruefungsnummer(pruefung, pruefungsnummer);
+    return converter.convertToReadOnlyPlanungseinheit(
+        dataAccessService.setPruefungsnummer(pruefung, pruefungsnummer));
   }
 
   @Override
@@ -245,7 +246,8 @@ public class Controller implements InterfaceController {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, name);
     ensureAvailabilityOfPruefungsperiode();
-    return dataAccessService.changeNameOfPruefung(pruefung, name);
+    return converter.convertToReadOnlyPlanungseinheit(
+        dataAccessService.changeNameOfPruefung(pruefung, name));
   }
 
   @Override
@@ -253,7 +255,7 @@ public class Controller implements InterfaceController {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block, name);
     ensureAvailabilityOfPruefungsperiode();
-    return dataAccessService.setNameOfBlock(block, name);
+    return converter.convertToROBlock(dataAccessService.setNameOfBlock(block, name));
   }
 
   @Override
@@ -272,8 +274,9 @@ public class Controller implements InterfaceController {
     noNullParameters(name, pruefungsNummer, pruefer, duration, teilnehmerkreis);
     ensureAvailabilityOfPruefungsperiode();
 
-    return dataAccessService.createPruefung(name, pruefungsNummer, ref, pruefer, duration,
-        teilnehmerkreis);
+    return converter.convertToReadOnlyPruefung(
+        dataAccessService.createPruefung(name, pruefungsNummer, ref, pruefer, duration,
+            teilnehmerkreis));
   }
 
   @Override
@@ -281,7 +284,6 @@ public class Controller implements InterfaceController {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung);
     ensureAvailabilityOfPruefungsperiode();
-
     return scheduleService.deletePruefung(pruefung);
   }
 
@@ -306,7 +308,8 @@ public class Controller implements InterfaceController {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, kuerzel);
     ensureAvailabilityOfPruefungsperiode();
-    return dataAccessService.addPruefer(pruefung, kuerzel);
+    return converter.convertToReadOnlyPlanungseinheit(
+        dataAccessService.addPruefer(pruefung, kuerzel));
   }
 
   @Override
@@ -314,7 +317,8 @@ public class Controller implements InterfaceController {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, kuerzel);
     ensureAvailabilityOfPruefungsperiode();
-    return dataAccessService.removePruefer(pruefung, kuerzel);
+    return converter.convertToReadOnlyPlanungseinheit(
+        dataAccessService.removePruefer(pruefung, kuerzel));
   }
 
   @Override
@@ -340,7 +344,7 @@ public class Controller implements InterfaceController {
     noNullParameters((Object[]) pruefungen);
     noNullParameters(name);
     ensureAvailabilityOfPruefungsperiode();
-    return dataAccessService.createBlock(name, pruefungen);
+    return converter.convertToROBlock(dataAccessService.createBlock(name, pruefungen));
   }
 
   @Override
@@ -372,7 +376,7 @@ public class Controller implements InterfaceController {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block);
     ensureAvailabilityOfPruefungsperiode();
-    return dataAccessService.deleteBlock(block);
+    return converter.convertToROPruefungList(dataAccessService.deleteBlock(block));
   }
 
   @Override

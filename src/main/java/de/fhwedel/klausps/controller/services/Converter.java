@@ -16,6 +16,7 @@ import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -64,6 +65,14 @@ public class Converter {
   public Set<ReadOnlyPruefung> convertToROPruefungSet(
       Collection<Pruefung> collection) throws NoPruefungsPeriodeDefinedException {
     Set<ReadOnlyPruefung> result = new HashSet<>();
+    for (Pruefung pruefung : collection) {
+      result.add(convertToReadOnlyPruefung(pruefung));
+    }
+    return result;
+  }
+ public List<ReadOnlyPruefung> convertToROPruefungList(
+      Collection<Pruefung> collection) throws NoPruefungsPeriodeDefinedException {
+    List<ReadOnlyPruefung> result = new ArrayList<>(collection.size());
     for (Pruefung pruefung : collection) {
       result.add(convertToReadOnlyPruefung(pruefung));
     }

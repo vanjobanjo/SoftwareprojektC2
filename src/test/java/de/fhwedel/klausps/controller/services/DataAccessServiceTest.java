@@ -28,11 +28,9 @@ import de.fhwedel.klausps.controller.api.BlockDTO;
 import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
-import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.assertions.ReadOnlyBlockAssert;
 import de.fhwedel.klausps.controller.assertions.ReadOnlyPruefungAssert;
-import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.util.TestFactory;
@@ -56,6 +54,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -81,13 +80,12 @@ class DataAccessServiceTest {
     deviceUnderTest.setPruefungsperiode(pruefungsperiode);
     this.converter = new Converter();
     converter.setScheduleService(mock(ScheduleService.class));
-    deviceUnderTest.setConverter(converter);
   }
 
   @Test
   @DisplayName("A Pruefung gets created by calling the respective method of the pruefungsPeriode")
   void createPruefungSuccessTest() throws NoPruefungsPeriodeDefinedException {
-    ReadOnlyPruefung pruefung = deviceUnderTest.createPruefung("Analysis", "b123", "ref",
+    Pruefung pruefung = deviceUnderTest.createPruefung("Analysis", "b123", "ref",
         "pruefer 1",
         Duration.ofMinutes(90), new HashMap<>());
     assertThat(pruefung).isNotNull();
@@ -98,11 +96,15 @@ class DataAccessServiceTest {
   @DisplayName("A created pruefung has the expected attributes")
   void createPruefungSuccessRightAttributesTest() throws NoPruefungsPeriodeDefinedException {
     ReadOnlyPruefung expected = getReadOnlyPruefung();
-    ReadOnlyPruefung actual = deviceUnderTest.createPruefung(expected.getName(),
+    Pruefung actual = deviceUnderTest.createPruefung(expected.getName(),
         expected.getPruefungsnummer(), "ref", expected.getPruefer(), expected.getDauer(),
         expected.getTeilnehmerKreisSchaetzung());
 
-    ReadOnlyPruefungAssert.assertThat(actual).isTheSameAs(getReadOnlyPruefung());
+    assertThat(actual.getSchaetzungen()).containsAllEntriesOf(
+        expected.getTeilnehmerKreisSchaetzung());
+    assertThat(actual.getPruefungsnummer()).isEqualTo(expected.getPruefungsnummer());
+    assertThat(actual.getName()).isEqualTo(expected.getName());
+    assertThat(actual.getPruefer()).containsExactlyInAnyOrderElementsOf(expected.getPruefer());
   }
 
   /**
@@ -119,7 +121,7 @@ class DataAccessServiceTest {
   @DisplayName("A created pruefung is persisted in the data model")
   void createPruefungSaveInModelTest() throws NoPruefungsPeriodeDefinedException {
     ReadOnlyPruefung expected = getReadOnlyPruefung();
-    ReadOnlyPruefung actual = deviceUnderTest.createPruefung(expected.getName(),
+    Pruefung actual = deviceUnderTest.createPruefung(expected.getName(),
         expected.getPruefungsnummer(), "ref", expected.getPruefer(), expected.getDauer(),
         expected.getTeilnehmerKreisSchaetzung());
     verify(pruefungsperiode, times(1)).addPlanungseinheit(notNull());
@@ -148,8 +150,9 @@ class DataAccessServiceTest {
     String newName = "NoNameNeeded";
 
     when(pruefungsperiode.pruefung(before.getPruefungsnummer())).thenReturn(model);
-    ReadOnlyPruefung after = deviceUnderTest.changeNameOfPruefung(before, newName).asPruefung();
-    ReadOnlyPruefungAssert.assertThat(after).differsOnlyInNameFrom(before).hasName(newName);
+    Pruefung after = deviceUnderTest.changeNameOfPruefung(before, newName).asPruefung();
+    ReadOnlyPruefungAssert.assertThat(converter.convertToReadOnlyPruefung(after))
+        .differsOnlyInNameFrom(before).hasName(newName);
   }
 
   private Pruefung getPruefungWithPruefer(String... pruefer) {
@@ -229,7 +232,7 @@ class DataAccessServiceTest {
   void addPruefer_successTest() throws NoPruefungsPeriodeDefinedException {
     when(pruefungsperiode.pruefung(anyString())).thenReturn(
         TestFactory.getPruefungOfReadOnlyPruefung(TestFactory.RO_DM_UNPLANNED));
-    ReadOnlyPlanungseinheit result = deviceUnderTest.addPruefer(RO_DM_UNPLANNED, "Cohen");
+    Planungseinheit result = deviceUnderTest.addPruefer(RO_DM_UNPLANNED, "Cohen");
     assertThat(result.getPruefer()).contains("Cohen");
     assertThat(result.isBlock()).isFalse();
   }
@@ -237,14 +240,14 @@ class DataAccessServiceTest {
   @Test
   void addPrueferBlock_successTest() throws NoPruefungsPeriodeDefinedException {
     Pruefung modelDm = TestFactory.getPruefungOfReadOnlyPruefung(TestFactory.RO_DM_UNPLANNED);
-    TestFactory.configureMock_addPruefungToBlockModel(pruefungsperiode,
+    Block result = TestFactory.configureMock_addPruefungToBlockModel(pruefungsperiode,
         "Hallo", null, modelDm);
     when(pruefungsperiode.pruefung(anyString())).thenReturn(modelDm);
-    ReadOnlyPlanungseinheit result = deviceUnderTest.addPruefer(RO_DM_UNPLANNED, "Cohen");
+    deviceUnderTest.addPruefer(RO_DM_UNPLANNED, "Cohen");
     assertThat(result.getPruefer()).contains("Cohen");
     assertThat(result.isBlock()).isTrue();
-    assertThat(result.asBlock().getROPruefungen()).contains(TestFactory.RO_DM_UNPLANNED);
-    assertThat(result.asBlock().getROPruefungen().stream()
+    assertThat(result.asBlock().getPruefungen()).contains(modelDm);
+    assertThat(result.asBlock().getPruefungen().stream()
         .anyMatch(x -> x.getPruefer().contains("Cohen"))).isTrue();
 
   }
@@ -252,15 +255,15 @@ class DataAccessServiceTest {
   @Test
   void removePrueferBlock_successTest() throws NoPruefungsPeriodeDefinedException {
     Pruefung modelDm = TestFactory.getPruefungOfReadOnlyPruefung(TestFactory.RO_DM_UNPLANNED);
-    TestFactory.configureMock_addPruefungToBlockModel(pruefungsperiode,
+    Block result = TestFactory.configureMock_addPruefungToBlockModel(pruefungsperiode,
         "Hallo", null, modelDm);
     modelDm.addPruefer("Cohen");
     when(pruefungsperiode.pruefung(anyString())).thenReturn(modelDm);
-    ReadOnlyPlanungseinheit result = deviceUnderTest.removePruefer(RO_DM_UNPLANNED, "Cohen");
+    deviceUnderTest.removePruefer(RO_DM_UNPLANNED, "Cohen");
     assertThat(result.getPruefer()).doesNotContain("Cohen");
     assertThat(result.isBlock()).isTrue();
-    assertThat(result.asBlock().getROPruefungen()).contains(TestFactory.RO_DM_UNPLANNED);
-    assertThat(result.asBlock().getROPruefungen().stream()
+    assertThat(result.asBlock().getPruefungen()).contains(modelDm);
+    assertThat(result.asBlock().getPruefungen().stream()
         .noneMatch(x -> x.getPruefer().contains("Cohen"))).isTrue();
 
   }
@@ -268,14 +271,15 @@ class DataAccessServiceTest {
   @Test
   void addPruefer_unknownPruefungTest() {
     when(pruefungsperiode.pruefung(anyString())).thenReturn(null);
-    assertThrows(IllegalArgumentException.class, () -> deviceUnderTest.addPruefer(RO_HASKELL_UNPLANNED, "Gödel"));
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.addPruefer(RO_HASKELL_UNPLANNED, "Gödel"));
   }
 
   @Test
   void removePruefer_successTest() throws NoPruefungsPeriodeDefinedException {
     when(pruefungsperiode.pruefung(anyString())).thenReturn(getPruefungWithPruefer("Cohen"));
-    ReadOnlyPruefungAssert.assertThat(deviceUnderTest.removePruefer(RO_DM_UNPLANNED, "Cohen").asPruefung())
-        .hasNotPruefer("Cohen");
+    assertThat(deviceUnderTest.removePruefer(RO_DM_UNPLANNED, "Cohen").asPruefung()
+        .getPruefer()).doesNotContain("Cohen");
   }
 
   private List<Pruefung> convertPruefungenFromReadonlyToModel(
@@ -316,8 +320,10 @@ class DataAccessServiceTest {
   void removePruefer_otherPrueferStayTest() throws NoPruefungsPeriodeDefinedException {
     when(pruefungsperiode.pruefung(anyString())).thenReturn(
         getPruefungWithPruefer("Hilbert", "Einstein"));
-    ReadOnlyPruefungAssert.assertThat(deviceUnderTest.removePruefer(RO_DM_UNPLANNED, "Hilbert").asPruefung())
-        .hasPruefer("Einstein").hasNotPruefer("Cohen");
+    Planungseinheit result = deviceUnderTest.removePruefer(RO_DM_UNPLANNED, "Hilbert");
+    assertThat(result.asPruefung().getPruefer()).contains("Einstein");
+    assertThat(result.asPruefung().getPruefer()).doesNotContain("Hilbert");
+
   }
 
   @Test
@@ -452,10 +458,10 @@ class DataAccessServiceTest {
 
     Pruefung modelAnalysis = getPruefungOfReadOnlyPruefung(analysis);
     when(pruefungsperiode.pruefung(oldNumber)).thenReturn(modelAnalysis);
-    ReadOnlyPruefung analysisNewNumber = deviceUnderTest.setPruefungsnummer(analysis, newNumber)
+    Pruefung analysisNewNumber = deviceUnderTest.setPruefungsnummer(analysis, newNumber)
         .asPruefung();
     assertThat(analysisNewNumber.getPruefungsnummer()).isEqualTo(newNumber);
-    assertThat(analysisNewNumber).isNotEqualTo(analysis); // Equal arbeitet prüft die Nummern
+    assertThat(analysisNewNumber.getPruefungsnummer()).isNotEqualTo(analysis.getPruefungsnummer());
     assertThat(analysisNewNumber.getDauer()).isEqualTo(analysis.getDauer());
   }
 
@@ -617,9 +623,12 @@ class DataAccessServiceTest {
   @Test
   void createBlock_Successful() throws NoPruefungsPeriodeDefinedException {
     when(pruefungsperiode.addPlanungseinheit(any())).thenReturn(true);
+
     configureMock_getPruefungToROPruefung(RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
-    ReadOnlyBlock ro = deviceUnderTest.createBlock("Hallo", RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
-    assertThat(ro.getROPruefungen()).containsOnly(RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
+    Block ro = deviceUnderTest.createBlock("Hallo", RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
+    assertThat(ro.getPruefungen().stream().map(Pruefung::getPruefungsnummer)
+        .collect(Collectors.toSet())).containsOnly(RO_ANALYSIS_UNPLANNED.getPruefungsnummer(),
+        RO_DM_UNPLANNED.getPruefungsnummer());
   }
 
   private void configureMock_getPruefungToROPruefung(ReadOnlyPruefung... pruefungen) {
@@ -693,20 +702,23 @@ class DataAccessServiceTest {
     configureMock_getPruefungToROPruefung(RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
     when(pruefungsperiode.addPlanungseinheit(any())).thenReturn(
         true); // pruefungsperiode is gemocked!
-    ReadOnlyBlock ro = deviceUnderTest.createBlock("Hallo", RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
+
+    Block ro = deviceUnderTest.createBlock("Hallo", RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
     Block model = new BlockImpl(pruefungsperiode, "Name", Blocktyp.SEQUENTIAL);
     LocalDateTime now = LocalDateTime.now();
     configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(model, now,
         RO_HASKELL_UNPLANNED);
 
-    assertThat(ro.getROPruefungen()).containsOnly(RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
+    assertThat(ro.getPruefungen().stream().map(Pruefung::getPruefungsnummer)
+        .collect(Collectors.toSet())).containsOnly(RO_ANALYSIS_UNPLANNED.getPruefungsnummer(),
+        RO_DM_UNPLANNED.getPruefungsnummer());
     assertThat(
         new PruefungDTOBuilder(new LinkedList<>(model.getPruefungen()).get(0)).build()).isEqualTo(
         new PruefungDTOBuilder(RO_HASKELL_UNPLANNED).withStartZeitpunkt(now).build());
   }
 
   @Test
-  void getBetween() throws NoPruefungsPeriodeDefinedException {
+  void getBetween() throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
 
     LocalDateTime start = LocalDateTime.of(2021, 8, 11, 9, 0);
     LocalDateTime end = LocalDateTime.of(2021, 8, 11, 10, 0);
@@ -734,16 +746,8 @@ class DataAccessServiceTest {
     listPruefung.add(infotechPL);
 
     when(this.pruefungsperiode.planungseinheitenBetween(start, end)).thenReturn(setPlanung);
-
-    try {
-
-      assertThat(this.deviceUnderTest.getAllPlanungseinheitenBetween(start, end)).containsAll(
-          listPruefung);
-      //  assertEquals(listPruefung, this.deviceUnderTest.getAllPruefungenBetween(start, end));
-    } catch (IllegalTimeSpanException e) {
-      //Per hand getestet sollte nichts schieflaufen
-      e.printStackTrace();
-    }
+    assertThat(this.deviceUnderTest.getAllPlanungseinheitenBetween(start, end)).containsAll(
+        listPruefung);
   }
 
   @Test
@@ -1309,7 +1313,7 @@ class DataAccessServiceTest {
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     analysis.addPruefer("test");
     when(pruefungsperiode.getPlanungseinheiten()).thenReturn(Set.of(analysis));
-    assertThat(deviceUnderTest.getAllKlausurenFromPruefer("test")).contains(RO_ANALYSIS_UNPLANNED);
+    assertThat(deviceUnderTest.getAllKlausurenFromPruefer("test")).contains(analysis);
   }
 
   @Test
@@ -1324,7 +1328,7 @@ class DataAccessServiceTest {
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
     Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
     when(pruefungsperiode.getPlanungseinheiten()).thenReturn(Set.of(analysis, haskell, dm));
-    assertThat(deviceUnderTest.getAllKlausurenFromPruefer("test")).contains(RO_ANALYSIS_UNPLANNED);
+    assertThat(deviceUnderTest.getAllKlausurenFromPruefer("test")).contains(analysis);
   }
 
   @Test
@@ -1347,8 +1351,8 @@ class DataAccessServiceTest {
     dm.addPruefer("st");
     dm.addPruefer("test");
     when(pruefungsperiode.getPlanungseinheiten()).thenReturn(Set.of(analysis, haskell, dm));
-    assertThat(deviceUnderTest.getAllKlausurenFromPruefer("test")).contains(RO_ANALYSIS_UNPLANNED,
-        RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED);
+    assertThat(deviceUnderTest.getAllKlausurenFromPruefer("test")).contains(analysis,
+        haskell, dm);
   }
 
   @Test
@@ -1374,8 +1378,8 @@ class DataAccessServiceTest {
     block.addPruefung(analysis);
     block.addPruefung(dm);
     when(pruefungsperiode.getPlanungseinheiten()).thenReturn(Set.of(analysis, haskell, dm));
-    assertThat(deviceUnderTest.getAllKlausurenFromPruefer("test")).contains(RO_ANALYSIS_UNPLANNED,
-        RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED);
+    assertThat(deviceUnderTest.getAllKlausurenFromPruefer("test")).contains(analysis,
+        haskell, dm);
   }
 
   @Test
@@ -1400,8 +1404,8 @@ class DataAccessServiceTest {
     block.setStartzeitpunkt(LocalDateTime.of(2022, 1, 2, 12, 1));
     when(pruefungsperiode.getPlanungseinheiten()).thenReturn(Set.of(analysis, haskell, dm));
     assertThat(deviceUnderTest.getAllKlausurenFromPruefer("pruefer")).contains(
-        RO_ANALYSIS_UNPLANNED,
-        RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED);
+        analysis,
+        haskell, dm);
   }
 
   @Test
