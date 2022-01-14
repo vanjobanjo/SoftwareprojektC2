@@ -229,7 +229,7 @@ class DataAccessServiceTest {
   void addPruefer_successTest() throws NoPruefungsPeriodeDefinedException {
     when(pruefungsperiode.pruefung(anyString())).thenReturn(
         TestFactory.getPruefungOfReadOnlyPruefung(TestFactory.RO_DM_UNPLANNED));
-    ReadOnlyPlanungseinheit result = deviceUnderTest.addPruefer("2", "Cohen");
+    ReadOnlyPlanungseinheit result = deviceUnderTest.addPruefer(RO_DM_UNPLANNED, "Cohen");
     assertThat(result.getPruefer()).contains("Cohen");
     assertThat(result.isBlock()).isFalse();
   }
@@ -240,7 +240,7 @@ class DataAccessServiceTest {
     TestFactory.configureMock_addPruefungToBlockModel(pruefungsperiode,
         "Hallo", null, modelDm);
     when(pruefungsperiode.pruefung(anyString())).thenReturn(modelDm);
-    ReadOnlyPlanungseinheit result = deviceUnderTest.addPruefer("2", "Cohen");
+    ReadOnlyPlanungseinheit result = deviceUnderTest.addPruefer(RO_DM_UNPLANNED, "Cohen");
     assertThat(result.getPruefer()).contains("Cohen");
     assertThat(result.isBlock()).isTrue();
     assertThat(result.asBlock().getROPruefungen()).contains(TestFactory.RO_DM_UNPLANNED);
@@ -256,7 +256,7 @@ class DataAccessServiceTest {
         "Hallo", null, modelDm);
     modelDm.addPruefer("Cohen");
     when(pruefungsperiode.pruefung(anyString())).thenReturn(modelDm);
-    ReadOnlyPlanungseinheit result = deviceUnderTest.removePruefer("2", "Cohen");
+    ReadOnlyPlanungseinheit result = deviceUnderTest.removePruefer(RO_DM_UNPLANNED, "Cohen");
     assertThat(result.getPruefer()).doesNotContain("Cohen");
     assertThat(result.isBlock()).isTrue();
     assertThat(result.asBlock().getROPruefungen()).contains(TestFactory.RO_DM_UNPLANNED);
@@ -268,13 +268,13 @@ class DataAccessServiceTest {
   @Test
   void addPruefer_unknownPruefungTest() {
     when(pruefungsperiode.pruefung(anyString())).thenReturn(null);
-    assertThrows(IllegalArgumentException.class, () -> deviceUnderTest.addPruefer("b110", "Gödel"));
+    assertThrows(IllegalArgumentException.class, () -> deviceUnderTest.addPruefer(RO_HASKELL_UNPLANNED, "Gödel"));
   }
 
   @Test
   void removePruefer_successTest() throws NoPruefungsPeriodeDefinedException {
     when(pruefungsperiode.pruefung(anyString())).thenReturn(getPruefungWithPruefer("Cohen"));
-    ReadOnlyPruefungAssert.assertThat(deviceUnderTest.removePruefer("b321", "Cohen").asPruefung())
+    ReadOnlyPruefungAssert.assertThat(deviceUnderTest.removePruefer(RO_DM_UNPLANNED, "Cohen").asPruefung())
         .hasNotPruefer("Cohen");
   }
 
@@ -284,7 +284,7 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void changeDurationOf_Successful() {
+  void changeDurationOf_Successful() throws NoPruefungsPeriodeDefinedException {
     ReadOnlyPruefung pruefungRO = getRandomUnplannedROPruefung(1L);
     Pruefung pruefung = convertPruefungenFromReadonlyToModel(List.of(pruefungRO)).get(0);
     Duration newDuration = Duration.ofMinutes(120);
@@ -309,14 +309,14 @@ class DataAccessServiceTest {
   void removePruefer_unknownPruefungTest() {
     when(pruefungsperiode.pruefung(anyString())).thenReturn(null);
     assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.removePruefer("b110", "Gödel"));
+        () -> deviceUnderTest.removePruefer(RO_DM_UNPLANNED, "Gödel"));
   }
 
   @Test
   void removePruefer_otherPrueferStayTest() throws NoPruefungsPeriodeDefinedException {
     when(pruefungsperiode.pruefung(anyString())).thenReturn(
         getPruefungWithPruefer("Hilbert", "Einstein"));
-    ReadOnlyPruefungAssert.assertThat(deviceUnderTest.removePruefer("b321", "Hilbert").asPruefung())
+    ReadOnlyPruefungAssert.assertThat(deviceUnderTest.removePruefer(RO_DM_UNPLANNED, "Hilbert").asPruefung())
         .hasPruefer("Einstein").hasNotPruefer("Cohen");
   }
 
@@ -335,7 +335,7 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void unschedulePruefung_integration() {
+  void unschedulePruefung_integration() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime initialSchedule = LocalDateTime.of(2022, 1, 1, 10, 30);
     when(pruefungsperiode.pruefung(anyString())).thenReturn(
         new PruefungImpl("Pruefungsnummer", "name", "nbr", Duration.ofMinutes(90),
@@ -460,7 +460,7 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void schedulePruefungTest() {
+  void schedulePruefungTest() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime expectedSchedule = LocalDateTime.of(2022, 1, 1, 10, 30);
     when(pruefungsperiode.pruefung(anyString())).thenReturn(
         new PruefungImpl("Pruefungsnummer", "name", "nbr", Duration.ofMinutes(90)));
@@ -479,7 +479,7 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void deletePruefung_successful() {
+  void deletePruefung_successful() throws NoPruefungsPeriodeDefinedException {
     ReadOnlyPruefung roP = getRandomPruefungenReadOnly(8415, 1).get(0);
     Pruefung pruefungModel = this.getPruefungOfReadOnlyPruefung(roP);
     when(this.pruefungsperiode.pruefung(roP.getPruefungsnummer())).thenReturn(pruefungModel);

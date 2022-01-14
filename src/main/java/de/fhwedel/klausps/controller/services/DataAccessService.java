@@ -95,27 +95,27 @@ public class DataAccessService {
     return nonNull(pruefungsperiode);
   }
 
-  //TODO diese Methode muss in ScheduleService #183?
-  //TODO Planungseinheit, wenn Prüfung im Block, dann Block sonst Prüfung als Rückgabe
   public void changeDurationOf(ReadOnlyPruefung pruefung, Duration duration)
-      throws IllegalArgumentException {
+      throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
 
     if (duration.isNegative()) {
       throw new IllegalArgumentException("Die Dauer der Pruefung muss positiv sein.");
     }
 
-    Pruefung toChangeDuration = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
+    Pruefung toChangeDuration = getPruefungFromModelOrException(pruefung);
 
     toChangeDuration.setDauer(duration);
   }
 
-  private Pruefung getPruefungFromModelOrException(String pruefungsNr)
-      throws IllegalArgumentException {
-    if (!existsPruefungWith(pruefungsNr)) {
+  private Pruefung getPruefungFromModelOrException(ReadOnlyPruefung pruefung)
+      throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
+    Optional<Pruefung> possiblePruefung = getPruefung(pruefung);
+    if (possiblePruefung.isEmpty()) {
       throw new IllegalArgumentException(
-          "Pruefung mit Pruefungsnummer " + pruefungsNr + " ist in der Datenbank nicht vorhanden.");
+          "Pruefung mit Pruefungsnummer " + pruefung.getPruefungsnummer()
+              + " ist in der Datenbank nicht vorhanden.");
     }
-    return pruefungsperiode.pruefung(pruefungsNr);
+    return possiblePruefung.get();
   }
 
   /**
@@ -125,8 +125,8 @@ public class DataAccessService {
    * @param startTermin The time to schedule the pruefung to.
    */
   public Pruefung schedulePruefung(ReadOnlyPruefung pruefung, LocalDateTime startTermin)
-      throws IllegalArgumentException {
-    Pruefung pruefungFromModel = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
+      throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
+    Pruefung pruefungFromModel = getPruefungFromModelOrException(pruefung);
     if (pruefungsperiode.block(pruefungFromModel) != null) {
       throw new IllegalArgumentException("Prüfung befindet sich innerhalb eines Blockes");
     } else {
@@ -234,7 +234,7 @@ public class DataAccessService {
 
   public ReadOnlyPlanungseinheit changeNameOfPruefung(ReadOnlyPruefung toChange, String name)
       throws NoPruefungsPeriodeDefinedException {
-    Pruefung pruefung = getPruefungFromModelOrException(toChange.getPruefungsnummer());
+    Pruefung pruefung = getPruefungFromModelOrException(toChange);
     pruefung.setName(name);
 
     return getROPlanungseinheitToPruefung(pruefung);
@@ -333,23 +333,23 @@ public class DataAccessService {
         .collect(Collectors.toSet());
   }
 
-  public ReadOnlyPlanungseinheit addPruefer(String pruefungsNummer, String pruefer)
+  public ReadOnlyPlanungseinheit addPruefer(ReadOnlyPruefung pruefung, String pruefer)
       throws NoPruefungsPeriodeDefinedException {
-    Pruefung pruefung = getPruefungFromModelOrException(pruefungsNummer);
-    pruefung.addPruefer(pruefer);
-    return getROPlanungseinheitToPruefung(pruefung);
+    Pruefung pruefungModel = getPruefungFromModelOrException(pruefung);
+    pruefungModel.addPruefer(pruefer);
+    return getROPlanungseinheitToPruefung(pruefungModel);
   }
 
-  public ReadOnlyPlanungseinheit removePruefer(String pruefungsNummer, String pruefer)
+  public ReadOnlyPlanungseinheit removePruefer(ReadOnlyPruefung pruefung, String pruefer)
       throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
-    Pruefung pruefung = getPruefungFromModelOrException(pruefungsNummer);
-    pruefung.removePruefer(pruefer);
-    return getROPlanungseinheitToPruefung(pruefung);
+    Pruefung modelPruefung = getPruefungFromModelOrException(pruefung);
+    modelPruefung.removePruefer(pruefer);
+    return getROPlanungseinheitToPruefung(modelPruefung);
   }
 
   public ReadOnlyPlanungseinheit setPruefungsnummer(ReadOnlyPruefung pruefung,
       String pruefungsnummer) throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
-    Pruefung modelPruefung = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
+    Pruefung modelPruefung = getPruefungFromModelOrException(pruefung);
     if (existsPruefungWith(pruefungsnummer)) {
       throw new IllegalArgumentException("Die angegebene Pruefungsnummer ist bereits vergeben.");
     }
@@ -357,8 +357,9 @@ public class DataAccessService {
     return getROPlanungseinheitToPruefung(modelPruefung);
   }
 
-  public Block deletePruefung(ReadOnlyPruefung roPruefung) throws IllegalArgumentException {
-    Pruefung pruefung = getPruefungFromModelOrException(roPruefung.getPruefungsnummer());
+  public Block deletePruefung(ReadOnlyPruefung roPruefung)
+      throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
+    Pruefung pruefung = getPruefungFromModelOrException(roPruefung);
     Block block = pruefungsperiode.block(pruefung);
     pruefungsperiode.removePlanungseinheit(pruefung);
     return block;
@@ -369,8 +370,9 @@ public class DataAccessService {
    *
    * @param pruefung The pruefung to schedule.
    */
-  public Pruefung unschedulePruefung(ReadOnlyPruefung pruefung) {
-    Pruefung pruefungFromModel = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
+  public Pruefung unschedulePruefung(ReadOnlyPruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException {
+    Pruefung pruefungFromModel = getPruefungFromModelOrException(pruefung);
     pruefungFromModel.setStartzeitpunkt(null);
     return pruefungFromModel;
   }
@@ -453,9 +455,9 @@ public class DataAccessService {
   }
 
   public Block removePruefungFromBlock(ReadOnlyBlock block,
-      ReadOnlyPruefung pruefung) {
+      ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException {
     Block modelBlock = getBlockFromModelOrException(block);
-    Pruefung modelPruefung = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
+    Pruefung modelPruefung = getPruefungFromModelOrException(pruefung);
 
     modelBlock.removePruefung(modelPruefung);
     if (modelBlock.getPruefungen().isEmpty()) {
@@ -465,9 +467,10 @@ public class DataAccessService {
     return modelBlock;
   }
 
-  public Block addPruefungToBlock(ReadOnlyBlock block, ReadOnlyPruefung pruefung) {
+  public Block addPruefungToBlock(ReadOnlyBlock block, ReadOnlyPruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException {
     Block modelBlock = getBlockFromModelOrException(block);
-    Pruefung modelPruefung = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
+    Pruefung modelPruefung = getPruefungFromModelOrException(pruefung);
     modelBlock.addPruefung(modelPruefung);
     return modelBlock;
   }
