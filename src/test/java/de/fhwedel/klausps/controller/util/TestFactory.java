@@ -20,6 +20,11 @@ import java.util.Set;
 
 public class TestFactory {
 
+  public static final Pruefung P_ANALYSIS_UNPLANNED = new PruefungImpl("1", "Analysis", "1",
+      Duration.ofMinutes(120));
+  public static final Pruefung P_BWL_UNPLANNED = new PruefungImpl("2", "Bwl", "2",
+      Duration.ofMinutes(120));
+
   public static ReadOnlyPruefung RO_ANALYSIS_UNPLANNED =
       new PruefungDTOBuilder()
           .withPruefungsName("Analysis")
