@@ -313,7 +313,7 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
    * ob es sich um eine Pruefung handelt
    */
   @NotNull
-  private LocalDateTime getEndTime(Pruefung pruefung) {
+  private LocalDateTime getEndTime(Pruefung pruefung) throws NoPruefungsPeriodeDefinedException {
     Optional<Block> maybeBlock = dataAccessService.getBlockTo(pruefung);
     LocalDateTime date = pruefung.getStartzeitpunkt().plus(bufferBetweenPlanungseinheiten);
 

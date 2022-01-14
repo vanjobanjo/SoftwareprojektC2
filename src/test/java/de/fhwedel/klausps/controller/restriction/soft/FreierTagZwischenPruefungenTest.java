@@ -802,7 +802,7 @@ class FreierTagZwischenPruefungenTest {
 
 
   private void getBlockWithPruefungen(Pruefungsperiode pruefungsperiode, String name,
-      LocalDateTime termin, Pruefung... pruefungen) {
+      LocalDateTime termin, Pruefung... pruefungen) throws NoPruefungsPeriodeDefinedException {
     Block result = new BlockImpl(pruefungsperiode, name, SEQUENTIAL);
     for (Pruefung pruefung : pruefungen) {
       result.addPruefung(pruefung);

@@ -54,18 +54,9 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion {
   }
 
 
-  public boolean isAboveTheWeekLimit(Pruefung pruefung,
-      Set<Pruefung> weekPruefungen) {
-
-    Optional<Block> blockOpt = dataAccessService.getBlockTo(pruefung);
-
-    return blockOpt.isEmpty() ? weekPruefungen.size() >= limit
-        : (weekPruefungen.size() - blockOpt.get().getPruefungen().size()) + 1 >= limit;
-    //ignore the exams in the block of pruefung.
-  }
-
   @Override
-  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
+  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException {
     LocalDate start;
     try {
       start = dataAccessService.getStartOfPeriode();
@@ -101,6 +92,16 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion {
         ANZAHL_PRUEFUNGEN_PRO_WOCHE, conflictedTeilnehmerkreis, affected));
   }
 
+  public boolean isAboveTheWeekLimit(Pruefung pruefung,
+      Set<Pruefung> weekPruefungen) throws NoPruefungsPeriodeDefinedException {
+
+    Optional<Block> blockOpt = dataAccessService.getBlockTo(pruefung);
+
+    return blockOpt.isEmpty() ? weekPruefungen.size() >= limit
+        : (weekPruefungen.size() - blockOpt.get().getPruefungen().size()) + 1 >= limit;
+    //ignore the exams in the block of pruefung.
+  }
+
   /**
    * Calculates the number of students of the passed Set of pruefungen. It considera als the
    * duplicates Teilnehmerkreise.
@@ -127,7 +128,6 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion {
     return t -> seen.add(keyExtractor.apply(t));
   }
 
-
   /**
    * Filters the block siblings of the passed pruefung. When the passed pruefung doesn't belong to
    * any block, the same set will be returned.
@@ -139,7 +139,7 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion {
    * @pre pruefungen must contains pruefung
    */
   private Set<Pruefung> filterSiblingsOfPruefung(Pruefung pruefung,
-      Set<Pruefung> pruefungen) {
+      Set<Pruefung> pruefungen) throws NoPruefungsPeriodeDefinedException {
     assert pruefungen.contains(pruefung);
     Optional<Block> blockOpt = dataAccessService.getBlockTo(pruefung);
 
@@ -182,7 +182,8 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion {
    * @param pruefungen Pruefungen.
    * @return Accumlated Planungseinheiten.
    */
-  private Set<Planungseinheit> getAccumulatedPlanungseinheiten(Set<Pruefung> pruefungen) {
+  private Set<Planungseinheit> getAccumulatedPlanungseinheiten(Set<Pruefung> pruefungen)
+      throws NoPruefungsPeriodeDefinedException {
     Set<Planungseinheit> planungseinheiten = new HashSet<>();
     for (Pruefung p : pruefungen) {
       Optional<Block> blockOpt = dataAccessService.getBlockTo(p);

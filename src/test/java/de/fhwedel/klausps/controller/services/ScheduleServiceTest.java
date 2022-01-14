@@ -593,7 +593,7 @@ class ScheduleServiceTest {
   @Test
   void addPruefungToBlock_pruefungIsPartOfOtherBlock() throws NoPruefungsPeriodeDefinedException {
     ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
-    ReadOnlyBlock otherBlock = getUnplannedBlockWith1RandomPruefung();
+    Block otherBlock = getUnplannedBlockWith1RandomPruefung();
 
     when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(
         Optional.of(otherBlock));
@@ -603,10 +603,8 @@ class ScheduleServiceTest {
         () -> deviceUnderTest.addPruefungToBlock(emptyBlock, pruefung));
   }
 
-  private ReadOnlyBlock getUnplannedBlockWith1RandomPruefung() {
-    LocalDateTime startTime = LocalDateTime.of(2022, 1, 7, 11, 11);
-    return new BlockDTO("someName", startTime, Duration.ZERO,
-        Set.of(getRandomUnplannedROPruefung(1L)), 654321, PARALLEL);
+  private Block getUnplannedBlockWith1RandomPruefung() {
+    return new BlockImpl(mock(Pruefungsperiode.class), 19982022, "someName", PARALLEL);
   }
 
   @Test
@@ -614,8 +612,11 @@ class ScheduleServiceTest {
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
     ReadOnlyBlock block = getBlockWith(pruefung);
+    Block modelBlock = mock(Block.class);
+    when(modelBlock.getId()).thenReturn(block.getBlockId());
 
-    when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(Optional.of(block));
+    when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(
+        Optional.of(modelBlock));
 
     assertDoesNotThrow(() -> deviceUnderTest.addPruefungToBlock(block, pruefung));
   }
@@ -630,8 +631,11 @@ class ScheduleServiceTest {
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
     ReadOnlyBlock block = getBlockWith(pruefung);
+    Block modelBlock = mock(Block.class);
+    when(modelBlock.getId()).thenReturn(block.getBlockId());
 
-    when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(Optional.of(block));
+    when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(
+        Optional.of(modelBlock));
 
     assertThat(deviceUnderTest.addPruefungToBlock(block, pruefung)).isEmpty();
   }
@@ -685,7 +689,7 @@ class ScheduleServiceTest {
   }
 
   private Block getModelBlockWithPruefungen(Pruefungsperiode pruefungsperiode, String name,
-      LocalDateTime termin, Pruefung... pruefungen) {
+      LocalDateTime termin, Pruefung... pruefungen) throws NoPruefungsPeriodeDefinedException {
     Block result = new BlockImpl(pruefungsperiode, name, SEQUENTIAL);
     for (Pruefung pruefung : pruefungen) {
       result.addPruefung(pruefung);

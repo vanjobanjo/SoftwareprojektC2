@@ -486,4 +486,18 @@ class ControllerTest {
             getRandomTime(1L).plusHours(1)));
   }
 
+  @Test
+  void getBlockOfPruefung_pruefungMustNotBeNull() {
+    assertThrows(NullPointerException.class, () -> deviceUnderTest.getBlockOfPruefung(null));
+  }
+
+  @Test
+  void getBlockOfPruefung_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
+    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.getBlockOfPruefung(pruefung));
+  }
+
 }

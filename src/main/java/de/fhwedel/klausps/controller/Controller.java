@@ -19,6 +19,7 @@ import de.fhwedel.klausps.controller.services.IOService;
 import de.fhwedel.klausps.controller.services.ScheduleService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Ausbildungsgrad;
+import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Semestertyp;
@@ -193,8 +194,12 @@ public class Controller implements InterfaceController {
   public Optional<ReadOnlyBlock> getBlockOfPruefung(ReadOnlyPruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung);
-    ensureAvailabilityOfPruefungsperiode();
-    return dataAccessService.getBlockTo(pruefung);
+    Optional<Block> block = dataAccessService.getBlockTo(pruefung);
+    if (block.isPresent()) {
+      return Optional.of(converter.convertToROBlock(block.get()));
+    } else {
+      return Optional.empty();
+    }
   }
 
   @Override
