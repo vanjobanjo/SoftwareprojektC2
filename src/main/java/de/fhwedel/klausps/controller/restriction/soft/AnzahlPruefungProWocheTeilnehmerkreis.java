@@ -69,42 +69,33 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
         .count();
   }
 
-  /**
-   * Evaluation for the Anzahl Prufung Pro Woche Teilnehmerkreis.
-   * Will concate the analysen when there was another violation.
-   * @param pruefung Pruefung to check the violation
-   * @param tk a Teilnehmerkreis of the passed Pruefung to check
-   * @param analyse an other violation of the same pruefung
-   * @param pruefungenSameWeek Pruefungen which are scheduled in the same week
-   * @return a optional WeichesKriteriumsAnalyse when there is a violation.
-   */
-  private Optional<WeichesKriteriumAnalyse> evaluateForTkConcat(Pruefung pruefung,
-      Teilnehmerkreis tk,
-      Optional<WeichesKriteriumAnalyse> analyse,
-      Set<Pruefung> pruefungenSameWeek) {
-    assert pruefung.getTeilnehmerkreise().contains(tk);
+  @Override
+  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException {
 
-    Optional<Block> blockOpt = dataAccessService.getBlockTo(pruefung);
-    if (blockOpt.isPresent()) {
-      pruefungenSameWeek = filterSiblingsOfPruefung(pruefung, pruefungenSameWeek);
+    Map<Integer, Set<Pruefung>> weekPruefungMap;
+    LocalDate start;
+
+    try {
+      start = dataAccessService.getStartOfPeriode();
+      weekPruefungMap = weekMapOfPruefung(dataAccessService.getGeplanteModelPruefung(), start);
+    } catch (NoPruefungsPeriodeDefinedException e) {
+      return Optional.empty();
     }
 
-    if (countOfTeilnehmerkreis(tk, pruefungenSameWeek) < limit) {
-      return analyse;
+    Optional<WeichesKriteriumAnalyse> analyseForTks = Optional.empty();
+    for (Teilnehmerkreis tk : pruefung.getTeilnehmerkreise()) {
+      int week = getWeek(start, pruefung);
+      Set<Pruefung> pruefungenScheduleSameWeek = weekPruefungMap.get(week);
+      analyseForTks = evaluateForTkConcat(pruefung, tk, analyseForTks,
+          pruefungenScheduleSameWeek);
     }
-
-    Set<Pruefung> pruefungenSameTk = pruefungenSameWeek.stream()
-        .filter(pr -> pr.getTeilnehmerkreise().contains(tk)).collect(
-            Collectors.toSet());
-
-    return concatAnalyse((new WeichesKriteriumAnalyse(pruefungenSameTk,
-            ANZAHL_PRUEFUNGEN_PRO_WOCHE, Set.of(tk), pruefung.getSchaetzungen().get(tk),
-            ANZAHL_PRUEFUNGEN_PRO_WOCHE.getWert())),
-        analyse);
+    return analyseForTks;
   }
 
   /**
    * Will concat two analyse
+   *
    * @param newAnalyse is always present
    * @param oldAnalyse could be empty
    * @return WeichesKriteriumsAnalyse
@@ -130,27 +121,39 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
 
   }
 
-  @Override
-  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
+  /**
+   * Evaluation for the Anzahl Prufung Pro Woche Teilnehmerkreis. Will concate the analysen when
+   * there was another violation.
+   *
+   * @param pruefung           Pruefung to check the violation
+   * @param tk                 a Teilnehmerkreis of the passed Pruefung to check
+   * @param analyse            an other violation of the same pruefung
+   * @param pruefungenSameWeek Pruefungen which are scheduled in the same week
+   * @return a optional WeichesKriteriumsAnalyse when there is a violation.
+   */
+  private Optional<WeichesKriteriumAnalyse> evaluateForTkConcat(Pruefung pruefung,
+      Teilnehmerkreis tk,
+      Optional<WeichesKriteriumAnalyse> analyse,
+      Set<Pruefung> pruefungenSameWeek) throws NoPruefungsPeriodeDefinedException {
+    assert pruefung.getTeilnehmerkreise().contains(tk);
 
-    Map<Integer, Set<Pruefung>> weekPruefungMap;
-    LocalDate start;
-
-    try {
-      start = dataAccessService.getStartOfPeriode();
-      weekPruefungMap = weekMapOfPruefung(dataAccessService.getGeplanteModelPruefung(), start);
-    } catch (NoPruefungsPeriodeDefinedException e) {
-      return Optional.empty();
+    Optional<Block> blockOpt = dataAccessService.getBlockTo(pruefung);
+    if (blockOpt.isPresent()) {
+      pruefungenSameWeek = filterSiblingsOfPruefung(pruefung, pruefungenSameWeek);
     }
 
-    Optional<WeichesKriteriumAnalyse> analyseForTks = Optional.empty();
-    for (Teilnehmerkreis tk : pruefung.getTeilnehmerkreise()) {
-      int week = getWeek(start, pruefung);
-      Set<Pruefung> pruefungenScheduleSameWeek = weekPruefungMap.get(week);
-      analyseForTks = evaluateForTkConcat(pruefung, tk, analyseForTks,
-          pruefungenScheduleSameWeek);
+    if (countOfTeilnehmerkreis(tk, pruefungenSameWeek) < limit) {
+      return analyse;
     }
-    return analyseForTks;
+
+    Set<Pruefung> pruefungenSameTk = pruefungenSameWeek.stream()
+        .filter(pr -> pr.getTeilnehmerkreise().contains(tk)).collect(
+            Collectors.toSet());
+
+    return concatAnalyse((new WeichesKriteriumAnalyse(pruefungenSameTk,
+            ANZAHL_PRUEFUNGEN_PRO_WOCHE, Set.of(tk), pruefung.getSchaetzungen().get(tk),
+            ANZAHL_PRUEFUNGEN_PRO_WOCHE.getWert())),
+        analyse);
   }
 
   /**
@@ -164,7 +167,7 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
    * @pre pruefungen must contains pruefung
    */
   private Set<Pruefung> filterSiblingsOfPruefung(Pruefung pruefung,
-      Set<Pruefung> pruefungen) {
+      Set<Pruefung> pruefungen) throws NoPruefungsPeriodeDefinedException {
     assert pruefungen.contains(pruefung);
     Optional<Block> blockOpt = dataAccessService.getBlockTo(pruefung);
 
@@ -207,7 +210,8 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
    * @param pruefungen Pruefungen.
    * @return Accumlated Planungseinheiten.
    */
-  private Set<Planungseinheit> getAccumulatedPlanungseinheiten(Set<Pruefung> pruefungen) {
+  private Set<Planungseinheit> getAccumulatedPlanungseinheiten(Set<Pruefung> pruefungen)
+      throws NoPruefungsPeriodeDefinedException {
     Set<Planungseinheit> planungseinheiten = new HashSet<>();
     for (Pruefung p : pruefungen) {
       Optional<Block> blockOpt = dataAccessService.getBlockTo(p);

@@ -504,25 +504,21 @@ public class DataAccessService {
     return pruefungsperiode.getSemester();
   }
 
-  //TODO kann das hier raus? Evtl? Weil hier an dieser Stelle der Converter genutzt wird.
-  public Optional<ReadOnlyBlock> getBlockTo(ReadOnlyPruefung pruefung)
-      throws NoPruefungsPeriodeDefinedException {
-    String nummer = pruefung.getPruefungsnummer();
-
-    if (existsPruefungWith(nummer)) {
-      Optional<Block> blockOpt =
-          getBlockTo(pruefungsperiode.pruefung(nummer));
-      if (blockOpt.isEmpty()) {
-        return Optional.empty();
-      } else {
-        return Optional.of(converter.convertToROBlock(blockOpt.get()));
-      }
+  public Optional<Block> getBlockTo(ReadOnlyPruefung pruefungToGetBlockFor)
+      throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
+    noNullParameters(pruefungToGetBlockFor);
+    checkForPruefungsperiode();
+    Pruefung pruefung = pruefungsperiode.pruefung(pruefungToGetBlockFor.getPruefungsnummer());
+    if (pruefung != null) {
+      return getBlockTo(pruefung);
     } else {
-      throw new IllegalArgumentException("Pruefungsnummer nicht im System!");
+      throw new IllegalArgumentException("Asked for block of a pruefung that is unknown.");
     }
   }
 
-  public Optional<Block> getBlockTo(Pruefung pruefung) {
+  public Optional<Block> getBlockTo(Pruefung pruefung) throws NoPruefungsPeriodeDefinedException {
+    noNullParameters(pruefung);
+    checkForPruefungsperiode();
     return Optional.ofNullable(pruefungsperiode.block(pruefung));
   }
 
@@ -627,16 +623,11 @@ public class DataAccessService {
     return result;
   }
 
-  public boolean areInSameBlock(Pruefung pruefung, Pruefung otherPruefung) {
-    Optional<Block> pruefungBlock = getBlockTo(pruefung);
-    Optional<Block> otherBlock = getBlockTo(otherPruefung);
-    if (pruefungBlock.isEmpty()) {
-      return false;
-    }
-    if (otherBlock.isEmpty()) {
-      return false;
-    }
-    return pruefungBlock.equals(otherBlock);
+  public boolean areInSameBlock(Pruefung pruefung, Pruefung otherPruefung)
+      throws NoPruefungsPeriodeDefinedException {
+    noNullParameters(pruefung, otherPruefung);
+    return getBlockTo(pruefung)
+        .filter((Block block) -> block.getPruefungen().contains(otherPruefung)).isPresent();
   }
 
   public Optional<Block> getModelBlock(ReadOnlyBlock block) {

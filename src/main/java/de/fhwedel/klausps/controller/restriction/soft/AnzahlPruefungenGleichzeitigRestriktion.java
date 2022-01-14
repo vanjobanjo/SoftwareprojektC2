@@ -2,13 +2,13 @@ package de.fhwedel.klausps.controller.restriction.soft;
 
 import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH;
 
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
-import java.time.Duration;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,7 +47,7 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends AtSameTimeRestricti
 
   @Override
   protected void ignorePruefungenOf(@NotNull List<Planungseinheit> planungseinheiten,
-      @NotNull Pruefung toFilterFor) {
+      @NotNull Pruefung toFilterFor) throws NoPruefungsPeriodeDefinedException {
     Pruefung pruefung = toFilterFor.asPruefung();
     Optional<Block> block = dataAccessService.getBlockTo(pruefung);
     if (block.isPresent()) {

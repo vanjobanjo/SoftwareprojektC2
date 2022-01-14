@@ -37,16 +37,30 @@ public class FreierTagZwischenPruefungen extends WeicheRestriktion {
     Set<Pruefung> pruefungenWithSameTeilnehmerkreisen = new HashSet<>(
         dataAccessService.getGeplantePruefungen());
     // remove of no overlapping Teilnehmerkreise and more than one day apart
-    pruefungenWithSameTeilnehmerkreisen.remove(pruefung);
-    pruefungenWithSameTeilnehmerkreisen.removeIf(other ->
-        dataAccessService.areInSameBlock(pruefung, other)
-            || testDayApart(pruefung, other)
-            || testOverlappingTeilnehmerkreise(pruefung, other));
+    pruefungenWithSameTeilnehmerkreisen = filterOnlyOverlappingTeilnehmerkreiseAndOnlyDayApart(
+        pruefung, pruefungenWithSameTeilnehmerkreisen);
 
     if (pruefungenWithSameTeilnehmerkreisen.isEmpty()) {
       return Optional.empty();
     }
     return Optional.of(buildAnalysis(pruefung, pruefungenWithSameTeilnehmerkreisen));
+  }
+
+  @NotNull
+  private Set<Pruefung> filterOnlyOverlappingTeilnehmerkreiseAndOnlyDayApart(
+      @NotNull final Pruefung pruefung,
+      @NotNull final Set<Pruefung> pruefungenWithSameTeilnehmerkreisen)
+      throws NoPruefungsPeriodeDefinedException {
+    Set<Pruefung> result = new HashSet<>();
+    for (Pruefung pruefung1 : pruefungenWithSameTeilnehmerkreisen) {
+      if (!dataAccessService.areInSameBlock(pruefung, pruefung1)
+          && !testDayApart(pruefung, pruefung1)
+          && !testOverlappingTeilnehmerkreise(pruefung, pruefung1)) {
+        result.add(pruefung1);
+      }
+    }
+    result.remove(pruefung);
+    return result;
   }
 
 

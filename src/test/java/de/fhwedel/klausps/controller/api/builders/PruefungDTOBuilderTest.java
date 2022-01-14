@@ -28,15 +28,14 @@ class PruefungDTOBuilderTest {
 
   @Test
   void withPruefungsName() {
-    PruefungDTO tester = BUILDER.withPruefungsName("Hallo").withPruefungsNummer("analysis").build();
+    PruefungDTO tester = BUILDER.withPruefungsName("Hallo").withPruefungsNummer("pruefung").build();
     assertThat(tester.getName()).isEqualTo("Hallo");
   }
 
   @Test
   void withTeilnehmerKreisSchaetzung() {
     Map<Teilnehmerkreis, Integer> temp = new HashMap<>();
-    TeilnehmerkreisImpl analysis = new TeilnehmerkreisImpl("BWL", "10", 1,
-        Ausbildungsgrad.BACHELOR);
+    TeilnehmerkreisImpl analysis = new TeilnehmerkreisImpl("BWL", "10", 1, Ausbildungsgrad.BACHELOR);
     temp.put(analysis, 10);
     PruefungDTO tester = BUILDER.withTeilnehmerKreisSchaetzung(temp).withPruefungsNummer("analysis")
         .build();

@@ -11,6 +11,7 @@ import de.fhwedel.klausps.model.api.Pruefung;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import org.jetbrains.annotations.NotNull;
 
 public class UniformeZeitslots extends WeicheRestriktion {
 
@@ -31,17 +32,29 @@ public class UniformeZeitslots extends WeicheRestriktion {
     }
     Set<Pruefung> pruefungenAtSameTime = new HashSet<>(
         dataAccessService.getGeplantePruefungen());
-    pruefungenAtSameTime.remove(pruefung);
-    pruefungenAtSameTime.removeIf(other ->
-        dataAccessService.areInSameBlock(pruefung, other)
-            || isOutOfTimeRange(pruefung, other)
-            || hasSameDuration(pruefung, other));
+    pruefungenAtSameTime = filter(pruefung, pruefungenAtSameTime);
 
     if (pruefungenAtSameTime.isEmpty()) {
       return Optional.empty();
     }
 
     return Optional.of(buildAnalysis(pruefung, pruefungenAtSameTime));
+  }
+
+  @NotNull
+  private Set<Pruefung> filter(@NotNull Pruefung pruefung,
+      @NotNull final Set<Pruefung> pruefungenAtSameTime)
+      throws NoPruefungsPeriodeDefinedException {
+    Set<Pruefung> result = new HashSet<>();
+    for (Pruefung other : pruefungenAtSameTime) {
+      if (!dataAccessService.areInSameBlock(pruefung, other)
+          && !isOutOfTimeRange(pruefung, other)
+          && !hasSameDuration(pruefung, other)) {
+        result.add(other);
+      }
+    }
+    result.remove(pruefung);
+    return result;
   }
 
 

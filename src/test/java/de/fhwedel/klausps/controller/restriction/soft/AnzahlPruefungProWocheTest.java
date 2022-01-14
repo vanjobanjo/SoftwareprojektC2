@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
@@ -62,7 +63,7 @@ class AnzahlPruefungProWocheTest {
   }
 
   @Test
-  void limitIsReached_test() {
+  void limitIsReached_test() throws NoPruefungsPeriodeDefinedException {
     LocalDate week_0 = START_PERIODE.plusDays(6);
     LocalTime start = LocalTime.of(0, 0);
     Pruefung mathe_0 = TestFactory.getPruefungOfReadOnlyPruefung(
@@ -88,7 +89,7 @@ class AnzahlPruefungProWocheTest {
   }
 
   @Test
-  void limit_test() {
+  void limit_test() throws NoPruefungsPeriodeDefinedException {
 
     LocalDate week_0 = START_PERIODE.plusDays(6);
     LocalDate week_1 = START_PERIODE.plusDays(7);
@@ -114,7 +115,7 @@ class AnzahlPruefungProWocheTest {
 
   @DisplayName("DM und Mathe sind in der selben Woche und das Kriterium wird verletzt.")
   @Test
-  void evaluate_test() {
+  void evaluate_test() throws NoPruefungsPeriodeDefinedException {
 
     LocalDate week_0 = START_PERIODE.plusDays(6);
     LocalDate week_1 = START_PERIODE.plusDays(7);
@@ -147,7 +148,7 @@ class AnzahlPruefungProWocheTest {
 
   @DisplayName("DM und Mathe sind im Block. Haskell wird am selben Tag geplant.")
   @Test
-  void evaluate_Block_test() {
+  void evaluate_Block_test() throws NoPruefungsPeriodeDefinedException {
 
     LocalDate week_0 = START_PERIODE.plusDays(6);
     LocalTime start = LocalTime.of(0, 0);
@@ -187,7 +188,7 @@ class AnzahlPruefungProWocheTest {
 
   @DisplayName("DM und Mathe sind im Block. Haskell wird am selben Tag geplant.")
   @Test
-  void evaluate_Block_test2() {
+  void evaluate_Block_test2() throws NoPruefungsPeriodeDefinedException {
 
     LocalDate week_0 = START_PERIODE.plusDays(6);
     LocalTime start = LocalTime.of(0, 0);
@@ -230,7 +231,7 @@ class AnzahlPruefungProWocheTest {
 
   @DisplayName("Viele unterschiedliche Teilnehmerkreise")
   @Test
-  void evaluate_Block_test3() {
+  void evaluate_Block_test3() throws NoPruefungsPeriodeDefinedException {
     LocalDate week_0 = START_PERIODE.plusDays(6);
     LocalTime start = LocalTime.of(0, 0);
     Pruefung mathe_0 = TestFactory.getPruefungOfReadOnlyPruefung(
@@ -281,7 +282,7 @@ class AnzahlPruefungProWocheTest {
 
   @DisplayName("Keine Blöcke viele unterschiedliche Teilnehmerkreise")
   @Test
-  void evaluate_Block_test4() {
+  void evaluate_Block_test4() throws NoPruefungsPeriodeDefinedException {
     LocalDate week_0 = START_PERIODE.plusDays(6);
     LocalTime start = LocalTime.of(0, 0);
     Pruefung mathe_0 = TestFactory.getPruefungOfReadOnlyPruefung(
@@ -329,7 +330,7 @@ class AnzahlPruefungProWocheTest {
 
   @DisplayName("Keine Konflikte")
   @Test
-  void evaluate_Block_test5() {
+  void evaluate_Block_test5() throws NoPruefungsPeriodeDefinedException {
     LocalDate week_0 = START_PERIODE.plusDays(6);
     LocalDate week_1 = START_PERIODE.plusDays(8);
     LocalDate week_2 = START_PERIODE.plusDays(15);
@@ -367,7 +368,7 @@ class AnzahlPruefungProWocheTest {
 
   @DisplayName("DM und Mathe sind im Block. Haskell wird am selben Tag geplant.")
   @Test
-  void evaluate_Block_test10() {
+  void evaluate_Block_test10() throws NoPruefungsPeriodeDefinedException {
 
     LocalDate week_0 = START_PERIODE.plusDays(6);
     LocalTime start = LocalTime.of(0, 0);
