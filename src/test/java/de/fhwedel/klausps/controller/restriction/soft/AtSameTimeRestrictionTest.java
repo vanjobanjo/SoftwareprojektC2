@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -85,7 +86,8 @@ class AtSameTimeRestrictionTest {
         getRandomPruefungenAt(5L, startFirstPruefung, startFirstPruefung.plusMinutes(15),
             startFirstPruefung.plusMinutes(30)));
 
-    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(pruefungen);
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        Set.copyOf(pruefungen));
     // direct violation of restriction
     when(deviceUnderTest.violatesRestriction(any())).thenReturn(true);
 
@@ -100,7 +102,8 @@ class AtSameTimeRestrictionTest {
         getRandomPruefungenAt(5L, startFirstPruefung, startFirstPruefung.plusMinutes(15),
             startFirstPruefung.plusMinutes(30)));
 
-    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(pruefungen);
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        Set.copyOf(pruefungen));
     // direct violation of restriction
     when(deviceUnderTest.violatesRestriction(any())).thenReturn(true, false, true);
 
@@ -115,7 +118,8 @@ class AtSameTimeRestrictionTest {
         getRandomPruefungenAt(5L, startFirstPruefung, startFirstPruefung.plusMinutes(15),
             startFirstPruefung.plusMinutes(30)));
 
-    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(pruefungen);
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        Set.copyOf(pruefungen));
     // direct violation of restriction
     when(deviceUnderTest.violatesRestriction(any())).thenReturn(true, false);
 
@@ -185,7 +189,7 @@ class AtSameTimeRestrictionTest {
     when(dataAccessService.getBlockTo(
         argThat(new IsOneOfMatcher<>(pruefungenInBlock)))).thenReturn(Optional.of(block));
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        List.of(toCheckFor, block));
+        Set.of(toCheckFor, block));
     when(deviceUnderTest.violatesRestriction(any())).thenAnswer(hasMoreThanOneElement);
 
     assertThat(deviceUnderTest.evaluate(toCheckFor)).isPresent();

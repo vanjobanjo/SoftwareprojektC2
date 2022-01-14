@@ -8,8 +8,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
-import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
-import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
@@ -19,13 +17,11 @@ import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -41,7 +37,7 @@ class MehrePruefungenAmTagTest {
 
 
   @Test
-  void klausurSameDay() throws NoPruefungsPeriodeDefinedException {
+  void klausurSameDay() throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
 
     MehrePruefungenAmTag mehrePruefungenAmTag = new MehrePruefungenAmTag(dataAccessService);
 
@@ -60,10 +56,6 @@ class MehrePruefungenAmTagTest {
 
     when(analysis.getTeilnehmerkreise()).thenReturn(teilnehmer1);
     when(haskel.getTeilnehmerkreise()).thenReturn(teilnehmer1);
-
-    Set<ReadOnlyPruefung> setOfConflictROPruefunge = new HashSet<>();
-    setOfConflictROPruefunge.add(new PruefungDTOBuilder(analysis).build());
-    setOfConflictROPruefunge.add(new PruefungDTOBuilder(haskel).build());
 
     Set<Pruefung> setOfConflictPruefunge = new HashSet<>();
     setOfConflictPruefunge.add(analysis);
@@ -97,22 +89,8 @@ class MehrePruefungenAmTagTest {
     when(analysisPL.asPruefung()).thenReturn(analysis);
     when(haskelPL.asPruefung()).thenReturn(haskel);
 
-    ArrayList<Planungseinheit> listOfPruefungen = new ArrayList<>();
-    listOfPruefungen.add(haskelPL);
-    listOfPruefungen.add(analysisPL);
-
-    Set<Planungseinheit> setOfPruefungen = new HashSet<>();
-    setOfPruefungen.add(haskelPL);
-    setOfPruefungen.add(analysisPL);
-
-    try {
-      when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-          listOfPruefungen);
-    } catch (IllegalTimeSpanException e) {
-
-      //Kann nicht davor liegen, da ich den Morgen und den Abend nehme
-      e.printStackTrace();
-    }
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        Set.of(haskelPL, analysisPL));
 
     Duration duration = Duration.ofMinutes(120);
 
@@ -120,16 +98,14 @@ class MehrePruefungenAmTagTest {
     when(haskel.getDauer()).thenReturn(duration);
     when(haskel.isGeplant()).thenReturn(true);
 
-
-
     Optional<WeichesKriteriumAnalyse> analyse = mehrePruefungenAmTag.evaluate(haskel);
     assertTrue(analyse.isPresent());
     assertThat(analyse.get().getCausingPruefungen()).containsAll(setOfConflictPruefunge);
     assertEquals(setOfConflictTeilnehmerkreis, analyse.get().getAffectedTeilnehmerKreise());
     assertEquals(studends, analyse.get().getAmountAffectedStudents());
 
-
-    assertThat(analyse.get().getAffectedTeilnehmerKreise()).containsAll(setOfConflictTeilnehmerkreis);
+    assertThat(analyse.get().getAffectedTeilnehmerKreise()).containsAll(
+        setOfConflictTeilnehmerkreis);
     assertThat(analyse.get().getCausingPruefungen()).containsAll(setOfConflictPruefunge);
     assertThat(analyse.get().getAmountAffectedStudents()).isEqualTo(studends);
 
@@ -138,7 +114,8 @@ class MehrePruefungenAmTagTest {
 
 
   @Test
-  void klausurSameDay_TestWithBloeck() throws NoPruefungsPeriodeDefinedException {
+  void klausurSameDay_TestWithBloeck()
+      throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
 
     MehrePruefungenAmTag mehrePruefungenAmTag = new MehrePruefungenAmTag(dataAccessService);
 
@@ -168,10 +145,6 @@ class MehrePruefungenAmTagTest {
     when(dm.getTeilnehmerkreise()).thenReturn(teilnehmer2);
 
     when(haskel.getTeilnehmerkreise()).thenReturn(teilnehmer1);
-
-    Set<ReadOnlyPruefung> setOfConflictROPruefunge = new HashSet<>();
-    setOfConflictROPruefunge.add(new PruefungDTOBuilder(analysis).build());
-    setOfConflictROPruefunge.add(new PruefungDTOBuilder(haskel).build());
 
     Set<Pruefung> setOfConflictPruefunge = new HashSet<>();
     setOfConflictPruefunge.add(analysis);
@@ -214,10 +187,6 @@ class MehrePruefungenAmTagTest {
     when(haskelPL.asPruefung()).thenReturn(haskel);
     when(dmPL.asPruefung()).thenReturn(dm);
 
-    ArrayList<Planungseinheit> listOfPruefungen = new ArrayList<>();
-    listOfPruefungen.add(haskelPL);
-    listOfPruefungen.add(blockPL);
-
     //Block alles einfügen
     Set<Teilnehmerkreis> blockTeilnehmerKreise = new HashSet<>();
     blockTeilnehmerKreise.add(bwl);
@@ -236,14 +205,8 @@ class MehrePruefungenAmTagTest {
 
     when(blockPL.asBlock()).thenReturn(block);
 
-    try {
-      when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-          listOfPruefungen);
-    } catch (IllegalTimeSpanException e) {
-
-      //Kann nicht davor liegen, da ich den Morgen und den Abend nehme
-      e.printStackTrace();
-    }
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        Set.of(haskelPL, blockPL));
 
     Duration duration = Duration.ofMinutes(120);
 
@@ -257,10 +220,9 @@ class MehrePruefungenAmTagTest {
     assertThat(analyse.get().getCausingPruefungen()).containsAll(setOfConflictPruefunge);
     assertEquals(setOfConflictTeilnehmerkreis, analyse.get().getAffectedTeilnehmerKreise());
     assertEquals(studends, analyse.get().getAmountAffectedStudents());
-    assertTrue(analyse.isPresent());
 
-
-    assertThat(analyse.get().getAffectedTeilnehmerKreise()).containsAll(setOfConflictTeilnehmerkreis);
+    assertThat(analyse.get().getAffectedTeilnehmerKreise()).containsAll(
+        setOfConflictTeilnehmerkreis);
     assertThat(analyse.get().getCausingPruefungen()).containsAll(setOfConflictPruefunge);
     assertThat(analyse.get().getAmountAffectedStudents()).isEqualTo(studends);
 

@@ -72,7 +72,7 @@ class TwoKlausurenSameTimeTest {
     pruefung1.addTeilnehmerkreis(bwl, 20);
     pruefung2.addTeilnehmerkreis(bwl, 30);
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        List.of(pruefung1, pruefung2));
+        Set.of(pruefung1, pruefung2));
     when(dataAccessService.getBlockTo(pruefung1)).thenReturn(Optional.empty());
     TwoKlausurenSameTime deviceUnderTest = new TwoKlausurenSameTime(dataAccessService);
     HartesKriteriumAnalyse result = deviceUnderTest.evaluate(pruefung1).get();
@@ -101,7 +101,7 @@ class TwoKlausurenSameTimeTest {
     haskell.addTeilnehmerkreis(infBachelor, students);
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        List.of(analysis, haskell));
+        Set.of(analysis, haskell));
 
     Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluate(haskell);
 
@@ -131,7 +131,7 @@ class TwoKlausurenSameTimeTest {
     haskell.addTeilnehmerkreis(infBachelor, students);
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        Collections.emptyList());
+        Collections.emptySet());
 
     assertThat(deviceUnderTest.evaluate(haskell)).isEmpty();
   }
@@ -154,7 +154,7 @@ class TwoKlausurenSameTimeTest {
     dm.setStartzeitpunkt(start);
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        List.of(analysis, haskell, dm));
+        Set.of(analysis, haskell, dm));
 
     Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluate(haskell);
 
@@ -191,7 +191,7 @@ class TwoKlausurenSameTimeTest {
     dm.setDauer(duration);
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        List.of(analysis, haskell, dm));
+        Set.of(analysis, haskell, dm));
 
     Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluate(haskell);
     assertThat(analyse).isPresent();
@@ -234,7 +234,7 @@ class TwoKlausurenSameTimeTest {
     cPruefung.addTeilnehmerkreis(infBachelor, students);
 
     when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        List.of(blockA2));
+        Set.of(blockA2));
 
     assertThat(deviceUnderTest.evaluate(cPruefung)).isEmpty();
   }
@@ -271,7 +271,7 @@ class TwoKlausurenSameTimeTest {
     cPruefung.setStartzeitpunkt(startBlock.plusMinutes(90));
 
     when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        List.of(blockA));
+        Set.of(blockA));
 
     assertThat(deviceUnderTest.evaluate(cPruefung)).isEmpty();
   }
@@ -307,7 +307,7 @@ class TwoKlausurenSameTimeTest {
     cPruefung.setStartzeitpunkt(startBlock.plusMinutes(60));
 
     when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        List.of(blockA));
+        Set.of(blockA));
 
     Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluate(cPruefung);
     assertThat(analyse).isPresent();
@@ -348,7 +348,7 @@ class TwoKlausurenSameTimeTest {
     cPruefung.setStartzeitpunkt(startBlock.plusMinutes(60));
 
     when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        List.of(blockA));
+        Set.of(blockA));
 
     Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluate(cPruefung);
     assertTrue(analyse.isEmpty());
@@ -386,7 +386,7 @@ class TwoKlausurenSameTimeTest {
     cPruefung.setStartzeitpunkt(startBlock.plusMinutes(60));
 
     when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        List.of(blockA));
+        Set.of(blockA));
 
     Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluate(cPruefung);
     assertTrue(analyse.isEmpty());
@@ -436,7 +436,7 @@ class TwoKlausurenSameTimeTest {
     cPruefung2.setStartzeitpunkt(startBlock.plusMinutes(60));
 
     when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        List.of(blockA2));
+        Set.of(blockA2));
 
     int affectedStudents = 16;
 
@@ -494,7 +494,7 @@ class TwoKlausurenSameTimeTest {
     cPruefung2.setStartzeitpunkt(startBlock.plusMinutes(60));
 
     when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        List.of(blockA2));
+        Set.of(blockA2));
 
     int affectedStudents = 16;
 
@@ -633,7 +633,8 @@ class TwoKlausurenSameTimeTest {
     Pruefung conflictingPruefung = getRandomPruefungWith(1L, conflictingTeilnehmerkreis);
     Pruefung pruefungToCheckFor = getRandomPruefungWith(2L, conflictingTeilnehmerkreis);
 
-    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(List.of(conflictingPruefung));
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        Set.of(conflictingPruefung));
 
     assertThat(
         deviceUnderTest.wouldBeHardConflictAt(getRandomTime(1L), pruefungToCheckFor)).isTrue();
@@ -648,7 +649,8 @@ class TwoKlausurenSameTimeTest {
         getRandomPlannedPruefung(2L), getRandomPlannedPruefung(3L), getRandomPlannedPruefung(4L));
     Pruefung pruefungToCheckFor = getRandomPruefungWith(2L, conflictingTeilnehmerkreis);
 
-    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(planungseinheitenAtTime);
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        Set.copyOf(planungseinheitenAtTime));
 
     assertThat(
         deviceUnderTest.wouldBeHardConflictAt(getRandomTime(1L), pruefungToCheckFor)).isTrue();
@@ -663,7 +665,8 @@ class TwoKlausurenSameTimeTest {
     Pruefung pruefungToCheckFor = getRandomPruefungWith(2L, conflictingTeilnehmerkreis,
         getRandomTeilnehmerkreis(4L));
 
-    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(List.of(conflictingPruefung));
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        Set.of(conflictingPruefung));
 
     assertThat(
         deviceUnderTest.wouldBeHardConflictAt(getRandomTime(1L), pruefungToCheckFor)).isTrue();
@@ -676,7 +679,7 @@ class TwoKlausurenSameTimeTest {
     Teilnehmerkreis conflictingTeilnehmerkreis = getRandomTeilnehmerkreis(1L);
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        List.of(getRandomPruefungWith(2L, conflictingTeilnehmerkreis)));
+        Set.of(getRandomPruefungWith(2L, conflictingTeilnehmerkreis)));
 
     assertThat(deviceUnderTest.wouldBeHardConflictAt(getRandomTime(1L),
         getRandomPruefungWith(2L, conflictingTeilnehmerkreis))).isFalse();
@@ -693,7 +696,7 @@ class TwoKlausurenSameTimeTest {
     other.setDauer(Duration.ofHours(2));
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        List.of(other));
+        Set.of(other));
     deviceUnderTest.wouldBeHardConflictAt(timeToCheck, pruefungToCheck);
 
     verify(dataAccessService).getAllPlanungseinheitenBetween(timeToCheck,

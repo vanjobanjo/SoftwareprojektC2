@@ -124,7 +124,8 @@ public class DataAccessService {
    * @param pruefung    The pruefung to schedule.
    * @param startTermin The time to schedule the pruefung to.
    */
-  public Pruefung schedulePruefung(ReadOnlyPruefung pruefung, LocalDateTime startTermin) throws IllegalArgumentException {
+  public Pruefung schedulePruefung(ReadOnlyPruefung pruefung, LocalDateTime startTermin)
+      throws IllegalArgumentException {
     Pruefung pruefungFromModel = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
     if (pruefungsperiode.block(pruefungFromModel) != null) {
       throw new IllegalArgumentException("Prüfung befindet sich innerhalb eines Blockes");
@@ -260,15 +261,14 @@ public class DataAccessService {
     }
   }
 
-  public List<Planungseinheit> getAllPlanungseinheitenBetween(LocalDateTime start,
+  public Set<Planungseinheit> getAllPlanungseinheitenBetween(LocalDateTime start,
       LocalDateTime end) throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     noNullParameters(start, end);
     checkForPruefungsperiode();
     if (start.isAfter(end)) {
       throw new IllegalTimeSpanException("Der Start liegt nach dem Ende des Zeitslots");
     }
-    // todo copy of erst im Controller? Dann kann intern ein Set verwendet werden
-    return List.copyOf(this.getPruefungsperiode().planungseinheitenBetween(start, end));
+    return this.getPruefungsperiode().planungseinheitenBetween(start, end);
   }
 
   public Pruefungsperiode getPruefungsperiode() {
@@ -421,7 +421,7 @@ public class DataAccessService {
       throw new IllegalArgumentException("Einer der Prüfungen ist bereits im Block!");
     }
 
-    if (contaisDuplicatePruefung(pruefungen)) {
+    if (containsDuplicatePruefung(pruefungen)) {
       throw new IllegalArgumentException("Doppelte Prüfungen im Block!");
     }
 
@@ -440,7 +440,7 @@ public class DataAccessService {
         .anyMatch(pruefung -> this.pruefungIsInBlock(pruefung.getPruefungsnummer()));
   }
 
-  private boolean contaisDuplicatePruefung(ReadOnlyPruefung[] pruefungen) {
+  private boolean containsDuplicatePruefung(ReadOnlyPruefung[] pruefungen) {
     return pruefungen.length != Arrays.stream(pruefungen).distinct().count();
   }
 
@@ -620,7 +620,9 @@ public class DataAccessService {
         .filter((Block block) -> block.getPruefungen().contains(otherPruefung)).isPresent();
   }
 
-  public Optional<Block> getModelBlock(ReadOnlyBlock block) {
+  public Optional<Block> getBlock(ReadOnlyBlock block) throws NoPruefungsPeriodeDefinedException {
+    noNullParameters(block);
+    checkForPruefungsperiode();
     return Optional.ofNullable(pruefungsperiode.block(block.getBlockId()));
   }
 

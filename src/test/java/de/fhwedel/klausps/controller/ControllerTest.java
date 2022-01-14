@@ -35,7 +35,6 @@ import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
-import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -220,7 +219,7 @@ class ControllerTest {
     LocalDateTime start = pruefung.getStartzeitpunkt();
     LocalDateTime end = start.plusDays(1L);
     when(dataAccessService.getAllPlanungseinheitenBetween(start, end)).thenReturn(
-        List.of(pruefung));
+        Set.of(pruefung));
     when(converter.convertToROPlanungseinheitSet(anyCollection())).thenCallRealMethod();
     deviceUnderTest.getPlanungseinheitenInZeitraum(start, end);
     verify(converter).convertToROPlanungseinheitSet(anyCollection());

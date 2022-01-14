@@ -41,6 +41,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("OptionalGetWithoutIsPresent")
 class AnzahlPruefungenGleichzeitigRestriktionTest {
 
   public AnzahlPruefungenGleichzeitigRestriktion deviceUnderTest;
@@ -67,13 +68,14 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2);
     LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
-    List<Planungseinheit> pruefungen = convertPruefungenToPlanungseinheiten(
+    List<Pruefung> pruefungen =
         getRandomPruefungenAt(5L, startFirstPruefung, startFirstPruefung.plusMinutes(15),
-            startFirstPruefung.plusMinutes(30)));
+            startFirstPruefung.plusMinutes(30));
 
-    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(pruefungen);
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        Set.copyOf(pruefungen));
 
-    assertThat(deviceUnderTest.evaluate(pruefungen.get(0).asPruefung())).isPresent();
+    assertThat(deviceUnderTest.evaluate(pruefungen.get(0))).isPresent();
   }
 
   @Test
@@ -87,7 +89,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
         startFirstPruefung.plusMinutes(15), startFirstPruefung.plusMinutes(30));
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        convertPruefungenToPlanungseinheiten(pruefungen));
+        Set.copyOf(convertPruefungenToPlanungseinheiten(pruefungen)));
 
     WeicheKriteriumsAnalyseAssert.assertThat(
             (deviceUnderTest.evaluate(pruefungen.get(0).asPruefung()).get()))
@@ -103,7 +105,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     List<Pruefung> pruefungen = get2PruefungenOnSameInterval();
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        convertPruefungenToPlanungseinheiten(pruefungen));
+        Set.copyOf(convertPruefungenToPlanungseinheiten(pruefungen)));
 
     WeicheKriteriumsAnalyseAssert.assertThat(deviceUnderTest.evaluate(pruefungen.get(0)).get())
         .conflictingPruefungenAreExactly(getPruefungsnummernFromModel(pruefungen));
@@ -128,7 +130,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     List<Pruefung> pruefungen = get2PruefungenWithOneOverlappingTheOther();
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        convertPruefungenToPlanungseinheiten(pruefungen));
+        Set.copyOf(convertPruefungenToPlanungseinheiten(pruefungen)));
 
     WeicheKriteriumsAnalyseAssert.assertThat(deviceUnderTest.evaluate(pruefungen.get(0)).get())
         .conflictingPruefungenAreExactly(getPruefungsnummernFromModel(pruefungen));
@@ -150,7 +152,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     List<Pruefung> pruefungen = get2PruefungenWithOneContainedByOther();
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        convertPruefungenToPlanungseinheiten(pruefungen));
+        Set.copyOf(convertPruefungenToPlanungseinheiten(pruefungen)));
 
     WeicheKriteriumsAnalyseAssert.assertThat(deviceUnderTest.evaluate(pruefungen.get(0)).get())
         .conflictingPruefungenAreExactly(getPruefungsnummernFromModel(pruefungen));
@@ -179,7 +181,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     Set<Teilnehmerkreis> expectedTeilnehmerkreise = getAllTeilnehmerKreiseFrom(pruefungen);
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        convertPruefungenToPlanungseinheiten(pruefungen));
+        Set.copyOf(convertPruefungenToPlanungseinheiten(pruefungen)));
 
     assertThat(deviceUnderTest.evaluate(pruefungen.get(0).asPruefung()).get()
         .getAffectedTeilnehmerKreise()).containsExactlyInAnyOrderElementsOf(
@@ -205,7 +207,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
         startFirstPruefung.plusMinutes(15));
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        convertPruefungenToPlanungseinheiten(pruefungen));
+        Set.copyOf(convertPruefungenToPlanungseinheiten(pruefungen)));
 
     assertThat((deviceUnderTest.evaluate(pruefungen.get(0).asPruefung()))).isEmpty();
   }
@@ -224,7 +226,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     Pruefung pruefungToCheck = pruefungen.get(pruefungen.size() - 1);
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        convertPruefungenToPlanungseinheiten(pruefungen));
+        Set.copyOf(convertPruefungenToPlanungseinheiten(pruefungen)));
 
     assertThat((deviceUnderTest.evaluate(pruefungToCheck))).isEmpty();
   }
@@ -252,7 +254,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     List<Pruefung> pruefungen = get2PruefungenCloserToEachOtherThan(puffer);
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        convertPruefungenToPlanungseinheiten(pruefungen));
+        Set.copyOf(convertPruefungenToPlanungseinheiten(pruefungen)));
 
     assertThat((deviceUnderTest.evaluate(pruefungen.get(0)))).isPresent();
     assertThat((deviceUnderTest.evaluate(pruefungen.get(1)))).isPresent();
@@ -279,7 +281,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     List<Pruefung> pruefungen = get2adjacentPruefungen();
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        convertPruefungenToPlanungseinheiten(pruefungen));
+        Set.copyOf(convertPruefungenToPlanungseinheiten(pruefungen)));
 
     assertThat((deviceUnderTest.evaluate(pruefungen.get(0)))).isNotPresent();
     assertThat((deviceUnderTest.evaluate(pruefungen.get(1)))).isNotPresent();
@@ -307,7 +309,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     List<Pruefung> pruefungen = get2adjacentPruefungen(buffer);
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        convertPruefungenToPlanungseinheiten(pruefungen));
+        Set.copyOf(convertPruefungenToPlanungseinheiten(pruefungen)));
 
     assertThat((deviceUnderTest.evaluate(pruefungen.get(0)))).isNotPresent();
     assertThat((deviceUnderTest.evaluate(pruefungen.get(1)))).isNotPresent();
@@ -334,7 +336,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     List<Pruefung> pruefungen = get2PruefungenWithOneOverlappingTheOther();
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        convertPruefungenToPlanungseinheiten(pruefungen));
+        Set.copyOf(convertPruefungenToPlanungseinheiten(pruefungen)));
 
     int expectedScoring = WeichesKriterium.ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH.getWert();
 
@@ -352,7 +354,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     int expectedTeilnehmerAmount = 5 + 12;
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        convertPruefungenToPlanungseinheiten(pruefungen));
+        Set.copyOf(convertPruefungenToPlanungseinheiten(pruefungen)));
 
     assertThat(
         (deviceUnderTest.evaluate(pruefungen.get(0)).get().getAmountAffectedStudents())).isEqualTo(
@@ -385,7 +387,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     int expectedTeilnehmerAmount = 12;
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        convertPruefungenToPlanungseinheiten(pruefungen));
+        Set.copyOf(convertPruefungenToPlanungseinheiten(pruefungen)));
 
     assertThat(
         (deviceUnderTest.evaluate(pruefungen.get(0)).get().getAmountAffectedStudents())).isEqualTo(
@@ -418,7 +420,8 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     List<Pruefung> pruefungen = get3PruefungenOverlappingAndOneJustOverlappingWithOneOfThem();
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        convertPruefungenToPlanungseinheiten(List.of(pruefungen.get(0), pruefungen.get(3))));
+        Set.copyOf(
+            convertPruefungenToPlanungseinheiten(List.of(pruefungen.get(0), pruefungen.get(3)))));
 
     assertThat((deviceUnderTest.evaluate(pruefungen.get(0)))).isNotPresent();
   }
