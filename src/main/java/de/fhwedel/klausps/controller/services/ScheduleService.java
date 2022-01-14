@@ -72,17 +72,6 @@ public class ScheduleService {
     return result;
   }
 
-  private void checkHardCriteriaUndoAddPruefungToBlock(ReadOnlyPruefung pruefung,
-      ReadOnlyBlock block) throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
-    Pruefung modelPruefung = getPruefungIfExistent(pruefung);
-    List<HartesKriteriumAnalyse> hardAnalyses = restrictionService.checkHarteKriterien(
-        modelPruefung);
-    if (!hardAnalyses.isEmpty()) {
-      removePruefungFromBlock(block, pruefung);
-      throw converter.convertHardException(hardAnalyses);
-    }
-  }
-
   @NotNull
   private Pruefung getPruefungIfExistent(ReadOnlyPruefung pruefungToGet)
       throws NoPruefungsPeriodeDefinedException {
@@ -92,6 +81,17 @@ public class ScheduleService {
           String.format("Pruefung %s does not exists.", pruefungToGet));
     }
     return pruefung.get();
+  }
+
+  private void checkHardCriteriaUndoAddPruefungToBlock(ReadOnlyPruefung pruefung,
+      ReadOnlyBlock block) throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
+    Pruefung modelPruefung = getPruefungIfExistent(pruefung);
+    List<HartesKriteriumAnalyse> hardAnalyses = restrictionService.checkHarteKriterien(
+        modelPruefung);
+    if (!hardAnalyses.isEmpty()) {
+      removePruefungFromBlock(block, pruefung);
+      throw converter.convertHardException(hardAnalyses);
+    }
   }
 
   public List<ReadOnlyPlanungseinheit> removePruefungFromBlock(ReadOnlyBlock block,
@@ -273,18 +273,24 @@ public class ScheduleService {
         getPlanungseinheitenWithBlock(changedScoring)));
   }
 
+  @NotNull
   public List<ReadOnlyPlanungseinheit> setDauer(ReadOnlyPruefung pruefung, Duration dauer)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, dauer);
-    dataAccessService.changeDurationOf(pruefung, dauer);
-    Pruefung pruefungModel = getPruefungIfExistent(pruefung);
-    List<HartesKriteriumAnalyse> hard = restrictionService.checkHarteKriterien(pruefungModel);
-
-    if (!hard.isEmpty()) {
-      dataAccessService.changeDurationOf(pruefung, pruefung.getDauer());
-      throw converter.convertHardException(hard);
+    Optional<Pruefung> pruefungModel = dataAccessService.getPruefung(pruefung);
+    if (pruefungModel.isPresent()) {
+      Duration oldDuration = pruefungModel.get().getDauer();
+      pruefungModel.get().setDauer(dauer);
+      List<HartesKriteriumAnalyse> hard = restrictionService.checkHarteKriterien(
+          pruefungModel.get());
+      if (!hard.isEmpty()) {
+        pruefungModel.get().setDauer(oldDuration);
+        throw converter.convertHardException(hard);
+      }
+    } else {
+      throw new IllegalArgumentException("Unknown Pruefung");
     }
-    return affectedPruefungenSoft(pruefungModel);
+    return affectedPruefungenSoft(pruefungModel.get());
   }
 
   public List<ReadOnlyPlanungseinheit> removeTeilnehmerKreis(ReadOnlyPruefung roPruefung,

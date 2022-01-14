@@ -13,7 +13,6 @@ import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedROP
 import static de.fhwedel.klausps.model.api.Blocktyp.PARALLEL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -265,7 +264,6 @@ class DataAccessServiceTest {
     assertThat(result.asBlock().getPruefungen()).contains(modelDm);
     assertThat(result.asBlock().getPruefungen().stream()
         .noneMatch(x -> x.getPruefer().contains("Cohen"))).isTrue();
-
   }
 
   @Test
@@ -285,18 +283,6 @@ class DataAccessServiceTest {
   private List<Pruefung> convertPruefungenFromReadonlyToModel(
       Collection<ReadOnlyPruefung> pruefungen) {
     return pruefungen.stream().map(this::getPruefungOfReadOnlyPruefung).toList();
-  }
-
-  @Test
-  void changeDurationOf_Successful() throws NoPruefungsPeriodeDefinedException {
-    ReadOnlyPruefung pruefungRO = getRandomUnplannedROPruefung(1L);
-    Pruefung pruefung = convertPruefungenFromReadonlyToModel(List.of(pruefungRO)).get(0);
-    Duration newDuration = Duration.ofMinutes(120);
-
-    when(pruefungsperiode.pruefung(pruefungRO.getPruefungsnummer())).thenReturn(pruefung);
-    //when(scheduleService.changeDuration(pruefung, newDuration)).thenReturn(List.of(pruefung));
-    deviceUnderTest.changeDurationOf(pruefungRO, newDuration);
-    assertThat(pruefung.getDauer()).isEqualTo(newDuration);
   }
 
   private Pruefung getPruefungOfReadOnlyPruefung(ReadOnlyPruefung roPruefung) {
@@ -324,20 +310,6 @@ class DataAccessServiceTest {
     assertThat(result.asPruefung().getPruefer()).contains("Einstein");
     assertThat(result.asPruefung().getPruefer()).doesNotContain("Hilbert");
 
-  }
-
-  @Test
-  void changeDurationOf_withMinus() {
-    PruefungDTOBuilder pDTOB = new PruefungDTOBuilder();
-    pDTOB.withPruefungsName("Analysi");
-    pDTOB.withPruefungsNummer("Analysi");
-    pDTOB.withDauer(Duration.ofMinutes(90));
-    ReadOnlyPruefung ro01 = pDTOB.withPruefungsNummer("analysis").build();
-
-    assertEquals(ro01.getDauer(), Duration.ofMinutes(90));
-    Duration minusMinus = Duration.ofMinutes(-120);
-    assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.changeDurationOf(ro01, minusMinus));
   }
 
   @Test
@@ -623,7 +595,6 @@ class DataAccessServiceTest {
   @Test
   void createBlock_Successful() throws NoPruefungsPeriodeDefinedException {
     when(pruefungsperiode.addPlanungseinheit(any())).thenReturn(true);
-
     configureMock_getPruefungToROPruefung(RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
     Block ro = deviceUnderTest.createBlock("Hallo", RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
     assertThat(ro.getPruefungen().stream().map(Pruefung::getPruefungsnummer)

@@ -20,6 +20,7 @@ import static org.mockito.Mockito.when;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
+import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.Converter;
@@ -32,6 +33,7 @@ import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Semestertyp;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
@@ -497,6 +499,29 @@ class ControllerTest {
     ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
     assertThrows(NoPruefungsPeriodeDefinedException.class,
         () -> deviceUnderTest.getBlockOfPruefung(pruefung));
+  }
+
+  @Test
+  void setDauer_pruefungMustNotBeNull() {
+    Duration duration = Duration.ZERO;
+    assertThrows(NullPointerException.class, () -> deviceUnderTest.setDauer(null, duration));
+  }
+
+  @Test
+  void setDauer_dauerMustNotBeNull() {
+    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
+    assertThrows(NullPointerException.class, () -> deviceUnderTest.setDauer(pruefung, null));
+  }
+
+  @Test
+  void setDauer_noPruefungsperiode()
+      throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
+    when(scheduleService.setDauer(any(), any())).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
+    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
+    Duration duration = Duration.ZERO;
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.setDauer(pruefung, duration));
   }
 
 }

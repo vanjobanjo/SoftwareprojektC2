@@ -220,7 +220,6 @@ public class Controller implements InterfaceController {
   public List<ReadOnlyPlanungseinheit> setDauer(ReadOnlyPruefung pruefung, Duration dauer)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, dauer);
-    ensureAvailabilityOfPruefungsperiode();
     return scheduleService.setDauer(pruefung, dauer);
   }
 
