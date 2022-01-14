@@ -102,6 +102,12 @@ public class RestrictionService {
     return result;
   }
 
+  /**
+   * Get the scoring of the pruefung, by checking the analysen and accumulate the delta scoring.
+   * @param pruefung Pruefung to check the scoring for
+   * @return the scoring of the passed pruefung
+   * @throws NoPruefungsPeriodeDefinedException when there is no Periode defined
+   */
   public int getScoringOfPruefung(Pruefung pruefung) throws NoPruefungsPeriodeDefinedException {
     if (!pruefung.isGeplant()) {
       return 0;
