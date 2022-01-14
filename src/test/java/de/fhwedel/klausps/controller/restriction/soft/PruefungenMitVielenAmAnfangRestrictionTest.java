@@ -27,13 +27,20 @@ import org.junit.jupiter.api.Test;
 /**
  * Grenzfälle:
  * <ol>
- *   <li>{@link PruefungenMitVielenAmAnfangRestrictionTest#pruefungenMitVielenAmAnfang_pruefung_is_not_planned() Wenn die Prüfung nicht geplant ist<br>&rarr; empty}</li>
- *   <li>{@link PruefungenMitVielenAmAnfangRestrictionTest#pruefungenMitVielenAmAnfang_too_many_teilnehmer_but_at_beginning_default_values() Eine Prüfung hat genauso viele Teilnehmer, wie der minimale Wert, der das Kriterium verletzt und liegt innerhalb der Anfangszeit<br>&rarr; empty}</li>
- *   <li>{@link PruefungenMitVielenAmAnfangRestrictionTest#pruefungenMitVielenAmAnfang_too_many_teilnehmer_and_not_at_beginning_default_values() Eine Prüfung hat genauso viele Teilnehmer, wie der minimale Wert, der das Kriterium verletzt und liegt außerhalb der Anfangszeit<br>&rarr; Kriterium wird verletzt}</li>
- *   <li>{@link PruefungenMitVielenAmAnfangRestrictionTest#pruefungenMitVielenAmAnfang_not_too_many_teilnehmer_and_at_beginning() Eine Prüfung hat weniger Teilnehmer als der minimale Wert, der das Kriterium verletzt und liegt innerhalb der Anfangszeit<br>&rarr; empty}</li>
- *   <li>{@link PruefungenMitVielenAmAnfangRestrictionTest#pruefungenMitVielenAmAnfang_not_too_many_teilnehmer_not_at_beginning() Eine Prüfung hat weniger Teilnehmer als der minimale Wert, der das Kriterium verletzt und liegt außerhalb der Anfangszeit<br>&rarr; empty}</li>
- *   <li>{@link PruefungenMitVielenAmAnfangRestrictionTest#pruefungenMitVielenAmAnfang_too_many_teilnehmer_but_at_beginning() Eine Prüfung hat mehr Teilnehmer, als der minimale Wert, der das Kriterium verletzt und liegt innerhalb der Anfangszeit<br>&rarr; empty}</li>
- *   <li>{@link PruefungenMitVielenAmAnfangRestrictionTest#pruefungenMitVielenAmAnfang_too_many_teilnehmer_and_not_at_beginning() Eine Prüfung hat mehr Teilnehmer, als der minimale Wert, der das Kriterium verletzt und liegt außerhalb der Anfangszeit<br>&rarr; Kriterium wird verletzt}</li>
+ *   <li>{@link PruefungenMitVielenAmAnfangRestrictionTest#pruefungenMitVielenAmAnfang_pruefung_is_not_planned()
+ *   Wenn die Prüfung nicht geplant ist<br>&rarr; empty}</li>
+ *   <li>{@link PruefungenMitVielenAmAnfangRestrictionTest#pruefungenMitVielenAmAnfang_too_many_teilnehmer_but_at_beginning_default_values()
+ *   Eine Prüfung hat genauso viele Teilnehmer, wie der minimale Wert, der das Kriterium verletzt und liegt innerhalb der Anfangszeit<br>&rarr; empty}</li>
+ *   <li>{@link PruefungenMitVielenAmAnfangRestrictionTest#pruefungenMitVielenAmAnfang_too_many_teilnehmer_and_not_at_beginning_default_values()
+ *   Eine Prüfung hat genauso viele Teilnehmer, wie der minimale Wert, der das Kriterium verletzt und liegt außerhalb der Anfangszeit<br>&rarr; Kriterium wird verletzt}</li>
+ *   <li>{@link PruefungenMitVielenAmAnfangRestrictionTest#pruefungenMitVielenAmAnfang_not_too_many_teilnehmer_and_at_beginning()
+ *   Eine Prüfung hat weniger Teilnehmer als der minimale Wert, der das Kriterium verletzt und liegt innerhalb der Anfangszeit<br>&rarr; empty}</li>
+ *   <li>{@link PruefungenMitVielenAmAnfangRestrictionTest#pruefungenMitVielenAmAnfang_not_too_many_teilnehmer_not_at_beginning()
+ *   Eine Prüfung hat weniger Teilnehmer als der minimale Wert, der das Kriterium verletzt und liegt außerhalb der Anfangszeit<br>&rarr; empty}</li>
+ *   <li>{@link PruefungenMitVielenAmAnfangRestrictionTest#pruefungenMitVielenAmAnfang_too_many_teilnehmer_but_at_beginning()
+ *   Eine Prüfung hat mehr Teilnehmer, als der minimale Wert, der das Kriterium verletzt und liegt innerhalb der Anfangszeit<br>&rarr; empty}</li>
+ *   <li>{@link PruefungenMitVielenAmAnfangRestrictionTest#pruefungenMitVielenAmAnfang_too_many_teilnehmer_and_not_at_beginning()
+ *   Eine Prüfung hat mehr Teilnehmer, als der minimale Wert, der das Kriterium verletzt und liegt außerhalb der Anfangszeit<br>&rarr; Kriterium wird verletzt}</li>
  * </ol>
  */
 class PruefungenMitVielenAmAnfangRestrictionTest {
