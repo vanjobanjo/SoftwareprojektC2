@@ -125,7 +125,7 @@ public class DataAccessService {
    * @param pruefung    The pruefung to schedule.
    * @param startTermin The time to schedule the pruefung to.
    */
-  public Pruefung schedulePruefung(ReadOnlyPruefung pruefung, LocalDateTime startTermin) {
+  public Pruefung schedulePruefung(ReadOnlyPruefung pruefung, LocalDateTime startTermin) throws IllegalArgumentException {
     Pruefung pruefungFromModel = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
     if (pruefungsperiode.block(pruefungFromModel) != null) {
       throw new IllegalArgumentException("Prüfung befindet sich innerhalb eines Blockes");
@@ -268,6 +268,7 @@ public class DataAccessService {
     if (start.isAfter(end)) {
       throw new IllegalTimeSpanException("Der Start liegt nach dem Ende des Zeitslots");
     }
+    // todo copy of erst im Controller? Dann kann intern ein Set verwendet werden
     return List.copyOf(this.getPruefungsperiode().planungseinheitenBetween(start, end));
   }
 
@@ -341,14 +342,14 @@ public class DataAccessService {
   }
 
   public ReadOnlyPlanungseinheit removePruefer(String pruefungsNummer, String pruefer)
-      throws NoPruefungsPeriodeDefinedException {
+      throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
     Pruefung pruefung = getPruefungFromModelOrException(pruefungsNummer);
     pruefung.removePruefer(pruefer);
     return getROPlanungseinheitToPruefung(pruefung);
   }
 
   public ReadOnlyPlanungseinheit setPruefungsnummer(ReadOnlyPruefung pruefung,
-      String pruefungsnummer) throws NoPruefungsPeriodeDefinedException {
+      String pruefungsnummer) throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
     Pruefung modelPruefung = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
     if (existsPruefungWith(pruefungsnummer)) {
       throw new IllegalArgumentException("Die angegebene Pruefungsnummer ist bereits vergeben.");
@@ -396,18 +397,10 @@ public class DataAccessService {
     return Optional.ofNullable(pruefungsperiode.pruefung(readOnlyPruefung.getPruefungsnummer()));
   }
 
-  public Optional<LocalDateTime> getStartOfPruefungWith(String pruefungsNummer) {
-    LocalDateTime start = getPruefungFromModelOrException(pruefungsNummer).getStartzeitpunkt();
-    if (start == null) {
-      return Optional.empty();
-    } else {
-      return Optional.of(start);
-    }
-  }
 
-  // nur fuer ungeplante bloecke aufrufen, wegen SCORING!!!!!
+
   public List<ReadOnlyPruefung> deleteBlock(ReadOnlyBlock block)
-      throws NoPruefungsPeriodeDefinedException {
+      throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
     if (block.geplant()) {
       throw new IllegalArgumentException("Nur für ungeplante Blöcke möglich!");
     }
@@ -422,7 +415,7 @@ public class DataAccessService {
   }
 
   public ReadOnlyBlock createBlock(String name, ReadOnlyPruefung... pruefungen)
-      throws NoPruefungsPeriodeDefinedException {
+      throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
     if (Arrays.stream(pruefungen).anyMatch(ReadOnlyPlanungseinheit::geplant)) {
       throw new IllegalArgumentException("Einer der übergebenen Prüfungen ist geplant.");
     }
@@ -454,7 +447,7 @@ public class DataAccessService {
     return pruefungen.length != Arrays.stream(pruefungen).distinct().count();
   }
 
-  private boolean pruefungIsInBlock(String pruefungsNummer) {
+  private boolean pruefungIsInBlock(String pruefungsNummer) throws IllegalArgumentException {
     if (existsPruefungWith(pruefungsNummer)) {
       return Optional.ofNullable(pruefungsperiode.block(pruefungsperiode.pruefung(pruefungsNummer)))
           .isPresent();
@@ -671,7 +664,7 @@ public class DataAccessService {
   private void unscheduleAdoptedPruefungenOutsideOfPeriode() {
     for (Pruefung pruefung : pruefungsperiode.geplantePruefungen()) {
       LocalDate plannedDate = pruefung.getStartzeitpunkt().toLocalDate();
-      if (isAfterEndOfPeriode(plannedDate) || isAfterEndOfPeriode(plannedDate)) {
+      if (isBeforeStartOfPeriode(plannedDate) || isAfterEndOfPeriode(plannedDate)) {
         pruefung.setStartzeitpunkt(null);
       }
     }
