@@ -677,4 +677,8 @@ public class DataAccessService {
     return plannedDate.isAfter(pruefungsperiode.getStartdatum());
   }
 
+  public void setDatumPeriode(LocalDate startDatum, LocalDate endDatum) {
+    pruefungsperiode.setStartdatum(startDatum);
+    pruefungsperiode.setEnddatum(endDatum);
+  }
 }

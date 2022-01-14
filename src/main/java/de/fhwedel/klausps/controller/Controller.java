@@ -206,7 +206,7 @@ public class Controller implements InterfaceController {
   public List<ReadOnlyPlanungseinheit> setDatumPeriode(LocalDate startDatum, LocalDate endDatum)
       throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
     noNullParameters(startDatum, endDatum);
-    throw new IllegalStateException("Not implemented yet!");
+    return scheduleService.setDatumPeriode(startDatum, endDatum);
   }
 
   @Override

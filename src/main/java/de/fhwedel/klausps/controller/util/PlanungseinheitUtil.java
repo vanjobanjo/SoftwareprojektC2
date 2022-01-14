@@ -5,6 +5,7 @@ import de.fhwedel.klausps.model.api.Pruefung;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class PlanungseinheitUtil {
 
@@ -22,6 +23,14 @@ public class PlanungseinheitUtil {
       }
     }
     return result;
+  }
+
+  public static Set<Pruefung> changedScoring(Set<PruefungScoringWrapper> before,
+      Set<PruefungScoringWrapper> after) {
+
+    return after.stream().filter(afterPruefung -> before.stream()
+            .noneMatch(beforePruefung -> beforePruefung.equals(afterPruefung)))
+        .map(PruefungScoringWrapper::getPruefung).collect(Collectors.toSet());
   }
 
 

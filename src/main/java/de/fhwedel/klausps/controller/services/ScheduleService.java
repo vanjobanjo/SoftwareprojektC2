@@ -10,8 +10,11 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
+import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
+import de.fhwedel.klausps.controller.util.PlanungseinheitUtil;
+import de.fhwedel.klausps.controller.util.PruefungScoringWrapper;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Planungseinheit;
@@ -543,5 +546,50 @@ public class ScheduleService {
 
     sortedByStartzeit.addAll(planungseinheiten);
     return sortedByStartzeit;
+  }
+
+  public List<ReadOnlyPlanungseinheit> setDatumPeriode(LocalDate startDatum, LocalDate endDatum)
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
+    checkDatesMaybeException(startDatum, endDatum);
+
+    Set<PruefungScoringWrapper> before = new HashSet<>();
+    for (Pruefung p : dataAccessService.getGeplantePruefungen()) {
+      before.add(new PruefungScoringWrapper(p, restrictionService.getScoringOfPruefung(p)));
+    }
+
+    dataAccessService.setDatumPeriode(startDatum, endDatum);
+
+    Set<PruefungScoringWrapper> after = new HashSet<>();
+    for (Pruefung p : dataAccessService.getGeplantePruefungen()) {
+      before.add(new PruefungScoringWrapper(p, restrictionService.getScoringOfPruefung(p)));
+    }
+
+    return new LinkedList<>(converter.convertToROPlanungseinheitSet(
+        getPlanungseinheitenWithBlock(PlanungseinheitUtil.changedScoring(before, after))));
+  }
+
+  private void checkDatesMaybeException(LocalDate startDatum, LocalDate endDatum)
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
+    if (startDatum.isAfter(endDatum)) {
+      throw new IllegalTimeSpanException("Startdatum ist nach Enddatum");
+    }
+    if (startDatum.isAfter(dataAccessService.getAnkertag())) {
+      throw new IllegalTimeSpanException("Startdatum ist nach Enddatum");
+    }
+    if (endDatum.isAfter(dataAccessService.getAnkertag())) {
+      throw new IllegalTimeSpanException("Enddatum ist nach Ankertag");
+    }
+
+    if (dataAccessService.getGeplantePruefungen().stream()
+        .anyMatch(pruefung -> pruefung.getStartzeitpunkt().isAfter(startDatum.atStartOfDay()))) {
+      throw new IllegalArgumentException(
+          "Startdatum ist nach geplanter Prüfungen, bitte Prüfungen entplanen");
+    }
+
+    if (dataAccessService.getGeplantePruefungen().stream()
+        .anyMatch(pruefung -> pruefung.getStartzeitpunkt().isAfter(endDatum.atTime(23, 59)))) {
+      throw new IllegalArgumentException(
+          "Enddatum ist vor geplanter Prüfungen, bitte Prüfungen entplanen");
+    }
   }
 }
