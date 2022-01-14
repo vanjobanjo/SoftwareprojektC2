@@ -396,8 +396,6 @@ public class DataAccessService {
     return Optional.ofNullable(pruefungsperiode.pruefung(readOnlyPruefung.getPruefungsnummer()));
   }
 
-
-
   public List<ReadOnlyPruefung> deleteBlock(ReadOnlyBlock block)
       throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
     if (block.geplant()) {
@@ -639,8 +637,6 @@ public class DataAccessService {
     return pruefungsperiode.planungseinheitenAt(time);
   }
 
-
-
   public void adoptPruefungstermine(Pruefungsperiode adoptFrom)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(adoptFrom);
@@ -648,7 +644,6 @@ public class DataAccessService {
     pruefungsperiode.adoptPruefungstermine(adoptFrom);
     unscheduleAdoptedBloeckeOutsideOfPeriode();
     unscheduleAdoptedPruefungenOutsideOfPeriode();
-
   }
 
   private void unscheduleAdoptedBloeckeOutsideOfPeriode() {

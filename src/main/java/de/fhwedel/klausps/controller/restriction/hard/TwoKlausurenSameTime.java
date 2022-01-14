@@ -54,7 +54,8 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
       LocalDateTime start = pruefung.getStartzeitpunkt().minus(bufferBetweenPlanungseinheiten);
       LocalDateTime end = getEndTime(pruefung);
       // Anm.: Liste muss kopiert werden, da Model nur unmodifiable Lists zurückgibt
-      List<Planungseinheit> testList = new ArrayList<>(tryToGetAllPlanungseinheitenBetween(start, end));
+      List<Planungseinheit> testList = new ArrayList<>(
+          tryToGetAllPlanungseinheitenBetween(start, end));
       Optional<HartesKriteriumAnalyse> hKA = checkforPlanungseinheitenHartesKriterium(
           pruefung, start, end, testList);
       if (hKA.isPresent()) {
@@ -74,7 +75,6 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
       return Collections.emptyList();
     }
   }
-
 
   /**
    * Methode die durch alle Planungseinheiten in der übergebenen Liste geht und die für die
@@ -113,7 +113,6 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
     }
     return hKA;
   }
-
 
   /**
    * Hier werden die Parameter zu einer HartenKriterumsAnalyse zusammen gebaut, falls es einen
@@ -246,17 +245,32 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
   }
 
   @Override
-  public boolean wouldBeHardConflictAt(LocalDateTime time, Planungseinheit planungseinheit)
+  public boolean wouldBeHardConflictAt(LocalDateTime startTime, Planungseinheit planungseinheit)
       throws NoPruefungsPeriodeDefinedException {
-    noNullParameters(time, planungseinheit);
+    noNullParameters(startTime, planungseinheit);
     boolean isInConflict = false;
-    Set<Planungseinheit> planungseinheiten = dataAccessService.getPlanungseinheitenAt(time);
+    Set<Planungseinheit> planungseinheiten = getPlanungseinheitenDuring(startTime, planungseinheit);
     Iterator<Planungseinheit> planungseinheitIterator = planungseinheiten.iterator();
     while (planungseinheitIterator.hasNext() && !isInConflict) {
       Planungseinheit other = planungseinheitIterator.next();
       isInConflict = areInConflict(planungseinheit, other);
     }
     return isInConflict;
+  }
+
+  @NotNull
+  private Set<Planungseinheit> getPlanungseinheitenDuring(@NotNull LocalDateTime startTime,
+      @NotNull Planungseinheit planungseinheit)
+      throws NoPruefungsPeriodeDefinedException {
+    Set<Planungseinheit> result = new HashSet<>();
+    try {
+      result.addAll(dataAccessService.getAllPlanungseinheitenBetween(startTime, startTime.plus(
+          planungseinheit.getDauer())));
+    } catch (IllegalTimeSpanException e) {
+      e.printStackTrace();
+      // can never happen as a planungseinheit by definition has to have a positive duration
+    }
+    return result;
   }
 
   //TODO JAVADOC

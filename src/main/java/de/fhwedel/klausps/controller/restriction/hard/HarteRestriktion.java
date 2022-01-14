@@ -28,6 +28,7 @@ public abstract class HarteRestriktion extends Restriktion {
   public abstract Set<Pruefung> getAllPotentialConflictingPruefungenWith(
       Planungseinheit planungseinheitToCheckFor);
 
-  public abstract boolean wouldBeHardConflictAt(LocalDateTime time, Planungseinheit planungseinheit)
+  public abstract boolean wouldBeHardConflictAt(LocalDateTime startTime,
+      Planungseinheit planungseinheit)
       throws NoPruefungsPeriodeDefinedException;
 }

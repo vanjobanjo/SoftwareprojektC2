@@ -119,14 +119,14 @@ class RestrictionServiceTest {
   void wouldBeHardConflictAt_timeMustNotBeNull() {
     Pruefung pruefung = getRandomPlannedPruefung(1L);
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.wouldBeHardConflictAt(null, pruefung));
+        () -> deviceUnderTest.wouldBeHardConflictIfStartedAt(null, pruefung));
   }
 
   @Test
   void wouldBeHardConflictAt_planungseinheitMustNotBeNull() {
     LocalDateTime time = getRandomTime(1L);
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.wouldBeHardConflictAt(time, null));
+        () -> deviceUnderTest.wouldBeHardConflictIfStartedAt(time, null));
   }
 
   @Test
@@ -135,7 +135,7 @@ class RestrictionServiceTest {
     HarteRestriktion hardRestriction = oneHardRestrictionThatDoesNotTrigger();
     deviceUnderTest.registerHardCriteria(Set.of(hardRestriction));
 
-    deviceUnderTest.wouldBeHardConflictAt(getRandomTime(1L), getRandomPlannedPruefung(1L));
+    deviceUnderTest.wouldBeHardConflictIfStartedAt(getRandomTime(1L), getRandomPlannedPruefung(1L));
     verify(hardRestriction, times(1)).wouldBeHardConflictAt(any(LocalDateTime.class),
         any(Planungseinheit.class));
   }
@@ -147,7 +147,7 @@ class RestrictionServiceTest {
         oneHardRestrictionThatDoesNotTrigger());
     deviceUnderTest.registerHardCriteria(new HashSet<>(hardRestrictions));
 
-    deviceUnderTest.wouldBeHardConflictAt(getRandomTime(1L), getRandomPlannedPruefung(1L));
+    deviceUnderTest.wouldBeHardConflictIfStartedAt(getRandomTime(1L), getRandomPlannedPruefung(1L));
 
     verify(hardRestrictions.get(0), times(1)).wouldBeHardConflictAt(any(LocalDateTime.class),
         any(Planungseinheit.class));
@@ -161,7 +161,7 @@ class RestrictionServiceTest {
         oneHardRestrictionFailingWouldBeHardConflictAt(), oneHardRestrictionThatDoesNotTrigger());
     deviceUnderTest.registerHardCriteria(new HashSet<>(hardRestrictions));
 
-    assertThat(deviceUnderTest.wouldBeHardConflictAt(getRandomTime(1L),
+    assertThat(deviceUnderTest.wouldBeHardConflictIfStartedAt(getRandomTime(1L),
         getRandomPlannedPruefung(1L))).isTrue();
   }
 

@@ -121,13 +121,14 @@ public class RestrictionService {
     return potentiallyConflictingPruefungen;
   }
 
-  public boolean wouldBeHardConflictAt(LocalDateTime time, Planungseinheit planungseinheit)
+  public boolean wouldBeHardConflictIfStartedAt(LocalDateTime startTime,
+      Planungseinheit planungseinheit)
       throws NoPruefungsPeriodeDefinedException {
-    noNullParameters(time, planungseinheit);
+    noNullParameters(startTime, planungseinheit);
     boolean isConflicted = false;
     Iterator<HarteRestriktion> restriktionIterator = hardRestrictions.iterator();
     while (restriktionIterator.hasNext() && !isConflicted) {
-      isConflicted = restriktionIterator.next().wouldBeHardConflictAt(time, planungseinheit);
+      isConflicted = restriktionIterator.next().wouldBeHardConflictAt(startTime, planungseinheit);
     }
     return isConflicted;
   }

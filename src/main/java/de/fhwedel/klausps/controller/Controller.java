@@ -264,7 +264,6 @@ public class Controller implements InterfaceController {
     return scheduleService.setTeilnehmerkreisSchaetzung(pruefung, teilnehmerkreis, schaetzung);
   }
 
-
   @Override
   public ReadOnlyPruefung createPruefung(String ref, String name, String pruefungsNummer,
       Set<String> pruefer, Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreis)
@@ -452,7 +451,6 @@ public class Controller implements InterfaceController {
         kapazitaet, path);
 
   }
-
 
   @Override
   public Teilnehmerkreis createTeilnehmerkreis(Ausbildungsgrad grad, String studiengang,
