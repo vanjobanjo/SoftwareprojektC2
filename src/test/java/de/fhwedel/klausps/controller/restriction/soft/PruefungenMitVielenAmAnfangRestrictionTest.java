@@ -27,12 +27,12 @@ import org.junit.jupiter.api.Test;
  * Grenzfälle:
  * <ol>
  *   <li>{@link PruefungenMitVielenAmAnfangRestrictionTest#pruefungenMitVielenAmAnfang_pruefung_is_not_planned() Wenn die Prüfung nicht geplant ist<br>&rarr; empty}</li>
- *   <li>Eine Prüfung hat genauso viele Teilnehmer, wie der minimale Wert, der das Kriterium verletzt und liegt innerhalb der Anfangszeit<br>&rarr; empty</li>
- *   <li>Eine Prüfung hat genauso viele Teilnehmer, wie der minimale Wert, der das Kriterium verletzt und liegt außerhalb der Anfangszeit<br>&rarr; Kriterium wird verletzt</li>
- *   <li>Eine Prüfung hat weniger Teilnehmer als der minimale Wert, der das Kriterium verletzt und liegt innerhalb der Anfangszeit<br>&rarr; empty</li>
- *   <li>Eine Prüfung hat weniger Teilnehmer als der minimale Wert, der das Kriterium verletzt und liegt außerhalb der Anfangszeit<br>&rarr; empty</li>
- *   <li>Eine Prüfung hat mehr Teilnehmer, als der minimale Wert, der das Kriterium verletzt und liegt innerhalb der Anfangszeit<br>&rarr; empty</li>
- *   <li>Eine Prüfung hat mehr Teilnehmer, als der minimale Wert, der das Kriterium verletzt und liegt außerhalb der Anfangszeit<br>&rarr; Kriterium wird verletzt</li>
+ *   <li>{@link PruefungenMitVielenAmAnfangRestrictionTest#pruefungenMitVielenAmAnfang_too_many_teilnehmer_but_at_beginning_default_values() Eine Prüfung hat genauso viele Teilnehmer, wie der minimale Wert, der das Kriterium verletzt und liegt innerhalb der Anfangszeit<br>&rarr; empty}</li>
+ *   <li>{@link PruefungenMitVielenAmAnfangRestrictionTest#pruefungenMitVielenAmAnfang_too_many_teilnehmer_and_not_at_beginning_default_values() Eine Prüfung hat genauso viele Teilnehmer, wie der minimale Wert, der das Kriterium verletzt und liegt außerhalb der Anfangszeit<br>&rarr; Kriterium wird verletzt}</li>
+ *   <li>{@link PruefungenMitVielenAmAnfangRestrictionTest#pruefungenMitVielenAmAnfang_not_too_many_teilnehmer_and_at_beginning() Eine Prüfung hat weniger Teilnehmer als der minimale Wert, der das Kriterium verletzt und liegt innerhalb der Anfangszeit<br>&rarr; empty}</li>
+ *   <li>{@link PruefungenMitVielenAmAnfangRestrictionTest#pruefungenMitVielenAmAnfang_not_too_many_teilnehmer_not_at_beginning() Eine Prüfung hat weniger Teilnehmer als der minimale Wert, der das Kriterium verletzt und liegt außerhalb der Anfangszeit<br>&rarr; empty}</li>
+ *   <li>{@link PruefungenMitVielenAmAnfangRestrictionTest#pruefungenMitVielenAmAnfang_too_many_teilnehmer_but_at_beginning() Eine Prüfung hat mehr Teilnehmer, als der minimale Wert, der das Kriterium verletzt und liegt innerhalb der Anfangszeit<br>&rarr; empty}</li>
+ *   <li>{@link PruefungenMitVielenAmAnfangRestrictionTest#pruefungenMitVielenAmAnfang_too_many_teilnehmer_and_not_at_beginning() Eine Prüfung hat mehr Teilnehmer, als der minimale Wert, der das Kriterium verletzt und liegt außerhalb der Anfangszeit<br>&rarr; Kriterium wird verletzt}</li>
  * </ol>
  */
 class PruefungenMitVielenAmAnfangRestrictionTest {
@@ -68,12 +68,11 @@ class PruefungenMitVielenAmAnfangRestrictionTest {
 
 
   @Test
-  void pruefungenMitVielenAmAnfang_too_many_teilnehmer_but_at_beginning()
+  void pruefungenMitVielenAmAnfang_too_many_teilnehmer_but_at_beginning_default_values()
       throws NoPruefungsPeriodeDefinedException {
     Duration beginAfterAnker = Duration.ofDays(7);
-    deviceUnderTest = new PruefungenMitVielenAmAnfangRestriction(dataAccessService, 50,
+    deviceUnderTest = new PruefungenMitVielenAmAnfangRestriction(dataAccessService, 100,
         beginAfterAnker);
-
     LocalDate ankerTag = LocalDate.of(2022, 1, 12);
 
     Pruefung moreTeilnehmer = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
@@ -88,133 +87,63 @@ class PruefungenMitVielenAmAnfangRestrictionTest {
   }
 
   @Test
-  void pruefungenMitVielenAmAnfang_too_many_teilnehmer_and_not_at_beginning1()
+  void pruefungenMitVielenAmAnfang_too_many_teilnehmer_but_at_beginning()
       throws NoPruefungsPeriodeDefinedException {
     Duration beginAfterAnker = Duration.ofDays(7);
-    deviceUnderTest = new PruefungenMitVielenAmAnfangRestriction(dataAccessService, 50,
+    deviceUnderTest = new PruefungenMitVielenAmAnfangRestriction(dataAccessService, 100,
         beginAfterAnker);
-
     LocalDate ankerTag = LocalDate.of(2022, 1, 12);
 
     Pruefung moreTeilnehmer = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     Pruefung lessTeilnehmer = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
-    int schaetzungMore = 100;
-    moreTeilnehmer.addTeilnehmerkreis(infBachelor, schaetzungMore);
+    moreTeilnehmer.addTeilnehmerkreis(infBachelor, 300);
     lessTeilnehmer.addTeilnehmerkreis(infBachelor, 10);
-    moreTeilnehmer.setStartzeitpunkt(
-        ankerTag.plusDays(beginAfterAnker.toDays()).atTime(8, 0));
+    moreTeilnehmer.setStartzeitpunkt(ankerTag.atTime(8, 0));
+    lessTeilnehmer.setStartzeitpunkt(ankerTag.atTime(8, 0));
     when(dataAccessService.getGeplantePruefungen()).thenReturn(
         Set.of(moreTeilnehmer, lessTeilnehmer));
     when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
+    assertThat(deviceUnderTest.evaluate(moreTeilnehmer)).isEmpty();
+  }
+
+  @Test
+  void pruefungenMitVielenAmAnfang_too_many_teilnehmer_and_not_at_beginning()
+      throws NoPruefungsPeriodeDefinedException {
+
+    Duration beginAfterAnker = Duration.ofDays(7);
+    deviceUnderTest = new PruefungenMitVielenAmAnfangRestriction(dataAccessService, 100,
+        beginAfterAnker);
+    LocalDate ankerTag = LocalDate.of(2022, 1, 12);
+
+    Pruefung moreTeilnehmer = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung lessTeilnehmer = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+    int schaetzungMore = 200;
+    moreTeilnehmer.addTeilnehmerkreis(infBachelor, schaetzungMore);
+    lessTeilnehmer.addTeilnehmerkreis(infBachelor, 10);
+    moreTeilnehmer.setStartzeitpunkt(ankerTag.plusDays(7).atTime(8, 0));
+    lessTeilnehmer.setStartzeitpunkt(ankerTag.plusDays(7).atTime(8, 0));
+
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(
+        Set.of(moreTeilnehmer, lessTeilnehmer));
+    when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
+
     Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(moreTeilnehmer);
+    assertThat(result).isPresent();
     assertThat(result.get().getAmountAffectedStudents()).isEqualTo(schaetzungMore);
-
-
-  }
-
-  @Test
-  void pruefungenMitVielenAmAnfang_too_many_teilnehmer_and_not_at_beginning2()
-      throws NoPruefungsPeriodeDefinedException {
-    Duration beginAfterAnker = Duration.ofDays(7);
-    deviceUnderTest = new PruefungenMitVielenAmAnfangRestriction(dataAccessService, 50,
-        beginAfterAnker);
-
-    LocalDate ankerTag = LocalDate.of(2022, 1, 12);
-
-    Pruefung moreTeilnehmer = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    Pruefung lessTeilnehmer = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
-    int schaetzungMore = 100;
-    moreTeilnehmer.addTeilnehmerkreis(infBachelor, schaetzungMore);
-    lessTeilnehmer.addTeilnehmerkreis(infBachelor, 10);
-    moreTeilnehmer.setStartzeitpunkt(
-        ankerTag.plusDays(beginAfterAnker.toDays()).atTime(8, 0));
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(
-        Set.of(moreTeilnehmer, lessTeilnehmer));
-    when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
-    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(moreTeilnehmer);
     assertThat(result.get().getDeltaScoring()).isEqualTo(PRUEFUNGEN_MIT_VIELEN_AN_ANFANG.getWert());
-
-  }
-
-  @Test
-  void pruefungenMitVielenAmAnfang_too_many_teilnehmer_and_not_at_beginning3()
-      throws NoPruefungsPeriodeDefinedException {
-    Duration beginAfterAnker = Duration.ofDays(7);
-    deviceUnderTest = new PruefungenMitVielenAmAnfangRestriction(dataAccessService, 50,
-        beginAfterAnker);
-
-    LocalDate ankerTag = LocalDate.of(2022, 1, 12);
-
-    Pruefung moreTeilnehmer = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    Pruefung lessTeilnehmer = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
-    int schaetzungMore = 100;
-    moreTeilnehmer.addTeilnehmerkreis(infBachelor, schaetzungMore);
-    lessTeilnehmer.addTeilnehmerkreis(infBachelor, 10);
-    moreTeilnehmer.setStartzeitpunkt(
-        ankerTag.plusDays(beginAfterAnker.toDays()).atTime(8, 0));
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(
-        Set.of(moreTeilnehmer, lessTeilnehmer));
-    when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
-    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(moreTeilnehmer);
     assertThat(result.get().getCausingPruefungen()).containsOnly(moreTeilnehmer);
-
-  }
-
-  @Test
-  void pruefungenMitVielenAmAnfang_too_many_teilnehmer_and_not_at_beginning4()
-      throws NoPruefungsPeriodeDefinedException {
-    Duration beginAfterAnker = Duration.ofDays(7);
-    deviceUnderTest = new PruefungenMitVielenAmAnfangRestriction(dataAccessService, 50,
-        beginAfterAnker);
-
-    LocalDate ankerTag = LocalDate.of(2022, 1, 12);
-
-    Pruefung moreTeilnehmer = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    Pruefung lessTeilnehmer = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
-    int schaetzungMore = 100;
-    moreTeilnehmer.addTeilnehmerkreis(infBachelor, schaetzungMore);
-    lessTeilnehmer.addTeilnehmerkreis(infBachelor, 10);
-    moreTeilnehmer.setStartzeitpunkt(
-        ankerTag.plusDays(beginAfterAnker.toDays()).atTime(8, 0));
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(
-        Set.of(moreTeilnehmer, lessTeilnehmer));
-    when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
-    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(moreTeilnehmer);
     assertThat(result.get().getAffectedTeilnehmerKreise()).containsOnly(infBachelor);
-
-  }
-
-  @Test
-  void pruefungenMitVielenAmAnfang_too_many_teilnehmer_and_not_at_beginning5()
-      throws NoPruefungsPeriodeDefinedException {
-    Duration beginAfterAnker = Duration.ofDays(7);
-    deviceUnderTest = new PruefungenMitVielenAmAnfangRestriction(dataAccessService, 50,
-        beginAfterAnker);
-
-    LocalDate ankerTag = LocalDate.of(2022, 1, 12);
-
-    Pruefung moreTeilnehmer = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    Pruefung lessTeilnehmer = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
-    int schaetzungMore = 100;
-    moreTeilnehmer.addTeilnehmerkreis(infBachelor, schaetzungMore);
-    lessTeilnehmer.addTeilnehmerkreis(infBachelor, 10);
-    moreTeilnehmer.setStartzeitpunkt(
-        ankerTag.plusDays(beginAfterAnker.toDays()).atTime(8, 0));
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(
-        Set.of(moreTeilnehmer, lessTeilnehmer));
-    when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
-    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(moreTeilnehmer);
     assertThat(result.get().getKriterium()).isEqualTo(PRUEFUNGEN_MIT_VIELEN_AN_ANFANG);
-
   }
+
 
   @Test
   void pruefungenMitVielenAmAnfang_not_too_many_teilnehmer_and_at_beginning()
       throws NoPruefungsPeriodeDefinedException {
-    Duration beginAfterAnker = Duration.ofDays(7);
-    deviceUnderTest = new PruefungenMitVielenAmAnfangRestriction(dataAccessService, 50,
-        beginAfterAnker);
 
+    Duration beginAfterAnker = Duration.ofDays(7);
+    deviceUnderTest = new PruefungenMitVielenAmAnfangRestriction(dataAccessService, 100,
+        beginAfterAnker);
     LocalDate ankerTag = LocalDate.of(2022, 1, 12);
 
     Pruefung moreTeilnehmer = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
@@ -223,36 +152,59 @@ class PruefungenMitVielenAmAnfangRestrictionTest {
     moreTeilnehmer.addTeilnehmerkreis(infBachelor, schaetzungMore);
     lessTeilnehmer.addTeilnehmerkreis(infBachelor, 10);
     lessTeilnehmer.setStartzeitpunkt(ankerTag.atTime(8, 0));
+    moreTeilnehmer.setStartzeitpunkt(ankerTag.atTime(8, 0));
 
     when(dataAccessService.getGeplantePruefungen()).thenReturn(
         Set.of(moreTeilnehmer, lessTeilnehmer));
     when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
     Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(lessTeilnehmer);
     assertThat(result).isEmpty();
-
   }
 
   @Test
   void pruefungenMitVielenAmAnfang_not_too_many_teilnehmer_not_at_beginning()
       throws NoPruefungsPeriodeDefinedException {
     Duration beginAfterAnker = Duration.ofDays(7);
-    deviceUnderTest = new PruefungenMitVielenAmAnfangRestriction(dataAccessService, 50,
+    deviceUnderTest = new PruefungenMitVielenAmAnfangRestriction(dataAccessService, 100,
         beginAfterAnker);
 
     LocalDate ankerTag = LocalDate.of(2022, 1, 12);
 
     Pruefung moreTeilnehmer = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     Pruefung lessTeilnehmer = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
-    int schaetzungMore = 100;
+    int schaetzungMore = 10;
     moreTeilnehmer.addTeilnehmerkreis(infBachelor, schaetzungMore);
     lessTeilnehmer.addTeilnehmerkreis(infBachelor, 10);
     lessTeilnehmer.setStartzeitpunkt(ankerTag.plusDays(beginAfterAnker.toDays()).atTime(8, 0));
+    moreTeilnehmer.setStartzeitpunkt(ankerTag.plusDays(beginAfterAnker.toDays()).atTime(8, 0));
 
     when(dataAccessService.getGeplantePruefungen()).thenReturn(
         Set.of(moreTeilnehmer, lessTeilnehmer));
     when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
     Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(lessTeilnehmer);
     assertThat(result).isEmpty();
+  }
+
+  @Test
+  void pruefungenMitVielenAmAnfang_too_many_teilnehmer_and_not_at_beginning_default_values()
+      throws NoPruefungsPeriodeDefinedException {
+    Duration beginAfterAnker = Duration.ofDays(7);
+    LocalDate ankerTag = LocalDate.of(2022, 1, 12);
+    deviceUnderTest = new PruefungenMitVielenAmAnfangRestriction(dataAccessService, 100,
+        beginAfterAnker);
+    Pruefung moreTeilnehmer = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung lessTeilnehmer = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+    int schaetzungMore = 100;
+    moreTeilnehmer.addTeilnehmerkreis(infBachelor, schaetzungMore);
+    lessTeilnehmer.addTeilnehmerkreis(infBachelor, 10);
+    moreTeilnehmer.setStartzeitpunkt(
+        ankerTag.plusDays(beginAfterAnker.toDays()).atTime(8, 0));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(
+        Set.of(moreTeilnehmer, lessTeilnehmer));
+    when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
+    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(moreTeilnehmer);
+    assertThat(result).isPresent();
+    assertThat(result.get().getAmountAffectedStudents()).isEqualTo(schaetzungMore);
   }
 
 }

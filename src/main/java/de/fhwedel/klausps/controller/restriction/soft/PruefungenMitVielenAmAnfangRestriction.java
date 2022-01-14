@@ -16,17 +16,17 @@ import java.util.Set;
 public class PruefungenMitVielenAmAnfangRestriction extends WeicheRestriktion {
 
 
-  private static final int DEFAULT_PERCENTAGE = 10;
+  private static final int DEFAULT_AMOUNT_MANY_STUDENTS = 100;
 
   private static final Duration DEFAULT_BEGIN_AFTER_ANKER = Duration.ofDays(7);
 
-  private final int percentage;
+  private final int amountManyStudents;
   private final Duration beginAfterAnker;
 
   protected PruefungenMitVielenAmAnfangRestriction(DataAccessService dataAccessService,
-      int percentage, Duration beginAfterAnker) {
+      int amountManyStudents, Duration beginAfterAnker) {
     super(dataAccessService, PRUEFUNGEN_MIT_VIELEN_AN_ANFANG);
-    this.percentage = percentage;
+    this.amountManyStudents = amountManyStudents;
     this.beginAfterAnker = beginAfterAnker;
   }
 
@@ -36,7 +36,7 @@ public class PruefungenMitVielenAmAnfangRestriction extends WeicheRestriktion {
 
   protected PruefungenMitVielenAmAnfangRestriction(DataAccessService dataAccessService) {
     super(dataAccessService, PRUEFUNGEN_MIT_VIELEN_AN_ANFANG);
-    percentage = DEFAULT_PERCENTAGE;
+    amountManyStudents = DEFAULT_AMOUNT_MANY_STUDENTS;
     beginAfterAnker = DEFAULT_BEGIN_AFTER_ANKER;
   }
 
@@ -53,25 +53,12 @@ public class PruefungenMitVielenAmAnfangRestriction extends WeicheRestriktion {
       return Optional.empty();
     }
 
-    if (shouldBeAtStart(pruefung)) {
+    if (pruefung.schaetzung() >= amountManyStudents) {
       return Optional.of(new WeichesKriteriumAnalyse(Set.of(pruefung), this.kriterium,
           pruefung.getTeilnehmerkreise(), pruefung.schaetzung(),
           this.kriterium.getWert()));
     }
 
     return Optional.empty();
-  }
-
-  private boolean shouldBeAtStart(Pruefung pruefung) throws NoPruefungsPeriodeDefinedException {
-    Set<Pruefung> plannedPruefungen = dataAccessService.getGeplantePruefungen();
-    int amountPruefungenWithMany = 0;
-    for (Pruefung planned : plannedPruefungen) {
-      if (planned.schaetzung() >= pruefung.schaetzung()) {
-        amountPruefungenWithMany++;
-      }
-    }
-    int percentageMany = 100 * amountPruefungenWithMany / plannedPruefungen.size();
-
-    return percentageMany <= percentage;
   }
 }
