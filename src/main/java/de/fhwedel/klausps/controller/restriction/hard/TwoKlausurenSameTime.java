@@ -16,6 +16,7 @@ import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,7 +53,8 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
       //Setzen von den start und end Termin, wo das Kriterium verletzt werden könnte
       LocalDateTime start = pruefung.getStartzeitpunkt().minus(bufferBetweenPlanungseinheiten);
       LocalDateTime end = getEndTime(pruefung);
-      List<Planungseinheit> testList = tryToGetAllPlanungseinheitenBetween(start, end);
+      // Anm.: Liste muss kopiert werden, da Model nur unmodifiable Lists zurückgibt
+      List<Planungseinheit> testList = new ArrayList<>(tryToGetAllPlanungseinheitenBetween(start, end));
       Optional<HartesKriteriumAnalyse> hKA = checkforPlanungseinheitenHartesKriterium(
           pruefung, start, end, testList);
       if (hKA.isPresent()) {

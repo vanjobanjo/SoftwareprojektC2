@@ -17,6 +17,7 @@ import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedPru
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedROPruefung;
 import static de.fhwedel.klausps.model.api.Blocktyp.PARALLEL;
 import static de.fhwedel.klausps.model.api.Blocktyp.SEQUENTIAL;
+import static de.fhwedel.klausps.model.api.Semestertyp.WINTERSEMESTER;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -24,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -39,21 +41,27 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
-import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.model.api.Ausbildungsgrad;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
+import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
+import de.fhwedel.klausps.model.api.importer.ImportException;
 import de.fhwedel.klausps.model.impl.BlockImpl;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
+import de.fhwedel.klausps.model.impl.PruefungsperiodeImpl;
+import de.fhwedel.klausps.model.impl.SemesterImpl;
 import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -867,7 +875,7 @@ class ScheduleServiceTest {
     Map<Teilnehmerkreis, Integer> teilnehmerCount = new HashMap<>();
     teilnehmerCount.put(infBachelor, 8);
     HartesKriteriumAnalyse hka = new HartesKriteriumAnalyse(Set.of(analysis, dm),
-        HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG, teilnehmerCount);
+        ZWEI_KLAUSUREN_GLEICHZEITIG, teilnehmerCount);
     when(restrictionService.checkHarteKriterien(any())).thenReturn(List.of(hka));
 
     assertThat(analysis.getDauer()).isEqualTo(RO_ANALYSIS_UNPLANNED.getDauer());
@@ -1231,6 +1239,232 @@ class ScheduleServiceTest {
     ReadOnlyPruefung pruefung = getRandomPlannedROPruefung(1L);
     assertThrows(IllegalArgumentException.class,
         () -> deviceUnderTest.unschedulePruefung(pruefung));
+  }
+
+
+  @Test
+  void createEmptyAndAdoptPeriodeTest_throws_ImportEcxeption()
+      throws ImportException, IOException, NoPruefungsPeriodeDefinedException {
+    IOService ioService = mock(IOService.class);
+    Semester semester = new SemesterImpl(WINTERSEMESTER, Year.of(2022));
+    LocalDate start = LocalDate.of(2022, 2, 2);
+    LocalDate end = LocalDate.of(2022, 2, 25);
+    LocalDate ankerTag = LocalDate.of(2022, 2, 9);
+    int kapazitaet = 300;
+    Path path = mock(Path.class);
+
+    doNothing().when(ioService)
+        .createEmptyAndAdoptPeriode(semester, start, end, ankerTag, kapazitaet,
+            path);
+
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+    analysis.addTeilnehmerkreis(infBachelor, 30);
+    dm.addTeilnehmerkreis(infBachelor, 12);
+    LocalDateTime termin = LocalDateTime.of(2022, 2, 12, 8, 0);
+    analysis.setStartzeitpunkt(termin);
+    dm.setStartzeitpunkt(termin);
+
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(analysis, dm));
+    when(dataAccessService.getGeplanteBloecke()).thenReturn(Collections.emptySet());
+    when(restrictionService.checkHarteKriterien(analysis)).thenReturn(
+        List.of(mock(HartesKriteriumAnalyse.class)));
+
+    assertThrows(ImportException.class,
+        () -> deviceUnderTest.createEmptyAndAdoptPeriode(ioService, semester, start, end, ankerTag,
+            kapazitaet, path));
+  }
+
+  @Test
+  void createEmptyAndAdoptPeriodeTest_two_at_same_time()
+      throws ImportException, IOException, NoPruefungsPeriodeDefinedException {
+    IOService ioService = mock(IOService.class);
+    Semester semester = new SemesterImpl(WINTERSEMESTER, Year.of(2022));
+    LocalDate start = LocalDate.of(2022, 2, 2);
+    LocalDate end = LocalDate.of(2022, 2, 25);
+    LocalDate ankerTag = LocalDate.of(2022, 2, 9);
+    int kapazitaet = 300;
+    Path path = mock(Path.class);
+
+    doNothing().when(ioService)
+        .createEmptyAndAdoptPeriode(semester, start, end, ankerTag, kapazitaet,
+            path);
+
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+    analysis.addTeilnehmerkreis(infBachelor, 30);
+    dm.addTeilnehmerkreis(infBachelor, 12);
+    LocalDateTime termin = LocalDateTime.of(2022, 2, 12, 8, 0);
+    analysis.setStartzeitpunkt(termin);
+    dm.setStartzeitpunkt(termin);
+
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(analysis, dm));
+    when(dataAccessService.getGeplanteBloecke()).thenReturn(Collections.emptySet());
+    when(restrictionService.checkHarteKriterien(dm)).thenReturn(
+        List.of(mock(HartesKriteriumAnalyse.class)));
+
+    try {
+      deviceUnderTest.createEmptyAndAdoptPeriode(ioService, semester, start, end, ankerTag,
+          kapazitaet, path);
+
+    } catch (ImportException e) {
+      assertThat(dm.isGeplant()).isFalse();
+      assertThat(analysis.isGeplant()).isTrue();
+    }
+  }
+
+  @Test
+  void createEmptyAndAdoptPeriodeTest_none_at_same_time()
+      throws ImportException, IOException, NoPruefungsPeriodeDefinedException {
+    IOService ioService = mock(IOService.class);
+    Semester semester = new SemesterImpl(WINTERSEMESTER, Year.of(2022));
+    LocalDate start = LocalDate.of(2022, 2, 2);
+    LocalDate end = LocalDate.of(2022, 2, 25);
+    LocalDate ankerTag = LocalDate.of(2022, 2, 9);
+    int kapazitaet = 300;
+    Path path = mock(Path.class);
+
+    doNothing().when(ioService)
+        .createEmptyAndAdoptPeriode(semester, start, end, ankerTag, kapazitaet,
+            path);
+
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+    analysis.addTeilnehmerkreis(infBachelor, 30);
+    dm.addTeilnehmerkreis(infBachelor, 12);
+    LocalDateTime termin = LocalDateTime.of(2022, 2, 12, 8, 0);
+    LocalDateTime termin2 = LocalDateTime.of(2022, 2, 13, 8, 0);
+    analysis.setStartzeitpunkt(termin);
+    dm.setStartzeitpunkt(termin2);
+
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(analysis, dm));
+    when(dataAccessService.getGeplanteBloecke()).thenReturn(Collections.emptySet());
+    when(restrictionService.checkHarteKriterien(dm)).thenReturn(Collections.emptyList());
+
+    assertDoesNotThrow(
+        () -> deviceUnderTest.createEmptyAndAdoptPeriode(ioService, semester, start, end, ankerTag,
+            kapazitaet, path));
+    assertThat(dm.isGeplant()).isTrue();
+    assertThat(analysis.isGeplant()).isTrue();
+  }
+
+  @Test
+  void createEmptyAndAdoptPeriodeTest_more_than_two_at_same_time()
+      throws ImportException, IOException, NoPruefungsPeriodeDefinedException {
+
+    IOService ioService = mock(IOService.class);
+    Semester semester = new SemesterImpl(WINTERSEMESTER, Year.of(2022));
+    LocalDate start = LocalDate.of(2022, 2, 2);
+    LocalDate end = LocalDate.of(2022, 2, 25);
+    LocalDate ankerTag = LocalDate.of(2022, 2, 9);
+    int kapazitaet = 300;
+    Path path = mock(Path.class);
+    Pruefungsperiode pruefungsperiode = setUpPruefungsperiodeAndIgnoreIOService(semester, start,
+        end, ankerTag, kapazitaet, path, ioService);
+
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    addPruefungenToPruefungsperiode(pruefungsperiode, Set.of(analysis, dm, haskell));
+
+    analysis.addTeilnehmerkreis(infBachelor, 30);
+    dm.addTeilnehmerkreis(infBachelor, 12);
+    haskell.addTeilnehmerkreis(infBachelor, 40);
+    LocalDateTime termin = LocalDateTime.of(2022, 2, 12, 8, 0);
+    analysis.setStartzeitpunkt(termin);
+    dm.setStartzeitpunkt(termin);
+    haskell.setStartzeitpunkt(termin);
+
+    assertThrows(ImportException.class,
+        () -> deviceUnderTest.createEmptyAndAdoptPeriode(ioService, semester, start, end, ankerTag,
+            kapazitaet, path));
+    assertThat(dm.isGeplant()).isFalse();
+    assertThat(analysis.isGeplant()).isFalse();
+    assertThat(haskell.isGeplant()).isTrue();
+  }
+
+
+  @Test
+  void bulkTest_createEmptyAndAdoptPeriode()
+      throws ImportException, IOException, NoPruefungsPeriodeDefinedException {
+    int errorCount = 0;
+    for (int i = 0; i < 100; i++) {
+      try {
+        createEmptyAndAdoptPeriodeTest_more_than_two_at_same_time();
+      } catch (AssertionError e) {
+        errorCount++;
+      }
+    }
+    System.out.println(
+        assertThat(errorCount).isZero().withFailMessage("failed " + errorCount + " times."));
+  }
+
+  @Test
+  void createEmptyAndAdoptPeriodeTest_two_at_same_time_different_days()
+      throws ImportException, IOException, NoPruefungsPeriodeDefinedException {
+
+    IOService ioService = mock(IOService.class);
+    Semester semester = new SemesterImpl(WINTERSEMESTER, Year.of(2022));
+    LocalDate start = LocalDate.of(2022, 2, 2);
+    LocalDate end = LocalDate.of(2022, 2, 25);
+    LocalDate ankerTag = LocalDate.of(2022, 2, 9);
+    int kapazitaet = 300;
+    Path path = mock(Path.class);
+    Pruefungsperiode pruefungsperiode = setUpPruefungsperiodeAndIgnoreIOService(semester, start,
+        end, ankerTag, kapazitaet, path, ioService);
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+
+    LocalDateTime termin = LocalDateTime.of(2022, 2, 12, 8, 0);
+    LocalDateTime termin2 = LocalDateTime.of(2022, 2, 14, 8, 0);
+
+    Pruefung pruefung4 = new PruefungImpl("4", "pruefung4", "ref", Duration.ofMinutes(120),
+        null);
+    addPruefungenToPruefungsperiode(pruefungsperiode, Set.of(analysis, dm, haskell, pruefung4));
+    analysis.addTeilnehmerkreis(infBachelor, 30);
+    dm.addTeilnehmerkreis(infBachelor, 12);
+    haskell.addTeilnehmerkreis(infBachelor, 40);
+    pruefung4.addTeilnehmerkreis(infBachelor, 50);
+
+    analysis.setStartzeitpunkt(termin);
+    dm.setStartzeitpunkt(termin);
+    haskell.setStartzeitpunkt(termin2);
+    pruefung4.setStartzeitpunkt(termin2);
+
+    assertThrows(ImportException.class,
+        () -> deviceUnderTest.createEmptyAndAdoptPeriode(ioService, semester, start, end, ankerTag,
+            kapazitaet, path));
+    assertThat(dm.isGeplant()).isFalse();
+    assertThat(analysis.isGeplant()).isTrue();
+    assertThat(haskell.isGeplant()).isFalse();
+    assertThat(pruefung4.isGeplant()).isTrue();
+  }
+
+
+  private Pruefungsperiode setUpPruefungsperiodeAndIgnoreIOService(Semester semester,
+      LocalDate start, LocalDate end, LocalDate ankerTag, int kapazitaet, Path path,
+      IOService ioService) throws ImportException, IOException, NoPruefungsPeriodeDefinedException {
+    doNothing().when(ioService)
+        .createEmptyAndAdoptPeriode(semester, start, end, ankerTag, kapazitaet,
+            path);
+
+    Pruefungsperiode pruefungsperiode = new PruefungsperiodeImpl(semester, start, end, ankerTag,
+        kapazitaet);
+
+    dataAccessService = ServiceProvider.getDataAccessService();
+    dataAccessService.setPruefungsperiode(pruefungsperiode);
+    restrictionService = ServiceProvider.getRestrictionService();
+    deviceUnderTest = new ScheduleService(dataAccessService, restrictionService,
+        ServiceProvider.getConverter());
+
+    return pruefungsperiode;
+  }
+
+  private void addPruefungenToPruefungsperiode(Pruefungsperiode periode, Set<Pruefung> toAdd) {
+    for (Pruefung pruefung : toAdd) {
+      periode.addPlanungseinheit(pruefung);
+    }
   }
 
 }

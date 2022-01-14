@@ -422,22 +422,32 @@ public class Controller implements InterfaceController {
   public void createEmptyPeriode(Semester semester, LocalDate start, LocalDate end,
       LocalDate ankertag, int kapazitaet) {
     noNullParameters(semester, start, end, kapazitaet);
-    ioService.createEmptyPeriode(semester, start, end, kapazitaet);
+    ioService.createEmptyPeriode(semester, start, end, ankertag, kapazitaet);
   }
 
   @Override
   public void createEmptyPeriodeWithData(Semester semester, LocalDate start, LocalDate end,
-      LocalDate ankertag, int kapazitaet, Path path) {
-    noNullParameters(semester, start, end, kapazitaet, path);
-    throw new IllegalStateException("Not implemented yet!");
+      LocalDate ankertag, int kapazitaet, Path path) throws ImportException, IOException {
+    noNullParameters(semester, start, end, ankertag, kapazitaet, path);
+    // todo sollte auch eine IllegalTimeSpanException werfen falls Start, Ende
+    //  und/oder Ankertag falsch sind
+    try {
+      ioService.createEmptyPeriodeWithData(semester, start, end, ankertag, kapazitaet, path);
+
+    } catch (IllegalTimeSpanException e) {
+      throw new IllegalArgumentException("Die Daten der Prüfungsperiode passen nicht");
+    }
   }
 
   @Override
   public void createEmptyAndAdoptPeriode(Semester semester, LocalDate start, LocalDate end,
-      LocalDate ankertag, int kapazitaet, Path path) {
-    noNullParameters(semester, start, end, kapazitaet, path);
-    throw new IllegalStateException("Not implemented yet!");
+      LocalDate ankertag, int kapazitaet, Path path) throws ImportException, IOException {
+    noNullParameters(semester, start, end, ankertag, kapazitaet, path);
+    scheduleService.createEmptyAndAdoptPeriode(ioService, semester, start, end, ankertag,
+        kapazitaet, path);
+
   }
+
 
   @Override
   public Teilnehmerkreis createTeilnehmerkreis(Ausbildungsgrad grad, String studiengang,
