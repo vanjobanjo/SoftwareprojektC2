@@ -655,4 +655,43 @@ public class DataAccessService {
     checkForPruefungsperiode();
     return pruefungsperiode.planungseinheitenAt(time);
   }
+
+
+
+  public void adoptPruefungstermine(Pruefungsperiode adoptFrom)
+      throws NoPruefungsPeriodeDefinedException {
+    noNullParameters(adoptFrom);
+    checkForPruefungsperiode();
+    pruefungsperiode.adoptPruefungstermine(adoptFrom);
+    unscheduleAdoptedBloeckeOutsideOfPeriode();
+    unscheduleAdoptedPruefungenOutsideOfPeriode();
+
+  }
+
+  private void unscheduleAdoptedBloeckeOutsideOfPeriode() {
+    for (Block block : pruefungsperiode.geplanteBloecke()) {
+      LocalDate plannedDate = block.getStartzeitpunkt().toLocalDate();
+      if (isBeforeStartOfPeriode(plannedDate) || isAfterEndOfPeriode(plannedDate)) {
+        block.setStartzeitpunkt(null);
+      }
+    }
+  }
+
+  private void unscheduleAdoptedPruefungenOutsideOfPeriode() {
+    for (Pruefung pruefung : pruefungsperiode.geplantePruefungen()) {
+      LocalDate plannedDate = pruefung.getStartzeitpunkt().toLocalDate();
+      if (isAfterEndOfPeriode(plannedDate) || isAfterEndOfPeriode(plannedDate)) {
+        pruefung.setStartzeitpunkt(null);
+      }
+    }
+  }
+
+  private boolean isBeforeStartOfPeriode(LocalDate plannedDate) {
+    return plannedDate.isBefore(pruefungsperiode.getStartdatum());
+  }
+
+  private boolean isAfterEndOfPeriode(LocalDate plannedDate) {
+    return plannedDate.isAfter(pruefungsperiode.getStartdatum());
+  }
+
 }

@@ -328,7 +328,7 @@ class DataAccessServiceTest {
     PruefungDTOBuilder pDTOB = new PruefungDTOBuilder();
     pDTOB.withPruefungsName("Analysi");
     pDTOB.withDauer(Duration.ofMinutes(90));
-    ReadOnlyPruefung ro01 = pDTOB.build();
+    ReadOnlyPruefung ro01 = pDTOB.withPruefungsNummer("analysis").build();
 
     assertEquals(ro01.getDauer(), Duration.ofMinutes(90));
     Duration minusMinus = Duration.ofMinutes(-120);

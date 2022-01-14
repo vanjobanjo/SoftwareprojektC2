@@ -16,8 +16,14 @@ import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
+import de.fhwedel.klausps.model.api.Pruefungsperiode;
+import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
+import de.fhwedel.klausps.model.api.importer.ImportException;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -25,6 +31,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 import org.jetbrains.annotations.NotNull;
 
 
@@ -464,4 +471,76 @@ public class ScheduleService {
     return result;
   }
 
+
+  public void createEmptyAndAdoptPeriode(IOService ioService, Semester semester, LocalDate start,
+      LocalDate end, LocalDate ankertag, int kapazitaet, Path path)
+      throws ImportException, IOException {
+
+    Pruefungsperiode fallbackPeriode = dataAccessService.getPruefungsperiode();
+    try {
+      ioService.createEmptyAndAdoptPeriode(semester, start, end, ankertag, kapazitaet, path);
+      unscheduleHardConflictingFromAdoptedPeriode();
+    } catch (NoPruefungsPeriodeDefinedException e) {
+      dataAccessService.setPruefungsperiode(fallbackPeriode);
+      throw new ImportException(
+          "Prüfungsperiode konnte nicht adaptiert werden, alter Zustand wurde wieder hergestellt.");
+    }
+
+  }
+
+
+  private void unscheduleHardConflictingFromAdoptedPeriode()
+      throws NoPruefungsPeriodeDefinedException, ImportException {
+    boolean foundConflicts = unscheduleConflictingBlocksFromAdoptedPeriode();
+    foundConflicts |= unscheduleConflictingPruefungFromAdoptedPeriode();
+
+    if (foundConflicts) {
+      throw new ImportException(
+          "Harte Konflikte in Prüfungsperiode gefunden, Planungseinheiten wurden ausgeplant");
+    }
+  }
+
+  private boolean unscheduleConflictingPruefungFromAdoptedPeriode()
+      throws NoPruefungsPeriodeDefinedException {
+    boolean foundConflicts = false;
+    Set<Planungseinheit> plannedPruefungen = sortPlanungseinheitenByStartzeitpunkt(
+        dataAccessService.getGeplantePruefungen());
+    for (Planungseinheit pruefung : plannedPruefungen) {
+      if (!restrictionService.checkHarteKriterien(pruefung.asPruefung()).isEmpty()) {
+        foundConflicts = true;
+        pruefung.setStartzeitpunkt(null);
+      }
+    }
+    return foundConflicts;
+  }
+
+  private boolean unscheduleConflictingBlocksFromAdoptedPeriode()
+      throws NoPruefungsPeriodeDefinedException {
+    boolean foundConflicts = false;
+    Set<Planungseinheit> plannedPruefungen = sortPlanungseinheitenByStartzeitpunkt(
+        dataAccessService.getGeplanteBloecke());
+    for (Planungseinheit block : plannedPruefungen) {
+      if (!restrictionService.checkHarteKriterienAll(block.asBlock().getPruefungen()).isEmpty()) {
+        foundConflicts = true;
+        block.setStartzeitpunkt(null);
+      }
+    }
+    return foundConflicts;
+  }
+
+
+  private Set<Planungseinheit> sortPlanungseinheitenByStartzeitpunkt(
+      Set<? extends Planungseinheit> planungseinheiten) {
+    Set<Planungseinheit> sortedByStartzeit = new TreeSet<>(
+        (planungseinheit1, planungseinheit2) -> {
+          if (planungseinheit1.getStartzeitpunkt().equals(planungseinheit2.getStartzeitpunkt())) {
+            return Integer.compare(planungseinheit1.schaetzung(), planungseinheit2.schaetzung());
+          }
+          return planungseinheit1.getStartzeitpunkt().isBefore(planungseinheit2.getStartzeitpunkt())
+              ? -1 : 1;
+        });
+
+    sortedByStartzeit.addAll(planungseinheiten);
+    return sortedByStartzeit;
+  }
 }

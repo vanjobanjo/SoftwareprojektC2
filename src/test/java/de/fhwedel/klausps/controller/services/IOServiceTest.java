@@ -28,7 +28,8 @@ class IOServiceTest {
   @Test
   void createEmptyPeriodeTest() {
     deviceUnderTest.createEmptyPeriode(
-        getSemester(), LocalDate.of(1996, 9, 1), LocalDate.of(1997, 3, 23), 300);
+        getSemester(), LocalDate.of(1996, 9, 1), LocalDate.of(1997, 3, 23),
+        LocalDate.of(1996, 9, 2), 300);
     verify(dataAccessService, times(1)).setPruefungsperiode(any(Pruefungsperiode.class));
   }
 
