@@ -13,7 +13,6 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -47,7 +46,7 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends AtSameTimeRestricti
   }
 
   @Override
-  protected void ignorePruefungenOf(@NotNull List<Planungseinheit> planungseinheiten,
+  protected void ignorePruefungenOf(@NotNull Set<Planungseinheit> planungseinheiten,
       @NotNull Pruefung toFilterFor) throws NoPruefungsPeriodeDefinedException {
     Pruefung pruefung = toFilterFor.asPruefung();
     Optional<Block> block = dataAccessService.getBlockTo(pruefung);

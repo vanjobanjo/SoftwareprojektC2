@@ -128,7 +128,7 @@ public class ScheduleService {
       throw new IllegalArgumentException("Planned Pruefungen can not be added to a Block.");
     }
     Optional<Block> oldBlock = dataAccessService.getBlockTo(pruefung);
-    if (oldBlock.isPresent() && !(oldBlock.get().getId() == block.getBlockId())) {
+    if (oldBlock.isPresent() && (oldBlock.get().getId() != block.getBlockId())) {
       throw new IllegalArgumentException(
           "Pruefungen contained in a block can not be added to another block.");
     }
@@ -203,7 +203,7 @@ public class ScheduleService {
   public List<ReadOnlyPlanungseinheit> unscheduleBlock(ReadOnlyBlock block)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block);
-    Optional<Block> blockModel = dataAccessService.getModelBlock(block);
+    Optional<Block> blockModel = dataAccessService.getBlock(block);
     if (blockModel.isEmpty()) {
       throw new IllegalArgumentException("Block does not exist");
     }
@@ -215,20 +215,6 @@ public class ScheduleService {
     return result;
   }
 
-  /**
-   * Ändert die Dauer einer übergebenen Prüfung. Die übergebene Prüfung muss beim erfolgreichen
-   * Verändern auch Teil der Rückgabe sein.
-   *
-   * @param pruefung Pruefung, dessen Dauer geändert werden muss.
-   * @param minutes  die neue Dauer
-   * @return Liste von Pruefung, jene die sich durch die Operation geändert haben.
-   */
-  public List<Pruefung> changeDuration(Pruefung pruefung, Duration minutes)
-      throws HartesKriteriumException {
-    noNullParameters(pruefung, minutes);
-    // todo please implement
-    throw new UnsupportedOperationException("not implemented");
-  }
 
   /**
    * Gibt das Scoring zu einer übergebenen Pruefung zurück. Wenn Klausur ungeplant, dann 0.
@@ -380,7 +366,7 @@ public class ScheduleService {
   private Planungseinheit getAsModel(ReadOnlyPlanungseinheit planungseinheitToCheckFor)
       throws NoPruefungsPeriodeDefinedException {
     if (planungseinheitToCheckFor.isBlock()) {
-      Optional<Block> optionalBlock = dataAccessService.getModelBlock(
+      Optional<Block> optionalBlock = dataAccessService.getBlock(
           planungseinheitToCheckFor.asBlock());
       if (optionalBlock.isEmpty()) {
         throw new IllegalArgumentException("Block does not exist");
@@ -436,8 +422,8 @@ public class ScheduleService {
 
   @NotNull
   private Block getBlock(@NotNull ReadOnlyBlock blockToGet)
-      throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
-    Optional<Block> block = dataAccessService.getModelBlock(blockToGet.asBlock());
+      throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
+    Optional<Block> block = dataAccessService.getBlock(blockToGet.asBlock());
     if (block.isEmpty()) {
       throw new IllegalArgumentException("The handed Planungseinheit is not known.");
     }
@@ -446,7 +432,7 @@ public class ScheduleService {
 
   public List<ReadOnlyPlanungseinheit> toggleBlockType(ReadOnlyBlock block, Blocktyp changeTo)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
-    Optional<Block> optionalBlock = dataAccessService.getModelBlock(block);
+    Optional<Block> optionalBlock = dataAccessService.getBlock(block);
     if (optionalBlock.isEmpty()) {
       throw new IllegalArgumentException("Block does not exist.");
     }

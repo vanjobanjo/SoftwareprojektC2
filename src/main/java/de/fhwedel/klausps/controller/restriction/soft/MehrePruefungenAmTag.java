@@ -20,8 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class MehrePruefungenAmTag extends WeicheRestriktion {
 
@@ -151,16 +149,16 @@ public class MehrePruefungenAmTag extends WeicheRestriktion {
   private Set<Pruefung> testTwoPruefungenKonftikt(Pruefung pruefung, Pruefung toCheck,
       Map<Teilnehmerkreis, Integer> mapTeilnehmer) {
 
-    Set<Pruefung> setConfliktPruefung = new HashSet<>();
+    Set<Pruefung> setConflictPruefung = new HashSet<>();
     Set<Teilnehmerkreis> teilnehmer = pruefung.getTeilnehmerkreise();
     for (Teilnehmerkreis teilnehmerkreis : toCheck.getTeilnehmerkreise()) {
       if (teilnehmer.contains(teilnehmerkreis)) {
         TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung(mapTeilnehmer, toCheck.getSchaetzungen());
-        setConfliktPruefung.add(toCheck);
-        setConfliktPruefung.add(pruefung);
+        setConflictPruefung.add(toCheck);
+        setConflictPruefung.add(pruefung);
       }
     }
-    return setConfliktPruefung;
+    return setConflictPruefung;
   }
 
   /**

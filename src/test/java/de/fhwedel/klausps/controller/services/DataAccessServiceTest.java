@@ -72,18 +72,15 @@ class DataAccessServiceTest {
 
   private Pruefungsperiode pruefungsperiode;
   private DataAccessService deviceUnderTest;
-  private ScheduleService scheduleService;
   private Converter converter;
 
   @BeforeEach
   void setUp() {
     this.pruefungsperiode = mock(Pruefungsperiode.class);
     this.deviceUnderTest = ServiceProvider.getDataAccessService();
-    // todo make sure the mocked class is not tested
-    this.scheduleService = mock(ScheduleService.class);
     deviceUnderTest.setPruefungsperiode(pruefungsperiode);
     this.converter = new Converter();
-    converter.setScheduleService(this.scheduleService); //TODO
+    converter.setScheduleService(mock(ScheduleService.class));
     deviceUnderTest.setConverter(converter);
   }
 
@@ -287,13 +284,13 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void changeDurationOf_Successful() throws HartesKriteriumException {
+  void changeDurationOf_Successful() {
     ReadOnlyPruefung pruefungRO = getRandomUnplannedROPruefung(1L);
     Pruefung pruefung = convertPruefungenFromReadonlyToModel(List.of(pruefungRO)).get(0);
     Duration newDuration = Duration.ofMinutes(120);
 
     when(pruefungsperiode.pruefung(pruefungRO.getPruefungsnummer())).thenReturn(pruefung);
-    when(scheduleService.changeDuration(pruefung, newDuration)).thenReturn(List.of(pruefung));
+    //when(scheduleService.changeDuration(pruefung, newDuration)).thenReturn(List.of(pruefung));
     deviceUnderTest.changeDurationOf(pruefungRO, newDuration);
     assertThat(pruefung.getDauer()).isEqualTo(newDuration);
   }
@@ -1206,11 +1203,9 @@ class DataAccessServiceTest {
     TestFactory.configureMock_getPruefungFromPeriode(pruefungsperiode, analysis);
 
     when(pruefungsperiode.block(anyInt())).thenReturn(model);
-    when(scheduleService.scoringOfPruefung(analysis)).thenReturn(20);
     deviceUnderTest.setNameOfBlock(converter.convertToROBlock(model), "Ciao");
     assertThat(model.getName()).isEqualTo("Ciao");
     assertThat(model.getPruefungen()).containsOnly(analysis);
-    assertThat(converter.convertToReadOnlyPruefung(analysis).getScoring()).isEqualTo(20);
 
 
   }
@@ -1590,8 +1585,7 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void setAnkertag_atStartOfPruefungsperiode()
-      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
+  void setAnkertag_atStartOfPruefungsperiode() {
     LocalDate newAnkertag = getRandomTime(1L).toLocalDate();
     when(pruefungsperiode.getStartdatum()).thenReturn(newAnkertag);
     when(pruefungsperiode.getEnddatum()).thenReturn(newAnkertag.plusDays(1));
@@ -1607,8 +1601,7 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void setAnkertag_atEndOfPruefungsperiode()
-      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
+  void setAnkertag_atEndOfPruefungsperiode() {
     LocalDate newAnkertag = getRandomTime(1L).toLocalDate();
     when(pruefungsperiode.getStartdatum()).thenReturn(newAnkertag.minusDays(2));
     when(pruefungsperiode.getEnddatum()).thenReturn(newAnkertag);

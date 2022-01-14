@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
 
   // for testing
-  public static int LIMIT_DEFAULT = 5;
+  public static final int LIMIT_DEFAULT = 5;
   private static final int DAYS_WEEK_DEFAULT = 7;
   private final int limit;
 
@@ -42,9 +42,11 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
   }
 
   /**
-   * Creates a Map, Pruefungen grouped by scheduled week. Week 0 is the first week of the startPeriode.
+   * Creates a Map, Pruefungen grouped by scheduled week. Week 0 is the first week of the
+   * startPeriode.
+   *
    * @param scheduledPruefungen schedule Pruefungen
-   * @param startPeriode start of the periode
+   * @param startPeriode        start of the periode
    * @return Map with Pruefungen grouped by week of Pruefung.
    */
   Map<Integer, Set<Pruefung>> weekMapOfPruefung(Set<Pruefung> scheduledPruefungen,
@@ -103,6 +105,8 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
   private Optional<WeichesKriteriumAnalyse> concatAnalyse(
       WeichesKriteriumAnalyse newAnalyse, Optional<WeichesKriteriumAnalyse> oldAnalyse) {
     assert newAnalyse != null;
+    // todo zweiter Parameter muss gar nicht erst übergeben werden, wenn vor Aufruf der
+    //  Methode schon auf isEmpty() überprüft wird
     if (oldAnalyse.isEmpty()) {
       return Optional.of(newAnalyse);
     }

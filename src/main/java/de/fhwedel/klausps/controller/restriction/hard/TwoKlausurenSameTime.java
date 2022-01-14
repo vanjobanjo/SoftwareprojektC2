@@ -56,7 +56,7 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
       // Anm.: Liste muss kopiert werden, da Model nur unmodifiable Lists zurückgibt
       List<Planungseinheit> testList = new ArrayList<>(
           tryToGetAllPlanungseinheitenBetween(start, end));
-      Optional<HartesKriteriumAnalyse> hKA = checkforPlanungseinheitenHartesKriterium(
+      Optional<HartesKriteriumAnalyse> hKA = checkForPlanungseinheitenHartesKriterium(
           pruefung, start, end, testList);
       if (hKA.isPresent()) {
         return hKA;
@@ -65,14 +65,14 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
     return Optional.empty();
   }
 
-  private List<Planungseinheit> tryToGetAllPlanungseinheitenBetween(LocalDateTime start,
+  private Set<Planungseinheit> tryToGetAllPlanungseinheitenBetween(LocalDateTime start,
       LocalDateTime end) throws NoPruefungsPeriodeDefinedException {
     try {
       return dataAccessService.getAllPlanungseinheitenBetween(start, end);
     } catch (IllegalTimeSpanException e) {
-      //start kann nicht vor ende liegen, da ich das berechne
+      //start kann nicht vor Ende liegen, da ich das berechne
       e.printStackTrace();
-      return Collections.emptyList();
+      return Collections.emptySet();
     }
   }
 
@@ -80,20 +80,20 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
    * Methode die durch alle Planungseinheiten in der übergebenen Liste geht und die für die
    * Planungseinheit zuständige Methode aufruft
    *
-   * @param pruefung die Pruefung die neu Hinzugefügt wurde und für die das Krterium getestet wird
+   * @param pruefung die Pruefung die neu Hinzugefügt wurde und für die das Kriterium getestet wird
    * @param start    der Starttermin ab wo die Überprüfung durchgeführt werden soll (Nur für Blöcke
    *                 relevant)
    * @param end      der Endtermin bis wohin die Überprüfung durchgeführt werden sol (Nur für Blöcke
    *                 relevant)
    * @param testList die Liste mit Planungseinheiten, die zu dem Startzeitpunkt stattfinden
-   * @return Entweder eine HartesKriterumAnalyse, wo die Pruefungen , das Kriterium und die
+   * @return Entweder eine HartesKriteriumAnalyse, wo die Pruefungen, das Kriterium und die
    * Teilnehmer mit ihrer Anzahl drin steht oder ein leeres Optional
    */
-  private Optional<HartesKriteriumAnalyse> checkforPlanungseinheitenHartesKriterium(
+  private Optional<HartesKriteriumAnalyse> checkForPlanungseinheitenHartesKriterium(
       Pruefung pruefung, LocalDateTime start, LocalDateTime end, List<Planungseinheit> testList) {
 
-    //Zum Sammeln der Teilnehnehmerkreise und die Pruefungen, die einen harten Konflikt verursachen
-    Map<Teilnehmerkreis, Integer> teilnehmercount = new HashMap<>();
+    //Zum Sammeln der Teilnehmerkreise und die Pruefungen, die einen harten Konflikt verursachen
+    Map<Teilnehmerkreis, Integer> teilnehmerCount = new HashMap<>();
     HashSet<Pruefung> inConflictROPruefung = new HashSet<>();
     Optional<HartesKriteriumAnalyse> hKA = Optional.empty();
     if (testList != null) {
@@ -103,33 +103,33 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
       for (Planungseinheit planungseinheit : testList) {
         if (planungseinheit.isBlock()) {
           testForBlockHard(pruefung, planungseinheit.asBlock(), start, end, inConflictROPruefung,
-              teilnehmercount);
+              teilnehmerCount);
         } else {
           getTeilnehmerkreisFromPruefung(pruefung, planungseinheit.asPruefung(),
-              inConflictROPruefung, teilnehmercount);
+              inConflictROPruefung, teilnehmerCount);
         }
       }
-      hKA = testAndCreateNewHartesKriterumAnalyse(teilnehmercount, inConflictROPruefung);
+      hKA = testAndCreateNewHartesKriteriumAnalyse(teilnehmerCount, inConflictROPruefung);
     }
     return hKA;
   }
 
   /**
-   * Hier werden die Parameter zu einer HartenKriterumsAnalyse zusammen gebaut, falls es einen
+   * Hier werden die Parameter zu einer HartenKriteriumsAnalyse zusammen gebaut, falls es einen
    * Konflikt gibt
    *
-   * @param teilnehmercount      eine Map,  wo die Inkonflikt stehende Teilnehmerkreise und ihre
+   * @param teilnehmerCount      eine Map, wo die in Konflikt stehende Teilnehmerkreise und ihre
    *                             Anzahl gespeichert sind
-   * @param inConflictROPruefung ein Set, in welchem die In Konflikt stehende Pruefungen gespeichert
+   * @param inConflictROPruefung ein Set, in welchem die in Konflikt stehende Pruefungen gespeichert
    *                             sind
-   * @return Entweder die HarteKriterumsAnalyse mit den in Konfliktstehnenden Pruefungen und
-   * Teilnehmerkreisen oder ein leeres Optinal
+   * @return Entweder die HarteKriteriumsAnalyse mit den in Konflikt stehenden Pruefungen und
+   * Teilnehmerkreisen oder ein leeres Optional
    */
-  private Optional<HartesKriteriumAnalyse> testAndCreateNewHartesKriterumAnalyse(
-      Map<Teilnehmerkreis, Integer> teilnehmercount, HashSet<Pruefung> inConflictROPruefung) {
+  private Optional<HartesKriteriumAnalyse> testAndCreateNewHartesKriteriumAnalyse(
+      Map<Teilnehmerkreis, Integer> teilnehmerCount, HashSet<Pruefung> inConflictROPruefung) {
     if (!inConflictROPruefung.isEmpty()) {
       HartesKriteriumAnalyse hKA = new HartesKriteriumAnalyse(inConflictROPruefung,
-          this.hardRestriction, teilnehmercount);
+          this.hardRestriction, teilnehmerCount);
       return Optional.of(hKA);
     }
     return Optional.empty();
@@ -139,8 +139,8 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
    * In dieser Methode wird der übergebene Block unterschieden in den unterschiedlichen Blocktypen
    * und jeweils ihre Methode dann aufgerufen
    *
-   * @param pruefung             die zu Überpruefende Pruefung
-   * @param block                der zu Überpruefende Block
+   * @param pruefung             die zu überprüfende Pruefung
+   * @param block                der zu überprüfende Block
    * @param start                der Startzeitpunkt ab dem es zu einem Konflikt kommen kann
    * @param end                  der Endzeitpunkt bis zu dem es zu einem Konflikt kommen kann
    * @param inConflictROPruefung das Set mit in Konflikt stehenden Pruefungen
@@ -152,7 +152,7 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
     Set<Pruefung> pruefungenFromBlock;
     pruefungenFromBlock = block.getPruefungen();
     if (!pruefungenFromBlock.contains(pruefung)
-        && (uebereinStimmendeTeilnehmerkreise(block, pruefung))) {
+        && (uebereinstimmendeTeilnehmerkreise(block, pruefung))) {
       if (block.getTyp() == Blocktyp.SEQUENTIAL) {
         testForSequentialBlock(pruefung, pruefungenFromBlock, inConflictROPruefung,
             teilnehmerCount);
@@ -164,20 +164,20 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
   }
 
   /**
-   * In dieser Methode wird für ein Block von Typ Parallel das Kriterum getestet
+   * In dieser Methode wird für einen Block von Typ parallel das Kriterium getestet
    *
-   * @param pruefung             die zu Ueberpruefende Pruefung
-   * @param start                der Startermin, ab wo es zu einem Konflikt kommen könnte
-   * @param end                  der Endtermin, ab wo es zu einen Konflikt kommen könnte
+   * @param pruefung             die zu überprüfende Pruefung
+   * @param start                der Starttermin, ab wo es zu einem Konflikt kommen könnte
+   * @param end                  der Endtermin, ab wo es zu einem Konflikt kommen könnte
    * @param pruefungenFromBlock  die Pruefungen, die sich in dem Block befinden
    * @param teilnehmerCount      die in Konflikt stehenden Teilnehmerkreise mit ihrer Anzahl
-   * @param inConflictROPruefung die in  Konflikt stehenden Pruefungen
+   * @param inConflictROPruefung die in Konflikt stehenden Pruefungen
    */
   private void testForParallelBlock(Pruefung pruefung, Set<Pruefung> pruefungenFromBlock,
       LocalDateTime start, LocalDateTime end,
       Map<Teilnehmerkreis, Integer> teilnehmerCount, HashSet<Pruefung> inConflictROPruefung) {
     for (Pruefung pruefungBlock : pruefungenFromBlock) {
-      if ((uebereinStimmendeTeilnehmerkreise(pruefungBlock, pruefung))
+      if ((uebereinstimmendeTeilnehmerkreise(pruefungBlock, pruefung))
           && !outOfRange(start, end, pruefungBlock)) {
         getTeilnehmerkreisFromPruefung(pruefung, pruefungBlock,
             inConflictROPruefung, teilnehmerCount);
@@ -188,10 +188,10 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
   /**
    * Diese Methode händelt den Sequential Block typ ab
    *
-   * @param pruefung             die zu Überpruefende Pruefung
-   * @param pruefungenFromBlock  ein Set von Pruefungen, welches sich in einen Sequenziellen Block
-   *                             gefinden
-   * @param inConflictROPruefung die aktuell in Konflikt stehnde Pruefungen
+   * @param pruefung             die zu überprüfende Pruefung
+   * @param pruefungenFromBlock  ein Set von Pruefungen, welches sich in einen sequentiellen Block
+   *                             gefunden
+   * @param inConflictROPruefung die aktuell in Konflikt stehende Pruefungen
    * @param teilnehmerCount      die aktuellen in Konflikt stehenden Teilnehmerkreise und ihre
    *                             Anzahl
    */
@@ -204,7 +204,7 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
   }
 
   /**
-   * Methode um zu überpruefen ob sich ein Block mit der Übergebenen Zeitspanne nicht überschneidet
+   * Methode um zu überprüfen, ob sich ein Block mit der übergebenen Zeitspanne nicht überschneidet
    *
    * @param start         der Zeitspanne
    * @param end           der Zeitspanne
@@ -222,10 +222,10 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
    *
    * @param planungseinheit die Planungseinheit mit der zu testen ist
    * @param pruefung        die Pruefung mit der zu testen ist
-   * @return true, wenn es einen gemeinsamen Teilnehmerkreis gibt und false, wenn es kein
+   * @return true, wenn es einen gemeinsamen Teilnehmerkreis gibt und false, wenn es keinen
    * gemeinsamen Teilnehmerkreis gibt
    */
-  private boolean uebereinStimmendeTeilnehmerkreise(Planungseinheit planungseinheit,
+  private boolean uebereinstimmendeTeilnehmerkreise(Planungseinheit planungseinheit,
       Pruefung pruefung) {
     for (Teilnehmerkreis teilnehmerkreis : pruefung.getTeilnehmerkreise()) {
       if (planungseinheit.getTeilnehmerkreise().contains(teilnehmerkreis)) {
@@ -319,12 +319,12 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
   }
 
   /**
-   * Berechnet den Endzeitpunkt, von der Übergebenden Pruefung. Der Endzeitpunkt unterscheidet sich,
+   * Berechnet den Endzeitpunkt, von der übergebenen Pruefung. Der Endzeitpunkt unterscheidet sich,
    * falls die Pruefung in einem Block existiert
    *
    * @param pruefung die Pruefung, mit der der Endzeitpunkt festgelegt werden soll
-   * @return der EndZeitpunkt von einer Pruefunng, welcher sich unterscheidet, ob es ein Block oder
-   * ob es sich um eine Pruefung handelt
+   * @return der EndZeitpunkt von einer Prüfung, welcher sich unterscheidet, ob es ein Block oder ob
+   * es sich um eine Pruefung handelt
    */
   @NotNull
   private LocalDateTime getEndTime(Pruefung pruefung) throws NoPruefungsPeriodeDefinedException {
@@ -336,31 +336,31 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
   }
 
   /**
-   * In dieser Methode werden zwei Pruefungen mit einander verglichen und die Übereinstimmenden
+   * In dieser Methode werden zwei Pruefungen miteinander verglichen und die übereinstimmenden
    * Teilnehmerkreise mit ihrer Anzahl in eine Map gespeichert. zusätzlich werden die in Konflikt
    * stehenden Pruefungen in ein Set gespeichert
    *
    * @param pruefung             die Pruefung für die das HarteKriterium gecheckt werden soll
    * @param toCheck              die Pruefung mit der verglichen werden soll
-   * @param inConflictROPruefung das Set, von Pruefungen, welche in Konfklikt stehen
-   * @param teilnehmercount      die Map mit Teilnehmerkreisen und deren Anzahl
+   * @param inConflictROPruefung das Set, von Pruefungen, welche in Konflikt stehen
+   * @param teilnehmerCount      die Map mit Teilnehmerkreisen und deren Anzahl
    */
   private void getTeilnehmerkreisFromPruefung(Pruefung pruefung, Pruefung toCheck,
       HashSet<Pruefung> inConflictROPruefung,
-      Map<Teilnehmerkreis, Integer> teilnehmercount) {
+      Map<Teilnehmerkreis, Integer> teilnehmerCount) {
 
     Set<Teilnehmerkreis> teilnehmer = pruefung.getTeilnehmerkreise();
     for (Teilnehmerkreis teilnehmerkreis : toCheck.getTeilnehmerkreise()) {
       if (teilnehmer.contains(teilnehmerkreis)) {
         //Vergleich der Teilnehmerkreise auf ihrer Anzahl
-        Integer teilnehmerKreisSchaetzung = teilnehmercount.get(teilnehmerkreis);
-        Integer teilnehmerkreistoCheck = toCheck.getSchaetzungen().get(teilnehmerkreis);
+        Integer teilnehmerKreisSchaetzung = teilnehmerCount.get(teilnehmerkreis);
+        Integer teilnehmerkreisToCheck = toCheck.getSchaetzungen().get(teilnehmerkreis);
         if (teilnehmerKreisSchaetzung != null) {
-          if (teilnehmerKreisSchaetzung < teilnehmerkreistoCheck) {
-            teilnehmercount.replace(teilnehmerkreis, teilnehmerkreistoCheck);
+          if (teilnehmerKreisSchaetzung < teilnehmerkreisToCheck) {
+            teilnehmerCount.replace(teilnehmerkreis, teilnehmerkreisToCheck);
           }
         } else {
-          teilnehmercount.put(teilnehmerkreis, teilnehmerkreistoCheck);
+          teilnehmerCount.put(teilnehmerkreis, teilnehmerkreisToCheck);
         }
 
         //Hier ist es egal, da es ein Set ist und es nur einmal vorkommen darf
@@ -369,7 +369,7 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
       }
     }
     if (!inConflictROPruefung.isEmpty()) {
-      TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung(teilnehmercount,
+      TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung(teilnehmerCount,
           pruefung.getSchaetzungen());
     }
   }

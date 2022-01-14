@@ -10,7 +10,6 @@ import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 
@@ -45,7 +44,7 @@ public class AnzahlTeilnehmerGleichzeitigZuHochRestriction extends AtSameTimeRes
   }
 
   @Override
-  protected void ignorePruefungenOf(@NotNull List<Planungseinheit> planungseinheiten,
+  protected void ignorePruefungenOf(@NotNull Set<Planungseinheit> planungseinheiten,
       @NotNull Pruefung toFilterFor) {
     /*
      * For counting the amount of participants at the same time it is crucial to count all
