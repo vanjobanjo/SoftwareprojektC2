@@ -128,10 +128,12 @@ class MehrePruefungenAmTagTest {
     assertEquals(setOfConflictTeilnehmerkreis, analyse.get().getAffectedTeilnehmerKreise());
     assertEquals(studends, analyse.get().getAmountAffectedStudents());
 
-    assertThat(mehrePruefungenAmTag.setReadyOnly).containsAll(setOfConflictROPruefunge);
-    Assertions.assertEquals(setOfConflictROPruefunge, mehrePruefungenAmTag.setReadyOnly);
-    Assertions.assertEquals(setOfConflictTeilnehmerkreis, mehrePruefungenAmTag.setTeilnehmer);
-    assertEquals(studends, mehrePruefungenAmTag.countStudents);
+
+    assertThat(analyse.get().getAffectedTeilnehmerKreise()).containsAll(setOfConflictTeilnehmerkreis);
+    assertThat(analyse.get().getCausingPruefungen()).containsAll(setOfConflictPruefunge);
+    assertThat(analyse.get().getAmountAffectedStudents()).isEqualTo(studends);
+
+
   }
 
 
@@ -257,10 +259,12 @@ class MehrePruefungenAmTagTest {
     assertEquals(studends, analyse.get().getAmountAffectedStudents());
     assertTrue(analyse.isPresent());
 
-    assertThat(mehrePruefungenAmTag.setReadyOnly).containsExactlyElementsOf(setOfConflictROPruefunge);
-    Assertions.assertEquals(setOfConflictROPruefunge, mehrePruefungenAmTag.setReadyOnly);
-    Assertions.assertEquals(setOfConflictTeilnehmerkreis, mehrePruefungenAmTag.setTeilnehmer);
-    assertEquals(studends, mehrePruefungenAmTag.countStudents);
+
+    assertThat(analyse.get().getAffectedTeilnehmerKreise()).containsAll(setOfConflictTeilnehmerkreis);
+    assertThat(analyse.get().getCausingPruefungen()).containsAll(setOfConflictPruefunge);
+    assertThat(analyse.get().getAmountAffectedStudents()).isEqualTo(studends);
+
+
   }
 
   private void setNameAndNummer(Pruefung analysis, String name) {
