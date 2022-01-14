@@ -34,7 +34,6 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -221,16 +220,15 @@ public class Controller implements InterfaceController {
   public List<ReadOnlyPlanungseinheit> setDauer(ReadOnlyPruefung pruefung, Duration dauer)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, dauer);
-    return new ArrayList<>(
-        converter.convertToROPlanungseinheitSet(scheduleService.setDauer(pruefung, dauer)));
+    return converter.convertToROPlanungseinheitList(scheduleService.setDauer(pruefung, dauer));
   }
 
   @Override
   public List<ReadOnlyPlanungseinheit> setKapazitaetPeriode(int kapazitaet)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(kapazitaet);
-    return new ArrayList<>(
-        converter.convertToROPlanungseinheitSet(scheduleService.setKapazitaetPeriode(kapazitaet)));
+    return converter.convertToROPlanungseinheitList(
+        scheduleService.setKapazitaetPeriode(kapazitaet));
   }
 
   @Override
@@ -264,8 +262,8 @@ public class Controller implements InterfaceController {
       Teilnehmerkreis teilnehmerkreis, int schaetzung) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, teilnehmerkreis, schaetzung);
     ensureAvailabilityOfPruefungsperiode();
-    return new ArrayList<>(converter.convertToROPlanungseinheitSet(
-        scheduleService.setTeilnehmerkreisSchaetzung(pruefung, teilnehmerkreis, schaetzung)));
+    return converter.convertToROPlanungseinheitList(
+        scheduleService.setTeilnehmerkreisSchaetzung(pruefung, teilnehmerkreis, schaetzung));
   }
 
   @Override
@@ -302,8 +300,8 @@ public class Controller implements InterfaceController {
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, startTermin);
     ensureAvailabilityOfPruefungsperiode();
-    return new ArrayList<>(converter.convertToROPlanungseinheitSet(
-        scheduleService.schedulePruefung(pruefung, startTermin)));
+    return converter.convertToROPlanungseinheitList(
+        scheduleService.schedulePruefung(pruefung, startTermin));
   }
 
   @Override
@@ -330,8 +328,8 @@ public class Controller implements InterfaceController {
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, teilnehmerkreis, schaetzung);
     ensureAvailabilityOfPruefungsperiode();
-    return new ArrayList<>(converter.convertToROPlanungseinheitSet(
-        scheduleService.addTeilnehmerkreis(pruefung, teilnehmerkreis, schaetzung)));
+    return converter.convertToROPlanungseinheitList(
+        scheduleService.addTeilnehmerkreis(pruefung, teilnehmerkreis, schaetzung));
   }
 
   @Override
@@ -339,8 +337,8 @@ public class Controller implements InterfaceController {
       Teilnehmerkreis teilnehmerkreis) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, teilnehmerkreis);
     ensureAvailabilityOfPruefungsperiode();
-    return new ArrayList<>(converter.convertToROPlanungseinheitSet(
-        this.scheduleService.removeTeilnehmerKreis(pruefung, teilnehmerkreis)));
+    return converter.convertToROPlanungseinheitList(
+        scheduleService.removeTeilnehmerKreis(pruefung, teilnehmerkreis));
   }
 
   @Override
