@@ -306,7 +306,7 @@ public class Controller implements InterfaceController {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, kuerzel);
     ensureAvailabilityOfPruefungsperiode();
-    return dataAccessService.addPruefer(pruefung.getPruefungsnummer(), kuerzel);
+    return dataAccessService.addPruefer(pruefung, kuerzel);
   }
 
   @Override
@@ -314,7 +314,7 @@ public class Controller implements InterfaceController {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, kuerzel);
     ensureAvailabilityOfPruefungsperiode();
-    return dataAccessService.removePruefer(pruefung.getPruefungsnummer(), kuerzel);
+    return dataAccessService.removePruefer(pruefung, kuerzel);
   }
 
   @Override

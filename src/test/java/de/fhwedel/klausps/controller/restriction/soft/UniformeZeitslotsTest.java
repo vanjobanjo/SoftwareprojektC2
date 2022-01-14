@@ -159,7 +159,6 @@ class UniformeZeitslotsTest {
         causingTeilnehmerkreise);
     assertThat(result.get().getCausingPruefungen()).containsExactlyInAnyOrderElementsOf(
         causingPruefungen);
-    // todo test amount of affected students right
     assertThat(result.get().getAmountAffectedStudents()).isEqualTo(toEvaluate.schaetzung());
     assertThat(result.get().getDeltaScoring()).isEqualTo(
         calculateExpectedScoring(causingPruefungen.size()));
