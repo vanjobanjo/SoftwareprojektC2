@@ -6,6 +6,7 @@ import static de.fhwedel.klausps.controller.util.TestFactory.RO_ANALYSIS_UNPLANN
 import static de.fhwedel.klausps.controller.util.TestFactory.RO_DM_UNPLANNED;
 import static de.fhwedel.klausps.controller.util.TestFactory.getPruefungOfReadOnlyPruefung;
 import static de.fhwedel.klausps.controller.util.TestFactory.infBachelor;
+import static de.fhwedel.klausps.controller.util.TestFactory.infMaster;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
@@ -196,7 +197,7 @@ class PruefungenMitVielenAmAnfangRestrictionTest {
     Pruefung lessTeilnehmer = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
     int schaetzungMore = 100;
     moreTeilnehmer.addTeilnehmerkreis(infBachelor, schaetzungMore);
-    lessTeilnehmer.addTeilnehmerkreis(infBachelor, 10);
+    lessTeilnehmer.addTeilnehmerkreis(infMaster, 10);
     moreTeilnehmer.setStartzeitpunkt(
         ankerTag.plusDays(beginAfterAnker.toDays()).atTime(8, 0));
     when(dataAccessService.getGeplantePruefungen()).thenReturn(
@@ -205,6 +206,10 @@ class PruefungenMitVielenAmAnfangRestrictionTest {
     Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(moreTeilnehmer);
     assertThat(result).isPresent();
     assertThat(result.get().getAmountAffectedStudents()).isEqualTo(schaetzungMore);
+    assertThat(result.get().getCausingPruefungen()).containsOnly(moreTeilnehmer);
+    assertThat(result.get().getAffectedTeilnehmerKreise()).containsOnly(infBachelor);
+    assertThat(result.get().getDeltaScoring()).isEqualTo(PRUEFUNGEN_MIT_VIELEN_AN_ANFANG.getWert());
+    assertThat(result.get().getKriterium()).isEqualTo(PRUEFUNGEN_MIT_VIELEN_AN_ANFANG);
   }
 
 }
