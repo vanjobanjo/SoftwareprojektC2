@@ -105,8 +105,7 @@ public class DataAccessService {
     }
 
     Pruefung toChangeDuration = getPruefungFromModelOrException(pruefung.getPruefungsnummer());
-    // Hartes Kriterium wird in ScheduleService geprüft.
-    // Die Änderungen der Pruefungen werden auch im ScheduleService vorgenommen.
+
     toChangeDuration.setDauer(duration);
   }
 
