@@ -628,12 +628,12 @@ class TwoKlausurenSameTimeTest {
 
   @Test
   void wouldBeHardConflictAt_onePlanungseinheitWithConflictingTeilnehmerkreis()
-      throws NoPruefungsPeriodeDefinedException {
+      throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
     Teilnehmerkreis conflictingTeilnehmerkreis = getRandomTeilnehmerkreis(1L);
     Pruefung conflictingPruefung = getRandomPruefungWith(1L, conflictingTeilnehmerkreis);
     Pruefung pruefungToCheckFor = getRandomPruefungWith(2L, conflictingTeilnehmerkreis);
 
-    when(dataAccessService.getPlanungseinheitenAt(any())).thenReturn(Set.of(conflictingPruefung));
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(List.of(conflictingPruefung));
 
     assertThat(
         deviceUnderTest.wouldBeHardConflictAt(getRandomTime(1L), pruefungToCheckFor)).isTrue();
@@ -641,14 +641,14 @@ class TwoKlausurenSameTimeTest {
 
   @Test
   void wouldBeHardConflictAt_multiplePlanungseinheit_oneConflicting()
-      throws NoPruefungsPeriodeDefinedException {
+      throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
     Teilnehmerkreis conflictingTeilnehmerkreis = getRandomTeilnehmerkreis(1L);
     Pruefung conflictingPruefung = getRandomPruefungWith(1L, conflictingTeilnehmerkreis);
-    Set<Planungseinheit> planungseinheitenAtTime = Set.of(conflictingPruefung,
+    List<Planungseinheit> planungseinheitenAtTime = List.of(conflictingPruefung,
         getRandomPlannedPruefung(2L), getRandomPlannedPruefung(3L), getRandomPlannedPruefung(4L));
     Pruefung pruefungToCheckFor = getRandomPruefungWith(2L, conflictingTeilnehmerkreis);
 
-    when(dataAccessService.getPlanungseinheitenAt(any())).thenReturn(planungseinheitenAtTime);
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(planungseinheitenAtTime);
 
     assertThat(
         deviceUnderTest.wouldBeHardConflictAt(getRandomTime(1L), pruefungToCheckFor)).isTrue();
@@ -656,14 +656,14 @@ class TwoKlausurenSameTimeTest {
 
   @Test
   void wouldBeHardConflictAt_onePlanungseinheit_oneOfManyTeilnehmerkreisConflicting()
-      throws NoPruefungsPeriodeDefinedException {
+      throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
     Teilnehmerkreis conflictingTeilnehmerkreis = getRandomTeilnehmerkreis(1L);
     Pruefung conflictingPruefung = getRandomPruefungWith(1L, conflictingTeilnehmerkreis,
         getRandomTeilnehmerkreis(2L), getRandomTeilnehmerkreis(3L));
     Pruefung pruefungToCheckFor = getRandomPruefungWith(2L, conflictingTeilnehmerkreis,
         getRandomTeilnehmerkreis(4L));
 
-    when(dataAccessService.getPlanungseinheitenAt(any())).thenReturn(Set.of(conflictingPruefung));
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(List.of(conflictingPruefung));
 
     assertThat(
         deviceUnderTest.wouldBeHardConflictAt(getRandomTime(1L), pruefungToCheckFor)).isTrue();
@@ -671,12 +671,12 @@ class TwoKlausurenSameTimeTest {
 
   @Test
   void wouldBeHardConflictAt_planungseinheitToCheckCanNotConflictWithTime()
-      throws NoPruefungsPeriodeDefinedException {
+      throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
     // if the planungseinheit to check is planned, it should not interfere
     Teilnehmerkreis conflictingTeilnehmerkreis = getRandomTeilnehmerkreis(1L);
 
-    when(dataAccessService.getPlanungseinheitenAt(any())).thenReturn(
-        Set.of(getRandomPruefungWith(2L, conflictingTeilnehmerkreis)));
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        List.of(getRandomPruefungWith(2L, conflictingTeilnehmerkreis)));
 
     assertThat(deviceUnderTest.wouldBeHardConflictAt(getRandomTime(1L),
         getRandomPruefungWith(2L, conflictingTeilnehmerkreis))).isFalse();
