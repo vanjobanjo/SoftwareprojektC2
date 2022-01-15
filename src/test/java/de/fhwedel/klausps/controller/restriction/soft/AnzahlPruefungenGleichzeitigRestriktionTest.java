@@ -28,10 +28,10 @@ import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.BlockImpl;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
-import io.cucumber.messages.internal.com.google.common.collect.Sets;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -483,12 +483,19 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     List<Pruefung> pruefungenInBlock = new ArrayList<>(block.getPruefungen());
 
     when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
-        Sets.union(block.getPruefungen(), Set.of(pruefung)));
+        union(block.getPruefungen(), pruefung));
 
     when(dataAccessService.getBlockTo(any(Pruefung.class))).thenReturn(Optional.of(block));
 
     assertThat((deviceUnderTest.evaluate(pruefungenInBlock.get(0)))).isNotPresent();
     assertThat((deviceUnderTest.evaluate(pruefung))).isNotPresent();
+  }
+
+  private <T> Set<T> union(Collection<T> fst, T... other) {
+    Set<T> result = new HashSet<>();
+    result.addAll(fst);
+    result.addAll(Arrays.asList(other));
+    return result;
   }
 
   @Test
@@ -502,7 +509,7 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
         planungseinheiten.get(0).asBlock().getPruefungen()).get(0).asPruefung();
 
     when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(
-        Sets.union(planungseinheiten.get(0).asBlock().getPruefungen(),
+        union(planungseinheiten.get(0).asBlock().getPruefungen(),
             planungseinheiten.get(1).asBlock().getPruefungen()));
 
     // answer with correct block for each pruefung
@@ -523,6 +530,13 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
       block.setStartzeitpunkt(LocalDateTime.of(1998, 1, 2, 21, 39));
       result.add(block);
     }
+    return result;
+  }
+
+  private <T> Set<T> union(Collection<T> fst, Collection<T> other) {
+    Set<T> result = new HashSet<>();
+    result.addAll(fst);
+    result.addAll(other);
     return result;
   }
 
