@@ -29,6 +29,13 @@ public class IOService {
     this.dataAccessService = dataAccessService;
   }
 
+  /**
+   * Export the periode
+   * @param path Path
+   * @param typ Exporttyp
+   * @throws IOException when there is problem with a IO
+   * @throws ExportException when there is a problem with the export
+   */
   public void exportPeriode(Path path, ExportTyp typ) throws IOException, ExportException {
     noNullParameters(path, typ);
     Exporter export;
