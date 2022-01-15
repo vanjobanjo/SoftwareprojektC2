@@ -232,8 +232,8 @@ public class DataAccessService {
     return blockModel;
   }
 
-  public Planungseinheit changeNameOfPruefung(ReadOnlyPruefung toChange, String name)
-      throws NoPruefungsPeriodeDefinedException {
+  public Planungseinheit changeNameOf(ReadOnlyPruefung toChange, String name)
+      throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
     noNullParameters(toChange, name);
     Pruefung pruefung = getPruefungFromModelOrException(toChange);
     pruefung.setName(name);

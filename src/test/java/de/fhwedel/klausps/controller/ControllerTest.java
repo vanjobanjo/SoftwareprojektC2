@@ -5,6 +5,7 @@ import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruef
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedROPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTeilnehmerkreis;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTime;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedROPruefung;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -566,6 +567,74 @@ class ControllerTest {
         NoPruefungsPeriodeDefinedException.class);
     assertThrows(NoPruefungsPeriodeDefinedException.class,
         () -> deviceUnderTest.setKapazitaetPeriode(111));
+  }
+
+  @Test
+  void setPruefungsnummer_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.setPruefungsnummer(any(), any())).thenThrow(
+        NoPruefungsPeriodeDefinedException.class);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.setPruefungsnummer(mock(ReadOnlyPruefung.class), "pruefungsnummer"));
+  }
+
+  @Test
+  void setPruefungsnummer_noNullParameters() {
+    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
+    Duration dauer = Duration.ZERO;
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.setPruefungsnummer(pruefung, null));
+    assertThrows(NullPointerException.class,
+        () -> deviceUnderTest.setPruefungsnummer(null, "pruefungsnummer"));
+  }
+
+  @Test
+  void setPruefungsnummer_delegateMethod() throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
+    String pruefungsnummer = "pruefungsnummer";
+    deviceUnderTest.setPruefungsnummer(pruefung, pruefungsnummer);
+    verify(dataAccessService).setPruefungsnummer(pruefung, pruefungsnummer);
+  }
+
+  @Test
+  void setPruefungsnummer_resultPresent() throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
+    String pruefungsnummer = "pruefungsnummer";
+    when(dataAccessService.setPruefungsnummer(pruefung, pruefungsnummer)).thenReturn(
+        getRandomUnplannedPruefung(1L));
+    when(converter.convertToReadOnlyPlanungseinheit(any())).thenReturn(pruefung);
+    assertThat(deviceUnderTest.setPruefungsnummer(pruefung, pruefungsnummer)).isNotNull();
+  }
+
+  @Test
+  void setName_pruefungMustNotBeNull() {
+    ReadOnlyPruefung pruefung = null;
+    String name = "name";
+    assertThrows(NullPointerException.class, () -> deviceUnderTest.setName(pruefung, name));
+  }
+
+  @Test
+  void setName_nameMustNotBeNull() {
+    ReadOnlyPruefung pruefung = mock(ReadOnlyPruefung.class);
+    String name = null;
+    assertThrows(NullPointerException.class, () -> deviceUnderTest.setName(pruefung, name));
+  }
+
+  @Test
+  void setName_nameMustNotBeEmpty() throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung pruefung = mock(ReadOnlyPruefung.class);
+    String name = "";
+    when(dataAccessService.changeNameOf(any(), any())).thenThrow(IllegalArgumentException.class);
+    assertThrows(IllegalArgumentException.class, () -> deviceUnderTest.setName(pruefung, name));
+  }
+
+  @Test
+  void setName_correctReturn() throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung pruefung = mock(ReadOnlyPruefung.class);
+    String name = "";
+    Pruefung modelPruefung = mock(Pruefung.class);
+    when(dataAccessService.changeNameOf(any(), any())).thenThrow(IllegalArgumentException.class);
+    when(converter.convertToReadOnlyPlanungseinheit(modelPruefung)).thenReturn(pruefung);
+    assertThrows(IllegalArgumentException.class, () -> deviceUnderTest.setName(pruefung, name));
   }
 
 }
