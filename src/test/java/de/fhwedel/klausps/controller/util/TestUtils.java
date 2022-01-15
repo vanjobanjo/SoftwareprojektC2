@@ -100,7 +100,25 @@ public class TestUtils {
         Ausbildungsgrad.values()[random.nextInt(Ausbildungsgrad.values().length)]);
   }
 
+  public static List<Teilnehmerkreis> getRandomTeilnehmerkreise(long seed, int amount) {
+    List<Teilnehmerkreis> result = new ArrayList<>(amount);
+    for (int index = 0; index < amount; index++) {
+      result.add(getRandomTeilnehmerkreis(seed++));
+    }
+    return result;
+  }
+
   public static Pruefung getRandomPruefungWith(long seed, Teilnehmerkreis... teilnehmerkreise) {
+    Random random = new Random(seed);
+    Pruefung result = getRandomPlannedPruefung(seed);
+    for (Teilnehmerkreis teilnehmerkreis : teilnehmerkreise) {
+      result.addTeilnehmerkreis(teilnehmerkreis, random.nextInt(1, Integer.MAX_VALUE));
+    }
+    return result;
+  }
+
+  public static Pruefung getRandomPruefungWith(long seed,
+      Collection<Teilnehmerkreis> teilnehmerkreise) {
     Random random = new Random(seed);
     Pruefung result = getRandomPlannedPruefung(seed);
     for (Teilnehmerkreis teilnehmerkreis : teilnehmerkreise) {

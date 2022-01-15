@@ -8,6 +8,7 @@ import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungWith;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungenAt;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTeilnehmerkreis;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTeilnehmerkreise;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -31,7 +32,6 @@ import de.fhwedel.klausps.model.impl.PruefungImpl;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -347,6 +347,128 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
   }
 
   @Test
+  void evaluate_scoringForMinimalViolation_otherMaxAmountOfSimultaneous()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
+    Duration buffer = Duration.ofMinutes(30);
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2,
+        buffer);
+
+    List<Pruefung> pruefungen = get3PruefungenWithOneOverlappingTheOther();
+
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        Set.copyOf(convertPruefungenToPlanungseinheiten(pruefungen)));
+
+    int expectedScoring = WeichesKriterium.ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH.getWert();
+
+    assertThat((deviceUnderTest.evaluate(pruefungen.get(0)).get().getDeltaScoring())).isEqualTo(
+        expectedScoring);
+  }
+
+  private List<Pruefung> get3PruefungenWithOneOverlappingTheOther() {
+    LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
+    return getRandomPruefungenAt(5L, startFirstPruefung, startFirstPruefung.plusMinutes(15),
+        startFirstPruefung.plusMinutes(20));
+  }
+
+  @Test
+  void evaluate_scoringForSecondLowestViolation()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
+    Duration buffer = Duration.ofMinutes(30);
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1,
+        buffer);
+
+    List<Pruefung> pruefungen = get3PruefungenWithOneOverlappingTheOther();
+
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        Set.copyOf(convertPruefungenToPlanungseinheiten(pruefungen)));
+
+    int expectedScoring = WeichesKriterium.ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH.getWert() * 2;
+
+    assertThat((deviceUnderTest.evaluate(pruefungen.get(0)).get().getDeltaScoring())).isEqualTo(
+        expectedScoring);
+  }
+
+  @Test
+  void calcScoringFor_zero_max1AtATime() {
+    Duration buffer = Duration.ofMinutes(30);
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1,
+        buffer);
+    Collection<Planungseinheit> violatingPlanungseinheiten = new HashSet<>(
+        getRandomPlannedPruefungen(1L, 1));
+    assertThat(deviceUnderTest.calcScoringFor(violatingPlanungseinheiten)).isZero();
+  }
+
+  @Test
+  void calcScoringFor_zero_max2AtATime() {
+    Duration buffer = Duration.ofMinutes(30);
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2,
+        buffer);
+    Collection<Planungseinheit> violatingPlanungseinheiten = new HashSet<>(
+        getRandomPlannedPruefungen(1L, 2));
+    assertThat(deviceUnderTest.calcScoringFor(violatingPlanungseinheiten)).isZero();
+  }
+
+  @Test
+  void calcScoringFor_minimal_max1AtATime() {
+    Duration buffer = Duration.ofMinutes(30);
+    int expectedScoring = WeichesKriterium.ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH.getWert();
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1,
+        buffer);
+    Collection<Planungseinheit> violatingPlanungseinheiten = new HashSet<>(
+        getRandomPlannedPruefungen(1L, 2));
+    assertThat(deviceUnderTest.calcScoringFor(violatingPlanungseinheiten)).isEqualTo(
+        expectedScoring);
+  }
+
+  @Test
+  void calcScoringFor_minimal_max2AtATime() {
+    Duration buffer = Duration.ofMinutes(30);
+    int expectedScoring = WeichesKriterium.ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH.getWert();
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2,
+        buffer);
+    Collection<Planungseinheit> violatingPlanungseinheiten = new HashSet<>(
+        getRandomPlannedPruefungen(1L, 3));
+    assertThat(deviceUnderTest.calcScoringFor(violatingPlanungseinheiten)).isEqualTo(
+        expectedScoring);
+  }
+
+  @Test
+  void calcScoringFor_secondLowest_max1AtATime() {
+    Duration buffer = Duration.ofMinutes(30);
+    int expectedScoring = WeichesKriterium.ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH.getWert() * 2;
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 1,
+        buffer);
+    Collection<Planungseinheit> violatingPlanungseinheiten = new HashSet<>(
+        getRandomPlannedPruefungen(1L, 3));
+    assertThat(deviceUnderTest.calcScoringFor(violatingPlanungseinheiten)).isEqualTo(
+        expectedScoring);
+  }
+
+  @Test
+  void calcScoringFor_secondLowest_max2AtATime() {
+    Duration buffer = Duration.ofMinutes(30);
+    int expectedScoring = WeichesKriterium.ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH.getWert() * 2;
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2,
+        buffer);
+    Collection<Planungseinheit> violatingPlanungseinheiten = new HashSet<>(
+        getRandomPlannedPruefungen(1L, 4));
+    assertThat(deviceUnderTest.calcScoringFor(violatingPlanungseinheiten)).isEqualTo(
+        expectedScoring);
+  }
+
+  @Test
+  void calcScoringFor_noNegativeScoring() {
+    Duration buffer = Duration.ofMinutes(30);
+    int expectedScoring = 0;
+    this.deviceUnderTest = new AnzahlPruefungenGleichzeitigRestriktion(this.dataAccessService, 2,
+        buffer);
+    Collection<Planungseinheit> violatingPlanungseinheiten = new HashSet<>(
+        getRandomPlannedPruefungen(1L, 1));
+    assertThat(deviceUnderTest.calcScoringFor(violatingPlanungseinheiten)).isEqualTo(
+        expectedScoring);
+  }
+
+  @Test
   @DisplayName("Affected students correspond with sum students per distinct teilnehmerkreis")
   void evaluate_sumOfTeilnehmerkreisschaetzungen()
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
@@ -491,11 +613,14 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     assertThat((deviceUnderTest.evaluate(pruefung))).isNotPresent();
   }
 
-  private <T> Set<T> union(Collection<T> fst, T... other) {
-    Set<T> result = new HashSet<>();
-    result.addAll(fst);
-    result.addAll(Arrays.asList(other));
-    return result;
+  @Test
+  void getAffectedTeilnehmerkreiseFrom_containsAllTeilnehmerkreise() {
+    List<Teilnehmerkreis> teilnehmerkreise = getRandomTeilnehmerkreise(1L, 5);
+    Set<Planungseinheit> planungseinheiten = union(
+        Set.of(getRandomPruefungWith(2L, teilnehmerkreise.subList(0, 3))),
+        getRandomPruefungWith(2L, teilnehmerkreise.subList(3, 5)));
+    assertThat(deviceUnderTest.getAffectedTeilnehmerkreiseFrom(
+        planungseinheiten)).containsExactlyInAnyOrderElementsOf(teilnehmerkreise);
   }
 
   @Test
@@ -538,6 +663,57 @@ class AnzahlPruefungenGleichzeitigRestriktionTest {
     result.addAll(fst);
     result.addAll(other);
     return result;
+  }
+
+  private <T> Set<T> union(Collection<T> fst, T other) {
+    Set<T> result = new HashSet<>();
+    result.addAll(fst);
+    result.addAll(List.of(other));
+    return result;
+  }
+
+  @Test
+  void getAffectedStudentsFrom_noTeilnehmerkreisDuplicated() {
+    List<Planungseinheit> planungseinheiten = getPlanungseinheitenWith22DistinctStudents();
+    int expectedAmount = 22;
+    assertThat(deviceUnderTest.getAffectedStudentsFrom(planungseinheiten)).isEqualTo(
+        expectedAmount);
+  }
+
+  private List<Planungseinheit> getPlanungseinheitenWith22DistinctStudents() {
+    List<Planungseinheit> planungseinheiten = new ArrayList<>();
+    planungseinheiten.add(getPlanungseinheitWithDistinctStudents(2L, 12));
+    planungseinheiten.add(getPlanungseinheitWithDistinctStudents(1L, 10));
+    return planungseinheiten;
+  }
+
+  private Planungseinheit getPlanungseinheitWithDistinctStudents(long seed, int amountStudents) {
+    Teilnehmerkreis teilnehmerkreis = getRandomTeilnehmerkreis(seed);
+    return getPlanungseinheitWithTeilnehmerkreis(seed, teilnehmerkreis, amountStudents);
+  }
+
+  private Planungseinheit getPlanungseinheitWithTeilnehmerkreis(long seed,
+      Teilnehmerkreis teilnehmerkreis, int amountStudents) {
+    Pruefung pruefung = getRandomPruefungWith(seed, teilnehmerkreis);
+    pruefung.setSchaetzung(teilnehmerkreis, amountStudents);
+    return pruefung;
+  }
+
+  @Test
+  void getAffectedStudentsFrom_duplicatedTeilnehmerkreis_useHigherAmount() {
+    List<Planungseinheit> planungseinheiten = get2PlanungseinheitenWithSameTeilnehmerkreisWithMax12Teilnehmer();
+    int expectedAmount = 12;
+    assertThat(deviceUnderTest.getAffectedStudentsFrom(planungseinheiten)).isEqualTo(
+        expectedAmount);
+  }
+
+  private List<Planungseinheit> get2PlanungseinheitenWithSameTeilnehmerkreisWithMax12Teilnehmer() {
+    List<Planungseinheit> planungseinheiten = new ArrayList<>();
+    Teilnehmerkreis teilnehmerkreis = getRandomTeilnehmerkreis(1L);
+    planungseinheiten.add(getPlanungseinheitWithTeilnehmerkreis(1L, teilnehmerkreis, 10));
+    planungseinheiten.add(getPlanungseinheitWithTeilnehmerkreis(1L, teilnehmerkreis, 11));
+    planungseinheiten.add(getPlanungseinheitWithTeilnehmerkreis(2L, teilnehmerkreis, 12));
+    return planungseinheiten;
   }
 
 }
