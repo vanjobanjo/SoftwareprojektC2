@@ -63,6 +63,7 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends AtSameTimeRestricti
   }
 
   @Override
+  @NotNull
   protected Set<Teilnehmerkreis> getAffectedTeilnehmerkreiseFrom(
       Set<Planungseinheit> violatingPlanungseinheiten) {
     Set<Teilnehmerkreis> teilnehmerkreise = new HashSet<>();
@@ -73,7 +74,7 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends AtSameTimeRestricti
   }
 
   @Override
-  protected int getAffectedStudentsFrom(Set<Planungseinheit> violatingPlanungseinheiten) {
+  protected int getAffectedStudentsFrom(Collection<Planungseinheit> violatingPlanungseinheiten) {
     HashMap<Teilnehmerkreis, Integer> maxTeilnehmerPerTeilnehmerkreis = new HashMap<>();
     for (Planungseinheit planungseinheit : violatingPlanungseinheiten) {
       collectMaxAmountOfStudentsInFor(maxTeilnehmerPerTeilnehmerkreis, planungseinheit);
@@ -82,13 +83,10 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends AtSameTimeRestricti
   }
 
   @Override
-  protected int calcScoringFor(Set<Planungseinheit> violatingPlanungseinheiten) {
-    int scoring = 0;
-    if (violatingPlanungseinheiten.size() > maxPruefungenAtATime) {
-      scoring = violatingPlanungseinheiten.size() - maxPruefungenAtATime;
-      scoring *= this.kriterium.getWert();
-    }
-    return scoring;
+  protected int calcScoringFor(Collection<Planungseinheit> violatingPlanungseinheiten) {
+    int scoring = violatingPlanungseinheiten.size() - maxPruefungenAtATime;
+    scoring *= this.kriterium.getWert();
+    return Math.max(scoring, 0);
   }
 
   private void collectMaxAmountOfStudentsInFor(

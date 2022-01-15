@@ -139,11 +139,13 @@ public abstract class AtSameTimeRestriction extends WeicheRestriktion {
     return result;
   }
 
+  @NotNull
   protected abstract Set<Teilnehmerkreis> getAffectedTeilnehmerkreiseFrom(
       Set<Planungseinheit> violatingPlanungseinheiten);
 
-  protected abstract int getAffectedStudentsFrom(Set<Planungseinheit> violatingPlanungseinheiten);
+  protected abstract int getAffectedStudentsFrom(
+      Collection<Planungseinheit> violatingPlanungseinheiten);
 
-  protected abstract int calcScoringFor(Set<Planungseinheit> violatingPlanungseinheiten);
+  protected abstract int calcScoringFor(Collection<Planungseinheit> violatingPlanungseinheiten);
 
 }

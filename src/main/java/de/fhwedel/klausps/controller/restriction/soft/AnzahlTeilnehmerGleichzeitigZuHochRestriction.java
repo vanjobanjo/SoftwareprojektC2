@@ -62,6 +62,7 @@ public class AnzahlTeilnehmerGleichzeitigZuHochRestriction extends AtSameTimeRes
   }
 
   @Override
+  @NotNull
   protected Set<Teilnehmerkreis> getAffectedTeilnehmerkreiseFrom(
       Set<Planungseinheit> violatingPlanungseinheiten) {
     Set<Teilnehmerkreis> result = new HashSet<>();
@@ -77,7 +78,7 @@ public class AnzahlTeilnehmerGleichzeitigZuHochRestriction extends AtSameTimeRes
   }
 
   @Override
-  protected int getAffectedStudentsFrom(Set<Planungseinheit> violatingPlanungseinheiten) {
+  protected int getAffectedStudentsFrom(Collection<Planungseinheit> violatingPlanungseinheiten) {
     int amount = 0;
     for (Planungseinheit planungseinheit : violatingPlanungseinheiten) {
       amount += planungseinheit.schaetzung();
@@ -86,7 +87,7 @@ public class AnzahlTeilnehmerGleichzeitigZuHochRestriction extends AtSameTimeRes
   }
 
   @Override
-  protected int calcScoringFor(Set<Planungseinheit> violatingPlanungseinheiten) {
+  protected int calcScoringFor(Collection<Planungseinheit> violatingPlanungseinheiten) {
     int students = getAffectedStudentsFrom(violatingPlanungseinheiten);
     return getScoringFactor(students) * this.kriterium.getWert();
   }
