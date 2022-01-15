@@ -22,14 +22,88 @@
 
   <artifactId>controller2</artifactId>
 
-  <properties>
-    <junit.version>5.8.0</junit.version>
-    <junit-platform.version>1.2.0</junit-platform.version>
-    <assertj.version>3.21.0</assertj.version>
-    <mockito.version>4.0.0</mockito.version>
-    <cucumber.version>6.6.1</cucumber.version>
-    <surefire.version>3.0.0-M5</surefire.version>
-  </properties>
+  <dependencies>
+    <!-- testing -->
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-java</artifactId>
+      <version>${cucumber.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-junit</artifactId>
+      <version>${cucumber.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <version>
+        ${junit-vintage-engine.version}
+      </version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!-- https://junit.org/junit5/ -->
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit-jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!-- https://assertj.github.io/doc/ -->
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>${assertj.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!-- https://site.mockito.org/ -->
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>de.fhwedel.klausps</groupId>
+      <artifactId>model2</artifactId>
+    </dependency>
+
+    <!-- Test Suite -->
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-runner</artifactId>
+      <version>${junit-platform.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit-jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
+      <version>${junit-jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains</groupId>
+      <artifactId>annotations</artifactId>
+      <version>${jetbrains-annotations.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>de.fhwedel.klausps</groupId>
+      <artifactId>controller-api</artifactId>
+      <version>1.0.2-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
 
   <profiles>
     <profile>
@@ -67,88 +141,16 @@
   </profiles>
 
 
-  <dependencies>
-    <!-- testing -->
-    <dependency>
-      <groupId>io.cucumber</groupId>
-      <artifactId>cucumber-java</artifactId>
-      <version>${cucumber.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.cucumber</groupId>
-      <artifactId>cucumber-junit</artifactId>
-      <version>${cucumber.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.13.1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.vintage</groupId>
-      <artifactId>junit-vintage-engine</artifactId>
-      <version>5.7.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <!-- https://junit.org/junit5/ -->
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
-      <version>${junit.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <!-- https://assertj.github.io/doc/ -->
-      <groupId>org.assertj</groupId>
-      <artifactId>assertj-core</artifactId>
-      <version>${assertj.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <!-- https://site.mockito.org/ -->
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-junit-jupiter</artifactId>
-      <version>${mockito.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>de.fhwedel.klausps</groupId>
-      <artifactId>model2</artifactId>
-    </dependency>
-
-    <!-- Test Suite -->
-    <dependency>
-      <groupId>org.junit.platform</groupId>
-      <artifactId>junit-platform-runner</artifactId>
-      <version>${junit-platform.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <version>${junit.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-params</artifactId>
-      <version>${junit.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jetbrains</groupId>
-      <artifactId>annotations</artifactId>
-      <version>20.1.0</version>
-    </dependency>
-    <dependency>
-      <groupId>de.fhwedel.klausps</groupId>
-      <artifactId>controller-api</artifactId>
-      <version>1.0.2-SNAPSHOT</version>
-    </dependency>
-  </dependencies>
+  <properties>
+    <assertj.version>3.22.0</assertj.version>
+    <cucumber.version>7.2.2</cucumber.version>
+    <jetbrains-annotations.version>22.0.0</jetbrains-annotations.version>
+    <junit-jupiter.version>5.8.2</junit-jupiter.version>
+    <junit-platform.version>1.8.2</junit-platform.version>
+    <surefire.version>3.0.0-M5</surefire.version>
+    <junit-vintage-engine.version>5.8.2</junit-vintage-engine.version>
+    <mockito.version>4.2.0</mockito.version>
+  </properties>
   <build>
     <pluginManagement>
       <plugins>
