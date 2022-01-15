@@ -154,12 +154,14 @@ class DataAccessServiceTest {
         .differsOnlyInNameFrom(before).hasName(newName);
   }
 
-  private Pruefung getPruefungWithPruefer(String... pruefer) {
-    Pruefung pruefung = new PruefungImpl("b001", "Analysis", "refNbr", Duration.ofMinutes(70));
-    for (String p : pruefer) {
-      pruefung.addPruefer(p);
+  private Pruefung getPruefungOfReadOnlyPruefung(ReadOnlyPruefung roPruefung) {
+    PruefungImpl modelPruefung = new PruefungImpl(roPruefung.getPruefungsnummer(),
+        roPruefung.getName(), "", roPruefung.getDauer(), roPruefung.getTermin().orElse(null));
+    for (String pruefer : roPruefung.getPruefer()) {
+      modelPruefung.addPruefer(pruefer);
     }
-    return pruefung;
+    roPruefung.getTeilnehmerKreisSchaetzung().forEach(modelPruefung::setSchaetzung);
+    return modelPruefung;
   }
 
   @Test
@@ -280,19 +282,17 @@ class DataAccessServiceTest {
         .getPruefer()).doesNotContain("Cohen");
   }
 
+  private Pruefung getPruefungWithPruefer(String... pruefer) {
+    Pruefung pruefung = new PruefungImpl("b001", "Analysis", "refNbr", Duration.ofMinutes(70));
+    for (String p : pruefer) {
+      pruefung.addPruefer(p);
+    }
+    return pruefung;
+  }
+
   private List<Pruefung> convertPruefungenFromReadonlyToModel(
       Collection<ReadOnlyPruefung> pruefungen) {
     return pruefungen.stream().map(this::getPruefungOfReadOnlyPruefung).toList();
-  }
-
-  private Pruefung getPruefungOfReadOnlyPruefung(ReadOnlyPruefung roPruefung) {
-    PruefungImpl modelPruefung = new PruefungImpl(roPruefung.getPruefungsnummer(),
-        roPruefung.getName(), "", roPruefung.getDauer(), roPruefung.getTermin().orElse(null));
-    for (String pruefer : roPruefung.getPruefer()) {
-      modelPruefung.addPruefer(pruefer);
-    }
-    roPruefung.getTeilnehmerKreisSchaetzung().forEach(modelPruefung::setSchaetzung);
-    return modelPruefung;
   }
 
   @Test
@@ -1724,6 +1724,29 @@ class DataAccessServiceTest {
     Pruefung pruefung = getRandomUnplannedPruefung(1L);
     assertThrows(NoPruefungsPeriodeDefinedException.class,
         () -> deviceUnderTest.areInSameBlock(pruefung, pruefung));
+  }
+
+  @Test
+  void setKapazitaetStudents_negativeCapacity() {
+    assertThrows(IllegalArgumentException.class, () -> deviceUnderTest.setKapazitaetStudents(-1));
+  }
+
+  @Test
+  void setKapazitaetStudents_minimalCapacity() {
+    assertDoesNotThrow(() -> deviceUnderTest.setKapazitaetStudents(0));
+  }
+
+  @Test
+  void setKapazitaetStudents_noPruefungsperiode() {
+    deviceUnderTest = new DataAccessService(null);
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.setKapazitaetStudents(1));
+  }
+
+  @Test
+  void setKapazitaetStudents_actuallySetNewValue() throws NoPruefungsPeriodeDefinedException {
+    deviceUnderTest.setKapazitaetStudents(1);
+    verify(pruefungsperiode).setKapazitaet(1);
   }
 
 }

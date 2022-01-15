@@ -9,6 +9,7 @@ import static de.fhwedel.klausps.controller.util.TestFactory.bwlMaster;
 import static de.fhwedel.klausps.controller.util.TestFactory.infBachelor;
 import static de.fhwedel.klausps.controller.util.TestFactory.infMaster;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefung;
+import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruefungen;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedROPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungWith;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTeilnehmerkreis;
@@ -25,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -125,16 +127,6 @@ class ScheduleServiceTest {
         () -> deviceUnderTest.scheduleBlock(inConsistentBlock, termin));
   }
 
-  private Pruefung getPruefungOfReadOnlyPruefung(ReadOnlyPruefung roPruefung) {
-    PruefungImpl modelPruefung = new PruefungImpl(roPruefung.getPruefungsnummer(),
-        roPruefung.getName(), "", roPruefung.getDauer(), roPruefung.getTermin().orElse(null));
-    for (String pruefer : roPruefung.getPruefer()) {
-      modelPruefung.addPruefer(pruefer);
-    }
-    roPruefung.getTeilnehmerKreisSchaetzung().forEach(modelPruefung::setSchaetzung);
-    return modelPruefung;
-  }
-
   private Block getModelBlockFromROPruefungen(String name, LocalDateTime start,
       ReadOnlyPruefung... pruefungen) {
     Block block = new BlockImpl(mock(Pruefungsperiode.class), 1, name, Blocktyp.SEQUENTIAL);
@@ -148,6 +140,16 @@ class ScheduleServiceTest {
   private ReadOnlyBlock getROBlockFromROPruefungen(String name, LocalDateTime start,
       ReadOnlyPruefung... pruefungen) {
     return new BlockDTO(name, start, Duration.ZERO, Set.of(pruefungen), 1, PARALLEL);
+  }
+
+  private Pruefung getPruefungOfReadOnlyPruefung(ReadOnlyPruefung roPruefung) {
+    PruefungImpl modelPruefung = new PruefungImpl(roPruefung.getPruefungsnummer(),
+        roPruefung.getName(), "", roPruefung.getDauer(), roPruefung.getTermin().orElse(null));
+    for (String pruefer : roPruefung.getPruefer()) {
+      modelPruefung.addPruefer(pruefer);
+    }
+    roPruefung.getTeilnehmerKreisSchaetzung().forEach(modelPruefung::setSchaetzung);
+    return modelPruefung;
   }
 
   @Test
@@ -410,7 +412,6 @@ class ScheduleServiceTest {
     Pruefung haskel = getPruefungOfReadOnlyPruefung(roHaskel);
     Pruefung dm = getPruefungOfReadOnlyPruefung(roDM);
 
-
     int schaetzungInformatik = 8;
     Map<Teilnehmerkreis, Integer> teilnehmerCount = new HashMap<>();
     teilnehmerCount.put(informatik, schaetzungInformatik);
@@ -603,7 +604,7 @@ class ScheduleServiceTest {
 
   @Test
   void addPruefungToBlock_pruefungIsAlreadyInSameBlock()
-      throws  NoPruefungsPeriodeDefinedException {
+      throws NoPruefungsPeriodeDefinedException {
     ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
     ReadOnlyBlock block = getBlockWith(pruefung);
     Block modelBlock = mock(Block.class);
@@ -738,7 +739,6 @@ class ScheduleServiceTest {
   @Test
   void removePruefungFromBlock_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
     when(dataAccessService.getPruefung(any())).thenThrow(NoPruefungsPeriodeDefinedException.class);
-    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
     ReadOnlyBlock block = getBlockWith();
     assertThrows(NoPruefungsPeriodeDefinedException.class,
         () -> deviceUnderTest.removePruefungFromBlock(block, RO_HASKELL_UNPLANNED));
@@ -1343,6 +1343,21 @@ class ScheduleServiceTest {
   }
 
   @Test
+  void bulkTest_createEmptyAndAdoptPeriode()
+      throws ImportException, IOException, NoPruefungsPeriodeDefinedException {
+    int errorCount = 0;
+    for (int i = 0; i < 100; i++) {
+      try {
+        createEmptyAndAdoptPeriodeTest_more_than_two_at_same_time();
+      } catch (AssertionError e) {
+        errorCount++;
+      }
+    }
+    System.out.println(
+        assertThat(errorCount).isZero().withFailMessage("failed " + errorCount + " times."));
+  }
+
+  @Test
   void createEmptyAndAdoptPeriodeTest_more_than_two_at_same_time()
       throws ImportException, IOException, NoPruefungsPeriodeDefinedException {
 
@@ -1377,20 +1392,29 @@ class ScheduleServiceTest {
     assertThat(haskell.isGeplant()).isTrue();
   }
 
+  private Pruefungsperiode setUpPruefungsperiodeAndIgnoreIOService(Semester semester,
+      LocalDate start, LocalDate end, LocalDate ankerTag, int kapazitaet, Path path,
+      IOService ioService) throws ImportException, IOException, NoPruefungsPeriodeDefinedException {
+    doNothing().when(ioService)
+        .createEmptyAndAdoptPeriode(semester, start, end, ankerTag, kapazitaet,
+            path);
 
-  @Test
-  void bulkTest_createEmptyAndAdoptPeriode()
-      throws ImportException, IOException, NoPruefungsPeriodeDefinedException {
-    int errorCount = 0;
-    for (int i = 0; i < 100; i++) {
-      try {
-        createEmptyAndAdoptPeriodeTest_more_than_two_at_same_time();
-      } catch (AssertionError e) {
-        errorCount++;
-      }
+    Pruefungsperiode pruefungsperiode = new PruefungsperiodeImpl(semester, start, end, ankerTag,
+        kapazitaet);
+
+    dataAccessService = ServiceProvider.getDataAccessService();
+    dataAccessService.setPruefungsperiode(pruefungsperiode);
+    restrictionService = ServiceProvider.getRestrictionService();
+    deviceUnderTest = new ScheduleService(dataAccessService, restrictionService,
+        ServiceProvider.getConverter());
+
+    return pruefungsperiode;
+  }
+
+  private void addPruefungenToPruefungsperiode(Pruefungsperiode periode, Set<Pruefung> toAdd) {
+    for (Pruefung pruefung : toAdd) {
+      periode.addPlanungseinheit(pruefung);
     }
-    System.out.println(
-        assertThat(errorCount).isZero().withFailMessage("failed " + errorCount + " times."));
   }
 
   @Test
@@ -1435,30 +1459,54 @@ class ScheduleServiceTest {
     assertThat(pruefung4.isGeplant()).isTrue();
   }
 
-
-  private Pruefungsperiode setUpPruefungsperiodeAndIgnoreIOService(Semester semester,
-      LocalDate start, LocalDate end, LocalDate ankerTag, int kapazitaet, Path path,
-      IOService ioService) throws ImportException, IOException, NoPruefungsPeriodeDefinedException {
-    doNothing().when(ioService)
-        .createEmptyAndAdoptPeriode(semester, start, end, ankerTag, kapazitaet,
-            path);
-
-    Pruefungsperiode pruefungsperiode = new PruefungsperiodeImpl(semester, start, end, ankerTag,
-        kapazitaet);
-
-    dataAccessService = ServiceProvider.getDataAccessService();
-    dataAccessService.setPruefungsperiode(pruefungsperiode);
-    restrictionService = ServiceProvider.getRestrictionService();
-    deviceUnderTest = new ScheduleService(dataAccessService, restrictionService,
-        ServiceProvider.getConverter());
-
-    return pruefungsperiode;
+  @Test
+  void setKapazitaetPeriode_noPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    doThrow(new NoPruefungsPeriodeDefinedException()).when(dataAccessService)
+        .setKapazitaetStudents(anyInt());
+    assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.setKapazitaetPeriode(1));
   }
 
-  private void addPruefungenToPruefungsperiode(Pruefungsperiode periode, Set<Pruefung> toAdd) {
-    for (Pruefung pruefung : toAdd) {
-      periode.addPlanungseinheit(pruefung);
-    }
+  @Test
+  void setKapazitaetPeriode_checkFor0PlannedPruefung() throws NoPruefungsPeriodeDefinedException {
+    int amountPlannedPruefungen = 0;
+    List<Pruefung> pruefungen = getRandomPlannedPruefungen(1L, amountPlannedPruefungen);
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(new HashSet<>(pruefungen));
+    deviceUnderTest.setKapazitaetPeriode(1);
+    verify(restrictionService, times(amountPlannedPruefungen)).getPruefungenAffectedBy(
+        any(Pruefung.class));
+  }
+
+  @Test
+  void setKapazitaetPeriode_checkFor1PlannedPruefung() throws NoPruefungsPeriodeDefinedException {
+    int amountPlannedPruefungen = 1;
+    List<Pruefung> pruefungen = getRandomPlannedPruefungen(1L, amountPlannedPruefungen);
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(new HashSet<>(pruefungen));
+    deviceUnderTest.setKapazitaetPeriode(1);
+    verify(restrictionService, times(amountPlannedPruefungen)).getPruefungenAffectedBy(
+        any(Pruefung.class));
+  }
+
+  @Test
+  void setKapazitaetPeriode_checkFor2PlannedPruefung() throws NoPruefungsPeriodeDefinedException {
+    int amountPlannedPruefungen = 2;
+    List<Pruefung> pruefungen = getRandomPlannedPruefungen(1L, amountPlannedPruefungen);
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(new HashSet<>(pruefungen));
+    deviceUnderTest.setKapazitaetPeriode(1);
+    verify(restrictionService, times(amountPlannedPruefungen)).getPruefungenAffectedBy(
+        any(Pruefung.class));
+  }
+
+  @Test
+  void setKapazitaetPeriode_resultContainsAllAffected() throws NoPruefungsPeriodeDefinedException {
+    List<Pruefung> pruefungen = getRandomPlannedPruefungen(1L, 2);
+    List<Pruefung> affectedPruefungen = getRandomPlannedPruefungen(2L, 7);
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(new HashSet<>(pruefungen));
+    when(restrictionService.getPruefungenAffectedBy(any(Pruefung.class))).thenReturn(
+        new HashSet<>(affectedPruefungen.subList(0, 5)),
+        new HashSet<>(affectedPruefungen.subList(5, 7)));
+    assertThat(deviceUnderTest.setKapazitaetPeriode(11)).containsExactlyInAnyOrderElementsOf(
+        affectedPruefungen);
   }
 
 }
