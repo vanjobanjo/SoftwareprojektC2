@@ -25,6 +25,12 @@ public class PlanungseinheitUtil {
     return result;
   }
 
+  /**
+   * Determines the changed scoring of two different sets
+   * @param before the scoring of pruefungen before the operation
+   * @param after the scoring of pruefunge after the operation
+   * @return Prueufungen which scoring has changed
+   */
   public static Set<Pruefung> changedScoring(Set<PruefungScoringWrapper> before,
       Set<PruefungScoringWrapper> after) {
 
