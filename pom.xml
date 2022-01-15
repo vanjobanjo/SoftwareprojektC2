@@ -150,6 +150,7 @@
                 <param>de.fhwedel.klausps.controller.*</param>
               </targetClasses>
               <timestampedReports>false</timestampedReports>
+              <withHistory>true</withHistory>
             </configuration>
             <dependencies>
               <dependency>

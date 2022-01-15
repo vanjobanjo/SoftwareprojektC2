@@ -47,8 +47,19 @@ public class DataAccessService {
     this.pruefungsperiode = pruefungsperiode;
   }
 
-  public void setKapazitaetPeriode(int kapazitaet) {
+  public void setKapazitaetStudents(int kapazitaet)
+      throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
+    if (kapazitaet < 0) {
+      throw new IllegalArgumentException("Tried to set a negative capacity of students.");
+    }
+    checkForPruefungsperiode();
     pruefungsperiode.setKapazitaet(kapazitaet);
+  }
+
+  private void checkForPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    if (pruefungsperiode == null) {
+      throw new NoPruefungsPeriodeDefinedException();
+    }
   }
 
   public Pruefung createPruefung(String name, String pruefungsNr, String refVWS,
@@ -89,17 +100,6 @@ public class DataAccessService {
     return nonNull(pruefungsperiode);
   }
 
-  private Pruefung getPruefungFromModelOrException(ReadOnlyPruefung pruefung)
-      throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
-    Optional<Pruefung> possiblePruefung = getPruefung(pruefung);
-    if (possiblePruefung.isEmpty()) {
-      throw new IllegalArgumentException(
-          "Pruefung mit Pruefungsnummer " + pruefung.getPruefungsnummer()
-              + " ist in der Datenbank nicht vorhanden.");
-    }
-    return possiblePruefung.get();
-  }
-
   /**
    * Schedules a pruefung without any consistency checks.
    *
@@ -115,6 +115,24 @@ public class DataAccessService {
       pruefungFromModel.setStartzeitpunkt(startTermin);
       return pruefungFromModel;
     }
+  }
+
+  private Pruefung getPruefungFromModelOrException(ReadOnlyPruefung pruefung)
+      throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
+    Optional<Pruefung> possiblePruefung = getPruefung(pruefung);
+    if (possiblePruefung.isEmpty()) {
+      throw new IllegalArgumentException(
+          "Pruefung mit Pruefungsnummer " + pruefung.getPruefungsnummer()
+              + " ist in der Datenbank nicht vorhanden.");
+    }
+    return possiblePruefung.get();
+  }
+
+  public Optional<Pruefung> getPruefung(ReadOnlyPruefung readOnlyPruefung)
+      throws NoPruefungsPeriodeDefinedException {
+    noNullParameters(readOnlyPruefung);
+    checkForPruefungsperiode();
+    return Optional.ofNullable(pruefungsperiode.pruefung(readOnlyPruefung.getPruefungsnummer()));
   }
 
   /**
@@ -225,12 +243,6 @@ public class DataAccessService {
   public Set<Pruefung> getGeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
     return pruefungsperiode.geplantePruefungen();
-  }
-
-  private void checkForPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
-    if (pruefungsperiode == null) {
-      throw new NoPruefungsPeriodeDefinedException();
-    }
   }
 
   public Set<Planungseinheit> getAllPlanungseinheitenBetween(LocalDateTime start,
@@ -361,13 +373,6 @@ public class DataAccessService {
   private boolean terminIsSameDayOrBeforePeriodEnd(LocalDateTime termin) {
     LocalDate end = pruefungsperiode.getEnddatum();
     return end.isAfter(termin.toLocalDate()) || end.isEqual(termin.toLocalDate());
-  }
-
-  public Optional<Pruefung> getPruefung(ReadOnlyPruefung readOnlyPruefung)
-      throws NoPruefungsPeriodeDefinedException {
-    noNullParameters(readOnlyPruefung);
-    checkForPruefungsperiode();
-    return Optional.ofNullable(pruefungsperiode.pruefung(readOnlyPruefung.getPruefungsnummer()));
   }
 
   public List<Pruefung> deleteBlock(ReadOnlyBlock block)

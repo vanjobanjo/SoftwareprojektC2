@@ -348,16 +348,15 @@ public class ScheduleService {
     return emptySet();
   }
 
-  public List<Planungseinheit> setKapazitaetPeriode(int kapazitaet)
-      throws NoPruefungsPeriodeDefinedException {
-    noNullParameters(kapazitaet);
-    dataAccessService.setKapazitaetPeriode(kapazitaet);
-    // collect in set => same Pruefung will not be added twice
-    Set<Planungseinheit> result = new HashSet<>();
+  @NotNull
+  public Set<Planungseinheit> setKapazitaetPeriode(int kapazitaet)
+      throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
+    dataAccessService.setKapazitaetStudents(kapazitaet);
+    Set<Planungseinheit> result = new HashSet<>(); // "Set" avoids duplicate entries
     for (Pruefung pruefung : dataAccessService.getPlannedPruefungen()) {
       result.addAll(getAffectedPruefungenBy(pruefung));
     }
-    return new LinkedList<>(result);
+    return result;
   }
 
   @NotNull
