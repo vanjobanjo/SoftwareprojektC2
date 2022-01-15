@@ -143,13 +143,13 @@ class DataAccessServiceTest {
 
   @Test
   @DisplayName("Change name of a Pruefung")
-  void setName_successfullyTest() throws NoPruefungsPeriodeDefinedException {
+  void changeNameOf_successfullyTest() throws NoPruefungsPeriodeDefinedException {
     ReadOnlyPruefung before = getReadOnlyPruefung();
     Pruefung model = getPruefungOfReadOnlyPruefung(before);
     String newName = "NoNameNeeded";
 
     when(pruefungsperiode.pruefung(before.getPruefungsnummer())).thenReturn(model);
-    Pruefung after = deviceUnderTest.changeNameOfPruefung(before, newName).asPruefung();
+    Pruefung after = deviceUnderTest.changeNameOf(before, newName).asPruefung();
     ReadOnlyPruefungAssert.assertThat(converter.convertToReadOnlyPruefung(after))
         .differsOnlyInNameFrom(before).hasName(newName);
   }
@@ -162,6 +162,24 @@ class DataAccessServiceTest {
     }
     roPruefung.getTeilnehmerKreisSchaetzung().forEach(modelPruefung::setSchaetzung);
     return modelPruefung;
+  }
+
+  @Test
+  void changeNameOf_unknownPruefung() throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
+    when(pruefungsperiode.pruefung(anyString())).thenReturn(null);
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.changeNameOf(pruefung, "name"));
+  }
+
+  @Test
+  void changeNameOf_reallyChangeName() throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
+    Pruefung pruefungToChange = mock(Pruefung.class);
+    String name = "name";
+    when(pruefungsperiode.pruefung(anyString())).thenReturn(pruefungToChange);
+    deviceUnderTest.changeNameOf(pruefung, name);
+    verify(pruefungToChange).setName(name);
   }
 
   @Test

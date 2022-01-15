@@ -235,7 +235,6 @@ public class Controller implements InterfaceController {
   public ReadOnlyPlanungseinheit setPruefungsnummer(ReadOnlyPruefung pruefung,
       String pruefungsnummer) throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, pruefungsnummer);
-    ensureAvailabilityOfPruefungsperiode();
     return converter.convertToReadOnlyPlanungseinheit(
         dataAccessService.setPruefungsnummer(pruefung, pruefungsnummer));
   }
@@ -244,9 +243,8 @@ public class Controller implements InterfaceController {
   public ReadOnlyPlanungseinheit setName(ReadOnlyPruefung pruefung, String name)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, name);
-    ensureAvailabilityOfPruefungsperiode();
     return converter.convertToReadOnlyPlanungseinheit(
-        dataAccessService.changeNameOfPruefung(pruefung, name));
+        dataAccessService.changeNameOf(pruefung, name));
   }
 
   @Override
