@@ -39,6 +39,7 @@ import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Semestertyp;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.BlockImpl;
+import de.fhwedel.klausps.model.impl.SemesterImpl;
 import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -635,6 +636,13 @@ class ControllerTest {
     when(dataAccessService.changeNameOf(any(), any())).thenThrow(IllegalArgumentException.class);
     when(converter.convertToReadOnlyPlanungseinheit(modelPruefung)).thenReturn(pruefung);
     assertThrows(IllegalArgumentException.class, () -> deviceUnderTest.setName(pruefung, name));
+  }
+
+  @Test
+  void test_createEmptyPeriode() {
+    Controller c = new Controller();
+    c.createEmptyPeriode(new SemesterImpl(Semestertyp.WINTERSEMESTER, Year.now()), LocalDate.now(),
+        LocalDate.now().plusDays(30), LocalDate.now().plusDays(1), 30);
   }
 
 }

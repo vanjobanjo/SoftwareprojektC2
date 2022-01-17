@@ -33,6 +33,7 @@ public class ServiceProvider {
     if (scheduleService == null) {
       scheduleService = new ScheduleService(getDataAccessService(), getRestrictionService(),
           getConverter());
+      converter.setScheduleService(scheduleService);
     }
     return scheduleService;
   }
@@ -44,7 +45,7 @@ public class ServiceProvider {
     return restrictionService;
   }
 
-   static Converter getConverter() {
+  public static Converter getConverter() {
     if (converter == null) {
       converter = new Converter();
     }
