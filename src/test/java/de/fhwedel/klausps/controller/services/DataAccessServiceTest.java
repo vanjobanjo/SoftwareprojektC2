@@ -813,7 +813,6 @@ class DataAccessServiceTest {
     when(this.pruefungsperiode.planungseinheitenBetween(start, end)).thenReturn(setPlanung);
     assertThrows(IllegalTimeSpanException.class,
         () -> this.deviceUnderTest.getAllPlanungseinheitenBetween(end, start));
-
   }
 
   @Test

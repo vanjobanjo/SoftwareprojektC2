@@ -122,9 +122,6 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
   @Test
   void restrictionViolatedWhenSlightlyMoreStudentsThanPermitted_onePruefung_oneTeilnehmerkreis()
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
-    /*Set<Planungseinheit> planungseinheiten = new HashSet<>(1);
-    planungseinheiten.add(getRandomPlannedPruefung(1L));
-    planungseinheiten.add(planungseinheiten.get(0));*/
     Planungseinheit planungseinheit = getRandomPlannedPruefung(1);
     planungseinheit.asPruefung().addTeilnehmerkreis(getRandomTeilnehmerkreis(1L), 201);
 
