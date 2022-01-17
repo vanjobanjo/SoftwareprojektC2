@@ -8,6 +8,7 @@ import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungenAt
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedPruefung;
 import static java.time.Duration.ZERO;
 import static java.time.Duration.ofMinutes;
+import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -29,7 +30,6 @@ import de.fhwedel.klausps.model.impl.BlockImpl;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -58,7 +58,7 @@ class AtSameTimeRestrictionTest {
   @DisplayName("Checking an unplanned pruefung results in no violation")
   void evaluate_callWithUnplannedPruefung() throws NoPruefungsPeriodeDefinedException {
     Pruefung pruefung = getRandomUnplannedPruefung(5L);
-    when(dataAccessService.getPlannedPruefungen()).thenReturn(Collections.emptySet());
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(emptySet());
     assertThat(deviceUnderTest.evaluate(pruefung)).isEmpty();
   }
 
@@ -71,7 +71,7 @@ class AtSameTimeRestrictionTest {
     List<Pruefung> pruefungen = getRandomPruefungenAt(5L, startFirstPruefung, startSecondPruefung,
         startThirdPruefung);
 
-    when(dataAccessService.getPlannedPruefungen()).thenReturn(Collections.emptySet());
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(emptySet());
 
     assertThat(deviceUnderTest.evaluate(pruefungen.get(0))).isEmpty();
     assertThat(deviceUnderTest.evaluate(pruefungen.get(1))).isEmpty();

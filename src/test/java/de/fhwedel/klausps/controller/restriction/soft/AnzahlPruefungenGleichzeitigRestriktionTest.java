@@ -8,7 +8,6 @@ import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungWith;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungenAt;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTeilnehmerkreis;
-import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTeilnehmerkreise;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -625,6 +624,13 @@ todo test schlägt fehl
         planungseinheiten)).containsExactlyInAnyOrderElementsOf(teilnehmerkreise);
   }*/
 
+  private <T> Set<T> union(Collection<T> fst, T other) {
+    Set<T> result = new HashSet<>();
+    result.addAll(fst);
+    result.addAll(List.of(other));
+    return result;
+  }
+
   @Test
   @DisplayName("Multiple overlapping blocks do not violate restriction when their amount does not exceed the limit")
   void evaluate_morePruefungenThanAllowed_twoOverlappingBlocks()
@@ -664,13 +670,6 @@ todo test schlägt fehl
     Set<T> result = new HashSet<>();
     result.addAll(fst);
     result.addAll(other);
-    return result;
-  }
-
-  private <T> Set<T> union(Collection<T> fst, T other) {
-    Set<T> result = new HashSet<>();
-    result.addAll(fst);
-    result.addAll(List.of(other));
     return result;
   }
 
