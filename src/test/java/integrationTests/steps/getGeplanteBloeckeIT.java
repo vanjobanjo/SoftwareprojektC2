@@ -6,7 +6,7 @@ import io.cucumber.java.de.Und;
 import io.cucumber.java.de.Wenn;
 import org.junit.AssumptionViolatedException;
 
-public class getGeplanteBloecke {
+public class getGeplanteBloeckeIT {
 
   @Und("es gibt die folgenden geplanten Bloecke:")
   public void esGibtDieBloecke(DataTable table) {

@@ -50,7 +50,6 @@ public class Controller implements InterfaceController {
   public Controller() {
     this(ServiceProvider.getDataAccessService(), ServiceProvider.getIOService(),
         ServiceProvider.getScheduleService(), ServiceProvider.getConverter());
-
   }
 
   public Controller(DataAccessService dataAccessService, IOService ioService,

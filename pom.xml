@@ -34,6 +34,7 @@
       <groupId>io.cucumber</groupId>
       <artifactId>cucumber-junit</artifactId>
       <version>${cucumber.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -114,11 +115,10 @@
             <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-failsafe-plugin</artifactId>
-              <version>${surefire.version}</version>
               <configuration>
-                <includes>
-                  <include>**/CucumberRunner.java</include>
-                </includes>
+                <classesDirectory>
+                  ${project.build.outputDirectory}
+                </classesDirectory>
               </configuration>
               <executions>
                 <execution>
@@ -127,6 +127,7 @@
                   </goals>
                 </execution>
               </executions>
+              <version>${failsafe.version}</version>
             </plugin>
           </plugins>
         </pluginManagement>
@@ -183,6 +184,7 @@
     <junit-jupiter.version>5.8.2</junit-jupiter.version>
     <junit-platform.version>1.8.2</junit-platform.version>
     <surefire.version>3.0.0-M5</surefire.version>
+    <failsafe.version>3.0.0-M5</failsafe.version>
     <junit-vintage-engine.version>5.8.2</junit-vintage-engine.version>
     <mockito.version>4.2.0</mockito.version>
   </properties>
