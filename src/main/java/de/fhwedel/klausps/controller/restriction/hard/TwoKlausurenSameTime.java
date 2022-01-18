@@ -27,8 +27,15 @@ import java.util.Optional;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Klasse die für das Testen da ist, wenn zwei Klausuren gleichzeitig stattfinden, mit den gleichen Teilnehmerkreis
+ */
 public class TwoKlausurenSameTime extends HarteRestriktion {
 
+
+  /**
+   * Speichern von der Zeit, die zwischen den Pruefungen mit den gleichen Teilnehmerkreis liegen darf
+   */
   private final Duration bufferBetweenPlanungseinheiten;
 
   public TwoKlausurenSameTime() {
