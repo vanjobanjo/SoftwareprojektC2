@@ -3,6 +3,7 @@ package de.fhwedel.klausps.controller.restriction.soft;
 import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.FREIER_TAG_ZWISCHEN_PRUEFUNGEN;
 
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Pruefung;
@@ -27,24 +28,39 @@ public class FreierTagZwischenPruefungen extends WeicheRestriktion {
   }
 
   @Override
-  public Optional<WeichesKriteriumAnalyse> evaluate(@NotNull Pruefung pruefung) {
+  public Optional<WeichesKriteriumAnalyse> evaluate(@NotNull Pruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException {
 
     if (!pruefung.isGeplant()) {
       return Optional.empty();
     }
     Set<Pruefung> pruefungenWithSameTeilnehmerkreisen = new HashSet<>(
-        dataAccessService.getGeplanteModelPruefung());
+        dataAccessService.getGeplantePruefungen());
     // remove of no overlapping Teilnehmerkreise and more than one day apart
-    pruefungenWithSameTeilnehmerkreisen.remove(pruefung);
-    pruefungenWithSameTeilnehmerkreisen.removeIf(other ->
-        dataAccessService.areInSameBlock(pruefung, other)
-            || testDayApart(pruefung, other)
-            || testOverlappingTeilnehmerkreise(pruefung, other));
+    pruefungenWithSameTeilnehmerkreisen = filterOnlyOverlappingTeilnehmerkreiseAndOnlyDayApart(
+        pruefung, pruefungenWithSameTeilnehmerkreisen);
 
     if (pruefungenWithSameTeilnehmerkreisen.isEmpty()) {
       return Optional.empty();
     }
     return Optional.of(buildAnalysis(pruefung, pruefungenWithSameTeilnehmerkreisen));
+  }
+
+  @NotNull
+  private Set<Pruefung> filterOnlyOverlappingTeilnehmerkreiseAndOnlyDayApart(
+      @NotNull final Pruefung pruefung,
+      @NotNull final Set<Pruefung> pruefungenWithSameTeilnehmerkreisen)
+      throws NoPruefungsPeriodeDefinedException {
+    Set<Pruefung> result = new HashSet<>();
+    for (Pruefung pruefung1 : pruefungenWithSameTeilnehmerkreisen) {
+      if (!dataAccessService.areInSameBlock(pruefung, pruefung1)
+          && !testDayApart(pruefung, pruefung1)
+          && !testOverlappingTeilnehmerkreise(pruefung, pruefung1)) {
+        result.add(pruefung1);
+      }
+    }
+    result.remove(pruefung);
+    return result;
   }
 
 

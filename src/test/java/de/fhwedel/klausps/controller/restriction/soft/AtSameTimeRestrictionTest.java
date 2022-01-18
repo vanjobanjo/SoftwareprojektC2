@@ -8,6 +8,7 @@ import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungenAt
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedPruefung;
 import static java.time.Duration.ZERO;
 import static java.time.Duration.ofMinutes;
+import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -17,6 +18,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.matchers.IsOneOfMatcher;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Block;
@@ -28,9 +30,9 @@ import de.fhwedel.klausps.model.impl.BlockImpl;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,7 +46,7 @@ class AtSameTimeRestrictionTest {
   public DataAccessService dataAccessService;
 
   @BeforeEach
-  public void setUp() {
+  public void setUp() throws NoPruefungsPeriodeDefinedException {
     this.dataAccessService = mock(DataAccessService.class);
     MockSettings mockSettings = withSettings().useConstructor(this.dataAccessService,
         ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH, ZERO);
@@ -54,22 +56,22 @@ class AtSameTimeRestrictionTest {
 
   @Test
   @DisplayName("Checking an unplanned pruefung results in no violation")
-  void evaluate_callWithUnplannedPruefung() {
+  void evaluate_callWithUnplannedPruefung() throws NoPruefungsPeriodeDefinedException {
     Pruefung pruefung = getRandomUnplannedPruefung(5L);
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Collections.emptySet());
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(emptySet());
     assertThat(deviceUnderTest.evaluate(pruefung)).isEmpty();
   }
 
   @Test
   @DisplayName("Multiple pruefungen do not violate the restriction when not at the same time")
-  void evaluate_noSimultaneousPruefungen() {
+  void evaluate_noSimultaneousPruefungen() throws NoPruefungsPeriodeDefinedException {
     LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
     LocalDateTime startSecondPruefung = startFirstPruefung.plusMinutes(180);
     LocalDateTime startThirdPruefung = startSecondPruefung.plusMinutes(180);
     List<Pruefung> pruefungen = getRandomPruefungenAt(5L, startFirstPruefung, startSecondPruefung,
         startThirdPruefung);
 
-    when(dataAccessService.getGeplanteModelPruefung()).thenReturn(Collections.emptySet());
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(emptySet());
 
     assertThat(deviceUnderTest.evaluate(pruefungen.get(0))).isEmpty();
     assertThat(deviceUnderTest.evaluate(pruefungen.get(1))).isEmpty();
@@ -77,13 +79,15 @@ class AtSameTimeRestrictionTest {
   }
 
   @Test
-  void evaluate_violatedRestrictionResultsInAnalyse() throws IllegalTimeSpanException {
+  void evaluate_violatedRestrictionResultsInAnalyse()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
     List<Planungseinheit> pruefungen = convertPruefungenToPlanungseinheiten(
         getRandomPruefungenAt(5L, startFirstPruefung, startFirstPruefung.plusMinutes(15),
             startFirstPruefung.plusMinutes(30)));
 
-    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(pruefungen);
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        Set.copyOf(pruefungen));
     // direct violation of restriction
     when(deviceUnderTest.violatesRestriction(any())).thenReturn(true);
 
@@ -91,13 +95,15 @@ class AtSameTimeRestrictionTest {
   }
 
   @Test
-  void evaluate_violatedRestrictionResultsInAnalyse_() throws IllegalTimeSpanException {
+  void evaluate_violatedRestrictionResultsInAnalyse_()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
     List<Planungseinheit> pruefungen = convertPruefungenToPlanungseinheiten(
         getRandomPruefungenAt(5L, startFirstPruefung, startFirstPruefung.plusMinutes(15),
             startFirstPruefung.plusMinutes(30)));
 
-    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(pruefungen);
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        Set.copyOf(pruefungen));
     // direct violation of restriction
     when(deviceUnderTest.violatesRestriction(any())).thenReturn(true, false, true);
 
@@ -105,13 +111,15 @@ class AtSameTimeRestrictionTest {
   }
 
   @Test
-  void evaluate_notViolatedRestrictionResultsInNoAnalyse() throws IllegalTimeSpanException {
+  void evaluate_notViolatedRestrictionResultsInNoAnalyse()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     LocalDateTime startFirstPruefung = LocalDateTime.of(1999, 12, 23, 8, 0);
     List<Planungseinheit> pruefungen = convertPruefungenToPlanungseinheiten(
         getRandomPruefungenAt(5L, startFirstPruefung, startFirstPruefung.plusMinutes(15),
             startFirstPruefung.plusMinutes(30)));
 
-    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(pruefungen);
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        Set.copyOf(pruefungen));
     // direct violation of restriction
     when(deviceUnderTest.violatesRestriction(any())).thenReturn(true, false);
 
@@ -119,7 +127,8 @@ class AtSameTimeRestrictionTest {
   }
 
   @Test
-  void evaluate_checkedPruefungIsInBlock_parallel() throws IllegalTimeSpanException {
+  void evaluate_checkedPruefungIsInBlock_parallel()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     // when checking for a pruefung use the start and end time of the pruefung itself when the blocks type is parallel
     Block block = getParallelBlockWith3Pruefungen().asBlock();
     List<Pruefung> pruefungenInBlock = new ArrayList<>(block.getPruefungen());
@@ -142,7 +151,8 @@ class AtSameTimeRestrictionTest {
   }
 
   @Test
-  void evaluate_checkedPruefungIsInBlock_sequential() throws IllegalTimeSpanException {
+  void evaluate_checkedPruefungIsInBlock_sequential()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     // when checking for a pruefung use the start and end time of its block if the blocks type is sequential
     Block block = getSequentialBlockWith3Pruefungen().asBlock();
     List<Pruefung> pruefungenInBlock = new ArrayList<>(block.getPruefungen());
@@ -165,7 +175,8 @@ class AtSameTimeRestrictionTest {
   }
 
   @Test
-  void sequentialBlocksOverlapBecauseOfAdditiveDuration() throws IllegalTimeSpanException {
+  void sequentialBlocksOverlapBecauseOfAdditiveDuration()
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     // test that sequential blocks are detected as overlapping with the checked pruefung if none of
     // the contained pruefungen overlaps but the combined time does.
     Block block = getSequentialBlockWithTotalDurationOf5Hours().asBlock();
@@ -178,7 +189,7 @@ class AtSameTimeRestrictionTest {
     when(dataAccessService.getBlockTo(
         argThat(new IsOneOfMatcher<>(pruefungenInBlock)))).thenReturn(Optional.of(block));
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        List.of(toCheckFor, block));
+        Set.of(toCheckFor, block));
     when(deviceUnderTest.violatesRestriction(any())).thenAnswer(hasMoreThanOneElement);
 
     assertThat(deviceUnderTest.evaluate(toCheckFor)).isPresent();

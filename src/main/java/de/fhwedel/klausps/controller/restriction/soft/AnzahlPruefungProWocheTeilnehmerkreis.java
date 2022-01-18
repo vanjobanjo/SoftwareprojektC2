@@ -3,6 +3,7 @@ package de.fhwedel.klausps.controller.restriction.soft;
 import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE;
 
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Block;
@@ -20,53 +21,126 @@ import java.util.stream.Stream;
 public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
 
   // for testing
-  public static int LIMIT_DEFAULT = 5;
+  public static final int LIMIT_DEFAULT = 5;
   private static final int DAYS_WEEK_DEFAULT = 7;
   private final int limit;
-
-  private final LocalDate startPeriode;
-  // the set contains all pruefungen of the week, also the sibblings in the block
-  private  Map<Integer, Set<Pruefung>> weekPruefungMap;
 
   //Mock Konstruktor
   AnzahlPruefungProWocheTeilnehmerkreis(
       DataAccessService dataAccessService,
       final int LIMIT_TEST) {
     super(dataAccessService, ANZAHL_PRUEFUNGEN_PRO_WOCHE);
-    startPeriode = dataAccessService.getStartOfPeriode();
-    weekPruefungMap = weekMapOfPruefung(dataAccessService.getGeplanteModelPruefung(), startPeriode);
     limit = LIMIT_TEST;
   }
 
+  /**
+   * Public constructor
+   */
   public AnzahlPruefungProWocheTeilnehmerkreis() {
     super(ServiceProvider.getDataAccessService(), ANZAHL_PRUEFUNGEN_PRO_WOCHE);
-    startPeriode = dataAccessService.getStartOfPeriode();
     limit = LIMIT_DEFAULT;
   }
 
-  Map<Integer, Set<Pruefung>> weekMapOfPruefung(Set<Pruefung> geplantePruefung,
+  /**
+   * Creates a Map, Pruefungen grouped by scheduled week. Week 0 is the first week of the
+   * startPeriode.
+   *
+   * @param scheduledPruefungen schedule Pruefungen
+   * @param startPeriode        start of the periode
+   * @return Map with Pruefungen grouped by week of Pruefung.
+   */
+  Map<Integer, Set<Pruefung>> weekMapOfPruefung(Set<Pruefung> scheduledPruefungen,
       LocalDate startPeriode) {
-    return geplantePruefung.stream().collect(
+    return scheduledPruefungen.stream().collect(
         Collectors.groupingBy(pruefung -> getWeek(startPeriode, pruefung), Collectors.toSet()));
   }
 
+  /**
+   * @return scheduled week of the passed pruefung.
+   */
   private int getWeek(LocalDate startPeriode, Pruefung pruefung) {
     return (pruefung.getStartzeitpunkt().getDayOfYear() - startPeriode.getDayOfYear())
         / DAYS_WEEK_DEFAULT;
   }
 
+  /**
+   * @return the amount of the passed Teilnehmerkreis, in the given set of Pruefung.
+   */
   private int countOfTeilnehmerkreis(Teilnehmerkreis tk, Set<Pruefung> pruefungen) {
     return (int) pruefungen.stream().filter(pruefung -> pruefung.getTeilnehmerkreise().contains(tk))
         .count();
   }
 
+  @Override
+  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException {
+
+    Map<Integer, Set<Pruefung>> weekPruefungMap;
+    LocalDate start;
+
+    try {
+      start = dataAccessService.getStartOfPeriode();
+      weekPruefungMap = weekMapOfPruefung(dataAccessService.getPlannedPruefungen(), start);
+    } catch (NoPruefungsPeriodeDefinedException e) {
+      return Optional.empty();
+    }
+
+    Optional<WeichesKriteriumAnalyse> analyseForTks = Optional.empty();
+    for (Teilnehmerkreis tk : pruefung.getTeilnehmerkreise()) {
+      int week = getWeek(start, pruefung);
+      Set<Pruefung> pruefungenScheduleSameWeek = weekPruefungMap.get(week);
+      analyseForTks = evaluateForTkConcat(pruefung, tk, analyseForTks,
+          pruefungenScheduleSameWeek);
+    }
+    return analyseForTks;
+  }
+
+  /**
+   * Will concat two analyse
+   *
+   * @param newAnalyse is always present
+   * @param oldAnalyse could be empty
+   * @return WeichesKriteriumsAnalyse
+   */
+  private Optional<WeichesKriteriumAnalyse> concatAnalyse(
+      WeichesKriteriumAnalyse newAnalyse, Optional<WeichesKriteriumAnalyse> oldAnalyse) {
+    assert newAnalyse != null;
+    // todo zweiter Parameter muss gar nicht erst übergeben werden, wenn vor Aufruf der
+    //  Methode schon auf isEmpty() überprüft wird
+    if (oldAnalyse.isEmpty()) {
+      return Optional.of(newAnalyse);
+    }
+    Set<Pruefung> combinedPruefung = new HashSet<>();
+    combinedPruefung.addAll(newAnalyse.getCausingPruefungen());
+    combinedPruefung.addAll(oldAnalyse.get().getCausingPruefungen());
+
+    Set<Teilnehmerkreis> combinedTk = new HashSet<>();
+    combinedTk.addAll(newAnalyse.getAffectedTeilnehmerKreise());
+    combinedTk.addAll(oldAnalyse.get().getAffectedTeilnehmerKreise());
+    int sum = newAnalyse.getAmountAffectedStudents() + oldAnalyse.get().getAmountAffectedStudents();
+    int deltaScoring = oldAnalyse.get().getDeltaScoring() + newAnalyse.getDeltaScoring();
+    return Optional.of(
+        new WeichesKriteriumAnalyse(new HashSet<>(combinedPruefung), ANZAHL_PRUEFUNGEN_PRO_WOCHE,
+            new HashSet<>(combinedTk), sum, deltaScoring));
+
+  }
+
+  /**
+   * Evaluation for the Anzahl Prufung Pro Woche Teilnehmerkreis. Will concate the analysen when
+   * there was another violation.
+   *
+   * @param pruefung           Pruefung to check the violation
+   * @param tk                 a Teilnehmerkreis of the passed Pruefung to check
+   * @param analyse            an other violation of the same pruefung
+   * @param pruefungenSameWeek Pruefungen which are scheduled in the same week
+   * @return a optional WeichesKriteriumsAnalyse when there is a violation.
+   */
   private Optional<WeichesKriteriumAnalyse> evaluateForTkConcat(Pruefung pruefung,
       Teilnehmerkreis tk,
-      Optional<WeichesKriteriumAnalyse> analyse) {
+      Optional<WeichesKriteriumAnalyse> analyse,
+      Set<Pruefung> pruefungenSameWeek) throws NoPruefungsPeriodeDefinedException {
     assert pruefung.getTeilnehmerkreise().contains(tk);
 
-    int week = getWeek(startPeriode, pruefung);
-    Set<Pruefung> pruefungenSameWeek = weekPruefungMap.get(week);
     Optional<Block> blockOpt = dataAccessService.getBlockTo(pruefung);
     if (blockOpt.isPresent()) {
       pruefungenSameWeek = filterSiblingsOfPruefung(pruefung, pruefungenSameWeek);
@@ -86,48 +160,6 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
         analyse);
   }
 
-  private Optional<WeichesKriteriumAnalyse> concatAnalyse(
-      WeichesKriteriumAnalyse newAnalyse, Optional<WeichesKriteriumAnalyse> oldAnalyse) {
-    assert newAnalyse != null;
-    if (oldAnalyse.isEmpty()) {
-      return Optional.of(newAnalyse);
-    }
-    Set<Pruefung> combinedPruefung = new HashSet<>();
-    combinedPruefung.addAll(newAnalyse.getCausingPruefungen());
-    combinedPruefung.addAll(oldAnalyse.get().getCausingPruefungen());
-
-    Set<Teilnehmerkreis> combinedTk = new HashSet<>();
-    combinedTk.addAll(newAnalyse.getAffectedTeilnehmerKreise());
-    combinedTk.addAll(oldAnalyse.get().getAffectedTeilnehmerKreise());
-    int sum = newAnalyse.getAmountAffectedStudents() + oldAnalyse.get().getAmountAffectedStudents();
-    int deltaScoring = oldAnalyse.get().getDeltaScoring() + newAnalyse.getDeltaScoring();
-    return Optional.of(
-        new WeichesKriteriumAnalyse(new HashSet<>(combinedPruefung), ANZAHL_PRUEFUNGEN_PRO_WOCHE,
-            new HashSet<>(combinedTk), sum, deltaScoring));
-
-  }
-
-  @Override
-  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
-    weekPruefungMap = weekMapOfPruefung(dataAccessService.getGeplanteModelPruefung(), startPeriode);
-    Optional<WeichesKriteriumAnalyse> analyseForTks = Optional.empty();
-    for (Teilnehmerkreis tk : pruefung.getTeilnehmerkreise()) {
-      analyseForTks = evaluateForTkConcat(pruefung, tk, analyseForTks);
-    }
-    return analyseForTks;
-  }
-
-  boolean isAboveLimit(Pruefung pruefung, Teilnehmerkreis tk) {
-    int week = getWeek(startPeriode, pruefung);
-    Set<Pruefung> pruefungen = weekPruefungMap.get(week);
-    Optional<Block> blockOpt = dataAccessService.getBlockTo(pruefung);
-    if (blockOpt.isPresent()) {
-      pruefungen = filterSiblingsOfPruefung(pruefung, pruefungen);
-    }
-    return countOfTeilnehmerkreis(tk, pruefungen) >= limit;
-  }
-
-
   /**
    * Filters the block siblings of the passed pruefung. When the passed pruefung doesn't belong to
    * any block, the same set will be returned.
@@ -139,7 +171,7 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
    * @pre pruefungen must contains pruefung
    */
   private Set<Pruefung> filterSiblingsOfPruefung(Pruefung pruefung,
-      Set<Pruefung> pruefungen) {
+      Set<Pruefung> pruefungen) throws NoPruefungsPeriodeDefinedException {
     assert pruefungen.contains(pruefung);
     Optional<Block> blockOpt = dataAccessService.getBlockTo(pruefung);
 
@@ -182,7 +214,8 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
    * @param pruefungen Pruefungen.
    * @return Accumlated Planungseinheiten.
    */
-  private Set<Planungseinheit> getAccumulatedPlanungseinheiten(Set<Pruefung> pruefungen) {
+  private Set<Planungseinheit> getAccumulatedPlanungseinheiten(Set<Pruefung> pruefungen)
+      throws NoPruefungsPeriodeDefinedException {
     Set<Planungseinheit> planungseinheiten = new HashSet<>();
     for (Pruefung p : pruefungen) {
       Optional<Block> blockOpt = dataAccessService.getBlockTo(p);

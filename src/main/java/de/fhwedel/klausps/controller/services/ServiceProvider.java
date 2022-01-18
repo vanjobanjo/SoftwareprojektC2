@@ -19,7 +19,6 @@ public class ServiceProvider {
     if (dataAccessService == null) {
       dataAccessService = new DataAccessService();
     }
-    dataAccessService.setConverter(getConverter());
     return dataAccessService;
   }
 
@@ -34,7 +33,7 @@ public class ServiceProvider {
     if (scheduleService == null) {
       scheduleService = new ScheduleService(getDataAccessService(), getRestrictionService(),
           getConverter());
-      dataAccessService.setConverter(converter);
+      converter.setScheduleService(scheduleService);
     }
     return scheduleService;
   }
@@ -46,15 +45,12 @@ public class ServiceProvider {
     return restrictionService;
   }
 
-   static Converter getConverter() {
+  public static Converter getConverter() {
     if (converter == null) {
       converter = new Converter();
     }
     if (scheduleService != null) {
       converter.setScheduleService(scheduleService);
-    }
-    if (dataAccessService != null) {
-      dataAccessService.setConverter(converter);
     }
     return converter;
   }

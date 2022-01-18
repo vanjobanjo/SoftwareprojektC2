@@ -2,6 +2,7 @@ package de.fhwedel.klausps.controller.restriction.soft;
 
 import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH;
 
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Block;
@@ -12,7 +13,6 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -30,7 +30,8 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends AtSameTimeRestricti
   }
 
   protected AnzahlPruefungenGleichzeitigRestriktion(@NotNull DataAccessService dataAccessService) {
-    this(dataAccessService, DEFAULT_MAX_PRUEFUNGEN_AT_A_TIME, DEFAULT_BUFFER);
+    this(dataAccessService, DEFAULT_MAX_PRUEFUNGEN_AT_A_TIME,
+        DEFAULT_BUFFER_BETWEEN_PLANUNGSEINHEITEN);
   }
 
   protected AnzahlPruefungenGleichzeitigRestriktion(@NotNull DataAccessService dataAccessService,
@@ -41,12 +42,12 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends AtSameTimeRestricti
 
   protected AnzahlPruefungenGleichzeitigRestriktion(@NotNull DataAccessService dataAccessService,
       int maxPruefungenAtATime) {
-    this(dataAccessService, maxPruefungenAtATime, DEFAULT_BUFFER);
+    this(dataAccessService, maxPruefungenAtATime, DEFAULT_BUFFER_BETWEEN_PLANUNGSEINHEITEN);
   }
 
   @Override
-  protected void ignorePruefungenOf(@NotNull List<Planungseinheit> planungseinheiten,
-      @NotNull Pruefung toFilterFor) {
+  protected void ignorePruefungenOf(@NotNull Set<Planungseinheit> planungseinheiten,
+      @NotNull Pruefung toFilterFor) throws NoPruefungsPeriodeDefinedException {
     Pruefung pruefung = toFilterFor.asPruefung();
     Optional<Block> block = dataAccessService.getBlockTo(pruefung);
     if (block.isPresent()) {
@@ -62,6 +63,7 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends AtSameTimeRestricti
   }
 
   @Override
+  @NotNull
   protected Set<Teilnehmerkreis> getAffectedTeilnehmerkreiseFrom(
       Set<Planungseinheit> violatingPlanungseinheiten) {
     Set<Teilnehmerkreis> teilnehmerkreise = new HashSet<>();
@@ -72,7 +74,7 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends AtSameTimeRestricti
   }
 
   @Override
-  protected int getAffectedStudentsFrom(Set<Planungseinheit> violatingPlanungseinheiten) {
+  protected int getAffectedStudentsFrom(Collection<Planungseinheit> violatingPlanungseinheiten) {
     HashMap<Teilnehmerkreis, Integer> maxTeilnehmerPerTeilnehmerkreis = new HashMap<>();
     for (Planungseinheit planungseinheit : violatingPlanungseinheiten) {
       collectMaxAmountOfStudentsInFor(maxTeilnehmerPerTeilnehmerkreis, planungseinheit);
@@ -81,13 +83,10 @@ public class AnzahlPruefungenGleichzeitigRestriktion extends AtSameTimeRestricti
   }
 
   @Override
-  protected int calcScoringFor(Set<Planungseinheit> violatingPlanungseinheiten) {
-    int scoring = 0;
-    if (violatingPlanungseinheiten.size() > maxPruefungenAtATime) {
-      scoring = violatingPlanungseinheiten.size() - maxPruefungenAtATime;
-      scoring *= this.kriterium.getWert();
-    }
-    return scoring;
+  protected int calcScoringFor(Collection<Planungseinheit> violatingPlanungseinheiten) {
+    int scoring = violatingPlanungseinheiten.size() - maxPruefungenAtATime;
+    scoring *= this.kriterium.getWert();
+    return Math.max(scoring, 0);
   }
 
   private void collectMaxAmountOfStudentsInFor(

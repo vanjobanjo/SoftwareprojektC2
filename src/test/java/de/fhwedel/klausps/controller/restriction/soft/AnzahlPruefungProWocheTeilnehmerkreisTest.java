@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
@@ -40,7 +41,7 @@ class AnzahlPruefungProWocheTeilnehmerkreisTest {
   }
 
   @Test
-  void violationTest() {
+  void violationTest() throws NoPruefungsPeriodeDefinedException {
     LocalDate week_0 = START_PERIODE.plusDays(6);
     Teilnehmerkreis bwl = TestFactory.bwlBachelor;
     LocalTime start = LocalTime.of(0, 0);
@@ -58,11 +59,11 @@ class AnzahlPruefungProWocheTeilnehmerkreisTest {
     //mock must be configured before constructor call
     this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreis(accessService, LIMIT_PER_WEEK);
 
-    assertThat(deviceUnderTest.isAboveLimit(mathe_0, bwl)).isTrue();
+    assertThat(deviceUnderTest.evaluate(mathe_0)).isPresent();
   }
 
   @Test
-  void evaluateTest() {
+  void evaluateTest() throws NoPruefungsPeriodeDefinedException {
     LocalDate week_0 = START_PERIODE.plusDays(6);
     Teilnehmerkreis bwl = TestFactory.bwlBachelor;
     LocalTime start = LocalTime.of(0, 0);
@@ -84,7 +85,7 @@ class AnzahlPruefungProWocheTeilnehmerkreisTest {
   }
 
   @Test
-  void evaluateDifferentTkTest() {
+  void evaluateDifferentTkTest() throws NoPruefungsPeriodeDefinedException {
     LocalDate week_0 = START_PERIODE.plusDays(6);
     Teilnehmerkreis bwl = TestFactory.bwlBachelor;
     Teilnehmerkreis inf = TestFactory.infBachelor;
@@ -112,7 +113,7 @@ class AnzahlPruefungProWocheTeilnehmerkreisTest {
   }
 
   @Test
-  void evaluateDifferentTkInBlockTest() {
+  void evaluateDifferentTkInBlockTest() throws NoPruefungsPeriodeDefinedException {
     LocalDate week_0 = START_PERIODE.plusDays(6);
     Teilnehmerkreis bwl = TestFactory.bwlBachelor;
     Teilnehmerkreis inf = TestFactory.infBachelor;
@@ -144,7 +145,7 @@ class AnzahlPruefungProWocheTeilnehmerkreisTest {
   }
 
   @Test
-  void evaluateDifferentTkInBlock2Test() {
+  void evaluateDifferentTkInBlock2Test() throws NoPruefungsPeriodeDefinedException {
     LocalDate week_0 = START_PERIODE.plusDays(6);
     Teilnehmerkreis bwl = TestFactory.bwlBachelor;
     Teilnehmerkreis inf = TestFactory.infBachelor;

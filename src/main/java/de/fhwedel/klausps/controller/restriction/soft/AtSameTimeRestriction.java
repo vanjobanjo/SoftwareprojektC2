@@ -5,6 +5,7 @@ import static de.fhwedel.klausps.model.api.Blocktyp.SEQUENTIAL;
 
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Block;
@@ -15,7 +16,6 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
@@ -23,9 +23,6 @@ import org.jetbrains.annotations.NotNull;
 public abstract class AtSameTimeRestriction extends WeicheRestriktion {
 
   // TODO refactor methods to overwrite the methods from WeicheRestriktion
-
-  // TODO use global default
-  protected static final Duration DEFAULT_BUFFER = Duration.ofMinutes(30);
 
   protected final Duration puffer;
 
@@ -37,7 +34,8 @@ public abstract class AtSameTimeRestriction extends WeicheRestriktion {
 
   @Override
   @NotNull
-  public Optional<WeichesKriteriumAnalyse> evaluate(@NotNull Pruefung pruefung) {
+  public Optional<WeichesKriteriumAnalyse> evaluate(@NotNull Pruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException {
     if (!pruefung.isGeplant()) {
       return Optional.empty();
     }
@@ -47,14 +45,15 @@ public abstract class AtSameTimeRestriction extends WeicheRestriktion {
     LocalDateTime endOfPruefung = getSequentialBlockOrSelf(pruefung).endzeitpunkt()
         .plus(bufferPerSide);
 
-    List<Planungseinheit> planungseinheitenOverlappingTheOneToCheck = tryToGetAllPlanungseinheitenBetween(
+    Set<Planungseinheit> planungseinheitenOverlappingTheOneToCheck = tryToGetAllPlanungseinheitenBetween(
         startOfPruefung, endOfPruefung);
     ignorePruefungenOf(planungseinheitenOverlappingTheOneToCheck, pruefung);
 
     return getAnalyseIfRestrictionViolated(planungseinheitenOverlappingTheOneToCheck);
   }
 
-  protected final Planungseinheit getSequentialBlockOrSelf(Pruefung pruefung) {
+  protected final Planungseinheit getSequentialBlockOrSelf(Pruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException {
     Optional<Block> block = dataAccessService.getBlockTo(pruefung);
     if (block.isPresent() && block.get().getTyp().equals(SEQUENTIAL)) {
       return block.get();
@@ -63,8 +62,8 @@ public abstract class AtSameTimeRestriction extends WeicheRestriktion {
   }
 
   @NotNull
-  private List<Planungseinheit> tryToGetAllPlanungseinheitenBetween(@NotNull LocalDateTime from,
-      @NotNull LocalDateTime to) {
+  private Set<Planungseinheit> tryToGetAllPlanungseinheitenBetween(@NotNull LocalDateTime from,
+      @NotNull LocalDateTime to) throws NoPruefungsPeriodeDefinedException {
     try {
       return dataAccessService.getAllPlanungseinheitenBetween(from, to);
     } catch (IllegalTimeSpanException e) {
@@ -73,12 +72,12 @@ public abstract class AtSameTimeRestriction extends WeicheRestriktion {
     }
   }
 
-  protected abstract void ignorePruefungenOf(@NotNull List<Planungseinheit> planungseinheiten,
-      @NotNull Pruefung toFilterFor);
+  protected abstract void ignorePruefungenOf(@NotNull Set<Planungseinheit> planungseinheiten,
+      @NotNull Pruefung toFilterFor) throws NoPruefungsPeriodeDefinedException;
 
   @NotNull
   private Optional<WeichesKriteriumAnalyse> getAnalyseIfRestrictionViolated(
-      @NotNull List<Planungseinheit> planungseinheitenOverlappingTheOneToCheck) {
+      @NotNull Set<Planungseinheit> planungseinheitenOverlappingTheOneToCheck) {
     if (!violatesRestriction(planungseinheitenOverlappingTheOneToCheck)) {
       return Optional.empty();
     }
@@ -95,7 +94,7 @@ public abstract class AtSameTimeRestriction extends WeicheRestriktion {
 
   @NotNull
   private Set<Planungseinheit> findConflictingPlanungseinheiten(
-      @NotNull List<Planungseinheit> planungseinheiten) {
+      @NotNull Set<Planungseinheit> planungseinheiten) {
     // might be possible to implement more efficient for the suspected most common use case of many
     // pruefungen starting at the same time and only few variations in the length of pruefung
     // with usage of interval-tree. Although such a structure would perform way worse in the worst
@@ -140,11 +139,13 @@ public abstract class AtSameTimeRestriction extends WeicheRestriktion {
     return result;
   }
 
+  @NotNull
   protected abstract Set<Teilnehmerkreis> getAffectedTeilnehmerkreiseFrom(
       Set<Planungseinheit> violatingPlanungseinheiten);
 
-  protected abstract int getAffectedStudentsFrom(Set<Planungseinheit> violatingPlanungseinheiten);
+  protected abstract int getAffectedStudentsFrom(
+      Collection<Planungseinheit> violatingPlanungseinheiten);
 
-  protected abstract int calcScoringFor(Set<Planungseinheit> violatingPlanungseinheiten);
+  protected abstract int calcScoringFor(Collection<Planungseinheit> violatingPlanungseinheiten);
 
 }

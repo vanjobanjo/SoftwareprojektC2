@@ -9,15 +9,20 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
+import de.fhwedel.klausps.controller.util.TeilnehmerkreisUtil;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -30,16 +35,24 @@ import java.util.Set;
  */
 public class Converter {
 
-  //TODO von wo?
   private ScheduleService scheduleService;
 
   public void setScheduleService(ScheduleService service) {
     scheduleService = service;
   }
 
-  public ReadOnlyBlock convertToROBlock(Block block) {
+  public Set<ReadOnlyBlock> convertToROBlockSet(
+      Collection<Block> collection) throws NoPruefungsPeriodeDefinedException {
+    Set<ReadOnlyBlock> result = new HashSet<>();
+    for (Block block : collection) {
+      result.add(convertToROBlock(block));
+    }
+    return result;
+  }
+
+  public ReadOnlyBlock convertToROBlock(Block block) throws NoPruefungsPeriodeDefinedException {
     Set<ReadOnlyPruefung> pruefungen = new HashSet<>(
-        convertToROPruefungCollection(block.getPruefungen()));
+        convertToROPruefungSet(block.getPruefungen()));
 
     return new BlockDTO(block.getName(),
         block.getStartzeitpunkt(),
@@ -49,13 +62,43 @@ public class Converter {
         block.getTyp());
   }
 
-  public ReadOnlyPruefung convertToReadOnlyPruefung(Pruefung pruefung) {
-    return new PruefungDTOBuilder(pruefung).withScoring(scheduleService.scoringOfPruefung(pruefung))
-        .build();
+  public Set<ReadOnlyPruefung> convertToROPruefungSet(
+      Collection<Pruefung> collection) throws NoPruefungsPeriodeDefinedException {
+    Set<ReadOnlyPruefung> result = new HashSet<>();
+    for (Pruefung pruefung : collection) {
+      result.add(convertToReadOnlyPruefung(pruefung));
+    }
+    return result;
+  }
+ public List<ReadOnlyPruefung> convertToROPruefungList(
+      Collection<Pruefung> collection) throws NoPruefungsPeriodeDefinedException {
+    List<ReadOnlyPruefung> result = new ArrayList<>(collection.size());
+    for (Pruefung pruefung : collection) {
+      result.add(convertToReadOnlyPruefung(pruefung));
+    }
+    return result;
+ }
+
+  public Set<ReadOnlyPlanungseinheit> convertToROPlanungseinheitSet(
+      Collection<Planungseinheit> collection) throws NoPruefungsPeriodeDefinedException {
+    Set<ReadOnlyPlanungseinheit> result = new HashSet<>();
+    for (Planungseinheit planungseinheit : collection) {
+      result.add(convertToReadOnlyPlanungseinheit(planungseinheit));
+    }
+    return result;
+  }
+
+  public List<ReadOnlyPlanungseinheit> convertToROPlanungseinheitList(
+      Collection<Planungseinheit> collection) throws NoPruefungsPeriodeDefinedException {
+    List<ReadOnlyPlanungseinheit> result = new ArrayList<>(collection.size());
+    for (Planungseinheit planungseinheit : collection) {
+      result.add(convertToReadOnlyPlanungseinheit(planungseinheit));
+    }
+    return result;
   }
 
   public ReadOnlyPlanungseinheit convertToReadOnlyPlanungseinheit(
-      Planungseinheit planungseinheit) {
+      Planungseinheit planungseinheit) throws NoPruefungsPeriodeDefinedException {
     if (planungseinheit.isBlock()) {
       return convertToROBlock(planungseinheit.asBlock());
     } else {
@@ -63,76 +106,58 @@ public class Converter {
     }
   }
 
-  public Collection<ReadOnlyPruefung> convertToROPruefungCollection(
-      Collection<Pruefung> collection) {
-    Collection<ReadOnlyPruefung> result = new HashSet<>();
-    for (Pruefung pruefung : collection) {
-      result.add(convertToReadOnlyPruefung(pruefung));
-    }
-    return result;
+  public ReadOnlyPruefung convertToReadOnlyPruefung(Pruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException {
+    return new PruefungDTOBuilder(pruefung).withScoring(scheduleService.scoringOfPruefung(pruefung))
+        .build();
   }
 
-  public Collection<ReadOnlyBlock> convertToROBlockCollection(
-      Collection<Block> collection) {
-    Collection<ReadOnlyBlock> result = new HashSet<>();
-    for (Block block : collection) {
-      result.add(convertToROBlock(block));
-    }
-    return result;
-  }
-
-  public Collection<ReadOnlyPlanungseinheit> convertToROPlanungseinheitCollection(
-      Collection<Planungseinheit> collection) {
-    Collection<ReadOnlyPlanungseinheit> result = new HashSet<>();
-    for (Planungseinheit planungseinheit : collection) {
-      result.add(convertToReadOnlyPlanungseinheit(planungseinheit));
-    }
-    return result;
-  }
-
-  public Collection<ReadOnlyPlanungseinheit> convertToROPlanungseinheitCollection(
-      Planungseinheit... planungseinheiten) {
-    Collection<ReadOnlyPlanungseinheit> result = new HashSet<>();
+  public Set<ReadOnlyPlanungseinheit> convertToROPlanungseinheitSet(
+      Planungseinheit... planungseinheiten) throws NoPruefungsPeriodeDefinedException {
+    Set<ReadOnlyPlanungseinheit> result = new HashSet<>();
     for (Planungseinheit planungseinheit : planungseinheiten) {
       result.add(convertToReadOnlyPlanungseinheit(planungseinheit));
     }
     return result;
   }
 
-  public List<KriteriumsAnalyse> convertAnalyseScoring(
-      List<WeichesKriteriumAnalyse> analysen) {
+  public List<KriteriumsAnalyse> convertAnalyseList(
+      List<WeichesKriteriumAnalyse> analysen) throws NoPruefungsPeriodeDefinedException {
 
-    List<KriteriumsAnalyse> list = new LinkedList<>();
+    List<KriteriumsAnalyse> result = new LinkedList<>();
     for (WeichesKriteriumAnalyse a : analysen) {
-      list.add(convertAnalyse(a));
+      result.add(convertAnalyse(a));
     }
-    return list;
+    return result;
   }
 
-  public KriteriumsAnalyse convertAnalyse(WeichesKriteriumAnalyse analyse) {
+  public KriteriumsAnalyse convertAnalyse(WeichesKriteriumAnalyse analyse)
+      throws NoPruefungsPeriodeDefinedException {
     return new KriteriumsAnalyse(
-        new HashSet<>(convertToROPruefungCollection(analyse.getCausingPruefungen())),
+        new HashSet<>(convertToROPruefungSet(analyse.getCausingPruefungen())),
         analyse.getKriterium(), analyse.getAffectedTeilnehmerKreise(),
         analyse.getAmountAffectedStudents());
   }
 
-  public HartesKriteriumException convertHardException(List<HartesKriteriumAnalyse> hard) {
+  public HartesKriteriumException convertHardException(List<HartesKriteriumAnalyse> hard)
+      throws NoPruefungsPeriodeDefinedException {
 
     Set<ReadOnlyPruefung> conflictPruefung = new HashSet<>();
     Set<Teilnehmerkreis> conflictTeilnehmer = new HashSet<>();
     int amountStudents = 0;
+    Map<Teilnehmerkreis, Integer> teilnehmercount = new HashMap<>();
 
     for (HartesKriteriumAnalyse hKA : hard) {
 
       for (Pruefung pruefung : hKA.getCausingPruefungen()) {
         conflictPruefung.add(convertToReadOnlyPruefung(pruefung));
       }
-      for (Teilnehmerkreis teilnehmerkreis : hKA.getAffectedTeilnehmerkreise()) {
-        if (!conflictTeilnehmer.contains(teilnehmerkreis)) {
-          conflictTeilnehmer.add(teilnehmerkreis);
-          amountStudents += hKA.getAmountAffectedStudents();
-        }
-      }
+
+      TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung(teilnehmercount, hKA.getTeilnehmercount());
+    }
+
+    for (Integer count : teilnehmercount.values()) {
+      amountStudents += count;
     }
 
     return new HartesKriteriumException(conflictPruefung, conflictTeilnehmer, amountStudents);

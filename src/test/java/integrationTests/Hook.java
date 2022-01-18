@@ -10,7 +10,7 @@ public class Hook {
 
   @Before
   public void setUp(Scenario scenario) {
-    BaseSteps.setState(getEmptyPruefungsperiode());
+    BaseSteps.setState(getNewState());
   }
 
   @After
@@ -18,9 +18,8 @@ public class Hook {
     BaseSteps.setState(null);
   }
 
-  private State getEmptyPruefungsperiode() {
-    // TODO
-    return null;
+  private State getNewState() {
+    return new State();
   }
 
 }

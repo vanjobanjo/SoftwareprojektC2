@@ -4,12 +4,14 @@ package de.fhwedel.klausps.controller.restriction.soft;
 import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.UNIFORME_ZEITSLOTS;
 
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Pruefung;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import org.jetbrains.annotations.NotNull;
 
 public class UniformeZeitslots extends WeicheRestriktion {
 
@@ -23,23 +25,36 @@ public class UniformeZeitslots extends WeicheRestriktion {
 
 
   @Override
-  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
+  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException {
     if (!pruefung.isGeplant()) {
       return Optional.empty();
     }
     Set<Pruefung> pruefungenAtSameTime = new HashSet<>(
-        dataAccessService.getGeplanteModelPruefung());
-    pruefungenAtSameTime.remove(pruefung);
-    pruefungenAtSameTime.removeIf(other ->
-        dataAccessService.areInSameBlock(pruefung, other)
-            || isOutOfTimeRange(pruefung, other)
-            || hasSameDuration(pruefung, other));
+        dataAccessService.getGeplantePruefungen());
+    pruefungenAtSameTime = filter(pruefung, pruefungenAtSameTime);
 
     if (pruefungenAtSameTime.isEmpty()) {
       return Optional.empty();
     }
 
     return Optional.of(buildAnalysis(pruefung, pruefungenAtSameTime));
+  }
+
+  @NotNull
+  private Set<Pruefung> filter(@NotNull Pruefung pruefung,
+      @NotNull final Set<Pruefung> pruefungenAtSameTime)
+      throws NoPruefungsPeriodeDefinedException {
+    Set<Pruefung> result = new HashSet<>();
+    for (Pruefung other : pruefungenAtSameTime) {
+      if (!dataAccessService.areInSameBlock(pruefung, other)
+          && !isOutOfTimeRange(pruefung, other)
+          && !hasSameDuration(pruefung, other)) {
+        result.add(other);
+      }
+    }
+    result.remove(pruefung);
+    return result;
   }
 
 

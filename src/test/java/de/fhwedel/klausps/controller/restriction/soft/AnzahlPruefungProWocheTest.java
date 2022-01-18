@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
@@ -46,7 +47,7 @@ class AnzahlPruefungProWocheTest {
     Pruefung dm_0 = TestFactory.getPruefungOfReadOnlyPruefung(
         TestFactory.planRoPruefung(TestFactory.RO_DM_UNPLANNED, week_0.atTime(start)));
     Pruefung haskell_1 = TestFactory.getPruefungOfReadOnlyPruefung(
-        TestFactory.planRoPruefung(TestFactory.RO_DM_UNPLANNED, week_1.atTime(start)));
+        TestFactory.planRoPruefung(TestFactory.RO_HASKELL_UNPLANNED, week_1.atTime(start)));
     TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, mathe_0, dm_0, haskell_1);
     TestFactory.configureMock_geplantePruefungenFromPeriode(mocked_periode,
         Set.of(mathe_0, dm_0, haskell_1));
@@ -62,7 +63,7 @@ class AnzahlPruefungProWocheTest {
   }
 
   @Test
-  void limitIsReached_test() {
+  void limitIsReached_test() throws NoPruefungsPeriodeDefinedException {
     LocalDate week_0 = START_PERIODE.plusDays(6);
     LocalTime start = LocalTime.of(0, 0);
     Pruefung mathe_0 = TestFactory.getPruefungOfReadOnlyPruefung(
@@ -83,11 +84,12 @@ class AnzahlPruefungProWocheTest {
     //mock must be configured before constructor call
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
 
-    assertThat(deviceUnderTest.isAboveTheWeekLimit(haskell_0_isNotPlanned_ShouldBePlanned_At)).isTrue();
+    assertThat(deviceUnderTest.isAboveTheWeekLimit(haskell_0_isNotPlanned_ShouldBePlanned_At,
+        Set.of(haskell_0_isNotPlanned_ShouldBePlanned_At, dm_0, mathe_0))).isTrue();
   }
 
   @Test
-  void limit_test() {
+  void limit_test() throws NoPruefungsPeriodeDefinedException {
 
     LocalDate week_0 = START_PERIODE.plusDays(6);
     LocalDate week_1 = START_PERIODE.plusDays(7);
@@ -105,15 +107,15 @@ class AnzahlPruefungProWocheTest {
 
     this.deviceUnderTest = new AnzahlPruefungProWoche(accessService, LIMIT_PER_WEEK);
 
-    assertThat(deviceUnderTest.isAboveTheWeekLimit(haskell_1)).isFalse();
-    assertThat(deviceUnderTest.isAboveTheWeekLimit(mathe_0)).isTrue();
-    assertThat(deviceUnderTest.isAboveTheWeekLimit(dm_0)).isTrue();
+    assertThat(deviceUnderTest.isAboveTheWeekLimit(haskell_1, Set.of(haskell_1))).isFalse();
+    assertThat(deviceUnderTest.isAboveTheWeekLimit(mathe_0, Set.of(mathe_0, dm_0))).isTrue();
+    assertThat(deviceUnderTest.isAboveTheWeekLimit(dm_0, Set.of(mathe_0, dm_0))).isTrue();
   }
 
 
   @DisplayName("DM und Mathe sind in der selben Woche und das Kriterium wird verletzt.")
   @Test
-  void evaluate_test() {
+  void evaluate_test() throws NoPruefungsPeriodeDefinedException {
 
     LocalDate week_0 = START_PERIODE.plusDays(6);
     LocalDate week_1 = START_PERIODE.plusDays(7);
@@ -146,7 +148,7 @@ class AnzahlPruefungProWocheTest {
 
   @DisplayName("DM und Mathe sind im Block. Haskell wird am selben Tag geplant.")
   @Test
-  void evaluate_Block_test() {
+  void evaluate_Block_test() throws NoPruefungsPeriodeDefinedException {
 
     LocalDate week_0 = START_PERIODE.plusDays(6);
     LocalTime start = LocalTime.of(0, 0);
@@ -186,7 +188,7 @@ class AnzahlPruefungProWocheTest {
 
   @DisplayName("DM und Mathe sind im Block. Haskell wird am selben Tag geplant.")
   @Test
-  void evaluate_Block_test2() {
+  void evaluate_Block_test2() throws NoPruefungsPeriodeDefinedException {
 
     LocalDate week_0 = START_PERIODE.plusDays(6);
     LocalTime start = LocalTime.of(0, 0);
@@ -229,7 +231,7 @@ class AnzahlPruefungProWocheTest {
 
   @DisplayName("Viele unterschiedliche Teilnehmerkreise")
   @Test
-  void evaluate_Block_test3() {
+  void evaluate_Block_test3() throws NoPruefungsPeriodeDefinedException {
     LocalDate week_0 = START_PERIODE.plusDays(6);
     LocalTime start = LocalTime.of(0, 0);
     Pruefung mathe_0 = TestFactory.getPruefungOfReadOnlyPruefung(
@@ -280,7 +282,7 @@ class AnzahlPruefungProWocheTest {
 
   @DisplayName("Keine Blöcke viele unterschiedliche Teilnehmerkreise")
   @Test
-  void evaluate_Block_test4() {
+  void evaluate_Block_test4() throws NoPruefungsPeriodeDefinedException {
     LocalDate week_0 = START_PERIODE.plusDays(6);
     LocalTime start = LocalTime.of(0, 0);
     Pruefung mathe_0 = TestFactory.getPruefungOfReadOnlyPruefung(
@@ -328,7 +330,7 @@ class AnzahlPruefungProWocheTest {
 
   @DisplayName("Keine Konflikte")
   @Test
-  void evaluate_Block_test5() {
+  void evaluate_Block_test5() throws NoPruefungsPeriodeDefinedException {
     LocalDate week_0 = START_PERIODE.plusDays(6);
     LocalDate week_1 = START_PERIODE.plusDays(8);
     LocalDate week_2 = START_PERIODE.plusDays(15);
@@ -366,7 +368,7 @@ class AnzahlPruefungProWocheTest {
 
   @DisplayName("DM und Mathe sind im Block. Haskell wird am selben Tag geplant.")
   @Test
-  void evaluate_Block_test10() {
+  void evaluate_Block_test10() throws NoPruefungsPeriodeDefinedException {
 
     LocalDate week_0 = START_PERIODE.plusDays(6);
     LocalTime start = LocalTime.of(0, 0);

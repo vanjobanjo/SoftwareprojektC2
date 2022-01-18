@@ -31,3 +31,6 @@ bin/
 /target/
 /.idea/
 /controller2.iml
+
+# reporting
+/reports

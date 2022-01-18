@@ -3,6 +3,7 @@ package de.fhwedel.klausps.controller.restriction.soft;
 import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE;
 
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Block;
@@ -24,27 +25,20 @@ import java.util.stream.Stream;
 public class AnzahlPruefungProWoche extends WeicheRestriktion {
 
   // for testing
-  public static final int LIMIT_DEFAULT = 5;
+  public static final int LIMIT_DEFAULT = 3;
   private static final int DAYS_WEEK_DEFAULT = 7;
   private final int limit;
-
-  private final LocalDate startPeriode;
-  // the set contains all pruefungen of the week, also the sibblings in the block
-  private Map<Integer, Set<Pruefung>> weekPruefungMap;
 
   //Mock Konstruktor
   AnzahlPruefungProWoche(
       DataAccessService dataAccessService,
       final int LIMIT_TEST) {
     super(dataAccessService, ANZAHL_PRUEFUNGEN_PRO_WOCHE);
-    startPeriode = dataAccessService.getStartOfPeriode();
-    weekPruefungMap = weekMapOfPruefung(dataAccessService.getGeplanteModelPruefung(), startPeriode);
     limit = LIMIT_TEST;
   }
 
   public AnzahlPruefungProWoche() {
     super(ServiceProvider.getDataAccessService(), ANZAHL_PRUEFUNGEN_PRO_WOCHE);
-    startPeriode = dataAccessService.getStartOfPeriode();
     limit = LIMIT_DEFAULT;
   }
 
@@ -60,26 +54,27 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion {
   }
 
 
-  public boolean isAboveTheWeekLimit(Pruefung pruefung) {
-    int week = getWeek(startPeriode, pruefung);
-    Set<Pruefung> pruefungen = weekPruefungMap.get(week);
-    Optional<Block> blockOpt = dataAccessService.getBlockTo(pruefung);
-
-    return blockOpt.isEmpty() ? pruefungen.size() >= limit
-        : (pruefungen.size() - blockOpt.get().getPruefungen().size()) + 1 >= limit;
-    //ignore the exams in the block of pruefung.
-  }
-
   @Override
-  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
-    weekPruefungMap = weekMapOfPruefung(dataAccessService.getGeplanteModelPruefung(), startPeriode);
-    if (!isAboveTheWeekLimit(pruefung)) {
+  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException {
+    LocalDate start;
+    try {
+      start = dataAccessService.getStartOfPeriode();
+    } catch (NoPruefungsPeriodeDefinedException e) {
+      return Optional.empty();
+    }
+
+    Map<Integer, Set<Pruefung>> weekPruefungMap = weekMapOfPruefung(
+        dataAccessService.getPlannedPruefungen(), start);
+
+    int scheduledWeekOfPruefung = getWeek(start, pruefung);
+    if (!isAboveTheWeekLimit(pruefung, weekPruefungMap.get(scheduledWeekOfPruefung))) {
       return Optional.empty();
     }
 
     Optional<Block>
         blockOpt = dataAccessService.getBlockTo(pruefung);
-    Set<Pruefung> conflictedPruefungen = weekPruefungMap.get(getWeek(startPeriode, pruefung));
+    Set<Pruefung> conflictedPruefungen = weekPruefungMap.get(scheduledWeekOfPruefung);
 
     //when pruefung is in block, don't add the sibblings into the conflicted exams
     if (blockOpt.isPresent()) {
@@ -95,6 +90,16 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion {
 
     return Optional.of(new WeichesKriteriumAnalyse(conflictedPruefungen,
         ANZAHL_PRUEFUNGEN_PRO_WOCHE, conflictedTeilnehmerkreis, affected));
+  }
+
+  public boolean isAboveTheWeekLimit(Pruefung pruefung,
+      Set<Pruefung> weekPruefungen) throws NoPruefungsPeriodeDefinedException {
+
+    Optional<Block> blockOpt = dataAccessService.getBlockTo(pruefung);
+
+    return blockOpt.isEmpty() ? weekPruefungen.size() >= limit
+        : (weekPruefungen.size() - blockOpt.get().getPruefungen().size()) + 1 >= limit;
+    //ignore the exams in the block of pruefung.
   }
 
   /**
@@ -123,7 +128,6 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion {
     return t -> seen.add(keyExtractor.apply(t));
   }
 
-
   /**
    * Filters the block siblings of the passed pruefung. When the passed pruefung doesn't belong to
    * any block, the same set will be returned.
@@ -135,7 +139,7 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion {
    * @pre pruefungen must contains pruefung
    */
   private Set<Pruefung> filterSiblingsOfPruefung(Pruefung pruefung,
-      Set<Pruefung> pruefungen) {
+      Set<Pruefung> pruefungen) throws NoPruefungsPeriodeDefinedException {
     assert pruefungen.contains(pruefung);
     Optional<Block> blockOpt = dataAccessService.getBlockTo(pruefung);
 
@@ -178,7 +182,8 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion {
    * @param pruefungen Pruefungen.
    * @return Accumlated Planungseinheiten.
    */
-  private Set<Planungseinheit> getAccumulatedPlanungseinheiten(Set<Pruefung> pruefungen) {
+  private Set<Planungseinheit> getAccumulatedPlanungseinheiten(Set<Pruefung> pruefungen)
+      throws NoPruefungsPeriodeDefinedException {
     Set<Planungseinheit> planungseinheiten = new HashSet<>();
     for (Pruefung p : pruefungen) {
       Optional<Block> blockOpt = dataAccessService.getBlockTo(p);

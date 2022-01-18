@@ -10,7 +10,6 @@ import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 
@@ -40,12 +39,12 @@ public class AnzahlTeilnehmerGleichzeitigZuHochRestriction extends AtSameTimeRes
   }
 
   public AnzahlTeilnehmerGleichzeitigZuHochRestriction() {
-    this(ServiceProvider.getDataAccessService(), DEFAULT_BUFFER, DEFAULT_MAX_TEILNEHMER_AT_A_TIME,
-        DEFAULT_SCORING_STEP_SIZE);
+    this(ServiceProvider.getDataAccessService(), DEFAULT_BUFFER_BETWEEN_PLANUNGSEINHEITEN,
+        DEFAULT_MAX_TEILNEHMER_AT_A_TIME, DEFAULT_SCORING_STEP_SIZE);
   }
 
   @Override
-  protected void ignorePruefungenOf(@NotNull List<Planungseinheit> planungseinheiten,
+  protected void ignorePruefungenOf(@NotNull Set<Planungseinheit> planungseinheiten,
       @NotNull Pruefung toFilterFor) {
     /*
      * For counting the amount of participants at the same time it is crucial to count all
@@ -63,6 +62,7 @@ public class AnzahlTeilnehmerGleichzeitigZuHochRestriction extends AtSameTimeRes
   }
 
   @Override
+  @NotNull
   protected Set<Teilnehmerkreis> getAffectedTeilnehmerkreiseFrom(
       Set<Planungseinheit> violatingPlanungseinheiten) {
     Set<Teilnehmerkreis> result = new HashSet<>();
@@ -78,7 +78,7 @@ public class AnzahlTeilnehmerGleichzeitigZuHochRestriction extends AtSameTimeRes
   }
 
   @Override
-  protected int getAffectedStudentsFrom(Set<Planungseinheit> violatingPlanungseinheiten) {
+  protected int getAffectedStudentsFrom(Collection<Planungseinheit> violatingPlanungseinheiten) {
     int amount = 0;
     for (Planungseinheit planungseinheit : violatingPlanungseinheiten) {
       amount += planungseinheit.schaetzung();
@@ -87,7 +87,7 @@ public class AnzahlTeilnehmerGleichzeitigZuHochRestriction extends AtSameTimeRes
   }
 
   @Override
-  protected int calcScoringFor(Set<Planungseinheit> violatingPlanungseinheiten) {
+  protected int calcScoringFor(Collection<Planungseinheit> violatingPlanungseinheiten) {
     int students = getAffectedStudentsFrom(violatingPlanungseinheiten);
     return getScoringFactor(students) * this.kriterium.getWert();
   }

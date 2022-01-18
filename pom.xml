@@ -22,51 +22,6 @@
 
   <artifactId>controller2</artifactId>
 
-  <properties>
-    <junit.version>5.8.0</junit.version>
-    <junit-platform.version>1.2.0</junit-platform.version>
-    <assertj.version>3.21.0</assertj.version>
-    <mockito.version>4.0.0</mockito.version>
-    <cucumber.version>6.6.1</cucumber.version>
-    <surefire.version>3.0.0-M5</surefire.version>
-  </properties>
-
-  <profiles>
-    <profile>
-      <id>acceptanceTests</id>
-      <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-failsafe-plugin</artifactId>
-              <version>${surefire.version}</version>
-              <configuration>
-                <includes>
-                  <include>**/CucumberRunner.java</include>
-                </includes>
-              </configuration>
-              <executions>
-                <execution>
-                  <goals>
-                    <goal>integration-test</goal>
-                  </goals>
-                </execution>
-              </executions>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-failsafe-plugin</artifactId>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
-
-
   <dependencies>
     <!-- testing -->
     <dependency>
@@ -79,24 +34,25 @@
       <groupId>io.cucumber</groupId>
       <artifactId>cucumber-junit</artifactId>
       <version>${cucumber.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.13.1</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.vintage</groupId>
       <artifactId>junit-vintage-engine</artifactId>
-      <version>5.7.0</version>
+      <version>
+        ${junit-vintage-engine.version}
+      </version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <!-- https://junit.org/junit5/ -->
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <version>${junit.version}</version>
+      <version>${junit-jupiter.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -129,19 +85,19 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
-      <version>${junit.version}</version>
+      <version>${junit-jupiter.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
-      <version>${junit.version}</version>
+      <version>${junit-jupiter.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jetbrains</groupId>
       <artifactId>annotations</artifactId>
-      <version>20.1.0</version>
+      <version>${jetbrains-annotations.version}</version>
     </dependency>
     <dependency>
       <groupId>de.fhwedel.klausps</groupId>
@@ -149,6 +105,89 @@
       <version>1.0.2-SNAPSHOT</version>
     </dependency>
   </dependencies>
+
+  <profiles>
+    <profile>
+      <id>acceptanceTests</id>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-failsafe-plugin</artifactId>
+              <configuration>
+                <classesDirectory>
+                  ${project.build.outputDirectory}
+                </classesDirectory>
+              </configuration>
+              <executions>
+                <execution>
+                  <goals>
+                    <goal>integration-test</goal>
+                  </goals>
+                </execution>
+              </executions>
+              <version>${failsafe.version}</version>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>pitest-maven</artifactId>
+            <configuration>
+              <exportLineCoverage>true</exportLineCoverage>
+              <reportsDirectory>./reports/pitest</reportsDirectory>
+              <targetClasses>
+                <param>de.fhwedel.klausps.controller.*</param>
+              </targetClasses>
+              <timestampedReports>false</timestampedReports>
+              <withHistory>true</withHistory>
+            </configuration>
+            <dependencies>
+              <dependency>
+                <artifactId>pitest-junit5-plugin</artifactId>
+                <groupId>org.pitest</groupId>
+                <version>0.15</version>
+              </dependency>
+            </dependencies>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>mutationCoverage</goal>
+                </goals>
+                <phase>test</phase>
+              </execution>
+            </executions>
+            <groupId>org.pitest</groupId>
+            <version>1.7.3</version>
+          </plugin>
+        </plugins>
+      </build>
+      <id>Mutationtests</id>
+    </profile>
+  </profiles>
+
+  <properties>
+    <assertj.version>3.22.0</assertj.version>
+    <cucumber.version>7.2.2</cucumber.version>
+    <jetbrains-annotations.version>22.0.0</jetbrains-annotations.version>
+    <junit-jupiter.version>5.8.2</junit-jupiter.version>
+    <junit-platform.version>1.8.2</junit-platform.version>
+    <surefire.version>3.0.0-M5</surefire.version>
+    <failsafe.version>3.0.0-M5</failsafe.version>
+    <junit-vintage-engine.version>5.8.2</junit-vintage-engine.version>
+    <mockito.version>4.2.0</mockito.version>
+  </properties>
   <build>
     <pluginManagement>
       <plugins>
