@@ -331,9 +331,22 @@ public class DataAccessService {
     return modelPruefung;
   }
 
+  /**
+   * Sets the pruefungsnummer of the pruefung.
+   * @param pruefung pruefung
+   * @param pruefungsnummer nummer
+   * @return modelpruefung
+   * @throws NoPruefungsPeriodeDefinedException
+   * @throws IllegalArgumentException
+   */
   public Planungseinheit setPruefungsnummer(ReadOnlyPruefung pruefung,
       String pruefungsnummer) throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
     Pruefung modelPruefung = getPruefungFromModelOrException(pruefung);
+
+    if(modelPruefung.getPruefungsnummer().equals(pruefungsnummer)){
+      return modelPruefung;
+    }
+
     if (existsPruefungWith(pruefungsnummer)) {
       throw new IllegalArgumentException("Die angegebene Pruefungsnummer ist bereits vergeben.");
     }
