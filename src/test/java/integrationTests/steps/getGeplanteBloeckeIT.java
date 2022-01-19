@@ -1,9 +1,17 @@
 package integrationTests.steps;
 
+import static integrationTests.steps.BaseSteps.state;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.de.Dann;
 import io.cucumber.java.de.Und;
 import io.cucumber.java.de.Wenn;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import org.junit.AssumptionViolatedException;
 
 public class getGeplanteBloeckeIT {
@@ -16,24 +24,32 @@ public class getGeplanteBloeckeIT {
 
   @Wenn("ich alle geplanten Bloecke anfrage")
   public void ichAlleGeplantenBloeckeAnfrage() {
-    throw new AssumptionViolatedException("Not implemented yet!");
+    try {
+      state.results.put("bloecke",
+          state.controller.getGeplanteBloecke());
+    } catch (NoPruefungsPeriodeDefinedException e) {
+      state.results.put("exception", e);
+    }
   }
 
   @Dann("erhalte ich die Bloecke {string}")
   public void erhalteIchDieBloecke(String bloecke) {
-    throw new AssumptionViolatedException("Not implemented yet!");
-
+    List<String> expectedBlockIds = Arrays.asList(bloecke.split(", "));
+    Set<ReadOnlyBlock> actual = (Set<ReadOnlyBlock>) state.results.get("bloecke");
+    assertThat(actual).allMatch(x -> expectedBlockIds.contains(x.getName()));
+    assertThat(actual).hasSameSizeAs(expectedBlockIds);
   }
 
   @Dann("erhalte ich keine Bloecke")
   public void erhalteIchKeineBloecke() {
-    throw new AssumptionViolatedException("Not implemented yet!");
+    Set<ReadOnlyBlock> actual = (Set<ReadOnlyBlock>) state.results.get("bloecke");
+    assertThat(actual).isEmpty();
   }
 
   @Und("es gibt keine geplanten Bloecke")
-  public void esGibtKeineGeplantenBloecke() {
-    throw new AssumptionViolatedException("Not implemented yet!");
-
+  public void esGibtKeineGeplantenBloecke() throws NoPruefungsPeriodeDefinedException {
+    Set<ReadOnlyBlock> geplanteBloecke = state.controller.getGeplanteBloecke();
+    assertThat(geplanteBloecke).isEmpty();
   }
 
   @Und("es gibt die folgenden geplanten und ungeplanten Bloecke:")

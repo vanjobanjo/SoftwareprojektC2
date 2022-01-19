@@ -9,7 +9,11 @@ import java.util.Map;
  */
 public class State {
 
-  public final Controller controller = new Controller();
-  public final Map<String, Object> results = new HashMap<>();
+  public final Controller controller;
+  public final Map<String, Object> results;
 
+  public State() {
+    this.controller = new Controller();
+    this.results = new HashMap<>();
+  }
 }

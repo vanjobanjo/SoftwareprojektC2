@@ -1,6 +1,11 @@
 package integrationTests.steps;
 
+import static integrationTests.steps.BaseSteps.state;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
+import integrationTests.state.State;
 import io.cucumber.java.de.Angenommen;
 import io.cucumber.java.de.Dann;
 import io.cucumber.java.de.Wenn;
@@ -23,12 +28,14 @@ public class getterSetterPruefungsperiode {
 
   @Angenommen("es ist keine Pruefungsperiode geplant")
   public void esIstKeinSemesterGeplant() {
-    throw new AssumptionViolatedException("Not implemented yet!");
+    // setting a new state enforces, that there is no Pruefungsperiode
+    state = new State();
   }
 
   @Dann("erhalte ich einen Fehler")
   public void erhalteIchEinenFehler() {
-    throw new AssumptionViolatedException("Not implemented yet!");
+    assertThat(state.results.get("exception")).isOfAnyClassIn(
+        NoPruefungsPeriodeDefinedException.class);
   }
   // ------------------------------------------------------------
   // ------------------ Start- und Enddatum ---------------------
