@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import org.junit.AssumptionViolatedException;
 
 public class getUngeplanteKlausurenSteps extends BaseSteps {
 
@@ -90,8 +89,9 @@ public class getUngeplanteKlausurenSteps extends BaseSteps {
   }
 
   @Wenn("ich alle ungeplanten Klausuren anfrage")
-  public void ichAlleUngeplantenKlausurenAnfrage() {
-    throw new AssumptionViolatedException("Not implemented yet!");
+  public void ichAlleUngeplantenKlausurenAnfrage() throws NoPruefungsPeriodeDefinedException {
+    getState().results.put("pruefungen",
+        getState().controller.getUngeplantePruefungen());
   }
 
   @Dann("bekomme ich die Klausuren {string}")
