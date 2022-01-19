@@ -252,7 +252,7 @@ public class DataAccessService {
     if (start.isAfter(end)) {
       throw new IllegalTimeSpanException("Der Start liegt nach dem Ende des Zeitslots");
     }
-    return this.getPruefungsperiode().planungseinheitenBetween(start, end);
+    return new HashSet<>(this.getPruefungsperiode().planungseinheitenBetween(start, end));
   }
 
   public Pruefungsperiode getPruefungsperiode() {
@@ -333,7 +333,8 @@ public class DataAccessService {
 
   /**
    * Sets the pruefungsnummer of the pruefung.
-   * @param pruefung pruefung
+   *
+   * @param pruefung        pruefung
    * @param pruefungsnummer nummer
    * @return modelpruefung
    * @throws NoPruefungsPeriodeDefinedException
@@ -343,7 +344,7 @@ public class DataAccessService {
       String pruefungsnummer) throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
     Pruefung modelPruefung = getPruefungFromModelOrException(pruefung);
 
-    if(modelPruefung.getPruefungsnummer().equals(pruefungsnummer)){
+    if (modelPruefung.getPruefungsnummer().equals(pruefungsnummer)) {
       return modelPruefung;
     }
 

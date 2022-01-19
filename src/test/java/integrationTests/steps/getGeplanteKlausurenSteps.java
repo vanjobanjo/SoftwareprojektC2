@@ -7,8 +7,8 @@ public class getGeplanteKlausurenSteps extends BaseSteps {
 
   @Wenn("ich alle geplanten Klausuren anfrage")
   public void ichAlleGeplantenKlausurenAnfrage() throws NoPruefungsPeriodeDefinedException {
-    getState().results.put("pruefungen",
-        getState().controller.getGeplantePruefungen());
+    state.results.put("pruefungen",
+        state.controller.getGeplantePruefungen());
   }
 
 }

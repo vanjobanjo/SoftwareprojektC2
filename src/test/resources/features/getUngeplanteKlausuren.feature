@@ -7,6 +7,7 @@ Funktionalität: Als Planender möchte ich erfahren können welche Klausuren nic
     Dann bekomme ich keine Klausuren
 
   Szenario: Es gibt nur ungeplante Klausuren
+    Angenommen es existiert eine Pruefungsperiode
     Angenommen es existieren die folgenden Klausuren:
       | Name           | Datum | StartZeit | Dauer |
       | Analysis       |       |           | 03:00 |
@@ -15,6 +16,7 @@ Funktionalität: Als Planender möchte ich erfahren können welche Klausuren nic
     Dann bekomme ich die Klausuren "Analysis, Diskrete Mathe"
 
   Szenario: Es gibt nur geplante Klausuren
+    Angenommen es existiert eine Pruefungsperiode
     Angenommen es existieren die folgenden Klausuren:
       | Name           | Datum      | StartZeit | Dauer |
       | Analysis       | 25.02.2022 | 08:00     | 03:00 |
@@ -23,6 +25,7 @@ Funktionalität: Als Planender möchte ich erfahren können welche Klausuren nic
     Dann bekomme ich keine Klausuren
 
   Szenario: Es gibt geplante und ungeplante Klausuren
+    Angenommen es existiert eine Pruefungsperiode
     Angenommen es existieren die folgenden Klausuren:
       | Name           | Datum      | StartZeit | Dauer |
       | Analysis       | 15.02.2022 | 08:00     | 03:00 |

@@ -20,7 +20,6 @@ import io.cucumber.java.de.Wenn;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.Year;
 import java.util.Arrays;
 import java.util.Collection;
@@ -47,10 +46,9 @@ public class getUngeplanteKlausurenSteps extends BaseSteps {
   @Angenommen("es existieren die folgenden Klausuren:")
   public void esExistierenDieFolgendenKlausuren(List<Map<String, String>> pruefungen)
       throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
-    createSemester();
     for (Map<String, String> pruefung : pruefungen) {
       String pruefungsnummer = String.valueOf(pruefung.get("Name").hashCode());
-      ReadOnlyPruefung roPruefung = getState().controller.createPruefung(pruefungsnummer,
+      ReadOnlyPruefung roPruefung = state.controller.createPruefung(pruefungsnummer,
           pruefung.get("Name"),
           pruefungsnummer,
           emptySet(),
@@ -60,43 +58,20 @@ public class getUngeplanteKlausurenSteps extends BaseSteps {
       String time = pruefung.get("StartZeit");
       if (date != null && time != null) {
         LocalDateTime start = parseDate(date).atTime(parseTime(time));
-        getState().controller.schedulePruefung(roPruefung, start);
+        state.controller.schedulePruefung(roPruefung, start);
       }
     }
   }
 
-  private void createSemester() {
-    Semester semester = new SemesterImpl(WINTERSEMESTER, Year.of(2022));
-    LocalDate start = LocalDate.of(2022, 1, 31);
-    LocalDate end = LocalDate.of(2022, 2, 27);
-    LocalDate ankertag = start.plusDays(7);
-    getState().controller.createEmptyPeriode(semester, start, end, ankertag, 400);
-  }
-
-  private LocalDate parseDate(String dateTxt) {
-    String[] tmp = dateTxt.split("\\.");
-    int day = Integer.parseInt(tmp[0]);
-    int month = Integer.parseInt(tmp[1]);
-    int year = Integer.parseInt(tmp[2]);
-    return LocalDate.of(year, month, day);
-  }
-
-  private LocalTime parseTime(String timeTxt) {
-    String[] tmp = timeTxt.split(":");
-    int hours = Integer.parseInt(tmp[0]);
-    int minutes = Integer.parseInt(tmp[1]);
-    return LocalTime.of(hours, minutes);
-  }
-
   @Wenn("ich alle ungeplanten Klausuren anfrage")
   public void ichAlleUngeplantenKlausurenAnfrage() throws NoPruefungsPeriodeDefinedException {
-    getState().results.put("pruefungen",
-        getState().controller.getUngeplantePruefungen());
+    state.results.put("pruefungen",
+        state.controller.getUngeplantePruefungen());
   }
 
   @Dann("bekomme ich die Klausuren {string}")
   public void bekommeIchDieKlausuren(String klausuren) {
-    Collection<ReadOnlyPruefung> result = (Collection<ReadOnlyPruefung>) getState().results.get(
+    Collection<ReadOnlyPruefung> result = (Collection<ReadOnlyPruefung>) state.results.get(
         "pruefungen");
     List<String> pruefungsNamen = Arrays.asList(klausuren.split(", "));
     assertThat(result).hasSameSizeAs(pruefungsNamen);
@@ -107,7 +82,7 @@ public class getUngeplanteKlausurenSteps extends BaseSteps {
 
   @Dann("bekomme ich keine Klausuren")
   public void bekommeIchKeineKlausuren() {
-    assertThat((Collection<ReadOnlyPruefung>) getState().results.get("pruefungen")).isEmpty();
+    assertThat((Collection<ReadOnlyPruefung>) state.results.get("pruefungen")).isEmpty();
   }
 
   @Angenommen("es existieren keine Klausuren")
@@ -116,7 +91,7 @@ public class getUngeplanteKlausurenSteps extends BaseSteps {
     LocalDate start = LocalDate.of(2022, 1, 31);
     LocalDate end = LocalDate.of(2022, 2, 27);
     LocalDate ankertag = start.plusDays(7);
-    getState().controller.createEmptyPeriode(semester, start, end, ankertag, 400);
+    state.controller.createEmptyPeriode(semester, start, end, ankertag, 400);
   }
 
   @Dann("bekomme ich den Block als Teil der ungeplanten Klausuren")

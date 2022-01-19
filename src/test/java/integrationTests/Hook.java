@@ -10,16 +10,16 @@ public class Hook {
 
   @Before
   public void setUp(Scenario scenario) {
-    BaseSteps.setState(getNewState());
-  }
-
-  @After
-  public void tearDown(Scenario scenario) {
-    BaseSteps.setState(null);
+    BaseSteps.state = getNewState();
   }
 
   private State getNewState() {
     return new State();
+  }
+
+  @After
+  public void shutDown(Scenario scenario) {
+    BaseSteps.state = null;
   }
 
 }
