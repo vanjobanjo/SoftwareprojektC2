@@ -19,13 +19,17 @@ public class BlockSteps extends BaseSteps {
       String name = block.get("Block");
       String date = block.get("Datum");
       String time = block.get("StartZeit");
-      int id = Integer.parseInt(block.get("Block"));
-      LocalDateTime termin = parseDate(date).atTime(parseTime(time));
+      LocalDateTime termin = null;
+      if (date != null && time != null) {
+        termin = parseDate(date).atTime(parseTime(time));
+      }
       ReadOnlyBlock result = state.controller.createBlock(name, Blocktyp.PARALLEL,
           state.controller.getUngeplantePruefungen().stream()
               .filter(x -> block.get("Pruefungen").contains(x.getName()))
               .toArray(ReadOnlyPruefung[]::new));
-      state.controller.scheduleBlock(result, termin);
+      if (termin != null) {
+        state.controller.scheduleBlock(result, termin);
+      }
     }
   }
 }
