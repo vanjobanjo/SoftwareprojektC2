@@ -22,6 +22,33 @@
 
   <artifactId>controller2</artifactId>
 
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+    </resources>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${surefire.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+
   <dependencies>
     <!-- testing -->
     <dependency>
@@ -104,9 +131,21 @@
       <artifactId>controller-api</artifactId>
       <version>1.0.2-SNAPSHOT</version>
     </dependency>
+
+    <dependency>
+      <artifactId>slf4j-simple</artifactId>
+      <groupId>org.slf4j</groupId>
+      <version>1.7.33</version>
+    </dependency>
   </dependencies>
 
   <profiles>
+    <profile>
+      <id>logging</id>
+      <properties>
+        <controller2.log.level>debug</controller2.log.level>
+      </properties>
+    </profile>
     <profile>
       <id>acceptanceTests</id>
       <build>
@@ -176,7 +215,6 @@
       <id>Mutationtests</id>
     </profile>
   </profiles>
-
   <properties>
     <assertj.version>3.22.0</assertj.version>
     <cucumber.version>7.2.2</cucumber.version>
@@ -187,22 +225,7 @@
     <failsafe.version>3.0.0-M5</failsafe.version>
     <junit-vintage-engine.version>5.8.2</junit-vintage-engine.version>
     <mockito.version>4.2.0</mockito.version>
+
+    <controller2.log.level>off</controller2.log.level>
   </properties>
-  <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>${surefire.version}</version>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </build>
 </project>

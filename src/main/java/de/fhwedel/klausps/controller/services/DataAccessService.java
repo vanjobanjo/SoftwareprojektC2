@@ -5,6 +5,7 @@ import static de.fhwedel.klausps.controller.util.PlanungseinheitUtil.getAllPruef
 import static de.fhwedel.klausps.controller.util.TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung;
 import static java.util.Objects.nonNull;
 
+import de.fhwedel.klausps.controller.Controller;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
@@ -34,8 +35,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DataAccessService {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(Controller.class);
 
   private Pruefungsperiode pruefungsperiode;
 
@@ -56,10 +61,10 @@ public class DataAccessService {
     pruefungsperiode.setKapazitaet(kapazitaet);
   }
 
-  private void checkForPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
-    if (pruefungsperiode == null) {
-      throw new NoPruefungsPeriodeDefinedException();
-    }
+  public Set<Pruefung> getGeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
+    checkForPruefungsperiode();
+    LOGGER.debug("Get all planned Pruefungen from Model.");
+    return pruefungsperiode.geplantePruefungen();
   }
 
   public Pruefung createPruefung(String name, String pruefungsNr, String refVWS,
@@ -240,9 +245,11 @@ public class DataAccessService {
     return pruefung;
   }
 
-  public Set<Pruefung> getGeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
-    checkForPruefungsperiode();
-    return pruefungsperiode.geplantePruefungen();
+  private void checkForPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    LOGGER.trace("Check if pruefungsperiode is set.");
+    if (pruefungsperiode == null) {
+      throw new NoPruefungsPeriodeDefinedException();
+    }
   }
 
   public Set<Planungseinheit> getAllPlanungseinheitenBetween(LocalDateTime start,
@@ -283,6 +290,7 @@ public class DataAccessService {
   @NotNull
   public Set<Pruefung> getUngeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
+    LOGGER.debug("Get all unplanned Pruefungen from Model.");
     return pruefungsperiode.ungeplantePruefungen();
   }
 

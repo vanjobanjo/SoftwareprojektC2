@@ -1,6 +1,12 @@
 package de.fhwedel.klausps.controller.services;
 
+import de.fhwedel.klausps.controller.Controller;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ServiceProvider {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(Controller.class);
 
   private static DataAccessService dataAccessService;
 
@@ -15,24 +21,27 @@ public class ServiceProvider {
   private ServiceProvider() {
   }
 
-  public static DataAccessService getDataAccessService() {
-    if (dataAccessService == null) {
-      dataAccessService = new DataAccessService();
-    }
-    return dataAccessService;
-  }
-
   public static IOService getIOService() {
     if (ioService == null) {
       ioService = new IOService(getDataAccessService());
+      LOGGER.debug("Created new {}.", ioService.getClass().getSimpleName());
     }
     return ioService;
+  }
+
+  public static DataAccessService getDataAccessService() {
+    if (dataAccessService == null) {
+      dataAccessService = new DataAccessService();
+      LOGGER.debug("Created new {}.", dataAccessService.getClass().getSimpleName());
+    }
+    return dataAccessService;
   }
 
   public static ScheduleService getScheduleService() {
     if (scheduleService == null) {
       scheduleService = new ScheduleService(getDataAccessService(), getRestrictionService(),
           getConverter());
+      LOGGER.debug("Created new {}.", scheduleService.getClass().getSimpleName());
       converter.setScheduleService(scheduleService);
     }
     return scheduleService;
@@ -41,6 +50,7 @@ public class ServiceProvider {
   public static RestrictionService getRestrictionService() {
     if (restrictionService == null) {
       restrictionService = new RestrictionService();
+      LOGGER.debug("Created new {}.", restrictionService.getClass().getSimpleName());
     }
     return restrictionService;
   }
@@ -48,6 +58,7 @@ public class ServiceProvider {
   public static Converter getConverter() {
     if (converter == null) {
       converter = new Converter();
+      LOGGER.debug("Created new {}.", converter.getClass().getSimpleName());
     }
     if (scheduleService != null) {
       converter.setScheduleService(scheduleService);
