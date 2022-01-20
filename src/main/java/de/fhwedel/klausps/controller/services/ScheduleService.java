@@ -3,7 +3,6 @@ package de.fhwedel.klausps.controller.services;
 import static de.fhwedel.klausps.controller.util.ParameterUtil.noNullParameters;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
-import static java.util.Objects.requireNonNull;
 
 import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
@@ -37,9 +36,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class ScheduleService {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ScheduleService.class);
 
   private final DataAccessService dataAccessService;
 
@@ -76,6 +79,7 @@ public class ScheduleService {
   @NotNull
   private Pruefung getPruefungIfExistent(ReadOnlyPruefung pruefungToGet)
       throws NoPruefungsPeriodeDefinedException {
+    LOGGER.debug("Requesting Pruefung {} from Model.", pruefungToGet);
     Optional<Pruefung> pruefung = dataAccessService.getPruefung(pruefungToGet);
     if (pruefung.isEmpty()) {
       throw new IllegalArgumentException(
@@ -392,8 +396,7 @@ public class ScheduleService {
   public Set<LocalDateTime> getHardConflictedTimes(Set<LocalDateTime> timesToCheck,
       ReadOnlyPlanungseinheit planungseinheitToCheck)
       throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
-    requireNonNull(timesToCheck);
-    requireNonNull(planungseinheitToCheck);
+    noNullParameters(timesToCheck, planungseinheitToCheck);
 
     Planungseinheit planungseinheit = getPlanungseinheit(planungseinheitToCheck);
     return calcHardConflictingTimes(timesToCheck, planungseinheit);
@@ -427,6 +430,7 @@ public class ScheduleService {
   @NotNull
   private Block getBlock(@NotNull ReadOnlyBlock blockToGet)
       throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
+    LOGGER.debug("Requesting block {} from Model.", blockToGet);
     Optional<Block> block = dataAccessService.getBlock(blockToGet.asBlock());
     if (block.isEmpty()) {
       throw new IllegalArgumentException("The handed Planungseinheit is not known.");

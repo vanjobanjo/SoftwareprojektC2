@@ -18,7 +18,7 @@ public class PlanungseinheitUtil {
   }
 
   public static Set<Pruefung> getAllPruefungen(Collection<Planungseinheit> planungseinheiten) {
-    LOGGER.debug("Converting {} to Pruefungen only.", planungseinheiten);
+    LOGGER.trace("Extracting Pruefungen from {}.", planungseinheiten);
     Set<Pruefung> result = new HashSet<>();
     for (Planungseinheit planungseinheit : planungseinheiten) {
       if (planungseinheit.isBlock()) {
@@ -27,7 +27,7 @@ public class PlanungseinheitUtil {
         result.add(planungseinheit.asPruefung());
       }
     }
-    LOGGER.debug("Resulting Planungseinheiten are: {}.", result);
+    LOGGER.trace("Resulting Pruefungen are: {}.", result);
     return result;
   }
 

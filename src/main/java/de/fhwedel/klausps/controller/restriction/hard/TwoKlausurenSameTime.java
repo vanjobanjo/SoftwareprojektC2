@@ -26,12 +26,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Klasse die für das Testen da ist, wenn zwei Klausuren gleichzeitig stattfinden, mit den gleichen Teilnehmerkreis
  */
 public class TwoKlausurenSameTime extends HarteRestriktion {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(TwoKlausurenSameTime.class);
 
   /**
    * Speichern von der Zeit, die zwischen den Pruefungen mit den gleichen Teilnehmerkreis liegen darf
@@ -247,7 +250,10 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
       Planungseinheit planungseinheitToCheckFor) {
 
     Set<Pruefung> geplantePruefungen = new HashSet<>(dataAccessService.getPlannedPruefungen());
-    geplantePruefungen.removeIf(x -> notSameTeilnehmerkreis(x, planungseinheitToCheckFor));
+    geplantePruefungen.removeIf(
+        (Pruefung pruefung) -> notSameTeilnehmerkreis(pruefung, planungseinheitToCheckFor));
+    LOGGER.trace("Found {} conflicting with {} because of common Teilnehmerkreise.",
+        geplantePruefungen, planungseinheitToCheckFor);
     return geplantePruefungen;
   }
 

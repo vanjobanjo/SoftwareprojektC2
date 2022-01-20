@@ -60,8 +60,16 @@ public class DataAccessService {
 
   public Set<Pruefung> getGeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
-    LOGGER.debug("Get all planned Pruefungen from Model.");
+    LOGGER.debug("Get all planned Pruefungen from Model: {}.",
+        pruefungsperiode.geplantePruefungen());
     return pruefungsperiode.geplantePruefungen();
+  }
+
+  private void checkForPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    LOGGER.trace("Check if pruefungsperiode is set.");
+    if (pruefungsperiode == null) {
+      throw new NoPruefungsPeriodeDefinedException();
+    }
   }
 
   public Pruefung createPruefung(String name, String pruefungsNr, String refVWS,
@@ -242,13 +250,6 @@ public class DataAccessService {
     return pruefung;
   }
 
-  private void checkForPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
-    LOGGER.trace("Check if pruefungsperiode is set.");
-    if (pruefungsperiode == null) {
-      throw new NoPruefungsPeriodeDefinedException();
-    }
-  }
-
   public Set<Planungseinheit> getAllPlanungseinheitenBetween(LocalDateTime start,
       LocalDateTime end) throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     noNullParameters(start, end);
@@ -290,21 +291,22 @@ public class DataAccessService {
   @NotNull
   public Set<Pruefung> getUngeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
-    LOGGER.debug("Get all unplanned Pruefungen from Model.");
+    LOGGER.debug("Get all unplanned Pruefungen from Model: {}.",
+        pruefungsperiode.ungeplantePruefungen());
     return pruefungsperiode.ungeplantePruefungen();
   }
 
   @NotNull
   public Set<Block> getGeplanteBloecke() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
-    LOGGER.debug("Get all planned Bloecke from Model.");
+    LOGGER.debug("Get all planned Bloecke from Model: {}.", pruefungsperiode.geplanteBloecke());
     return pruefungsperiode.geplanteBloecke();
   }
 
   @NotNull
   public Set<Block> getUngeplanteBloecke() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
-    LOGGER.debug("Get all unplanned Bloecke from Model.");
+    LOGGER.debug("Get all unplanned Bloecke from Model: {}.", pruefungsperiode.ungeplanteBloecke());
     return pruefungsperiode.ungeplanteBloecke();
   }
 
@@ -539,9 +541,11 @@ public class DataAccessService {
 
   public Set<Teilnehmerkreis> getAllTeilnehmerkreise() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
-    LOGGER.debug("Get all planned Pruefungen from Model.");
+    LOGGER.debug("Get all planned Pruefungen from Model: {}.",
+        pruefungsperiode.geplantePruefungen());
     Set<Pruefung> allPruefungen = new HashSet<>(pruefungsperiode.geplantePruefungen());
-    LOGGER.debug("Get all unplanned Pruefungen from Model.");
+    LOGGER.debug("Get all unplanned Pruefungen from Model: {}.",
+        pruefungsperiode.ungeplantePruefungen());
     allPruefungen.addAll(pruefungsperiode.ungeplantePruefungen());
     Set<Teilnehmerkreis> allTeilnehmerkreise = new HashSet<>();
     for (Pruefung pruefung : allPruefungen) {
@@ -576,9 +580,9 @@ public class DataAccessService {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefer);
     checkForPruefungsperiode();
-    LOGGER.debug("Get all Planungseinheiten from Model.");
+    LOGGER.debug("Get all Planungseinheiten from Model: {}.",
+        pruefungsperiode.getPlanungseinheiten());
     Set<Planungseinheit> planungseinheiten = pruefungsperiode.getPlanungseinheiten();
-    LOGGER.debug("All Planungseinheiten are: {}", planungseinheiten);
     Set<Pruefung> result = new HashSet<>();
     Pruefung pruefung;
     for (Planungseinheit planungseinheit : planungseinheiten) {
@@ -596,7 +600,7 @@ public class DataAccessService {
   @NotNull
   public LocalDate getAnkertag() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
-    LOGGER.debug("Get Ankertag from Model.");
+    LOGGER.debug("Get Ankertag from Model: {}.", pruefungsperiode.getAnkertag());
     return pruefungsperiode.getAnkertag();
   }
 

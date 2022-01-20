@@ -6,6 +6,7 @@ import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.restriction.hard.HarteRestriktion;
+import de.fhwedel.klausps.controller.restriction.hard.TwoKlausurenSameTime;
 import de.fhwedel.klausps.controller.restriction.soft.WeicheRestriktion;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Planungseinheit;
@@ -17,8 +18,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RestrictionService {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(TwoKlausurenSameTime.class);
 
   private final Set<HarteRestriktion> hardRestrictions;
 
@@ -124,6 +129,8 @@ public class RestrictionService {
       potentiallyConflictingPruefungen.addAll(
           hardRestriction.getAllPotentialConflictingPruefungenWith(planungseinheitToCheckFor));
     }
+    LOGGER.trace("Found {} to be in conflict with {}.",
+        potentiallyConflictingPruefungen, planungseinheitToCheckFor);
     return potentiallyConflictingPruefungen;
   }
 
