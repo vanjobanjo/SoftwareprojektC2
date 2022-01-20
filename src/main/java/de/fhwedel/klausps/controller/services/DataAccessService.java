@@ -2,10 +2,8 @@ package de.fhwedel.klausps.controller.services;
 
 import static de.fhwedel.klausps.controller.util.ParameterUtil.noNullParameters;
 import static de.fhwedel.klausps.controller.util.PlanungseinheitUtil.getAllPruefungen;
-import static de.fhwedel.klausps.controller.util.TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung;
 import static java.util.Objects.nonNull;
 
-import de.fhwedel.klausps.controller.Controller;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
@@ -33,14 +31,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DataAccessService {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(Controller.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(DataAccessService.class);
 
   private Pruefungsperiode pruefungsperiode;
 
@@ -278,8 +275,11 @@ public class DataAccessService {
     if (start.isAfter(end)) {
       throw new IllegalTimeSpanException("Der Start liegt nach dem Ende des Zeitslots");
     }
+    LOGGER.debug("Getting all Planungseinheiten between {} and {} from Model.", start, end);
     Set<Planungseinheit> planungseinheitenBetween = pruefungsperiode.planungseinheitenBetween(start,
         end);
+    LOGGER.debug("Planungseinheiten between {} and {} are found to be: {}", start, end,
+        planungseinheitenBetween);
     return getAllPruefungen(planungseinheitenBetween);
   }
 
@@ -297,12 +297,14 @@ public class DataAccessService {
   @NotNull
   public Set<Block> getGeplanteBloecke() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
+    LOGGER.debug("Get all planned Bloecke from Model.");
     return pruefungsperiode.geplanteBloecke();
   }
 
   @NotNull
   public Set<Block> getUngeplanteBloecke() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
+    LOGGER.debug("Get all unplanned Bloecke from Model.");
     return pruefungsperiode.ungeplanteBloecke();
   }
 
@@ -311,18 +313,31 @@ public class DataAccessService {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(teilnehmerkreis);
     checkForPruefungsperiode();
-    return pruefungsperiode.ungeplantePruefungen().stream()
-        .filter(pruefung -> pruefung.getTeilnehmerkreise().contains(teilnehmerkreis))
-        .collect(Collectors.toSet());
+    Set<Pruefung> result = filterPruefungenWith(pruefungsperiode.ungeplantePruefungen(),
+        teilnehmerkreis);
+    LOGGER.debug("All unplanned Pruefungen for {} are: {}", teilnehmerkreis, result);
+    return result;
+  }
+
+  private Set<Pruefung> filterPruefungenWith(Collection<Pruefung> pruefungen,
+      Teilnehmerkreis teilnehmerkreis) {
+    Set<Pruefung> result = new HashSet<>();
+    for (Pruefung pruefung : pruefungen) {
+      if (pruefung.getTeilnehmerkreise().contains(teilnehmerkreis)) {
+        result.add(pruefung);
+      }
+    }
+    return result;
   }
 
   public Set<Pruefung> geplantePruefungenForTeilnehmerkreis(Teilnehmerkreis teilnehmerkreis)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(teilnehmerkreis);
     checkForPruefungsperiode();
-    return pruefungsperiode.geplantePruefungen().stream()
-        .filter(pruefung -> pruefung.getTeilnehmerkreise().contains(teilnehmerkreis))
-        .collect(Collectors.toSet());
+    Set<Pruefung> result = filterPruefungenWith(pruefungsperiode.geplantePruefungen(),
+        teilnehmerkreis);
+    LOGGER.debug("All planned Pruefungen for {} are: {}", teilnehmerkreis, result);
+    return result;
   }
 
   public Planungseinheit addPruefer(ReadOnlyPruefung pruefung, String pruefer)
@@ -481,22 +496,26 @@ public class DataAccessService {
   @NotNull
   public LocalDate getStartOfPeriode() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
+    LOGGER.debug("Get start of Pruefungsperiode from Model.");
     return pruefungsperiode.getStartdatum();
   }
 
   @NotNull
   public LocalDate getEndOfPeriode() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
+    LOGGER.debug("Get end of Pruefungsperiode from Model.");
     return pruefungsperiode.getEnddatum();
   }
 
   public int getPeriodenKapazitaet() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
+    LOGGER.debug("Get capacity of the Pruefungsperiode from Model.");
     return pruefungsperiode.getKapazitaet();
   }
 
   public Semester getSemester() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
+    LOGGER.debug("Get the Semester from Model.");
     return pruefungsperiode.getSemester();
   }
 
@@ -520,13 +539,15 @@ public class DataAccessService {
 
   public Set<Teilnehmerkreis> getAllTeilnehmerkreise() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
-    Set<Pruefung> allPruefungen = new HashSet<>();
-    allPruefungen.addAll(pruefungsperiode.geplantePruefungen());
+    LOGGER.debug("Get all planned Pruefungen from Model.");
+    Set<Pruefung> allPruefungen = new HashSet<>(pruefungsperiode.geplantePruefungen());
+    LOGGER.debug("Get all unplanned Pruefungen from Model.");
     allPruefungen.addAll(pruefungsperiode.ungeplantePruefungen());
     Set<Teilnehmerkreis> allTeilnehmerkreise = new HashSet<>();
     for (Pruefung pruefung : allPruefungen) {
       allTeilnehmerkreise.addAll(pruefung.getTeilnehmerkreise());
     }
+    LOGGER.debug("Found Teilnehmerkreise: {}.", allTeilnehmerkreise);
     return allTeilnehmerkreise;
   }
 
@@ -555,7 +576,9 @@ public class DataAccessService {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefer);
     checkForPruefungsperiode();
+    LOGGER.debug("Get all Planungseinheiten from Model.");
     Set<Planungseinheit> planungseinheiten = pruefungsperiode.getPlanungseinheiten();
+    LOGGER.debug("All Planungseinheiten are: {}", planungseinheiten);
     Set<Pruefung> result = new HashSet<>();
     Pruefung pruefung;
     for (Planungseinheit planungseinheit : planungseinheiten) {
@@ -566,12 +589,14 @@ public class DataAccessService {
         }
       }
     }
+    LOGGER.debug("All Pruefungen from {} are: {}", pruefer, result);
     return result;
   }
 
   @NotNull
   public LocalDate getAnkertag() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
+    LOGGER.debug("Get Ankertag from Model.");
     return pruefungsperiode.getAnkertag();
   }
 
@@ -604,22 +629,43 @@ public class DataAccessService {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(zeitpunkt);
     checkForPruefungsperiode();
-    HashMap<Teilnehmerkreis, Integer> schaetzungen = new HashMap<>();
     int result = 0;
-    for (Pruefung pruefung : pruefungsperiode.geplantePruefungen()) {
-      LocalDateTime start = pruefung.getStartzeitpunkt();
-      LocalDateTime end = pruefung.endzeitpunkt();
-      if ((start.equals(zeitpunkt) || start.isBefore(zeitpunkt))
-          && (end.equals(zeitpunkt) || end.isAfter(zeitpunkt))) {
-        compareAndPutBiggerSchaetzung(schaetzungen,
-            pruefung.getSchaetzungen());
-      }
-    }
-
+    Set<Pruefung> pruefungen = getPruefungenAt(zeitpunkt);
+    HashMap<Teilnehmerkreis, Integer> schaetzungen = getMaxTeilnehmerPerTeilnehmerkreis(pruefungen);
     for (Integer schaetzung : schaetzungen.values()) {
       result += schaetzung;
     }
+    LOGGER.debug("Found {} students at {}", result, zeitpunkt);
     return result;
+  }
+
+  private Set<Pruefung> getPruefungenAt(LocalDateTime moment) {
+    Set<Pruefung> result = new HashSet<>();
+    for (Pruefung pruefung : pruefungsperiode.geplantePruefungen()) {
+      LocalDateTime start = pruefung.getStartzeitpunkt();
+      LocalDateTime end = pruefung.endzeitpunkt();
+      if ((start.equals(moment) || start.isBefore(moment))
+          && (end.equals(moment) || end.isAfter(moment))) {
+        result.add(pruefung);
+      }
+    }
+    return result;
+  }
+
+  @NotNull
+  private HashMap<Teilnehmerkreis, Integer> getMaxTeilnehmerPerTeilnehmerkreis(
+      Set<Pruefung> pruefungen) {
+    HashMap<Teilnehmerkreis, Integer> schaetzungen = new HashMap<>();
+    for (Pruefung pruefung : pruefungen) {
+      for (Map.Entry<Teilnehmerkreis, Integer> entry : pruefung.getSchaetzungen().entrySet()) {
+        if (schaetzungen.containsKey(entry.getKey())) {
+          schaetzungen.merge(entry.getKey(), entry.getValue(), Integer::max);
+        } else {
+          schaetzungen.put(entry.getKey(), entry.getValue());
+        }
+      }
+    }
+    return schaetzungen;
   }
 
   public boolean areInSameBlock(Pruefung pruefung, Pruefung otherPruefung)

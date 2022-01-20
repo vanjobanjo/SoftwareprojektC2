@@ -6,14 +6,19 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PlanungseinheitUtil {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(PlanungseinheitUtil.class);
 
   private PlanungseinheitUtil() {
     // util should not be instantiated
   }
 
   public static Set<Pruefung> getAllPruefungen(Collection<Planungseinheit> planungseinheiten) {
+    LOGGER.debug("Converting {} to Pruefungen only.", planungseinheiten);
     Set<Pruefung> result = new HashSet<>();
     for (Planungseinheit planungseinheit : planungseinheiten) {
       if (planungseinheit.isBlock()) {
@@ -22,6 +27,7 @@ public class PlanungseinheitUtil {
         result.add(planungseinheit.asPruefung());
       }
     }
+    LOGGER.debug("Resulting Planungseinheiten are: {}.", result);
     return result;
   }
 
