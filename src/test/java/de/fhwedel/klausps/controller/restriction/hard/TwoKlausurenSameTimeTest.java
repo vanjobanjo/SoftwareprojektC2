@@ -75,7 +75,7 @@ class TwoKlausurenSameTimeTest {
         Set.of(pruefung1, pruefung2));
     when(dataAccessService.getBlockTo(pruefung1)).thenReturn(Optional.empty());
     TwoKlausurenSameTime deviceUnderTest = new TwoKlausurenSameTime(dataAccessService);
-    HartesKriteriumAnalyse result = deviceUnderTest.evaluate(pruefung1).get();
+    HartesKriteriumAnalyse result = deviceUnderTest.evaluateRestriction(pruefung1).get();
 
     assertThat(result.getTeilnehmercount()).containsOnlyKeys(bwl);
     assertThat(result.getTeilnehmercount().values()).containsOnly(30);
@@ -103,7 +103,7 @@ class TwoKlausurenSameTimeTest {
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         Set.of(analysis, haskell));
 
-    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluate(haskell);
+    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluateRestriction(haskell);
 
     assertTrue(analyse.isPresent());
     assertEquals(Set.of(analysis, haskell), analyse.get().getCausingPruefungen());
@@ -133,7 +133,7 @@ class TwoKlausurenSameTimeTest {
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         Collections.emptySet());
 
-    assertThat(deviceUnderTest.evaluate(haskell)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(haskell)).isEmpty();
   }
 
   @Test
@@ -156,7 +156,7 @@ class TwoKlausurenSameTimeTest {
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         Set.of(analysis, haskell, dm));
 
-    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluate(haskell);
+    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluateRestriction(haskell);
 
     assertThat(analyse).isPresent();
     assertThat(analyse.get().getCausingPruefungen()).containsOnly(dm, analysis, haskell);
@@ -193,7 +193,7 @@ class TwoKlausurenSameTimeTest {
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         Set.of(analysis, haskell, dm));
 
-    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluate(haskell);
+    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluateRestriction(haskell);
     assertThat(analyse).isPresent();
 
     assertThat(analyse.get().getCausingPruefungen()).containsOnly(dm, analysis, haskell);
@@ -236,7 +236,7 @@ class TwoKlausurenSameTimeTest {
     when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         Set.of(blockA2));
 
-    assertThat(deviceUnderTest.evaluate(cPruefung)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(cPruefung)).isEmpty();
   }
 
 
@@ -273,7 +273,7 @@ class TwoKlausurenSameTimeTest {
     when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         Set.of(blockA));
 
-    assertThat(deviceUnderTest.evaluate(cPruefung)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(cPruefung)).isEmpty();
   }
 
 
@@ -309,7 +309,7 @@ class TwoKlausurenSameTimeTest {
     when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         Set.of(blockA));
 
-    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluate(cPruefung);
+    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluateRestriction(cPruefung);
     assertThat(analyse).isPresent();
     assertThat(analyse.get().getCausingPruefungen()).containsOnly(cPruefung, aPruefung);
     assertThat(analyse.get().getTeilnehmercount()).containsOnlyKeys(infBachelor);
@@ -350,7 +350,7 @@ class TwoKlausurenSameTimeTest {
     when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         Set.of(blockA));
 
-    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluate(cPruefung);
+    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluateRestriction(cPruefung);
     assertTrue(analyse.isEmpty());
 
   }
@@ -388,7 +388,7 @@ class TwoKlausurenSameTimeTest {
     when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         Set.of(blockA));
 
-    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluate(cPruefung);
+    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluateRestriction(cPruefung);
     assertTrue(analyse.isEmpty());
   }
 
@@ -440,7 +440,7 @@ class TwoKlausurenSameTimeTest {
 
     int affectedStudents = 16;
 
-    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluate(cPruefung2);
+    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluateRestriction(cPruefung2);
     assertThat(analyse).isPresent();
     assertThat(analyse.get().getCausingPruefungen()).containsOnly(aPruefung2, bPruefung2,
         cPruefung2, dPruefung2, ePruefung2);
@@ -498,7 +498,7 @@ class TwoKlausurenSameTimeTest {
 
     int affectedStudents = 16;
 
-    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluate(cPruefung2);
+    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluateRestriction(cPruefung2);
     assertThat(analyse).isPresent();
     assertThat(analyse.get().getCausingPruefungen()).containsOnly(aPruefung2, bPruefung2,
         cPruefung2, dPruefung2, ePruefung2);

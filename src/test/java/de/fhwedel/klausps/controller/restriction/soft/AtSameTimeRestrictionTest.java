@@ -51,7 +51,7 @@ class AtSameTimeRestrictionTest {
     MockSettings mockSettings = withSettings().useConstructor(this.dataAccessService,
         ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH, ZERO);
     this.deviceUnderTest = mock(AtSameTimeRestriction.class, mockSettings);
-    when(deviceUnderTest.evaluate(any())).thenCallRealMethod();
+    when(deviceUnderTest.evaluateRestriction(any())).thenCallRealMethod();
   }
 
   @Test
@@ -59,7 +59,7 @@ class AtSameTimeRestrictionTest {
   void evaluate_callWithUnplannedPruefung() throws NoPruefungsPeriodeDefinedException {
     Pruefung pruefung = getRandomUnplannedPruefung(5L);
     when(dataAccessService.getPlannedPruefungen()).thenReturn(emptySet());
-    assertThat(deviceUnderTest.evaluate(pruefung)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(pruefung)).isEmpty();
   }
 
   @Test
@@ -73,9 +73,9 @@ class AtSameTimeRestrictionTest {
 
     when(dataAccessService.getPlannedPruefungen()).thenReturn(emptySet());
 
-    assertThat(deviceUnderTest.evaluate(pruefungen.get(0))).isEmpty();
-    assertThat(deviceUnderTest.evaluate(pruefungen.get(1))).isEmpty();
-    assertThat(deviceUnderTest.evaluate(pruefungen.get(2))).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(pruefungen.get(0))).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(pruefungen.get(1))).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(pruefungen.get(2))).isEmpty();
   }
 
   @Test
@@ -91,7 +91,7 @@ class AtSameTimeRestrictionTest {
     // direct violation of restriction
     when(deviceUnderTest.violatesRestriction(any())).thenReturn(true);
 
-    assertThat(deviceUnderTest.evaluate(pruefungen.get(0).asPruefung())).isPresent();
+    assertThat(deviceUnderTest.evaluateRestriction(pruefungen.get(0).asPruefung())).isPresent();
   }
 
   @Test
@@ -107,7 +107,7 @@ class AtSameTimeRestrictionTest {
     // direct violation of restriction
     when(deviceUnderTest.violatesRestriction(any())).thenReturn(true, false, true);
 
-    assertThat(deviceUnderTest.evaluate(pruefungen.get(0).asPruefung())).isPresent();
+    assertThat(deviceUnderTest.evaluateRestriction(pruefungen.get(0).asPruefung())).isPresent();
   }
 
   @Test
@@ -123,7 +123,7 @@ class AtSameTimeRestrictionTest {
     // direct violation of restriction
     when(deviceUnderTest.violatesRestriction(any())).thenReturn(true, false);
 
-    assertThat(deviceUnderTest.evaluate(pruefungen.get(0).asPruefung())).isNotPresent();
+    assertThat(deviceUnderTest.evaluateRestriction(pruefungen.get(0).asPruefung())).isNotPresent();
   }
 
   @Test
@@ -135,7 +135,7 @@ class AtSameTimeRestrictionTest {
 
     when(dataAccessService.getBlockTo(any(Pruefung.class))).thenReturn(Optional.of(block));
 
-    deviceUnderTest.evaluate(pruefungenInBlock.get(0));
+    deviceUnderTest.evaluateRestriction(pruefungenInBlock.get(0));
     verify(dataAccessService).getAllPlanungseinheitenBetween(
         pruefungenInBlock.get(0).getStartzeitpunkt(), pruefungenInBlock.get(0).endzeitpunkt());
   }
@@ -159,7 +159,7 @@ class AtSameTimeRestrictionTest {
 
     when(dataAccessService.getBlockTo(any(Pruefung.class))).thenReturn(Optional.of(block));
 
-    deviceUnderTest.evaluate(pruefungenInBlock.get(0));
+    deviceUnderTest.evaluateRestriction(pruefungenInBlock.get(0));
     verify(dataAccessService).getAllPlanungseinheitenBetween(block.getStartzeitpunkt(),
         block.endzeitpunkt());
   }
@@ -192,7 +192,7 @@ class AtSameTimeRestrictionTest {
         Set.of(toCheckFor, block));
     when(deviceUnderTest.violatesRestriction(any())).thenAnswer(hasMoreThanOneElement);
 
-    assertThat(deviceUnderTest.evaluate(toCheckFor)).isPresent();
+    assertThat(deviceUnderTest.evaluateRestriction(toCheckFor)).isPresent();
   }
 
   private Planungseinheit getSequentialBlockWithTotalDurationOf5Hours() {

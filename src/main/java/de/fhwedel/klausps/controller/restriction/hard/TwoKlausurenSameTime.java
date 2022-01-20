@@ -54,7 +54,7 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
   }
 
   @Override
-  public Optional<HartesKriteriumAnalyse> evaluate(Pruefung pruefung)
+  public Optional<HartesKriteriumAnalyse> evaluateRestriction(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     if (pruefung.isGeplant()) {
       //Setzen von den start und end Termin, wo das Kriterium verletzt werden könnte

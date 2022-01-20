@@ -100,7 +100,7 @@ class FreierTagZwischenPruefungenTest {
 
     when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(modelDM));
 
-    assertThat(deviceUnderTest.evaluate(modelAnalysis)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(modelAnalysis)).isEmpty();
   }
 
   // ----------------------------------------------------------------------------
@@ -120,7 +120,7 @@ class FreierTagZwischenPruefungenTest {
 
     when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(modelDM, modelAnalysis));
 
-    assertThat(deviceUnderTest.evaluate(modelAnalysis)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(modelAnalysis)).isEmpty();
   }
 
 
@@ -182,7 +182,7 @@ class FreierTagZwischenPruefungenTest {
     when(dataAccessService.areInSameBlock(analysis, dm)).thenReturn(true);
     when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
 
-    assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(analysis)).isEmpty();
   }
 
   @Test
@@ -244,7 +244,7 @@ class FreierTagZwischenPruefungenTest {
 
     when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(modelDM, modelAnalysis));
 
-    assertThat(deviceUnderTest.evaluate(modelAnalysis)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(modelAnalysis)).isEmpty();
   }
 
 
@@ -351,7 +351,7 @@ class FreierTagZwischenPruefungenTest {
 
     when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(modelDM, modelAnalysis));
 
-    assertThat(deviceUnderTest.evaluate(modelAnalysis)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(modelAnalysis)).isEmpty();
   }
 
 
@@ -459,7 +459,7 @@ class FreierTagZwischenPruefungenTest {
 
     when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
 
-    assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(analysis)).isEmpty();
   }
 
 
@@ -478,7 +478,7 @@ class FreierTagZwischenPruefungenTest {
 
     when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
 
-    assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(analysis)).isEmpty();
   }
 
   @Test
@@ -499,7 +499,7 @@ class FreierTagZwischenPruefungenTest {
 
     when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
-    assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(analysis)).isEmpty();
   }
 
   // ----------------------------------------------------------------------------
@@ -520,7 +520,7 @@ class FreierTagZwischenPruefungenTest {
 
     when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
 
-    assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(analysis)).isEmpty();
   }
 
 
@@ -539,7 +539,7 @@ class FreierTagZwischenPruefungenTest {
 
     when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
 
-    assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(analysis)).isEmpty();
   }
 
   @Test
@@ -560,7 +560,7 @@ class FreierTagZwischenPruefungenTest {
 
     when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
-    assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(analysis)).isEmpty();
   }
 
   // ----------------------------------------------------------------------------
@@ -585,7 +585,7 @@ class FreierTagZwischenPruefungenTest {
 
     when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
-    assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(analysis)).isEmpty();
   }
 
   @Test
@@ -677,7 +677,7 @@ class FreierTagZwischenPruefungenTest {
 
     when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
-    assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(analysis)).isEmpty();
   }
 
   @Test
@@ -699,7 +699,7 @@ class FreierTagZwischenPruefungenTest {
 
     when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
-    assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(analysis)).isEmpty();
   }
 
   @Test
@@ -722,7 +722,7 @@ class FreierTagZwischenPruefungenTest {
 
     when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
-    assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(analysis)).isEmpty();
   }
 
   @Test
@@ -745,7 +745,7 @@ class FreierTagZwischenPruefungenTest {
 
     when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
-    assertThat(deviceUnderTest.evaluate(analysis)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(analysis)).isEmpty();
   }
 
 
@@ -790,7 +790,7 @@ class FreierTagZwischenPruefungenTest {
       Set<Teilnehmerkreis> causingTeilnehmerkreise, int affected)
       throws NoPruefungsPeriodeDefinedException {
 
-    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(toEvaluate);
+    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluateRestriction(toEvaluate);
     assertThat(result).isPresent();
     assertThat(result.get().getAffectedTeilnehmerKreise()).containsExactlyInAnyOrderElementsOf(
         causingTeilnehmerkreise);

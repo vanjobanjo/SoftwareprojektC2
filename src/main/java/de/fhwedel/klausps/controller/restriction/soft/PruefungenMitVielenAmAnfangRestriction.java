@@ -42,7 +42,7 @@ public class PruefungenMitVielenAmAnfangRestriction extends WeicheRestriktion {
 
 
   @Override
-  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung)
+  public Optional<WeichesKriteriumAnalyse> evaluateRestriction(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung);
     if (!pruefung.isGeplant()) {

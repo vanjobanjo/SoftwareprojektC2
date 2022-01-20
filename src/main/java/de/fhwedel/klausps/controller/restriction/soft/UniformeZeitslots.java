@@ -25,7 +25,7 @@ public class UniformeZeitslots extends WeicheRestriktion {
 
 
   @Override
-  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung)
+  public Optional<WeichesKriteriumAnalyse> evaluateRestriction(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     if (!pruefung.isGeplant()) {
       return Optional.empty();

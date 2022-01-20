@@ -42,7 +42,7 @@ class UniformeZeitslotsTest {
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     analysis.setStartzeitpunkt(termin);
 
-    assertThat(deviceUnderTest.evaluate(haskell)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(haskell)).isEmpty();
   }
 
   @Test
@@ -58,7 +58,7 @@ class UniformeZeitslotsTest {
 
     when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, haskell));
 
-    assertThat(deviceUnderTest.evaluate(dm)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(dm)).isEmpty();
   }
 
   @Test
@@ -74,7 +74,7 @@ class UniformeZeitslotsTest {
 
     when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, haskell));
 
-    assertThat(deviceUnderTest.evaluate(dm)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(dm)).isEmpty();
   }
 
   @Test
@@ -90,7 +90,7 @@ class UniformeZeitslotsTest {
 
     when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, haskell));
 
-    assertThat(deviceUnderTest.evaluate(dm)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(dm)).isEmpty();
   }
 
   @Test
@@ -106,7 +106,7 @@ class UniformeZeitslotsTest {
 
     when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, haskell));
 
-    assertThat(deviceUnderTest.evaluate(dm)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(dm)).isEmpty();
   }
 
   @Test
@@ -122,7 +122,7 @@ class UniformeZeitslotsTest {
 
     when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, haskell));
 
-    assertThat(deviceUnderTest.evaluate(dm)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(dm)).isEmpty();
   }
 
   @Test
@@ -153,7 +153,7 @@ class UniformeZeitslotsTest {
   private void testKriterium(Pruefung toEvaluate, Set<Pruefung> causingPruefungen,
       Set<Teilnehmerkreis> causingTeilnehmerkreise) throws NoPruefungsPeriodeDefinedException {
 
-    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(toEvaluate);
+    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluateRestriction(toEvaluate);
     assertThat(result).isPresent();
     assertThat(result.get().getAffectedTeilnehmerKreise()).containsExactlyInAnyOrderElementsOf(
         causingTeilnehmerkreise);

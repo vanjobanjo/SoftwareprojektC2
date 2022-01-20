@@ -34,7 +34,7 @@ public abstract class AtSameTimeRestriction extends WeicheRestriktion {
 
   @Override
   @NotNull
-  public Optional<WeichesKriteriumAnalyse> evaluate(@NotNull Pruefung pruefung)
+  public Optional<WeichesKriteriumAnalyse> evaluateRestriction(@NotNull Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     if (!pruefung.isGeplant()) {
       return Optional.empty();

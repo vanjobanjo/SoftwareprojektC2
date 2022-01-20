@@ -1,5 +1,6 @@
 package de.fhwedel.klausps.controller.restriction.soft;
 
+import static de.fhwedel.klausps.controller.util.ParameterUtil.noNullParameters;
 import static de.fhwedel.klausps.controller.util.TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung;
 
 import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
@@ -33,9 +34,18 @@ public abstract class WeicheRestriktion extends Restriktion {
    * @return Either an {@link Optional} containing a {@link KriteriumsAnalyse} for the violated
    * restriction, or an empty Optional in case the Restriction was not violated.
    */
-  public abstract Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung)
+  protected abstract Optional<WeichesKriteriumAnalyse> evaluateRestriction(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException;
 
+
+  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException {
+    noNullParameters(pruefung);
+    if (!pruefung.isGeplant()) {
+      return Optional.empty();
+    }
+    return evaluateRestriction(pruefung);
+  }
 
   protected WeichesKriteriumAnalyse buildAnalysis(Pruefung pruefung,
       Set<Pruefung> affectedPruefungen) {

@@ -60,7 +60,7 @@ public class WocheVierFuerMaster extends WeicheRestriktion {
    * restriction, or an empty Optional in case the Restriction was not violated.
    */
   @Override
-  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
+  public Optional<WeichesKriteriumAnalyse> evaluateRestriction(Pruefung pruefung) {
 
     if (!isWeekFourContainsNotOnlyMaster(pruefung)) {
       return Optional.empty();

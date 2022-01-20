@@ -109,7 +109,7 @@ class WocheVierFuerMasterTest {
     analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
     Pruefung modelanalysis = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
     modelanalysis.addTeilnehmerkreis(TestFactory.infBachelor, 20);
-    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(modelanalysis);
+    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluateRestriction(modelanalysis);
     assertThat(result).isPresent();
     assertThat(result.get().getCausingPruefungen()).containsOnly(modelanalysis);
     assertThat(result.get().getKriterium()).isEqualTo(WeichesKriterium.WOCHE_VIER_FUER_MASTER);
@@ -126,7 +126,7 @@ class WocheVierFuerMasterTest {
     analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
     Pruefung modelanalysis = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
     modelanalysis.addTeilnehmerkreis(TestFactory.infBachelor, 20);
-    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(modelanalysis);
+    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluateRestriction(modelanalysis);
     assertThat(result).isEmpty();
   }
 
@@ -138,7 +138,7 @@ class WocheVierFuerMasterTest {
     analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
     Pruefung modelanalysisMaster = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
     modelanalysisMaster.addTeilnehmerkreis(TestFactory.infMaster, 20);
-    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(modelanalysisMaster);
+    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluateRestriction(modelanalysisMaster);
     assertThat(result).isEmpty();
   }
 
@@ -151,7 +151,7 @@ class WocheVierFuerMasterTest {
     Pruefung modelAnalysisMixedTk = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
     modelAnalysisMixedTk.addTeilnehmerkreis(TestFactory.infMaster, 20);
     modelAnalysisMixedTk.addTeilnehmerkreis(TestFactory.infBachelor, 20);
-    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(modelAnalysisMixedTk);
+    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluateRestriction(modelAnalysisMixedTk);
     assertThat(result).isPresent();
     assertThat(deviceUnderTest.isWeekFourContainsNotOnlyMaster(modelAnalysisMixedTk)).isTrue();
 
@@ -169,7 +169,7 @@ class WocheVierFuerMasterTest {
     Pruefung modelAnalysisMixedTk = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
     modelAnalysisMixedTk.addTeilnehmerkreis(TestFactory.infMaster, 20);
     modelAnalysisMixedTk.addTeilnehmerkreis(TestFactory.infBachelor, 20);
-    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(modelAnalysisMixedTk);
+    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluateRestriction(modelAnalysisMixedTk);
     assertThat(result).isEmpty();
   }
 
@@ -183,7 +183,7 @@ class WocheVierFuerMasterTest {
     modelAnalysisMixedTk.addTeilnehmerkreis(TestFactory.infMaster, 20);
     modelAnalysisMixedTk.addTeilnehmerkreis(TestFactory.infBachelor, 20);
     modelAnalysisMixedTk.addTeilnehmerkreis(TestFactory.infPtl, 20);
-    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(modelAnalysisMixedTk);
+    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluateRestriction(modelAnalysisMixedTk);
     assertThat(result).isPresent();
     assertThat(result.get().getAmountAffectedStudents()).isEqualTo(40);
     assertThat(result.get().getAffectedTeilnehmerKreise()).containsOnly(TestFactory.infBachelor,
@@ -200,7 +200,7 @@ class WocheVierFuerMasterTest {
     analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
     Pruefung modelAnalysisMasterTk = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
     modelAnalysisMasterTk.addTeilnehmerkreis(TestFactory.infMaster, 20);
-    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(modelAnalysisMasterTk);
+    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluateRestriction(modelAnalysisMasterTk);
     assertThat(result).isEmpty();
   }
 
@@ -212,7 +212,7 @@ class WocheVierFuerMasterTest {
     analysis = TestFactory.planRoPruefung(analysis, week4.atTime(LocalTime.MIDNIGHT));
     Pruefung modelAnalysisMasterTk = TestFactory.getPruefungOfReadOnlyPruefung(analysis);
     modelAnalysisMasterTk.addTeilnehmerkreis(TestFactory.infPtl, 20);
-    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(modelAnalysisMasterTk);
+    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluateRestriction(modelAnalysisMasterTk);
     assertThat(result).isPresent();
     assertThat(result.get().getAffectedTeilnehmerKreise()).containsOnly(TestFactory.infPtl);
     assertThat(result.get().getAmountAffectedStudents()).isEqualTo(20);

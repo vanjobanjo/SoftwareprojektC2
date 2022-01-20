@@ -36,7 +36,7 @@ public class MehrePruefungenAmTag extends WeicheRestriktion {
   }
 
   @Override
-  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung)
+  public Optional<WeichesKriteriumAnalyse> evaluateRestriction(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
 
     Set<Pruefung> setPruefung = new HashSet<>();

@@ -36,7 +36,7 @@ public class KeineKlausurAmSonntag extends WeicheRestriktion {
   }
 
   @Override
-  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung) {
+  public Optional<WeichesKriteriumAnalyse> evaluateRestriction(Pruefung pruefung) {
 
     if (!isScheduledOnSunday(pruefung)) {
       return Optional.empty();

@@ -55,7 +55,7 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion {
 
 
   @Override
-  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung)
+  public Optional<WeichesKriteriumAnalyse> evaluateRestriction(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     LocalDate start;
     try {

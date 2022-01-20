@@ -39,6 +39,15 @@ public abstract class HarteRestriktion extends Restriktion {
     this.dataAccessService = dataAccessService;
   }
 
+  public Optional<HartesKriteriumAnalyse> evaluate(Pruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException {
+    if (!pruefung.isGeplant()) {
+      return Optional.empty();
+    }
+    return evaluateRestriction(pruefung);
+  }
+
+
   /**
    * Dise Methode wertet zu der Übergebenen Pruefung das HarteKriterum aus. Und gibt ein Optional
    * von einer Harten KriterumsAnalyse zurück.
@@ -49,7 +58,7 @@ public abstract class HarteRestriktion extends Restriktion {
    * eine HarteKrteriumsAnalyse, mit den Klausuren und Teilnehmerkreisen, welche gegen das Kriterum
    * verstößt
    */
-  public abstract Optional<HartesKriteriumAnalyse> evaluate(Pruefung pruefung)
+  protected abstract Optional<HartesKriteriumAnalyse> evaluateRestriction(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException;
 
   /**

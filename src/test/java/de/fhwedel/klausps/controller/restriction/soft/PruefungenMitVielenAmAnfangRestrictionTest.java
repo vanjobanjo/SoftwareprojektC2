@@ -56,13 +56,13 @@ class PruefungenMitVielenAmAnfangRestrictionTest {
 
   @Test
   void pruefungenMitVielenAmAnfang_null_parameters() {
-    assertThrows(NullPointerException.class, () -> deviceUnderTest.evaluate(null));
+    assertThrows(NullPointerException.class, () -> deviceUnderTest.evaluateRestriction(null));
   }
 
  /*@Test
   void pruefungenMitVielenAmAnfang_pruefung_does_not_exist() {
    Pruefung pruefung = mock(Pruefung.class);
-    assertThrows(IllegalArgumentException.class, () -> deviceUnderTest.evaluate(pruefung));
+    assertThrows(IllegalArgumentException.class, () -> deviceUnderTest.evaluateRestriction(pruefung));
   }*/
 
 
@@ -71,7 +71,7 @@ class PruefungenMitVielenAmAnfangRestrictionTest {
       throws NoPruefungsPeriodeDefinedException {
     Pruefung pruefung = mock(Pruefung.class);
     when(pruefung.isGeplant()).thenReturn(false);
-    assertThat(deviceUnderTest.evaluate(pruefung)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(pruefung)).isEmpty();
   }
 
 
@@ -91,7 +91,7 @@ class PruefungenMitVielenAmAnfangRestrictionTest {
     when(dataAccessService.getGeplantePruefungen()).thenReturn(
         Set.of(moreTeilnehmer, lessTeilnehmer));
     when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
-    assertThat(deviceUnderTest.evaluate(moreTeilnehmer)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(moreTeilnehmer)).isEmpty();
   }
 
   @Test
@@ -111,7 +111,7 @@ class PruefungenMitVielenAmAnfangRestrictionTest {
     when(dataAccessService.getGeplantePruefungen()).thenReturn(
         Set.of(moreTeilnehmer, lessTeilnehmer));
     when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
-    assertThat(deviceUnderTest.evaluate(moreTeilnehmer)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(moreTeilnehmer)).isEmpty();
   }
 
   @Test
@@ -135,7 +135,7 @@ class PruefungenMitVielenAmAnfangRestrictionTest {
         Set.of(moreTeilnehmer, lessTeilnehmer));
     when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
 
-    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(moreTeilnehmer);
+    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluateRestriction(moreTeilnehmer);
     assertThat(result).isPresent();
     assertThat(result.get().getAmountAffectedStudents()).isEqualTo(schaetzungMore);
     assertThat(result.get().getDeltaScoring()).isEqualTo(PRUEFUNGEN_MIT_VIELEN_AN_ANFANG.getWert());
@@ -165,7 +165,7 @@ class PruefungenMitVielenAmAnfangRestrictionTest {
     when(dataAccessService.getGeplantePruefungen()).thenReturn(
         Set.of(moreTeilnehmer, lessTeilnehmer));
     when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
-    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(lessTeilnehmer);
+    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluateRestriction(lessTeilnehmer);
     assertThat(result).isEmpty();
   }
 
@@ -189,7 +189,7 @@ class PruefungenMitVielenAmAnfangRestrictionTest {
     when(dataAccessService.getGeplantePruefungen()).thenReturn(
         Set.of(moreTeilnehmer, lessTeilnehmer));
     when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
-    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(lessTeilnehmer);
+    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluateRestriction(lessTeilnehmer);
     assertThat(result).isEmpty();
   }
 
@@ -210,7 +210,7 @@ class PruefungenMitVielenAmAnfangRestrictionTest {
     when(dataAccessService.getGeplantePruefungen()).thenReturn(
         Set.of(moreTeilnehmer, lessTeilnehmer));
     when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
-    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluate(moreTeilnehmer);
+    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluateRestriction(moreTeilnehmer);
     assertThat(result).isPresent();
     assertThat(result.get().getAmountAffectedStudents()).isEqualTo(schaetzungMore);
     assertThat(result.get().getCausingPruefungen()).containsOnly(moreTeilnehmer);

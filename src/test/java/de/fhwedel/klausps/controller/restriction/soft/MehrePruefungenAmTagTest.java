@@ -98,7 +98,7 @@ class MehrePruefungenAmTagTest {
     when(haskel.getDauer()).thenReturn(duration);
     when(haskel.isGeplant()).thenReturn(true);
 
-    Optional<WeichesKriteriumAnalyse> analyse = mehrePruefungenAmTag.evaluate(haskel);
+    Optional<WeichesKriteriumAnalyse> analyse = mehrePruefungenAmTag.evaluateRestriction(haskel);
     assertTrue(analyse.isPresent());
     assertThat(analyse.get().getCausingPruefungen()).containsAll(setOfConflictPruefunge);
     assertEquals(setOfConflictTeilnehmerkreis, analyse.get().getAffectedTeilnehmerKreise());
@@ -214,7 +214,7 @@ class MehrePruefungenAmTagTest {
     when(haskel.getDauer()).thenReturn(duration);
     when(haskel.isGeplant()).thenReturn(true);
 
-    Optional<WeichesKriteriumAnalyse> analyse = mehrePruefungenAmTag.evaluate(haskel);
+    Optional<WeichesKriteriumAnalyse> analyse = mehrePruefungenAmTag.evaluateRestriction(haskel);
 
     assertTrue(analyse.isPresent());
     assertThat(analyse.get().getCausingPruefungen()).containsAll(setOfConflictPruefunge);

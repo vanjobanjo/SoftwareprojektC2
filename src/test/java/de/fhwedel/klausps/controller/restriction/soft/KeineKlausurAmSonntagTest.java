@@ -82,7 +82,7 @@ class KeineKlausurAmSonntagTest {
     model_pruefung_so.addTeilnehmerkreis(TestFactory.bwlBachelor, 30);
     model_pruefung_so.addTeilnehmerkreis(TestFactory.infBachelor, 50);
     TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, model_pruefung_so);
-    WeichesKriteriumAnalyse result = deviceUnderTest.evaluate(model_pruefung_so)
+    WeichesKriteriumAnalyse result = deviceUnderTest.evaluateRestriction(model_pruefung_so)
         .orElseThrow(IllegalArgumentException::new
         );
     assertThat(result.getCausingPruefungen()).containsOnly(model_pruefung_so);

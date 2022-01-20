@@ -72,7 +72,7 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
   }
 
   @Override
-  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung)
+  public Optional<WeichesKriteriumAnalyse> evaluateRestriction(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
 
     Map<Integer, Set<Pruefung>> weekPruefungMap;

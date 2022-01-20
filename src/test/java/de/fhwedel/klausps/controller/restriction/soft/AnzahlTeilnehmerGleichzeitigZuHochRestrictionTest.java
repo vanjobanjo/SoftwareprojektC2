@@ -57,7 +57,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
     when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(Set.of(pruefung));
     when(dataAccessService.getBlockTo(any(Pruefung.class))).thenReturn(Optional.empty());
 
-    assertThat(deviceUnderTest.evaluate(pruefung)).isNotPresent();
+    assertThat(deviceUnderTest.evaluateRestriction(pruefung)).isNotPresent();
   }
 
   @Test
@@ -71,7 +71,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
     when(dataAccessService.getAllPruefungenBetween(any(), any())).thenReturn(Set.of(pruefung));
     when(dataAccessService.getBlockTo(any(Pruefung.class))).thenReturn(Optional.empty());
 
-    assertThat(deviceUnderTest.evaluate(pruefung)).isNotPresent();
+    assertThat(deviceUnderTest.evaluateRestriction(pruefung)).isNotPresent();
   }
 
   @Test
@@ -83,7 +83,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
         Set.copyOf(pruefungen));
     when(dataAccessService.getBlockTo(any(Pruefung.class))).thenReturn(Optional.empty());
 
-    assertThat(deviceUnderTest.evaluate(pruefungen.get(0))).isNotPresent();
+    assertThat(deviceUnderTest.evaluateRestriction(pruefungen.get(0))).isNotPresent();
   }
 
   private List<Pruefung> get3PruefungenWithTotal200Students() {
@@ -108,7 +108,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
         Set.copyOf(pruefungen));
     when(dataAccessService.getBlockTo(any(Pruefung.class))).thenReturn(Optional.of(block));
 
-    assertThat(deviceUnderTest.evaluate(pruefungen.get(0))).isNotPresent();
+    assertThat(deviceUnderTest.evaluateRestriction(pruefungen.get(0))).isNotPresent();
   }
 
   private Block getBlockWith(Iterable<Pruefung> pruefungen) {
@@ -129,7 +129,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
         Set.of(planungseinheit));
     when(dataAccessService.getBlockTo(any(Pruefung.class))).thenReturn(Optional.empty());
 
-    assertThat(deviceUnderTest.evaluate(planungseinheit.asPruefung())).isPresent();
+    assertThat(deviceUnderTest.evaluateRestriction(planungseinheit.asPruefung())).isPresent();
   }
 
   @Test
@@ -144,7 +144,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
         Set.copyOf(convertPruefungenToPlanungseinheiten(List.of(pruefung))));
     when(dataAccessService.getBlockTo(any(Pruefung.class))).thenReturn(Optional.empty());
 
-    assertThat(deviceUnderTest.evaluate(pruefung)).isPresent();
+    assertThat(deviceUnderTest.evaluateRestriction(pruefung)).isPresent();
   }
 
   @Test
@@ -156,7 +156,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
         Set.copyOf(convertPruefungenToPlanungseinheiten(pruefungen)));
     when(dataAccessService.getBlockTo(any(Pruefung.class))).thenReturn(Optional.empty());
 
-    assertThat(deviceUnderTest.evaluate(pruefungen.get(0))).isPresent();
+    assertThat(deviceUnderTest.evaluateRestriction(pruefungen.get(0))).isPresent();
   }
 
   private List<Pruefung> get3PruefungenWithTotal201Students() {
@@ -182,7 +182,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         Set.copyOf(convertPruefungenToPlanungseinheiten(pruefungen)));
 
-    assertThat(deviceUnderTest.evaluate(pruefungen.get(0))).isPresent();
+    assertThat(deviceUnderTest.evaluateRestriction(pruefungen.get(0))).isPresent();
   }
 
   @Test
@@ -194,7 +194,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
         Set.copyOf(convertPruefungenToPlanungseinheiten(pruefungen)));
 
     WeicheKriteriumsAnalyseAssert.assertThat(
-            (deviceUnderTest.evaluate(pruefungen.get(0).asPruefung()).get()))
+            (deviceUnderTest.evaluateRestriction(pruefungen.get(0).asPruefung()).get()))
         .conflictingPruefungenAreExactly(getPruefungsnummernFromModel(pruefungen));
   }
 
@@ -217,7 +217,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         Set.copyOf(convertPruefungenToPlanungseinheiten(new ArrayList<>(block.getPruefungen()))));
 
-    WeicheKriteriumsAnalyseAssert.assertThat((deviceUnderTest.evaluate(pruefungToTest).get()))
+    WeicheKriteriumsAnalyseAssert.assertThat((deviceUnderTest.evaluateRestriction(pruefungToTest).get()))
         .conflictingPruefungenAreExactly(getPruefungsnummernFromModel(block.getPruefungen()));
   }
 
@@ -240,7 +240,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
         Set.copyOf(convertPruefungenToPlanungseinheiten(pruefungen)));
 
     WeicheKriteriumsAnalyseAssert.assertThat(
-            (deviceUnderTest.evaluate(pruefungen.get(0).asPruefung()).get()))
+            (deviceUnderTest.evaluateRestriction(pruefungen.get(0).asPruefung()).get()))
         .affectsExactlyAsManyStudentsAs(201);
   }
 
@@ -253,7 +253,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
         Set.copyOf(convertPruefungenToPlanungseinheiten(pruefungen)));
 
     WeicheKriteriumsAnalyseAssert.assertThat(
-            (deviceUnderTest.evaluate(pruefungen.get(0).asPruefung()).get()))
+            (deviceUnderTest.evaluateRestriction(pruefungen.get(0).asPruefung()).get()))
         .affectsExactlyAsManyStudentsAs(999);
   }
 
@@ -277,9 +277,9 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
 
     int expectedScoring = WeichesKriterium.ANZAHL_TEILNEHMER_GLEICHZEITIG_ZU_HOCH.getWert();
 
-    assertThat((deviceUnderTest.evaluate(pruefungen.get(0)).get().getDeltaScoring())).isEqualTo(
+    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(0)).get().getDeltaScoring())).isEqualTo(
         expectedScoring);
-    assertThat((deviceUnderTest.evaluate(pruefungen.get(1)).get().getDeltaScoring())).isEqualTo(
+    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(1)).get().getDeltaScoring())).isEqualTo(
         expectedScoring);
   }
 
@@ -295,9 +295,9 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
 
     int expectedScoring = WeichesKriterium.ANZAHL_TEILNEHMER_GLEICHZEITIG_ZU_HOCH.getWert();
 
-    assertThat((deviceUnderTest.evaluate(pruefungen.get(0)).get().getDeltaScoring())).isEqualTo(
+    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(0)).get().getDeltaScoring())).isEqualTo(
         expectedScoring);
-    assertThat((deviceUnderTest.evaluate(pruefungen.get(1)).get().getDeltaScoring())).isEqualTo(
+    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(1)).get().getDeltaScoring())).isEqualTo(
         expectedScoring);
   }
 
@@ -325,9 +325,9 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
 
     int expectedScoring = 14 * WeichesKriterium.ANZAHL_TEILNEHMER_GLEICHZEITIG_ZU_HOCH.getWert();
 
-    assertThat((deviceUnderTest.evaluate(pruefungen.get(0)).get().getDeltaScoring())).isEqualTo(
+    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(0)).get().getDeltaScoring())).isEqualTo(
         expectedScoring);
-    assertThat((deviceUnderTest.evaluate(pruefungen.get(1)).get().getDeltaScoring())).isEqualTo(
+    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(1)).get().getDeltaScoring())).isEqualTo(
         expectedScoring);
   }
 
@@ -343,9 +343,9 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
 
     int expectedScoring = 2 * WeichesKriterium.ANZAHL_TEILNEHMER_GLEICHZEITIG_ZU_HOCH.getWert();
 
-    assertThat((deviceUnderTest.evaluate(pruefungen.get(0)).get().getDeltaScoring())).isEqualTo(
+    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(0)).get().getDeltaScoring())).isEqualTo(
         expectedScoring);
-    assertThat((deviceUnderTest.evaluate(pruefungen.get(1)).get().getDeltaScoring())).isEqualTo(
+    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(1)).get().getDeltaScoring())).isEqualTo(
         expectedScoring);
   }
 

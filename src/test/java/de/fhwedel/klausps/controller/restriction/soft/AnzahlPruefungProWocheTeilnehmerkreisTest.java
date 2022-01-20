@@ -59,7 +59,7 @@ class AnzahlPruefungProWocheTeilnehmerkreisTest {
     //mock must be configured before constructor call
     this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreis(accessService, LIMIT_PER_WEEK);
 
-    assertThat(deviceUnderTest.evaluate(mathe_0)).isPresent();
+    assertThat(deviceUnderTest.evaluateRestriction(mathe_0)).isPresent();
   }
 
   @Test
@@ -80,7 +80,7 @@ class AnzahlPruefungProWocheTeilnehmerkreisTest {
 
     //mock must be configured before constructor call
     this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreis(accessService, LIMIT_PER_WEEK);
-    WeichesKriteriumAnalyse ev = deviceUnderTest.evaluate(mathe_0).get();
+    WeichesKriteriumAnalyse ev = deviceUnderTest.evaluateRestriction(mathe_0).get();
     assertThat(ev.getCausingPruefungen()).containsOnly(mathe_0, dm_0);
   }
 
@@ -105,7 +105,7 @@ class AnzahlPruefungProWocheTeilnehmerkreisTest {
 
     //mock must be configured before constructor call
     this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreis(accessService, LIMIT_PER_WEEK);
-    WeichesKriteriumAnalyse ev = deviceUnderTest.evaluate(mathe_0).get();
+    WeichesKriteriumAnalyse ev = deviceUnderTest.evaluateRestriction(mathe_0).get();
     assertThat(ev.getCausingPruefungen()).containsOnly(mathe_0, dm_0);
     assertThat(ev.getAffectedTeilnehmerKreise()).containsOnly(bwl, inf);
     assertThat(ev.getDeltaScoring().intValue()).isEqualTo(
@@ -140,8 +140,8 @@ class AnzahlPruefungProWocheTeilnehmerkreisTest {
 
     //mock must be configured before constructor call
     this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreis(accessService, 2);
-    assertThat(deviceUnderTest.evaluate(mathe_0)).isEmpty();
-    assertThat(deviceUnderTest.evaluate(dm_0)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(mathe_0)).isEmpty();
+    assertThat(deviceUnderTest.evaluateRestriction(dm_0)).isEmpty();
   }
 
   @Test
@@ -175,13 +175,13 @@ class AnzahlPruefungProWocheTeilnehmerkreisTest {
 
     //mock must be configured before constructor call
     this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreis(accessService, LIMIT_PER_WEEK);
-    assertThat(deviceUnderTest.evaluate(mathe_0)).isPresent();
-    assertThat(deviceUnderTest.evaluate(mathe_0).get().getCausingPruefungen()).containsOnly(mathe_0,
+    assertThat(deviceUnderTest.evaluateRestriction(mathe_0)).isPresent();
+    assertThat(deviceUnderTest.evaluateRestriction(mathe_0).get().getCausingPruefungen()).containsOnly(mathe_0,
         haskell_0);
-    assertThat(deviceUnderTest.evaluate(haskell_0).get().getCausingPruefungen()).containsOnly(
+    assertThat(deviceUnderTest.evaluateRestriction(haskell_0).get().getCausingPruefungen()).containsOnly(
         mathe_0, dm_0, haskell_0);
 
-    assertThat(deviceUnderTest.evaluate(dm_0).get().getCausingPruefungen()).containsOnly(
+    assertThat(deviceUnderTest.evaluateRestriction(dm_0).get().getCausingPruefungen()).containsOnly(
         haskell_0, dm_0);
   }
 

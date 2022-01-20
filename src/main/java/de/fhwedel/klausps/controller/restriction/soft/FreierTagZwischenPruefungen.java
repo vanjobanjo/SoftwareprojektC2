@@ -28,7 +28,7 @@ public class FreierTagZwischenPruefungen extends WeicheRestriktion {
   }
 
   @Override
-  public Optional<WeichesKriteriumAnalyse> evaluate(@NotNull Pruefung pruefung)
+  public Optional<WeichesKriteriumAnalyse> evaluateRestriction(@NotNull Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
 
     if (!pruefung.isGeplant()) {
