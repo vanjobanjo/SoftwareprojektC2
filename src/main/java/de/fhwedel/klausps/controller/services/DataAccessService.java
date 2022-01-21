@@ -166,6 +166,8 @@ public class DataAccessService {
    */
   Block scheduleBlock(ReadOnlyBlock block, LocalDateTime termin) {
     Block blockFromModel = getBlockFromModelOrException(block);
+    LOGGER.debug("Scheduled {} from {} to {}.", blockFromModel, blockFromModel.getStartzeitpunkt(),
+        termin);
     blockFromModel.setStartzeitpunkt(termin);
 
     return blockFromModel;
@@ -249,9 +251,10 @@ public class DataAccessService {
   }
 
   public Block unscheduleBlock(ReadOnlyBlock block) {
-    Block blockModel = getBlockFromModelOrException(block);
-    blockModel.setStartzeitpunkt(null);
-    return blockModel;
+    Block modelBlock = getBlockFromModelOrException(block);
+    LOGGER.debug("Unscheduling {} from Model.", modelBlock);
+    modelBlock.setStartzeitpunkt(null);
+    return modelBlock;
   }
 
   public Planungseinheit changeNameOf(ReadOnlyPruefung toChange, String name)
@@ -444,11 +447,8 @@ public class DataAccessService {
     noNullParameters(block);
     checkForPruefungsperiode();
     Block model = getBlockFromModelOrException(block);
-    Set<Pruefung> modelPruefungen = new HashSet<>(
-        model.getPruefungen()); // very important, when we call
-    // de.fhwedel.klausps.model.api.Block.removeAllPruefungen it
-    // removes also the set, so we need a deep copy of the set
-    model.removeAllPruefungen();
+    Set<Pruefung> modelPruefungen = model.getPruefungen();
+    LOGGER.debug("Deleting {} in Model.", model);
     pruefungsperiode.removePlanungseinheit(model);
     return new LinkedList<>(modelPruefungen);
   }
@@ -458,11 +458,11 @@ public class DataAccessService {
     noNullParameters(name, pruefungen);
     checkForPruefungsperiode();
     if (Arrays.stream(pruefungen).anyMatch(ReadOnlyPlanungseinheit::geplant)) {
-      throw new IllegalArgumentException("Einer der übergebenen Prüfungen ist geplant.");
+      throw new IllegalArgumentException("Eine der übergebenen Prüfungen ist geplant.");
     }
 
     if (isAnyInBlock(List.of(pruefungen))) {
-      throw new IllegalArgumentException("Einer der Prüfungen ist bereits im Block!");
+      throw new IllegalArgumentException("Eine der Prüfungen ist bereits im Block!");
     }
 
     if (containsDuplicatePruefung(pruefungen)) {
@@ -472,6 +472,7 @@ public class DataAccessService {
     Block blockModel = new BlockImpl(pruefungsperiode, name, Blocktyp.PARALLEL);
     Arrays.stream(pruefungen).forEach(pruefung -> blockModel.addPruefung(
         pruefungsperiode.pruefung(pruefung.getPruefungsnummer())));
+    LOGGER.debug("Adding {} to Model.", blockModel);
     if (!pruefungsperiode.addPlanungseinheit(blockModel)) {
       throw new IllegalArgumentException("Irgendwas ist schief gelaufen."
           + " Der Block konnte nicht in die Datenbank übertragen werden.");
@@ -513,6 +514,7 @@ public class DataAccessService {
       throws NoPruefungsPeriodeDefinedException {
     Block modelBlock = getBlockFromModelOrException(block);
     Pruefung modelPruefung = getPruefungFromModelOrException(pruefung);
+    LOGGER.debug("Adding {} to {} in Model.", modelPruefung, modelBlock);
     modelBlock.addPruefung(modelPruefung);
     return modelBlock;
   }
@@ -558,6 +560,8 @@ public class DataAccessService {
   public Optional<Block> getBlockTo(Pruefung pruefung) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung);
     checkForPruefungsperiode();
+    LOGGER.debug("Requesting block containing {} from Model: {}.", pruefung,
+        pruefungsperiode.block(pruefung));
     return Optional.ofNullable(pruefungsperiode.block(pruefung));
   }
 

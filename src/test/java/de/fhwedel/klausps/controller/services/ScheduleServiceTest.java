@@ -1047,7 +1047,7 @@ class ScheduleServiceTest {
     ReadOnlyBlock roBlock = converter.convertToROBlock(block);
     when(dataAccessService.getBlock(roBlock)).thenReturn(Optional.of(block));
 
-    assertThat(deviceUnderTest.toggleBlockType(roBlock, SEQUENTIAL)).isEmpty();
+    assertThat(deviceUnderTest.setBlockType(roBlock, SEQUENTIAL)).isEmpty();
   }
 
   @Test
@@ -1061,7 +1061,7 @@ class ScheduleServiceTest {
     ReadOnlyBlock roBlock = converter.convertToROBlock(block);
     when(dataAccessService.getBlock(roBlock)).thenReturn(Optional.of(block));
 
-    assertThat(deviceUnderTest.toggleBlockType(roBlock, SEQUENTIAL)).contains(roBlock);
+    assertThat(deviceUnderTest.setBlockType(roBlock, SEQUENTIAL)).contains(roBlock);
   }
 
   @Test
@@ -1069,7 +1069,7 @@ class ScheduleServiceTest {
     when(dataAccessService.getBlock(any())).thenReturn(Optional.empty());
     ReadOnlyBlock block = getEmptyROBlock();
     assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.toggleBlockType(block, SEQUENTIAL));
+        () -> deviceUnderTest.setBlockType(block, SEQUENTIAL));
   }
 
   @Test
@@ -1091,7 +1091,7 @@ class ScheduleServiceTest {
     when(restrictionService.getPruefungenAffectedBy(any(Block.class))).thenReturn(
         Set.of(analysis, haskell));
     assertThrows(HartesKriteriumException.class,
-        () -> deviceUnderTest.toggleBlockType(roBlock, SEQUENTIAL));
+        () -> deviceUnderTest.setBlockType(roBlock, SEQUENTIAL));
   }
 
   @Test
@@ -1109,7 +1109,7 @@ class ScheduleServiceTest {
     when(restrictionService.checkHarteKriterienAll(Set.of(analysis, haskell))).thenReturn(
         Collections.emptyList());
 
-    assertThat(deviceUnderTest.toggleBlockType(roBlock, SEQUENTIAL)).containsExactly(roBlock);
+    assertThat(deviceUnderTest.setBlockType(roBlock, SEQUENTIAL)).containsExactly(roBlock);
   }
 
   @Test
@@ -1127,7 +1127,7 @@ class ScheduleServiceTest {
     when(restrictionService.checkHarteKriterienAll(Set.of(analysis, haskell))).thenReturn(
         Collections.emptyList());
 
-    assertThat(deviceUnderTest.toggleBlockType(roBlock, SEQUENTIAL)).containsExactlyInAnyOrder(
+    assertThat(deviceUnderTest.setBlockType(roBlock, SEQUENTIAL)).containsExactlyInAnyOrder(
         roBlock, RO_ANALYSIS_UNPLANNED);
   }
 
@@ -1142,7 +1142,7 @@ class ScheduleServiceTest {
     ReadOnlyBlock roBlock = converter.convertToROBlock(block);
     when(dataAccessService.getBlock(roBlock)).thenReturn(Optional.of(block));
 
-    assertThat(deviceUnderTest.toggleBlockType(roBlock, PARALLEL)).isEmpty();
+    assertThat(deviceUnderTest.setBlockType(roBlock, PARALLEL)).isEmpty();
   }
 
   @Test
@@ -1156,7 +1156,7 @@ class ScheduleServiceTest {
     ReadOnlyBlock roBlock = converter.convertToROBlock(block);
     when(dataAccessService.getBlock(roBlock)).thenReturn(Optional.of(block));
 
-    assertThat(deviceUnderTest.toggleBlockType(roBlock, PARALLEL)).contains(roBlock);
+    assertThat(deviceUnderTest.setBlockType(roBlock, PARALLEL)).contains(roBlock);
   }
 
   @Test
@@ -1164,7 +1164,7 @@ class ScheduleServiceTest {
     when(dataAccessService.getBlock(any())).thenReturn(Optional.empty());
     ReadOnlyBlock block = getEmptyROBlock();
     assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.toggleBlockType(block, PARALLEL));
+        () -> deviceUnderTest.setBlockType(block, PARALLEL));
   }
 
   @Test
@@ -1187,7 +1187,7 @@ class ScheduleServiceTest {
     when(restrictionService.getPruefungenAffectedBy(any(Block.class))).thenReturn(
         Set.of(analysis, haskell));
     assertThrows(HartesKriteriumException.class,
-        () -> deviceUnderTest.toggleBlockType(roBlock, PARALLEL));
+        () -> deviceUnderTest.setBlockType(roBlock, PARALLEL));
   }
 
   @Test
@@ -1205,7 +1205,7 @@ class ScheduleServiceTest {
     when(restrictionService.checkHarteKriterienAll(Set.of(analysis, haskell))).thenReturn(
         Collections.emptyList());
 
-    assertThat(deviceUnderTest.toggleBlockType(roBlock, PARALLEL)).containsExactly(roBlock);
+    assertThat(deviceUnderTest.setBlockType(roBlock, PARALLEL)).containsExactly(roBlock);
   }
 
   @Test
@@ -1223,7 +1223,7 @@ class ScheduleServiceTest {
     when(restrictionService.checkHarteKriterienAll(Set.of(analysis, haskell))).thenReturn(
         Collections.emptyList());
 
-    assertThat(deviceUnderTest.toggleBlockType(roBlock, PARALLEL)).containsExactlyInAnyOrder(
+    assertThat(deviceUnderTest.setBlockType(roBlock, PARALLEL)).containsExactlyInAnyOrder(
         roBlock, RO_ANALYSIS_UNPLANNED);
   }
 

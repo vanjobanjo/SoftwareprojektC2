@@ -439,17 +439,19 @@ public class ScheduleService {
     return block.get();
   }
 
-  public List<ReadOnlyPlanungseinheit> toggleBlockType(ReadOnlyBlock block, Blocktyp changeTo)
+  public List<ReadOnlyPlanungseinheit> setBlockType(ReadOnlyBlock block, Blocktyp changeTo)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     Optional<Block> optionalBlock = dataAccessService.getBlock(block);
     if (optionalBlock.isEmpty()) {
       throw new IllegalArgumentException("Block does not exist.");
     }
     if (block.getTyp() == changeTo) {
+      LOGGER.trace("Not changing block type, same type already set.");
       return emptyList();
     }
     Block modelBlock = optionalBlock.get();
     if (block.ungeplant()) {
+      LOGGER.debug("Set type of {} to {}.", modelBlock, changeTo);
       modelBlock.setTyp(changeTo);
       return List.of(converter.convertToROBlock(modelBlock));
     }
