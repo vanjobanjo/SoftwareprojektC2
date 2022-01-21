@@ -58,18 +58,22 @@ public class DataAccessService {
     pruefungsperiode.setKapazitaet(kapazitaet);
   }
 
+  public void setAnkertag(LocalDate newAnkerTag)
+      throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
+    noNullParameters(newAnkerTag);
+    checkForPruefungsperiode();
+    ensureNotBeforePruefungsperiode(newAnkerTag);
+    ensureNotAfterPruefungsperiode(newAnkerTag);
+    LOGGER.debug("Set Ankertag in Model from {} to{}.", pruefungsperiode.getAnkertag(),
+        newAnkerTag);
+    pruefungsperiode.setAnkertag(newAnkerTag);
+  }
+
   public Set<Pruefung> getGeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
     LOGGER.debug("Get all planned Pruefungen from Model: {}.",
         pruefungsperiode.geplantePruefungen());
     return pruefungsperiode.geplantePruefungen();
-  }
-
-  private void checkForPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
-    LOGGER.trace("Check if pruefungsperiode is set.");
-    if (pruefungsperiode == null) {
-      throw new NoPruefungsPeriodeDefinedException();
-    }
   }
 
   public Pruefung createPruefung(String name, String pruefungsNr, String refVWS,
@@ -604,13 +608,11 @@ public class DataAccessService {
     return pruefungsperiode.getAnkertag();
   }
 
-  public void setAnkertag(LocalDate newAnkerTag)
-      throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
-    noNullParameters(newAnkerTag);
-    checkForPruefungsperiode();
-    ensureNotBeforePruefungsperiode(newAnkerTag);
-    ensureNotAfterPruefungsperiode(newAnkerTag);
-    pruefungsperiode.setAnkertag(newAnkerTag);
+  private void checkForPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    LOGGER.trace("Check if pruefungsperiode is set.");
+    if (pruefungsperiode == null) {
+      throw new NoPruefungsPeriodeDefinedException();
+    }
   }
 
   private void ensureNotBeforePruefungsperiode(LocalDate newAnkerTag)
@@ -734,7 +736,11 @@ public class DataAccessService {
   }
 
   public void setDatumPeriode(LocalDate startDatum, LocalDate endDatum) {
+    LOGGER.debug("Changing start date of Pruefungsperiode in Model from {} to {}.",
+        pruefungsperiode.getStartdatum(), startDatum);
     pruefungsperiode.setStartdatum(startDatum);
+    LOGGER.debug("Changing end date of Pruefungsperiode in Model from {} to {}.",
+        pruefungsperiode.getEnddatum(), endDatum);
     pruefungsperiode.setEnddatum(endDatum);
   }
 }

@@ -268,6 +268,8 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
       Planungseinheit other = planungseinheitIterator.next();
       isInConflict = areInConflict(planungseinheit, other);
     }
+    LOGGER.debug("{} was {} found cause a conflict starting at {}.", planungseinheit,
+        (isInConflict ? "" : "not"), startTime);
     return isInConflict;
   }
 

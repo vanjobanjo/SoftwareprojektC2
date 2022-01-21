@@ -2,26 +2,9 @@ package de.fhwedel.klausps.controller.util;
 
 import de.fhwedel.klausps.model.api.Pruefung;
 import java.util.Objects;
+import org.jetbrains.annotations.NotNull;
 
-public class PruefungScoringWrapper {
-
-  private final Pruefung pruefung;
-  private final int scoring;
-
-
-  public PruefungScoringWrapper(Pruefung pruefung, int scoring) {
-    this.pruefung = pruefung;
-    this.scoring = scoring;
-  }
-
-
-  public Pruefung getPruefung() {
-    return pruefung;
-  }
-
-  public int getScoring() {
-    return scoring;
-  }
+public record PruefungWithScoring(@NotNull Pruefung pruefung, int scoring) {
 
   @Override
   public boolean equals(Object o) {
@@ -31,7 +14,7 @@ public class PruefungScoringWrapper {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    PruefungScoringWrapper that = (PruefungScoringWrapper) o;
+    PruefungWithScoring that = (PruefungWithScoring) o;
     return scoring == that.scoring && pruefung.getPruefungsnummer()
         .equals(that.pruefung.getPruefungsnummer());
   }

@@ -12,17 +12,17 @@ class PlanungseinheitUtilTest {
 
   @Test
   void changedAllScoringTest() {
-    Set<PruefungScoringWrapper> before = new HashSet<>();
-    Set<PruefungScoringWrapper> after = new HashSet<>();
+    Set<PruefungWithScoring> before = new HashSet<>();
+    Set<PruefungWithScoring> after = new HashSet<>();
     LocalDateTime start = LocalDateTime.of(2000, 1, 1, 1, 0);
     Pruefung analysis = TestFactory.P_ANALYSIS_UNPLANNED;
     Pruefung bwl = TestFactory.P_BWL_UNPLANNED;
     analysis.setStartzeitpunkt(start);
     bwl.setStartzeitpunkt(start);
-    before.add(new PruefungScoringWrapper(analysis, 10));
-    before.add(new PruefungScoringWrapper(bwl, 10));
-    after.add(new PruefungScoringWrapper(analysis, 20));
-    after.add(new PruefungScoringWrapper(bwl, 9));
+    before.add(new PruefungWithScoring(analysis, 10));
+    before.add(new PruefungWithScoring(bwl, 10));
+    after.add(new PruefungWithScoring(analysis, 20));
+    after.add(new PruefungWithScoring(bwl, 9));
     Set<Pruefung> result = PlanungseinheitUtil.changedScoring(before, after);
     assertThat(result).containsOnly(bwl, analysis);
   }
@@ -30,34 +30,34 @@ class PlanungseinheitUtilTest {
 
   @Test
   void changedOneScoringTest() {
-    Set<PruefungScoringWrapper> before = new HashSet<>();
-    Set<PruefungScoringWrapper> after = new HashSet<>();
+    Set<PruefungWithScoring> before = new HashSet<>();
+    Set<PruefungWithScoring> after = new HashSet<>();
     LocalDateTime start = LocalDateTime.of(2000, 1, 1, 1, 0);
     Pruefung analysis = TestFactory.P_ANALYSIS_UNPLANNED;
     Pruefung bwl = TestFactory.P_BWL_UNPLANNED;
     analysis.setStartzeitpunkt(start);
     bwl.setStartzeitpunkt(start);
-    before.add(new PruefungScoringWrapper(analysis, 10));
-    before.add(new PruefungScoringWrapper(bwl, 10));
-    after.add(new PruefungScoringWrapper(analysis, 10));
-    after.add(new PruefungScoringWrapper(bwl, 9));
+    before.add(new PruefungWithScoring(analysis, 10));
+    before.add(new PruefungWithScoring(bwl, 10));
+    after.add(new PruefungWithScoring(analysis, 10));
+    after.add(new PruefungWithScoring(bwl, 9));
     Set<Pruefung> result = PlanungseinheitUtil.changedScoring(before, after);
     assertThat(result).containsOnly(bwl);
   }
 
   @Test
   void changedNoScoringTest() {
-    Set<PruefungScoringWrapper> before = new HashSet<>();
-    Set<PruefungScoringWrapper> after = new HashSet<>();
+    Set<PruefungWithScoring> before = new HashSet<>();
+    Set<PruefungWithScoring> after = new HashSet<>();
     LocalDateTime start = LocalDateTime.of(2000, 1, 1, 1, 0);
     Pruefung analysis = TestFactory.P_ANALYSIS_UNPLANNED;
     Pruefung bwl = TestFactory.P_BWL_UNPLANNED;
     analysis.setStartzeitpunkt(start);
     bwl.setStartzeitpunkt(start);
-    before.add(new PruefungScoringWrapper(analysis, 10));
-    before.add(new PruefungScoringWrapper(bwl, 10));
-    after.add(new PruefungScoringWrapper(analysis, 10));
-    after.add(new PruefungScoringWrapper(bwl, 10));
+    before.add(new PruefungWithScoring(analysis, 10));
+    before.add(new PruefungWithScoring(bwl, 10));
+    after.add(new PruefungWithScoring(analysis, 10));
+    after.add(new PruefungWithScoring(bwl, 10));
     Set<Pruefung> result = PlanungseinheitUtil.changedScoring(before, after);
     assertThat(result).isEmpty();
   }

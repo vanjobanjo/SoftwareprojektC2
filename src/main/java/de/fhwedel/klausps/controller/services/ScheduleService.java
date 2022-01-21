@@ -14,7 +14,7 @@ import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.util.PlanungseinheitUtil;
-import de.fhwedel.klausps.controller.util.PruefungScoringWrapper;
+import de.fhwedel.klausps.controller.util.PruefungWithScoring;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Planungseinheit;
@@ -545,16 +545,18 @@ public class ScheduleService {
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     checkDatesMaybeException(startDatum, endDatum);
 
-    Set<PruefungScoringWrapper> before = new HashSet<>();
-    for (Pruefung p : dataAccessService.getGeplantePruefungen()) {
-      before.add(new PruefungScoringWrapper(p, restrictionService.getScoringOfPruefung(p)));
+    Set<PruefungWithScoring> before = new HashSet<>();
+    for (Pruefung pruefung : dataAccessService.getGeplantePruefungen()) {
+      before.add(
+          new PruefungWithScoring(pruefung, restrictionService.getScoringOfPruefung(pruefung)));
     }
 
     dataAccessService.setDatumPeriode(startDatum, endDatum);
 
-    Set<PruefungScoringWrapper> after = new HashSet<>();
-    for (Pruefung p : dataAccessService.getGeplantePruefungen()) {
-      before.add(new PruefungScoringWrapper(p, restrictionService.getScoringOfPruefung(p)));
+    Set<PruefungWithScoring> after = new HashSet<>();
+    for (Pruefung pruefung : dataAccessService.getGeplantePruefungen()) {
+      before.add(
+          new PruefungWithScoring(pruefung, restrictionService.getScoringOfPruefung(pruefung)));
     }
 
     return new LinkedList<>(converter.convertToROPlanungseinheitSet(
@@ -567,7 +569,7 @@ public class ScheduleService {
       throw new IllegalTimeSpanException("Startdatum ist nach Enddatum");
     }
     if (startDatum.isAfter(dataAccessService.getAnkertag())) {
-      throw new IllegalTimeSpanException("Startdatum ist nach Enddatum");
+      throw new IllegalTimeSpanException("Startdatum ist nach Ankertag");
     }
     if (endDatum.isAfter(dataAccessService.getAnkertag())) {
       throw new IllegalTimeSpanException("Enddatum ist nach Ankertag");

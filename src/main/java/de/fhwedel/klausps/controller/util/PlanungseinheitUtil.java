@@ -33,16 +33,17 @@ public class PlanungseinheitUtil {
 
   /**
    * Determines the changed scoring of two different sets
+   *
    * @param before the scoring of pruefungen before the operation
-   * @param after the scoring of pruefunge after the operation
-   * @return Prueufungen which scoring has changed
+   * @param after  the scoring of Pruefungen after the operation
+   * @return Pruefungen which scoring has changed
    */
-  public static Set<Pruefung> changedScoring(Set<PruefungScoringWrapper> before,
-      Set<PruefungScoringWrapper> after) {
+  public static Set<Pruefung> changedScoring(Set<PruefungWithScoring> before,
+      Set<PruefungWithScoring> after) {
 
     return after.stream().filter(afterPruefung -> before.stream()
             .noneMatch(beforePruefung -> beforePruefung.equals(afterPruefung)))
-        .map(PruefungScoringWrapper::getPruefung).collect(Collectors.toSet());
+        .map(PruefungWithScoring::pruefung).collect(Collectors.toSet());
   }
 
 
