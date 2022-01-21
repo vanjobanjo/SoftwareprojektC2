@@ -130,6 +130,8 @@ public class DataAccessService {
     if (pruefungsperiode.block(pruefungFromModel) != null) {
       throw new IllegalArgumentException("Prüfung befindet sich innerhalb eines Blockes");
     } else {
+      LOGGER.debug("Scheduling {} from previously {} to {}.", pruefungFromModel,
+          pruefungFromModel.getStartzeitpunkt(), startTermin);
       pruefungFromModel.setStartzeitpunkt(startTermin);
       return pruefungFromModel;
     }
@@ -357,14 +359,16 @@ public class DataAccessService {
 
   public Planungseinheit addPruefer(ReadOnlyPruefung pruefung, String pruefer)
       throws NoPruefungsPeriodeDefinedException {
-    Pruefung pruefungModel = getPruefungFromModelOrException(pruefung);
-    pruefungModel.addPruefer(pruefer);
-    return pruefungModel;
+    Pruefung modelPruefung = getPruefungFromModelOrException(pruefung);
+    LOGGER.debug("Adding Pruefer {} to {} in Model.", pruefer, modelPruefung);
+    modelPruefung.addPruefer(pruefer);
+    return modelPruefung;
   }
 
   public Planungseinheit removePruefer(ReadOnlyPruefung pruefung, String pruefer)
       throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
     Pruefung modelPruefung = getPruefungFromModelOrException(pruefung);
+    LOGGER.debug("Removing Pruefer {} from {} in Model.", pruefer, modelPruefung);
     modelPruefung.removePruefer(pruefer);
     return modelPruefung;
   }
@@ -412,6 +416,8 @@ public class DataAccessService {
   public Pruefung unschedulePruefung(ReadOnlyPruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     Pruefung pruefungFromModel = getPruefungFromModelOrException(pruefung);
+    LOGGER.debug("Unscheduling {} from previously {}.", pruefungFromModel,
+        pruefungFromModel.getStartzeitpunkt());
     pruefungFromModel.setStartzeitpunkt(null);
     return pruefungFromModel;
   }
@@ -571,14 +577,16 @@ public class DataAccessService {
     return allTeilnehmerkreise;
   }
 
-  public boolean removeTeilnehmerkreis(Pruefung roPruefung,
+  public boolean removeTeilnehmerkreis(Pruefung pruefung,
       Teilnehmerkreis teilnehmerkreis) {
-    return roPruefung.removeTeilnehmerkreis(teilnehmerkreis);
-
+    LOGGER.debug("Removing {} from {} in Model.", teilnehmerkreis, pruefung);
+    return pruefung.removeTeilnehmerkreis(teilnehmerkreis);
   }
 
   public boolean addTeilnehmerkreis(Pruefung pruefung, Teilnehmerkreis teilnehmerkreis,
       int schaetzung) {
+    LOGGER.debug("Adding {} with {} Students to {} in Model.", teilnehmerkreis, schaetzung,
+        pruefung);
     return pruefung.addTeilnehmerkreis(teilnehmerkreis, schaetzung);
   }
 

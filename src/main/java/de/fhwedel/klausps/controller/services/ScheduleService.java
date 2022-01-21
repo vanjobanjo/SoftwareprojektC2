@@ -325,10 +325,10 @@ public class ScheduleService {
     }
     Pruefung pruefungModel = getPruefungIfExistent(roPruefung);
 
-    if (this.dataAccessService.addTeilnehmerkreis(pruefungModel, teilnehmerkreis, schaetzung)) {
+    if (dataAccessService.addTeilnehmerkreis(pruefungModel, teilnehmerkreis, schaetzung)) {
       List<HartesKriteriumAnalyse> hard = restrictionService.checkHarteKriterien(pruefungModel);
       if (!hard.isEmpty()) {
-        this.dataAccessService.removeTeilnehmerkreis(pruefungModel, teilnehmerkreis);
+        dataAccessService.removeTeilnehmerkreis(pruefungModel, teilnehmerkreis);
         throw converter.convertHardException(hard);
       }
     }
