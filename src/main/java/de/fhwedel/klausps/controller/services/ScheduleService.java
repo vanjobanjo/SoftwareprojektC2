@@ -79,7 +79,6 @@ public class ScheduleService {
   @NotNull
   private Pruefung getPruefungIfExistent(ReadOnlyPruefung pruefungToGet)
       throws NoPruefungsPeriodeDefinedException {
-    LOGGER.debug("Requesting Pruefung {} from Model.", pruefungToGet);
     Optional<Pruefung> pruefung = dataAccessService.getPruefung(pruefungToGet);
     if (pruefung.isEmpty()) {
       throw new IllegalArgumentException(

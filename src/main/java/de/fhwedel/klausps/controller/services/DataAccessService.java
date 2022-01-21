@@ -92,12 +92,14 @@ public class DataAccessService {
     noNullParameters(name, pruefungsNr, pruefer, refVWS);
     checkForPruefungsperiode();
     if (existsPruefungWith(pruefungsNr)) {
+      LOGGER.trace("Found Pruefung with Pruefungsnummer {} in Model", pruefungsNr);
       return null;
     }
 
     Pruefung pruefungModel = new PruefungImpl(pruefungsNr, name, refVWS, duration);
     pruefer.forEach(pruefungModel::addPruefer);
     addTeilnehmerKreisSchaetzungToModelPruefung(pruefungModel, teilnehmerkreise);
+    LOGGER.debug("Created {} and saved it to Model", pruefungModel);
     pruefungsperiode.addPlanungseinheit(pruefungModel);
     return pruefungModel;
 
@@ -148,6 +150,8 @@ public class DataAccessService {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(readOnlyPruefung);
     checkForPruefungsperiode();
+    LOGGER.debug("Requesting Pruefung {} from Model results in {}.", readOnlyPruefung,
+        pruefungsperiode.pruefung(readOnlyPruefung.getPruefungsnummer()));
     return Optional.ofNullable(pruefungsperiode.pruefung(readOnlyPruefung.getPruefungsnummer()));
   }
 
@@ -395,6 +399,7 @@ public class DataAccessService {
       throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
     Pruefung pruefung = getPruefungFromModelOrException(roPruefung);
     Block block = pruefungsperiode.block(pruefung);
+    LOGGER.debug("Deleting {} from Model.", pruefung);
     pruefungsperiode.removePlanungseinheit(pruefung);
     return block;
   }
