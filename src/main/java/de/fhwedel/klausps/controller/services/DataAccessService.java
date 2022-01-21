@@ -55,6 +55,8 @@ public class DataAccessService {
       throw new IllegalArgumentException("Tried to set a negative capacity of students.");
     }
     checkForPruefungsperiode();
+    LOGGER.debug("Changing the student capacity in Model from {} to {}.",
+        pruefungsperiode.getKapazitaet(), kapazitaet);
     pruefungsperiode.setKapazitaet(kapazitaet);
   }
 
@@ -250,6 +252,7 @@ public class DataAccessService {
       throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
     noNullParameters(toChange, name);
     Pruefung pruefung = getPruefungFromModelOrException(toChange);
+    LOGGER.debug("Change name for {} in Model from {} to {}.", pruefung, pruefung.getName(), name);
     pruefung.setName(name);
     return pruefung;
   }
@@ -289,6 +292,8 @@ public class DataAccessService {
   }
 
   public Set<Pruefung> getPlannedPruefungen() {
+    LOGGER.debug("Request all planned Pruefungen from Model: {}.",
+        pruefungsperiode.geplantePruefungen());
     return pruefungsperiode.geplantePruefungen();
   }
 
@@ -380,6 +385,8 @@ public class DataAccessService {
     if (existsPruefungWith(pruefungsnummer)) {
       throw new IllegalArgumentException("Die angegebene Pruefungsnummer ist bereits vergeben.");
     }
+    LOGGER.debug("Changing Pruefungsnummer for {} in Model from {} to {}.", modelPruefung,
+        modelPruefung.getPruefungsnummer(), pruefungsnummer);
     modelPruefung.setPruefungsnummer(pruefungsnummer);
     return modelPruefung;
   }
@@ -570,11 +577,12 @@ public class DataAccessService {
     return pruefung.addTeilnehmerkreis(teilnehmerkreis, schaetzung);
   }
 
-  public Block setNameOfBlock(ReadOnlyBlock block, String name)
+  public Block setNameOf(ReadOnlyBlock block, String name)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block, name);
     checkForPruefungsperiode();
     Block model = getBlockFromModelOrException(block);
+    LOGGER.debug("Change name of {} in Model from {} to {}.", model, model.getName(), name);
     model.setName(name);
     return model;
   }

@@ -283,7 +283,7 @@ public class Controller implements InterfaceController {
     LOGGER.debug("Call to setName({}, {}).", block, name);
     noNullParameters(block, name);
     ensureAvailabilityOfPruefungsperiode();
-    return converter.convertToROBlock(dataAccessService.setNameOfBlock(block, name));
+    return converter.convertToROBlock(dataAccessService.setNameOf(block, name));
   }
 
   @Override

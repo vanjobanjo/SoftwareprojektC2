@@ -345,6 +345,8 @@ public class ScheduleService {
     if (!modelPruefung.getTeilnehmerkreise().contains(teilnehmerkreis)) {
       throw new IllegalArgumentException("Pruefung hat keinen Teilnehmerkreis mit diesem Namen.");
     }
+    LOGGER.debug("Changing Schaetzung of {} at {} from {} to {}.", teilnehmerkreis, modelPruefung,
+        modelPruefung.getSchaetzungen().get(teilnehmerkreis), schaetzung);
     modelPruefung.setSchaetzung(teilnehmerkreis, schaetzung);
     if (modelPruefung.isGeplant()) {
       return getAffectedPruefungenBy(modelPruefung);

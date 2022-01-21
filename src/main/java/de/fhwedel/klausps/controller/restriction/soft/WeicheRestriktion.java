@@ -16,8 +16,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class WeicheRestriktion extends Restriktion {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(WeicheRestriktion.class);
 
   protected final DataAccessService dataAccessService;
   protected final WeichesKriterium kriterium;
@@ -40,6 +44,7 @@ public abstract class WeicheRestriktion extends Restriktion {
 
   public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
+    LOGGER.trace("Checking restriction {}.", this.kriterium);
     noNullParameters(pruefung);
     if (!pruefung.isGeplant()) {
       return Optional.empty();

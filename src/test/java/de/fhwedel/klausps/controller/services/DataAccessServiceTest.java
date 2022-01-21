@@ -165,7 +165,7 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void changeNameOf_unknownPruefung() throws NoPruefungsPeriodeDefinedException {
+  void changeNameOf_unknownPruefung() {
     ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
     when(pruefungsperiode.pruefung(anyString())).thenReturn(null);
     assertThrows(IllegalArgumentException.class,
@@ -1181,7 +1181,7 @@ class DataAccessServiceTest {
     TestFactory.configureMock_getPruefungFromPeriode(pruefungsperiode, analysis);
 
     when(pruefungsperiode.block(anyInt())).thenReturn(model);
-    deviceUnderTest.setNameOfBlock(converter.convertToROBlock(model), "Ciao");
+    deviceUnderTest.setNameOf(converter.convertToROBlock(model), "Ciao");
 
     assertThat(model.getName()).isEqualTo("Ciao");
   }
@@ -1195,7 +1195,7 @@ class DataAccessServiceTest {
     TestFactory.configureMock_getPruefungFromPeriode(pruefungsperiode, analysis);
 
     when(pruefungsperiode.block(anyInt())).thenReturn(model);
-    deviceUnderTest.setNameOfBlock(converter.convertToROBlock(model), "Ciao");
+    deviceUnderTest.setNameOf(converter.convertToROBlock(model), "Ciao");
     assertThat(model.getName()).isEqualTo("Ciao");
     assertThat(model.getPruefungen()).containsOnly(analysis);
 
