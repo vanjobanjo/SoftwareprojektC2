@@ -273,6 +273,8 @@ public class DataAccessService {
     if (start.isAfter(end)) {
       throw new IllegalTimeSpanException("Der Start liegt nach dem Ende des Zeitslots");
     }
+    LOGGER.debug("Request Planungseinheiten between {} and {} from Model: {}.", start, end,
+        pruefungsperiode.planungseinheitenBetween(start, end));
     return new HashSet<>(this.getPruefungsperiode().planungseinheitenBetween(start, end));
   }
 
@@ -293,11 +295,10 @@ public class DataAccessService {
     if (start.isAfter(end)) {
       throw new IllegalTimeSpanException("Der Start liegt nach dem Ende des Zeitslots");
     }
-    LOGGER.debug("Getting all Planungseinheiten between {} and {} from Model.", start, end);
+    LOGGER.debug("Getting all Planungseinheiten between {} and {} from Model: {}.", start, end,
+        pruefungsperiode.planungseinheitenBetween(start, end));
     Set<Planungseinheit> planungseinheitenBetween = pruefungsperiode.planungseinheitenBetween(start,
         end);
-    LOGGER.debug("Planungseinheiten between {} and {} are found to be: {}", start, end,
-        planungseinheitenBetween);
     return getAllPruefungen(planungseinheitenBetween);
   }
 
@@ -724,6 +725,8 @@ public class DataAccessService {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(time);
     checkForPruefungsperiode();
+    LOGGER.debug("Requesting all Planungseinheiten at {} from Model: {}.", time,
+        pruefungsperiode.planungseinheitenAt(time));
     return pruefungsperiode.planungseinheitenAt(time);
   }
 
@@ -731,6 +734,7 @@ public class DataAccessService {
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(adoptFrom);
     checkForPruefungsperiode();
+    LOGGER.debug("Tell Model to adopt {}.", adoptFrom);
     pruefungsperiode.adoptPruefungstermine(adoptFrom);
     unscheduleAdoptedBloeckeOutsideOfPeriode();
     unscheduleAdoptedPruefungenOutsideOfPeriode();
