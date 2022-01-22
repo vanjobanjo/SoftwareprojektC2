@@ -15,7 +15,6 @@ import de.fhwedel.klausps.model.impl.PruefungsperiodeImpl;
 import de.fhwedel.klausps.model.impl.exporter.CSVExporterImpl;
 import de.fhwedel.klausps.model.impl.exporter.KlausPSExporterImpl;
 import de.fhwedel.klausps.model.impl.exporter.PDFExporterImpl;
-import de.fhwedel.klausps.model.impl.importer.CSVImporterImpl;
 import de.fhwedel.klausps.model.impl.importer.KlausPSImporterImpl;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -66,9 +65,10 @@ public class IOService {
       throws ImportException, IOException, IllegalTimeSpanException {
     noNullParameters(semester, start, end, ankertag, path);
     Pruefungsperiode fallBackPeriode = dataAccessService.getPruefungsperiode();
-    Importer importer = new CSVImporterImpl(semester, start, end, kapazitaet);
-    Pruefungsperiode pruefungsperiode = importer.importFrom(path);
-    dataAccessService.setPruefungsperiode(pruefungsperiode);
+//    Importer importer = new CSVImporterImpl();
+//    Importer importer = new CSVImporterImpl(semester, start, end, kapazitaet);
+//    Pruefungsperiode pruefungsperiode = importer.importFrom(path);
+//    dataAccessService.setPruefungsperiode(pruefungsperiode);
 
     try {
       dataAccessService.setAnkertag(ankertag);
