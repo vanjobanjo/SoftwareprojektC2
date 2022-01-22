@@ -281,6 +281,7 @@ public class DataAccessService {
   }
 
   public void setPruefungsperiode(Pruefungsperiode pruefungsperiode) {
+    LOGGER.debug("Setting the pruefungsperiode in Model to: {}.", pruefungsperiode);
     this.pruefungsperiode = pruefungsperiode;
   }
 
@@ -502,6 +503,7 @@ public class DataAccessService {
     Block modelBlock = getBlockFromModelOrException(block);
     Pruefung modelPruefung = getPruefungFromModelOrException(pruefung);
 
+    LOGGER.debug("Removing {} from {} in Model.", modelPruefung, modelBlock);
     modelBlock.removePruefung(modelPruefung);
     if (modelBlock.getPruefungen().isEmpty()) {
       modelBlock.setStartzeitpunkt(null);

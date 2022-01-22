@@ -20,8 +20,12 @@ import de.fhwedel.klausps.model.impl.importer.KlausPSImporterImpl;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IOService {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(IOService.class);
 
   private final DataAccessService dataAccessService;
 
@@ -46,6 +50,7 @@ public class IOService {
       case INTERN -> export = new KlausPSExporterImpl(periode);
       default -> throw new IllegalStateException("Unexpected value: " + typ);
     }
+    LOGGER.debug("Calling exporter {} with {}.", export.getClass().getSimpleName(), path);
     export.exportTo(path);
   }
 
