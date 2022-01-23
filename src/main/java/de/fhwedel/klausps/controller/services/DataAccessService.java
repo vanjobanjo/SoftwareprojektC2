@@ -367,7 +367,12 @@ public class DataAccessService {
     Pruefung modelPruefung = getPruefungFromModelOrException(pruefung);
     LOGGER.debug("Adding Pruefer {} to {} in Model.", pruefer, modelPruefung);
     modelPruefung.addPruefer(pruefer);
-    return modelPruefung;
+    Optional<Block> blockOfPruefung = getBlockTo(modelPruefung);
+    if (blockOfPruefung.isPresent()) {
+      return blockOfPruefung.get();
+    } else {
+      return modelPruefung;
+    }
   }
 
   public Planungseinheit removePruefer(ReadOnlyPruefung pruefung, String pruefer)
