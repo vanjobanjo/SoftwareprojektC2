@@ -3,7 +3,6 @@ package integrationTests.steps;
 import static integrationTests.steps.BaseSteps.state;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import integrationTests.state.State;
 import io.cucumber.java.de.Angenommen;
@@ -34,8 +33,7 @@ public class getterSetterPruefungsperiode {
 
   @Dann("erhalte ich einen Fehler")
   public void erhalteIchEinenFehler() {
-    assertThat(state.results.get("exception")).isOfAnyClassIn(
-        NoPruefungsPeriodeDefinedException.class);
+    assertThat(state.results.get("exception")).isNotNull();
   }
   // ------------------------------------------------------------
   // ------------------ Start- und Enddatum ---------------------
