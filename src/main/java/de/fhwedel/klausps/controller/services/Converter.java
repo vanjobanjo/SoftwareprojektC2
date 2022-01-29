@@ -41,6 +41,12 @@ public class Converter {
     scheduleService = service;
   }
 
+  /**
+   * Converts the passed Collection of model blocks to Set of DTO ReadOnlyBlock
+   * @param collection models blocks
+   * @return dto  ro blocks
+   * @throws NoPruefungsPeriodeDefinedException when no period is defined
+   */
   public Set<ReadOnlyBlock> convertToROBlockSet(
       Collection<Block> collection) throws NoPruefungsPeriodeDefinedException {
     Set<ReadOnlyBlock> result = new HashSet<>();
@@ -50,6 +56,12 @@ public class Converter {
     return result;
   }
 
+  /**
+   * Converts single model block to DTO ReadOnlyBlock
+   * @param block from model
+   * @return DTO block RO
+   * @throws NoPruefungsPeriodeDefinedException when no period is defined
+   */
   public ReadOnlyBlock convertToROBlock(Block block) throws NoPruefungsPeriodeDefinedException {
     Set<ReadOnlyPruefung> pruefungen = new HashSet<>(
         convertToROPruefungSet(block.getPruefungen()));
