@@ -41,14 +41,28 @@ public class RestrictionService {
     restrictionFactory.createRestrictions(this);
   }
 
+  /**
+   * Registers all soft criteria
+   * @param restrictions set of restrictions
+   */
   void registerSoftCriteria(Set<WeicheRestriktion> restrictions) {
     softRestrictions.addAll(restrictions);
   }
 
+  /**
+   * registers all hard criteria
+   * @param restrictions set of hard restrictions
+   */
   void registerHardCriteria(Set<HarteRestriktion> restrictions) {
     hardRestrictions.addAll(restrictions);
   }
 
+  /**
+   * Get all the affected pruefungen by the passed block
+   * @param block passed block to check
+   * @return Set of affected pruefungen
+   * @throws NoPruefungsPeriodeDefinedException when no period is defiined
+   */
   public Set<Pruefung> getPruefungenAffectedBy(Block block)
       throws NoPruefungsPeriodeDefinedException {
     Set<Pruefung> result = new HashSet<>();
@@ -58,6 +72,12 @@ public class RestrictionService {
     return result;
   }
 
+  /**
+   * Checks all the soft restrictions of the passed pruefung, and extracts the caused pruefungen
+   * @param pruefung pruefung to check
+   * @return Set of affected pruefungen
+   * @throws NoPruefungsPeriodeDefinedException when no period is defined
+   */
   public Set<Pruefung> getPruefungenAffectedBy(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     Set<Pruefung> result = new HashSet<>();
@@ -82,6 +102,12 @@ public class RestrictionService {
     return result;
   }
 
+  /**
+   * Evaluates als hard restriction for the passed pruefunge
+   * @param pruefungenToCheck Set of pruefungen to check
+   * @return List of HartesKriteriumsAnalysen
+   * @throws NoPruefungsPeriodeDefinedException when no period is currently defined
+   */
   public List<HartesKriteriumAnalyse> checkHarteKriterienAll(Set<Pruefung> pruefungenToCheck)
       throws NoPruefungsPeriodeDefinedException {
     List<HartesKriteriumAnalyse> result = new LinkedList<>();
