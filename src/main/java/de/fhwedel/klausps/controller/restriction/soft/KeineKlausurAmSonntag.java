@@ -23,7 +23,11 @@ public class KeineKlausurAmSonntag extends WeicheRestriktion {
     super(ServiceProvider.getDataAccessService(), SONNTAG);
   }
 
-
+  /**
+   * Checks the day of the passed pruefueng
+   * @param pruefung scheduled pruefungs
+   * @return true when passed pruefung is on sunday
+   */
   public boolean isScheduledOnSunday(Pruefung pruefung) {
     if (!isInPeriod(pruefung)) {
       throw new IllegalArgumentException("Prüfung liegt nicht im Zeitraum der Periode.");
@@ -31,6 +35,11 @@ public class KeineKlausurAmSonntag extends WeicheRestriktion {
     return pruefung.getStartzeitpunkt().getDayOfWeek() == SUNDAY;
   }
 
+  /**
+   * Checks if the passed pruefung is in period
+   * @param pruefung passed
+   * @return true when passed pruefuung is in period
+   */
   private boolean isInPeriod(Pruefung pruefung) {
     return dataAccessService.terminIsInPeriod(pruefung.getStartzeitpunkt());
   }

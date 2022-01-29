@@ -1498,6 +1498,17 @@ class ScheduleServiceTest {
   }
 
   @Test
+  void unscheduleUnschedulePruefungTest() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Collections.emptySet());
+    Pruefung unscheduledPruefung = TestFactory.P_ANALYSIS_UNPLANNED;
+    ReadOnlyPruefung unscheduledRoPruefung = new PruefungDTOBuilder(unscheduledPruefung).build();
+    when(dataAccessService.getPruefung(unscheduledRoPruefung)).thenReturn(
+        Optional.of(unscheduledPruefung));
+
+    deviceUnderTest.unschedulePruefung(unscheduledRoPruefung);
+  }
+
+  @Test
   void setKapazitaetPeriode_resultContainsAllAffected() throws NoPruefungsPeriodeDefinedException {
     List<Pruefung> pruefungen = getRandomPlannedPruefungen(1L, 2);
     List<Pruefung> affectedPruefungen = getRandomPlannedPruefungen(2L, 7);
