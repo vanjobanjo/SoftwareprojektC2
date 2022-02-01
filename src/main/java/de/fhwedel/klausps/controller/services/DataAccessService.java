@@ -573,6 +573,12 @@ public class DataAccessService {
     return Optional.ofNullable(pruefungsperiode.block(pruefung));
   }
 
+  /**
+   * Get all Teilnehmerkreise, by getting planned and unplanned Pruefungen, extract the
+   * Teilnehmerkreise
+   * @return all Teilnehmerkreise
+   * @throws NoPruefungsPeriodeDefinedException when no period is defined
+   */
   public Set<Teilnehmerkreis> getAllTeilnehmerkreise() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
     LOGGER.debug("Get all planned Pruefungen from Model: {}.",
