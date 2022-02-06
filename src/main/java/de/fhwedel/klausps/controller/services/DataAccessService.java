@@ -247,6 +247,8 @@ public class DataAccessService {
   public Planungseinheit changeNameOf(ReadOnlyPruefung toChange, String name)
       throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
     noNullParameters(toChange, name);
+    noEmptyStrings(name);
+
     Pruefung pruefung = getPruefungFromModelOrException(toChange);
     LOGGER.debug("Change name for {} in Model from {} to {}.", pruefung, pruefung.getName(), name);
     pruefung.setName(name);

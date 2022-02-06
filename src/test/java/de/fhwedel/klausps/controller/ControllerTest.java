@@ -638,6 +638,13 @@ class ControllerTest {
   }
 
   @Test
+  void setName_blockNameMustNotBeNull() {
+    ReadOnlyBlock block = mock(ReadOnlyBlock.class);
+    String name = null;
+    assertThrows(NullPointerException.class, () -> deviceUnderTest.setName(block, name));
+  }
+
+  @Test
   void setName_nameMustNotBeEmpty() throws NoPruefungsPeriodeDefinedException {
     ReadOnlyPruefung pruefung = mock(ReadOnlyPruefung.class);
     String name = "";

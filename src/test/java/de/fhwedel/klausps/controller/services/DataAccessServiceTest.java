@@ -228,6 +228,16 @@ class DataAccessServiceTest {
   }
 
   @Test
+  void changeNameOfPruefung_noEmptyNameAllowed() {
+    ReadOnlyPruefung pruefung = mock(ReadOnlyPruefung.class);
+
+    when(pruefungsperiode.pruefung(any())).thenReturn(mock(Pruefung.class));
+
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.changeNameOf(pruefung, ""));
+  }
+
+  @Test
   void getGeplantePruefungenTest() throws NoPruefungsPeriodeDefinedException {
     Pruefung p1 = getRandomPlannedPruefung(1L);
     Pruefung p2 = getRandomPlannedPruefung(2L);
