@@ -257,6 +257,15 @@ class DataAccessServiceTest {
   }
 
   @Test
+  @DisplayName("Not allowed to add Pruefer with ampty name")
+  void addPruefer_noEmptyNames() {
+    when(pruefungsperiode.pruefung(anyString())).thenReturn(
+        TestFactory.getPruefungOfReadOnlyPruefung(TestFactory.RO_DM_UNPLANNED));
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.addPruefer(RO_DM_UNPLANNED, ""));
+  }
+
+  @Test
   void addPrueferBlock_successTest() throws NoPruefungsPeriodeDefinedException {
     Pruefung modelDm = TestFactory.getPruefungOfReadOnlyPruefung(TestFactory.RO_DM_UNPLANNED);
     Block result = TestFactory.configureMock_addPruefungToBlockModel(pruefungsperiode,

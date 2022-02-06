@@ -344,7 +344,6 @@ public class Controller implements InterfaceController {
       throws NoPruefungsPeriodeDefinedException {
     LOGGER.debug("Call to addPruefer({}, {}).", pruefung, kuerzel);
     noNullParameters(pruefung, kuerzel);
-    ensureAvailabilityOfPruefungsperiode();
     return converter.convertToReadOnlyPlanungseinheit(
         dataAccessService.addPruefer(pruefung, kuerzel));
   }

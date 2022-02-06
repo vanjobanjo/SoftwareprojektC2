@@ -645,4 +645,14 @@ class ControllerTest {
         LocalDate.now().plusDays(30), LocalDate.now().plusDays(1), 30);
   }
 
+  @Test
+  void addPruefer_noEmptyNameAllowed() throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung pruefung = mock(ReadOnlyPruefung.class);
+    String noName = "";
+    when(dataAccessService.addPruefer(any(), anyString())).thenThrow(
+        IllegalArgumentException.class);
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.addPruefer(pruefung, noName));
+  }
+
 }

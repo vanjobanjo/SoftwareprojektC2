@@ -363,7 +363,11 @@ public class DataAccessService {
   }
 
   public Planungseinheit addPruefer(ReadOnlyPruefung pruefung, String pruefer)
-      throws NoPruefungsPeriodeDefinedException {
+      throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
+    checkForPruefungsperiode();
+    if (pruefer.isEmpty()) {
+      throw new IllegalArgumentException("The name of a Prüfer must not be empty.");
+    }
     Pruefung modelPruefung = getPruefungFromModelOrException(pruefung);
     LOGGER.debug("Adding Pruefer {} to {} in Model.", pruefer, modelPruefung);
     modelPruefung.addPruefer(pruefer);
