@@ -283,7 +283,6 @@ public class Controller implements InterfaceController {
       throws NoPruefungsPeriodeDefinedException {
     LOGGER.debug("Call to setName({}, {}).", block, name);
     noNullParameters(block, name);
-    ensureAvailabilityOfPruefungsperiode();
     return converter.convertToROBlock(dataAccessService.setNameOf(block, name));
   }
 

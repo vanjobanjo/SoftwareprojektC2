@@ -437,23 +437,6 @@ class DataAccessServiceTest {
     assertThat(modelBlock.getStartzeitpunkt()).isEqualTo(termin);
   }
 
-  @Test
-  @DisplayName("cannot schedule block that does not exist in model.")
-  void scheduleBlock_different_names() {
-    ReadOnlyBlock blockToSchedule = new BlockDTO("Namme", null, Duration.ZERO,
-        Set.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED), 1,
-        Blocktyp.SEQUENTIAL);
-
-    LocalDateTime termin = LocalDateTime.of(2000, 1, 1, 0, 0);
-    Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
-    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, null,
-        RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED, RO_HASKELL_UNPLANNED);
-
-    // no consistency check!
-    assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.scheduleBlock(blockToSchedule, termin));
-  }
-
   private void configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(
       Block modelBlock, LocalDateTime termin, ReadOnlyPruefung... pruefungen) {
     for (ReadOnlyPruefung p : pruefungen) {
@@ -462,6 +445,7 @@ class DataAccessServiceTest {
       modelBlock.setStartzeitpunkt(termin);
       when(pruefungsperiode.pruefung(p.getPruefungsnummer())).thenReturn(temp);
       when(pruefungsperiode.block(temp)).thenReturn(modelBlock);
+      when(pruefungsperiode.block(modelBlock.getId())).thenReturn(modelBlock);
     }
   }
 
@@ -557,111 +541,12 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void existsBlockSuccessfulWithDate() {
-    LocalDateTime termin = LocalDateTime.of(2000, 1, 1, 0, 0);
-    ReadOnlyPruefung ro_analysis = new PruefungDTOBuilder(RO_ANALYSIS_UNPLANNED).withStartZeitpunkt(
-        termin).build();
-    ReadOnlyPruefung ro_dm = new PruefungDTOBuilder(RO_DM_UNPLANNED).withStartZeitpunkt(termin)
-        .build();
-    ReadOnlyPruefung ro_haskell = new PruefungDTOBuilder(RO_HASKELL_UNPLANNED).withStartZeitpunkt(
-        termin).build();
-
-    ReadOnlyBlock blockToSchedule = new BlockDTO("Name", termin, Duration.ZERO,
-        Set.of(ro_analysis, ro_dm, ro_haskell), 1, Blocktyp.SEQUENTIAL);
-
-    Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
-    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, termin,
-        ro_analysis, ro_dm, ro_haskell);
-    modelBlock.setStartzeitpunkt(termin);
-    assertThat(deviceUnderTest.exists(blockToSchedule)).isTrue();
-  }
-
-  @Test
-  void existsBlockDifferentBlockNames() {
-    ReadOnlyBlock blockToSchedule = new BlockDTO("DifferentName", null, Duration.ZERO,
-        Set.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED), 1,
-        Blocktyp.SEQUENTIAL);
-
-    Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
-    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, null,
-        RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED, RO_HASKELL_UNPLANNED);
-    assertThat(deviceUnderTest.exists(blockToSchedule)).isFalse();
-  }
-
-  @Test
   void existBlockWithoutPruefungen() {
     ReadOnlyBlock block = new BlockDTO("name", null, Duration.ZERO, new HashSet<>(), 1,
         Blocktyp.SEQUENTIAL);
     Block modelBock = new BlockImpl(pruefungsperiode, 1, "name", Blocktyp.SEQUENTIAL);
     when(pruefungsperiode.block(modelBock.getId())).thenReturn(modelBock);
     assertThat(deviceUnderTest.exists(block)).isTrue();
-  }
-
-  @Test
-  void existsBlockDifferentDates() {
-    LocalDateTime now = LocalDateTime.now();
-    ReadOnlyBlock blockToSchedule = new BlockDTO("Name", now, Duration.ZERO,
-        Set.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED), 1,
-        Blocktyp.SEQUENTIAL);
-
-    Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
-
-    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock,
-        LocalDateTime.now(), RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED, RO_HASKELL_UNPLANNED);
-
-    modelBlock.setStartzeitpunkt(now.plusMinutes(120));
-
-    assertThat(deviceUnderTest.exists(blockToSchedule)).isFalse();
-  }
-
-  @Test
-  void existsBlockDifferentDates2() {
-    ReadOnlyBlock blockToSchedule = new BlockDTO("Name", LocalDateTime.now(), Duration.ZERO,
-        Set.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED), 1,
-        Blocktyp.SEQUENTIAL);
-    LocalDateTime termin = LocalDateTime.of(2000, 1, 1, 0, 0);
-    Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
-
-    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock,
-        LocalDateTime.now(), RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED, RO_HASKELL_UNPLANNED);
-
-    modelBlock.setStartzeitpunkt(termin);
-    assertThat(deviceUnderTest.exists(blockToSchedule)).isFalse();
-  }
-
-  @Test
-  void existsBlockDifferentDates3() {
-    LocalDateTime termin = LocalDateTime.of(2000, 1, 1, 0, 0);
-    ReadOnlyBlock blockToSchedule = new BlockDTO("Name", termin, Duration.ZERO,
-        Set.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED), 1,
-        Blocktyp.SEQUENTIAL);
-    Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
-    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, null,
-        RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED, RO_HASKELL_UNPLANNED);
-    assertThat(deviceUnderTest.exists(blockToSchedule)).isFalse();
-  }
-
-  @Test
-  void existsBlockROBlockHasLessPruefungen() {
-    ReadOnlyBlock blockToSchedule = new BlockDTO("Name", null, Duration.ZERO,
-        Set.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED), 1, Blocktyp.SEQUENTIAL);
-
-    Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
-    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, null,
-        RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED, RO_HASKELL_UNPLANNED);
-    assertThat(deviceUnderTest.exists(blockToSchedule)).isFalse();
-  }
-
-  @Test
-  void existsBlockROBlockHasMorePruefungen() {
-    ReadOnlyBlock blockToSchedule = new BlockDTO("Name", null, Duration.ZERO,
-        Set.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED, RO_DM_UNPLANNED), 1,
-        Blocktyp.SEQUENTIAL);
-
-    Block modelBlock = new BlockImpl(pruefungsperiode, 1, "Name", Blocktyp.SEQUENTIAL);
-    configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(modelBlock, null,
-        RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
-    assertThat(deviceUnderTest.exists(blockToSchedule)).isFalse();
   }
 
   @Test
@@ -674,19 +559,19 @@ class DataAccessServiceTest {
         RO_DM_UNPLANNED.getPruefungsnummer());
   }
 
+  private void configureMock_getPruefungToROPruefung(ReadOnlyPruefung... pruefungen) {
+    for (ReadOnlyPruefung p : pruefungen) {
+      Pruefung temp = getPruefungOfReadOnlyPruefung(p);
+      when(pruefungsperiode.pruefung(p.getPruefungsnummer())).thenReturn(temp);
+    }
+  }
+
   @Test
   void createBlock_noEmptyName() throws NoPruefungsPeriodeDefinedException {
     String noName = "";
     when(pruefungsperiode.addPlanungseinheit(any())).thenReturn(true);
     assertThrows(IllegalArgumentException.class,
         () -> deviceUnderTest.createBlock(noName));
-  }
-
-  private void configureMock_getPruefungToROPruefung(ReadOnlyPruefung... pruefungen) {
-    for (ReadOnlyPruefung p : pruefungen) {
-      Pruefung temp = getPruefungOfReadOnlyPruefung(p);
-      when(pruefungsperiode.pruefung(p.getPruefungsnummer())).thenReturn(temp);
-    }
   }
 
   @Test
@@ -1236,7 +1121,6 @@ class DataAccessServiceTest {
 
   @Test
   void setNameOfBlockTest() throws NoPruefungsPeriodeDefinedException {
-
     Pruefung analysis = TestFactory.getPruefungOfReadOnlyPruefung(TestFactory.RO_DM_UNPLANNED);
     Block model = TestFactory.configureMock_addPruefungToBlockModel(pruefungsperiode, "Hallo",
         LocalDateTime.MIN, analysis);
@@ -1250,7 +1134,6 @@ class DataAccessServiceTest {
 
   @Test
   void setNameOfBlockWithScoringTest() throws NoPruefungsPeriodeDefinedException {
-
     Pruefung analysis = TestFactory.getPruefungOfReadOnlyPruefung(TestFactory.RO_DM_UNPLANNED);
     Block model = TestFactory.configureMock_addPruefungToBlockModel(pruefungsperiode, "Hallo",
         LocalDateTime.MIN, analysis);
@@ -1260,8 +1143,17 @@ class DataAccessServiceTest {
     deviceUnderTest.setNameOf(converter.convertToROBlock(model), "Ciao");
     assertThat(model.getName()).isEqualTo("Ciao");
     assertThat(model.getPruefungen()).containsOnly(analysis);
+  }
 
+  @Test
+  void setNameOfBlock_noEmptyNameAllowed() {
+    ReadOnlyBlock block = new BlockDTO("Name", null, Duration.ZERO,
+        emptySet(), 1, PARALLEL);
 
+    when(pruefungsperiode.block(anyInt())).thenReturn(mock(Block.class));
+
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.setNameOf(block, ""));
   }
 
   @Test

@@ -185,17 +185,6 @@ public class DataAccessService {
    * @param block Block to check with the model data
    */
   boolean exists(ReadOnlyBlock block) {
-    if (block.getROPruefungen().isEmpty()) {
-      return blockExists(block);
-    } else {
-      Optional<Block> modelBlock = searchInModel(block);
-      return modelBlock.filter(
-              value -> areSameBlocksBySpecs(block, value) && haveSamePruefungen(block, value))
-          .isPresent();
-    }
-  }
-
-  private boolean blockExists(ReadOnlyBlock block) {
     return pruefungsperiode.block(block.getBlockId()) != null;
   }
 
@@ -616,11 +605,13 @@ public class DataAccessService {
   public Block setNameOf(ReadOnlyBlock block, String name)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block, name);
+    noEmptyStrings(name);
     checkForPruefungsperiode();
-    Block model = getBlockFromModelOrException(block);
-    LOGGER.debug("Change name of {} in Model from {} to {}.", model, model.getName(), name);
-    model.setName(name);
-    return model;
+    Block modelBlock = getBlockFromModelOrException(block);
+    LOGGER.debug("Change name of {} in Model from {} to {}.", modelBlock, modelBlock.getName(),
+        name);
+    modelBlock.setName(name);
+    return modelBlock;
   }
 
   @NotNull
