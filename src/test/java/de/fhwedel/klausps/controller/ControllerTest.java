@@ -598,11 +598,19 @@ class ControllerTest {
   @Test
   void setPruefungsnummer_noNullParameters() {
     ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
-    Duration dauer = Duration.ZERO;
     assertThrows(NullPointerException.class,
         () -> deviceUnderTest.setPruefungsnummer(pruefung, null));
     assertThrows(NullPointerException.class,
         () -> deviceUnderTest.setPruefungsnummer(null, "pruefungsnummer"));
+  }
+
+  @Test
+  void setPruefungsnummer_noEmptyPruefungsnummer() throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
+    when(dataAccessService.setPruefungsnummer(any(), any())).thenThrow(
+        IllegalArgumentException.class);
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.setPruefungsnummer(pruefung, ""));
   }
 
   @Test

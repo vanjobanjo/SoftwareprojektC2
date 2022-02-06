@@ -1730,4 +1730,12 @@ class DataAccessServiceTest {
     verify(pruefungsperiode).setKapazitaet(1);
   }
 
+  @Test
+  void setPruefungsnummer_noEmptyPruefungsnummerAllowed() {
+    ReadOnlyPruefung pruefung = mock(ReadOnlyPruefung.class);
+    when(pruefungsperiode.pruefung(any())).thenReturn(mock(Pruefung.class));
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.setPruefungsnummer(pruefung, ""));
+  }
+
 }

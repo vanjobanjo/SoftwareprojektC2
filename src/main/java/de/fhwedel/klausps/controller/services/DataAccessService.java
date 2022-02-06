@@ -393,6 +393,8 @@ public class DataAccessService {
    */
   public Planungseinheit setPruefungsnummer(ReadOnlyPruefung pruefung,
       String pruefungsnummer) throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
+    noNullParameters(pruefung, pruefungsnummer);
+    noEmptyStrings(pruefungsnummer);
     Pruefung modelPruefung = getPruefungFromModelOrException(pruefung);
 
     if (modelPruefung.getPruefungsnummer().equals(pruefungsnummer)) {
