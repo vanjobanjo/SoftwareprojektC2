@@ -134,6 +134,20 @@ class ControllerTest {
   }
 
   @Test
+  void createTeilnehmerkreis_noEmptyStudiengangAllowed() {
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.createTeilnehmerkreis(Ausbildungsgrad.BACHELOR, "", "14.0",
+            1));
+  }
+
+  @Test
+  void createTeilnehmerkreis_noEmptyPruefungsordnungAllowed() {
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.createTeilnehmerkreis(Ausbildungsgrad.BACHELOR, "Informatik", "",
+            1));
+  }
+
+  @Test
   void createSemester_semesterTypeMustNotBeNull() {
     Year year = Year.of(2022);
     assertThrows(NullPointerException.class,

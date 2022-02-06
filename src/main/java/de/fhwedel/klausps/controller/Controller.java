@@ -1,5 +1,6 @@
 package de.fhwedel.klausps.controller;
 
+import static de.fhwedel.klausps.controller.util.ParameterUtil.noEmptyStrings;
 import static de.fhwedel.klausps.controller.util.ParameterUtil.noNullParameters;
 import static de.fhwedel.klausps.model.api.Blocktyp.PARALLEL;
 import static de.fhwedel.klausps.model.api.Blocktyp.SEQUENTIAL;
@@ -516,6 +517,7 @@ public class Controller implements InterfaceController {
     LOGGER.debug("Call to createTeilnehmerkreis({}, {}, {}, {}).", grad, studiengang, ordnung,
         semester);
     noNullParameters(grad, studiengang, ordnung);
+    noEmptyStrings(studiengang, ordnung);
     return new TeilnehmerkreisImpl(studiengang, ordnung, semester, grad);
   }
 

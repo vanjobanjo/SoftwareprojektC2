@@ -1,5 +1,6 @@
 package de.fhwedel.klausps.controller.services;
 
+import static de.fhwedel.klausps.controller.util.ParameterUtil.noEmptyStrings;
 import static de.fhwedel.klausps.controller.util.ParameterUtil.noNullParameters;
 import static de.fhwedel.klausps.controller.util.PlanungseinheitUtil.getAllPruefungen;
 import static java.util.Objects.nonNull;
@@ -60,15 +61,25 @@ public class DataAccessService {
     pruefungsperiode.setKapazitaet(kapazitaet);
   }
 
-  public void setAnkertag(LocalDate newAnkerTag)
-      throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
-    noNullParameters(newAnkerTag);
+  public Pruefung createPruefung(String name, String pruefungsNr, String refVWS,
+      Set<String> pruefer,
+      Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreise)
+      throws NoPruefungsPeriodeDefinedException {
+    noNullParameters(name, pruefungsNr, pruefer, refVWS);
+    noEmptyStrings(name, pruefungsNr, refVWS);
     checkForPruefungsperiode();
-    ensureNotBeforePruefungsperiode(newAnkerTag);
-    ensureNotAfterPruefungsperiode(newAnkerTag);
-    LOGGER.debug("Set Ankertag in Model from {} to{}.", pruefungsperiode.getAnkertag(),
-        newAnkerTag);
-    pruefungsperiode.setAnkertag(newAnkerTag);
+    if (existsPruefungWith(pruefungsNr)) {
+      LOGGER.trace("Found Pruefung with Pruefungsnummer {} in Model", pruefungsNr);
+      return null;
+    }
+
+    Pruefung pruefungModel = new PruefungImpl(pruefungsNr, name, refVWS, duration);
+    pruefer.forEach(pruefungModel::addPruefer);
+    addTeilnehmerKreisSchaetzungToModelPruefung(pruefungModel, teilnehmerkreise);
+    LOGGER.debug("Created {} and saved it to Model", pruefungModel);
+    pruefungsperiode.addPlanungseinheit(pruefungModel);
+    return pruefungModel;
+
   }
 
   public Set<Pruefung> getGeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
@@ -85,28 +96,11 @@ public class DataAccessService {
     return createPruefung(name, pruefungsNr, refVWS, Set.of(pruefer), duration, teilnehmerkreise);
   }
 
-  public Pruefung createPruefung(String name, String pruefungsNr, String refVWS,
-      Set<String> pruefer,
-      Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreise)
-      throws NoPruefungsPeriodeDefinedException {
-    noNullParameters(name, pruefungsNr, pruefer, refVWS);
-    if (name.equals("") || pruefungsNr.equals("") || refVWS.equals("")) {
-      throw new IllegalArgumentException(
-          "When creating a pruefung, its name, pruefungsnumber and referenceNumber must not be empty.");
+  private void checkForPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
+    LOGGER.trace("Check if pruefungsperiode is set.");
+    if (pruefungsperiode == null) {
+      throw new NoPruefungsPeriodeDefinedException();
     }
-    checkForPruefungsperiode();
-    if (existsPruefungWith(pruefungsNr)) {
-      LOGGER.trace("Found Pruefung with Pruefungsnummer {} in Model", pruefungsNr);
-      return null;
-    }
-
-    Pruefung pruefungModel = new PruefungImpl(pruefungsNr, name, refVWS, duration);
-    pruefer.forEach(pruefungModel::addPruefer);
-    addTeilnehmerKreisSchaetzungToModelPruefung(pruefungModel, teilnehmerkreise);
-    LOGGER.debug("Created {} and saved it to Model", pruefungModel);
-    pruefungsperiode.addPlanungseinheit(pruefungModel);
-    return pruefungModel;
-
   }
 
   public boolean existsPruefungWith(String pruefungsNummer) {
@@ -369,9 +363,7 @@ public class DataAccessService {
   public Planungseinheit addPruefer(ReadOnlyPruefung pruefung, String pruefer)
       throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
     checkForPruefungsperiode();
-    if (pruefer.isEmpty()) {
-      throw new IllegalArgumentException("The name of a Prüfer must not be empty.");
-    }
+    noEmptyStrings(pruefer);
     Pruefung modelPruefung = getPruefungFromModelOrException(pruefung);
     LOGGER.debug("Adding Pruefer {} to {} in Model.", pruefer, modelPruefung);
     modelPruefung.addPruefer(pruefer);
@@ -381,6 +373,14 @@ public class DataAccessService {
     } else {
       return modelPruefung;
     }
+  }
+
+  public Optional<Block> getBlockTo(Pruefung pruefung) throws NoPruefungsPeriodeDefinedException {
+    noNullParameters(pruefung);
+    checkForPruefungsperiode();
+    LOGGER.debug("Requesting block containing {} from Model: {}.", pruefung,
+        pruefungsperiode.block(pruefung));
+    return Optional.ofNullable(pruefungsperiode.block(pruefung));
   }
 
   public Planungseinheit removePruefer(ReadOnlyPruefung pruefung, String pruefer)
@@ -472,10 +472,7 @@ public class DataAccessService {
       throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
     noNullParameters(name, pruefungen);
     checkForPruefungsperiode();
-
-    if (name.equals("")) {
-      throw new IllegalArgumentException("Creating a block with an empty name is not allowed.");
-    }
+    noEmptyStrings(name);
 
     if (Arrays.stream(pruefungen).anyMatch(ReadOnlyPlanungseinheit::geplant)) {
       throw new IllegalArgumentException("Eine der übergebenen Prüfungen ist geplant.");
@@ -580,17 +577,10 @@ public class DataAccessService {
     }
   }
 
-  public Optional<Block> getBlockTo(Pruefung pruefung) throws NoPruefungsPeriodeDefinedException {
-    noNullParameters(pruefung);
-    checkForPruefungsperiode();
-    LOGGER.debug("Requesting block containing {} from Model: {}.", pruefung,
-        pruefungsperiode.block(pruefung));
-    return Optional.ofNullable(pruefungsperiode.block(pruefung));
-  }
-
   /**
    * Get all Teilnehmerkreise, by getting planned and unplanned Pruefungen, extract the
    * Teilnehmerkreise
+   *
    * @return all Teilnehmerkreise
    * @throws NoPruefungsPeriodeDefinedException when no period is defined
    */
@@ -662,11 +652,15 @@ public class DataAccessService {
     return pruefungsperiode.getAnkertag();
   }
 
-  private void checkForPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
-    LOGGER.trace("Check if pruefungsperiode is set.");
-    if (pruefungsperiode == null) {
-      throw new NoPruefungsPeriodeDefinedException();
-    }
+  public void setAnkertag(LocalDate newAnkerTag)
+      throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
+    noNullParameters(newAnkerTag);
+    checkForPruefungsperiode();
+    ensureNotBeforePruefungsperiode(newAnkerTag);
+    ensureNotAfterPruefungsperiode(newAnkerTag);
+    LOGGER.debug("Set Ankertag in Model from {} to{}.", pruefungsperiode.getAnkertag(),
+        newAnkerTag);
+    pruefungsperiode.setAnkertag(newAnkerTag);
   }
 
   private void ensureNotBeforePruefungsperiode(LocalDate newAnkerTag)
