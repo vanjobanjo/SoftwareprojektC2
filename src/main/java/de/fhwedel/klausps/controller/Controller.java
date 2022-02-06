@@ -385,7 +385,6 @@ public class Controller implements InterfaceController {
     LOGGER.debug("Call to createBlock({}, {}, {}).", name, type, pruefungen);
     noNullParameters((Object[]) pruefungen);
     noNullParameters(name);
-    ensureAvailabilityOfPruefungsperiode();
     return converter.convertToROBlock(dataAccessService.createBlock(name, pruefungen));
   }
 

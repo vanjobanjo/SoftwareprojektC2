@@ -468,6 +468,11 @@ public class DataAccessService {
       throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
     noNullParameters(name, pruefungen);
     checkForPruefungsperiode();
+
+    if (name.equals("")) {
+      throw new IllegalArgumentException("Creating a block with an empty name is not allowed.");
+    }
+
     if (Arrays.stream(pruefungen).anyMatch(ReadOnlyPlanungseinheit::geplant)) {
       throw new IllegalArgumentException("Eine der übergebenen Prüfungen ist geplant.");
     }
@@ -485,8 +490,10 @@ public class DataAccessService {
         pruefungsperiode.pruefung(pruefung.getPruefungsnummer())));
     LOGGER.debug("Adding {} to Model.", blockModel);
     if (!pruefungsperiode.addPlanungseinheit(blockModel)) {
-      throw new IllegalArgumentException("Irgendwas ist schief gelaufen."
-          + " Der Block konnte nicht in die Datenbank übertragen werden.");
+      throw new IllegalArgumentException("""
+          Irgendwas ist schiefgelaufen.
+          Der Block konnte nicht in die Datenbank übertragen werden.
+          """);
     }
     return blockModel;
   }

@@ -629,6 +629,14 @@ class DataAccessServiceTest {
         RO_DM_UNPLANNED.getPruefungsnummer());
   }
 
+  @Test
+  void createBlock_noEmptyName() throws NoPruefungsPeriodeDefinedException {
+    String noName = "";
+    when(pruefungsperiode.addPlanungseinheit(any())).thenReturn(true);
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.createBlock(noName));
+  }
+
   private void configureMock_getPruefungToROPruefung(ReadOnlyPruefung... pruefungen) {
     for (ReadOnlyPruefung p : pruefungen) {
       Pruefung temp = getPruefungOfReadOnlyPruefung(p);
@@ -699,7 +707,7 @@ class DataAccessServiceTest {
   void createBlock_Successful2() throws NoPruefungsPeriodeDefinedException {
     configureMock_getPruefungToROPruefung(RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
     when(pruefungsperiode.addPlanungseinheit(any())).thenReturn(
-        true); // pruefungsperiode is gemocked!
+        true);
 
     Block ro = deviceUnderTest.createBlock("Hallo", RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
     Block model = new BlockImpl(pruefungsperiode, "Name", Blocktyp.SEQUENTIAL);
