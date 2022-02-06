@@ -304,7 +304,6 @@ public class Controller implements InterfaceController {
     LOGGER.debug("Call to createPruefung({}, {}, {}, {}, {}, {}).", ref, name, pruefungsNummer,
         pruefer, duration, teilnehmerkreis);
     noNullParameters(name, pruefungsNummer, pruefer, duration, teilnehmerkreis);
-    ensureAvailabilityOfPruefungsperiode();
 
     return converter.convertToReadOnlyPruefung(
         dataAccessService.createPruefung(name, pruefungsNummer, ref, pruefer, duration,

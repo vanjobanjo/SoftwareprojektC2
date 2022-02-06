@@ -90,6 +90,10 @@ public class DataAccessService {
       Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreise)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(name, pruefungsNr, pruefer, refVWS);
+    if (name.equals("") || pruefungsNr.equals("") || refVWS.equals("")) {
+      throw new IllegalArgumentException(
+          "When creating a pruefung, its name, pruefungsnumber and referenceNumber must not be empty.");
+    }
     checkForPruefungsperiode();
     if (existsPruefungWith(pruefungsNr)) {
       LOGGER.trace("Found Pruefung with Pruefungsnummer {} in Model", pruefungsNr);

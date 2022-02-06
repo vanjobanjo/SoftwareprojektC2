@@ -7,12 +7,14 @@ import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTeilnehmerkr
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTime;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedROPruefung;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -45,6 +47,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
@@ -663,6 +666,51 @@ class ControllerTest {
         IllegalArgumentException.class);
     assertThrows(IllegalArgumentException.class,
         () -> deviceUnderTest.createBlock(noName, Blocktyp.PARALLEL));
+  }
+
+  @Test
+  void createPruefung_noEmptyReferenceNumAllowed() throws NoPruefungsPeriodeDefinedException {
+    String reference = "";
+    String name = "name";
+    String pruefungsNummer = "pruefungsnummer";
+    Set<String> pruefer = emptySet();
+    Duration duration = Duration.ofHours(2);
+    Map<Teilnehmerkreis, Integer> teilnehmerkreisSchaetzungen = emptyMap();
+    when(dataAccessService.createPruefung(any(), any(), any(), anySet(), any(), any()))
+        .thenThrow(IllegalArgumentException.class);
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.createPruefung(reference, name, pruefungsNummer, pruefer, duration,
+            teilnehmerkreisSchaetzungen));
+  }
+
+  @Test
+  void createPruefung_noEmptyNameAllowed() throws NoPruefungsPeriodeDefinedException {
+    String reference = "reference";
+    String name = "";
+    String pruefungsNummer = "pruefungsnummer";
+    Set<String> pruefer = emptySet();
+    Duration duration = Duration.ofHours(2);
+    Map<Teilnehmerkreis, Integer> teilnehmerkreisSchaetzungen = emptyMap();
+    when(dataAccessService.createPruefung(any(), any(), any(), anySet(), any(), any()))
+        .thenThrow(IllegalArgumentException.class);
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.createPruefung(reference, name, pruefungsNummer, pruefer, duration,
+            teilnehmerkreisSchaetzungen));
+  }
+
+  @Test
+  void createPruefung_noEmptyPruefungsnummerAllowed() throws NoPruefungsPeriodeDefinedException {
+    String reference = "reference";
+    String name = "name";
+    String pruefungsNummer = "";
+    Set<String> pruefer = emptySet();
+    Duration duration = Duration.ofHours(2);
+    Map<Teilnehmerkreis, Integer> teilnehmerkreisSchaetzungen = emptyMap();
+    when(dataAccessService.createPruefung(any(), any(), any(), anySet(), any(), any()))
+        .thenThrow(IllegalArgumentException.class);
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.createPruefung(reference, name, pruefungsNummer, pruefer, duration,
+            teilnehmerkreisSchaetzungen));
   }
 
 }
