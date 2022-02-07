@@ -82,6 +82,7 @@ public class DataAccessService {
 
   }
 
+  @Deprecated // duplicate method, getPlannedPruefungen already exists.
   public Set<Pruefung> getGeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
     LOGGER.debug("Get all planned Pruefungen from Model: {}.",

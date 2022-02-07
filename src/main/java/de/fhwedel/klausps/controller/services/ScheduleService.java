@@ -236,6 +236,10 @@ public class ScheduleService {
   public Optional<ReadOnlyBlock> deletePruefung(ReadOnlyPruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung);
+    Optional<Pruefung> modelPruefung = dataAccessService.getPruefung(pruefung);
+    if (modelPruefung.isEmpty() || modelPruefung.get().isGeplant()) {
+      throw new IllegalArgumentException();
+    }
     Block block = dataAccessService.deletePruefung(pruefung);
     return block == null ? Optional.empty() : Optional.of(converter.convertToROBlock(block));
   }
@@ -582,6 +586,7 @@ public class ScheduleService {
       throw new IllegalArgumentException(
           "Startdatum ist nach geplanter Prüfungen, bitte Prüfungen entplanen");
     }
+
     if (anyIsAfter(plannedPruefungen, endDatum)) {
       throw new IllegalArgumentException(
           "Enddatum ist vor geplanter Prüfungen, bitte Prüfungen entplanen");

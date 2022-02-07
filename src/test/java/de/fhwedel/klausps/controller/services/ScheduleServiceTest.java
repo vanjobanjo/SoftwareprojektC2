@@ -1554,7 +1554,7 @@ class ScheduleServiceTest {
     Pruefung plannedPruefung = randomPruefungAt(start.atStartOfDay().minus(1, MINUTES));
 
     when(dataAccessService.getAnkertag()).thenReturn(start.plusDays(1));
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(plannedPruefung));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(plannedPruefung));
 
     assertThrows(IllegalArgumentException.class,
         () -> deviceUnderTest.setDatumPeriode(start, end));
@@ -1573,10 +1573,22 @@ class ScheduleServiceTest {
     Pruefung plannedPruefung = randomPruefungAt(end.plusDays(1).atStartOfDay());
 
     when(dataAccessService.getAnkertag()).thenReturn(start.plusDays(1));
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(plannedPruefung));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(plannedPruefung));
 
     assertThrows(IllegalArgumentException.class,
         () -> deviceUnderTest.setDatumPeriode(start, end));
+  }
+
+  @Test
+  void deletePruefung_plannedPruefungNotAllowed() throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung pruefungToCheck = getRandomPlannedROPruefung(1L);
+    Pruefung modelPruefung = mock(Pruefung.class);
+
+    when(modelPruefung.isGeplant()).thenReturn(true);
+    when(dataAccessService.getPruefung(pruefungToCheck)).thenReturn(Optional.of(modelPruefung));
+
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.deletePruefung(pruefungToCheck));
   }
 
 }
