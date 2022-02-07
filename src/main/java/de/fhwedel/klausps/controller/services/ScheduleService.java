@@ -29,6 +29,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -569,17 +570,19 @@ public class ScheduleService {
 
   private void checkDatesMaybeException(LocalDate startDatum, LocalDate endDatum)
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
-    if (startDatum.isAfter(dataAccessService.getAnkertag())) {
+    LocalDate ankerTag = dataAccessService.getAnkertag();
+    Collection<Pruefung> plannedPruefungen = dataAccessService.getPlannedPruefungen();
+    if (startDatum.isAfter(ankerTag)) {
       throw new IllegalTimeSpanException("Startdatum ist nach Ankertag");
     }
-    if (endDatum.isBefore(dataAccessService.getAnkertag())) {
+    if (endDatum.isBefore(ankerTag)) {
       throw new IllegalTimeSpanException("Ankertag ist nach Enddatum");
     }
-    if (anyIsBefore(dataAccessService.getGeplantePruefungen(), startDatum)) {
+    if (anyIsBefore(plannedPruefungen, startDatum)) {
       throw new IllegalArgumentException(
           "Startdatum ist nach geplanter Prüfungen, bitte Prüfungen entplanen");
     }
-    if (anyIsAfter(dataAccessService.getGeplantePruefungen(), endDatum)) {
+    if (anyIsAfter(plannedPruefungen, endDatum)) {
       throw new IllegalArgumentException(
           "Enddatum ist vor geplanter Prüfungen, bitte Prüfungen entplanen");
     }
