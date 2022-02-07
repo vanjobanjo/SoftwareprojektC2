@@ -462,9 +462,9 @@ public class DataAccessService {
     return new LinkedList<>(modelPruefungen);
   }
 
-  public Block createBlock(String name, ReadOnlyPruefung... pruefungen)
+  public Block createBlock(String name, Blocktyp type, ReadOnlyPruefung... pruefungen)
       throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
-    noNullParameters(name, pruefungen);
+    noNullParameters(name, type, pruefungen);
     checkForPruefungsperiode();
     noEmptyStrings(name);
 
@@ -480,7 +480,7 @@ public class DataAccessService {
       throw new IllegalArgumentException("Doppelte Prüfungen im Block!");
     }
 
-    Block blockModel = new BlockImpl(pruefungsperiode, name, Blocktyp.PARALLEL);
+    Block blockModel = new BlockImpl(pruefungsperiode, name, type);
     Arrays.stream(pruefungen).forEach(pruefung -> blockModel.addPruefung(
         pruefungsperiode.pruefung(pruefung.getPruefungsnummer())));
     LOGGER.debug("Adding {} to Model.", blockModel);

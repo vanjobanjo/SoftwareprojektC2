@@ -563,7 +563,8 @@ class DataAccessServiceTest {
   void createBlock_Successful() throws NoPruefungsPeriodeDefinedException {
     when(pruefungsperiode.addPlanungseinheit(any())).thenReturn(true);
     configureMock_getPruefungToROPruefung(RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
-    Block ro = deviceUnderTest.createBlock("Hallo", RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
+    Block ro = deviceUnderTest.createBlock("Hallo", PARALLEL, RO_ANALYSIS_UNPLANNED,
+        RO_DM_UNPLANNED);
     assertThat(ro.getPruefungen().stream().map(Pruefung::getPruefungsnummer)
         .collect(Collectors.toSet())).containsOnly(RO_ANALYSIS_UNPLANNED.getPruefungsnummer(),
         RO_DM_UNPLANNED.getPruefungsnummer());
@@ -581,7 +582,7 @@ class DataAccessServiceTest {
     String noName = "";
     when(pruefungsperiode.addPlanungseinheit(any())).thenReturn(true);
     assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.createBlock(noName));
+        () -> deviceUnderTest.createBlock(noName, PARALLEL));
   }
 
   @Test
@@ -625,7 +626,7 @@ class DataAccessServiceTest {
         RO_ANALYSIS_UNPLANNED).withStartZeitpunkt(LocalDateTime.now()).build();
     configureMock_getPruefungToROPruefung(ro_analysis_planned, RO_DM_UNPLANNED);
     assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.createBlock("Hallo", ro_analysis_planned, RO_DM_UNPLANNED));
+        () -> deviceUnderTest.createBlock("Hallo", PARALLEL, ro_analysis_planned, RO_DM_UNPLANNED));
   }
 
   @Test
@@ -634,13 +635,14 @@ class DataAccessServiceTest {
     configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(model, null,
         RO_ANALYSIS_UNPLANNED);
     assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.createBlock("Hallo", RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED));
+        () -> deviceUnderTest.createBlock("Hallo", PARALLEL, RO_ANALYSIS_UNPLANNED,
+            RO_DM_UNPLANNED));
   }
 
   @Test
   void createBlock_DoublePruefungen() {
     assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.createBlock("Hallo", RO_DM_UNPLANNED, RO_DM_UNPLANNED));
+        () -> deviceUnderTest.createBlock("Hallo", PARALLEL, RO_DM_UNPLANNED, RO_DM_UNPLANNED));
   }
 
   @Test
@@ -649,7 +651,8 @@ class DataAccessServiceTest {
     when(pruefungsperiode.addPlanungseinheit(any())).thenReturn(
         true);
 
-    Block ro = deviceUnderTest.createBlock("Hallo", RO_ANALYSIS_UNPLANNED, RO_DM_UNPLANNED);
+    Block ro = deviceUnderTest.createBlock("Hallo", PARALLEL, RO_ANALYSIS_UNPLANNED,
+        RO_DM_UNPLANNED);
     Block model = new BlockImpl(pruefungsperiode, "Name", Blocktyp.SEQUENTIAL);
     LocalDateTime now = LocalDateTime.now();
     configureMock_buildModelBlockAndGetBlockToPruefungAndPruefungToNumber(model, now,

@@ -383,8 +383,8 @@ public class Controller implements InterfaceController {
       throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
     LOGGER.debug("Call to createBlock({}, {}, {}).", name, type, pruefungen);
     noNullParameters((Object[]) pruefungen);
-    noNullParameters(name);
-    return converter.convertToROBlock(dataAccessService.createBlock(name, pruefungen));
+    noNullParameters(name, type);
+    return converter.convertToROBlock(dataAccessService.createBlock(name, type, pruefungen));
   }
 
   @Override

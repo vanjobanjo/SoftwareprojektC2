@@ -689,9 +689,8 @@ class ControllerTest {
 
   @Test
   void createBlock_noEmptyNameAllowed() throws NoPruefungsPeriodeDefinedException {
-    ReadOnlyPruefung pruefung = mock(ReadOnlyPruefung.class);
     String noName = "";
-    when(dataAccessService.createBlock(anyString())).thenThrow(
+    when(dataAccessService.createBlock(anyString(), any())).thenThrow(
         IllegalArgumentException.class);
     assertThrows(IllegalArgumentException.class,
         () -> deviceUnderTest.createBlock(noName, Blocktyp.PARALLEL));
