@@ -30,6 +30,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -568,26 +569,42 @@ public class ScheduleService {
 
   private void checkDatesMaybeException(LocalDate startDatum, LocalDate endDatum)
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
-    if (startDatum.isAfter(endDatum)) {
-      throw new IllegalTimeSpanException("Startdatum ist nach Enddatum");
-    }
     if (startDatum.isAfter(dataAccessService.getAnkertag())) {
       throw new IllegalTimeSpanException("Startdatum ist nach Ankertag");
     }
-    if (endDatum.isAfter(dataAccessService.getAnkertag())) {
-      throw new IllegalTimeSpanException("Enddatum ist nach Ankertag");
+    if (endDatum.isBefore(dataAccessService.getAnkertag())) {
+      throw new IllegalTimeSpanException("Ankertag ist nach Enddatum");
     }
-
-    if (dataAccessService.getGeplantePruefungen().stream()
-        .anyMatch(pruefung -> pruefung.getStartzeitpunkt().isAfter(startDatum.atStartOfDay()))) {
+    if (anyIsBefore(dataAccessService.getGeplantePruefungen(), startDatum)) {
       throw new IllegalArgumentException(
           "Startdatum ist nach geplanter Prüfungen, bitte Prüfungen entplanen");
     }
-
-    if (dataAccessService.getGeplantePruefungen().stream()
-        .anyMatch(pruefung -> pruefung.getStartzeitpunkt().isAfter(endDatum.atTime(23, 59)))) {
+    if (anyIsAfter(dataAccessService.getGeplantePruefungen(), endDatum)) {
       throw new IllegalArgumentException(
           "Enddatum ist vor geplanter Prüfungen, bitte Prüfungen entplanen");
     }
   }
+
+  private boolean anyIsBefore(Iterable<Pruefung> pruefungen, LocalDate date) {
+    LocalDateTime time = date.atStartOfDay();
+    Iterator<Pruefung> iterator = pruefungen.iterator();
+    boolean anyIsBefore = false;
+    while (iterator.hasNext() && !anyIsBefore) {
+      Planungseinheit planungseinheit = iterator.next();
+      anyIsBefore = planungseinheit.getStartzeitpunkt().isBefore(time);
+    }
+    return anyIsBefore;
+  }
+
+  private boolean anyIsAfter(Iterable<Pruefung> pruefungen, LocalDate date) {
+    LocalDateTime time = date.plusDays(1).atStartOfDay();
+    Iterator<Pruefung> iterator = pruefungen.iterator();
+    boolean anyIsAfter = false;
+    while (iterator.hasNext() && !anyIsAfter) {
+      Planungseinheit planungseinheit = iterator.next();
+      anyIsAfter = !planungseinheit.endzeitpunkt().isBefore(time);
+    }
+    return anyIsAfter;
+  }
+
 }

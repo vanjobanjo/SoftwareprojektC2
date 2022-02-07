@@ -19,6 +19,8 @@ import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedROP
 import static de.fhwedel.klausps.model.api.Blocktyp.PARALLEL;
 import static de.fhwedel.klausps.model.api.Blocktyp.SEQUENTIAL;
 import static de.fhwedel.klausps.model.api.Semestertyp.WINTERSEMESTER;
+import static java.time.Month.FEBRUARY;
+import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -41,6 +43,7 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
+import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.util.TestFactory;
@@ -1518,6 +1521,62 @@ class ScheduleServiceTest {
         new HashSet<>(affectedPruefungen.subList(5, 7)));
     assertThat(deviceUnderTest.setKapazitaetPeriode(11)).containsExactlyInAnyOrderElementsOf(
         affectedPruefungen);
+  }
+
+  @Test
+  void setDatumPeriode_startAfterAnkertag() throws NoPruefungsPeriodeDefinedException {
+    LocalDate start = LocalDate.of(2022, FEBRUARY, 7);
+    LocalDate ankerTag = start.minusDays(1);
+    LocalDate end = start.plusWeeks(1);
+
+    when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
+
+    assertThrows(IllegalTimeSpanException.class,
+        () -> deviceUnderTest.setDatumPeriode(start, end));
+  }
+
+  @Test
+  void setDatumPeriode_ankertagAfterEnd() throws NoPruefungsPeriodeDefinedException {
+    LocalDate start = LocalDate.of(2022, FEBRUARY, 7);
+    LocalDate end = start.plusWeeks(1);
+    LocalDate ankerTag = end.plusDays(1);
+
+    when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
+
+    assertThrows(IllegalTimeSpanException.class,
+        () -> deviceUnderTest.setDatumPeriode(start, end));
+  }
+
+  @Test
+  void setDatumPeriode_startAfterPlannedPruefung() throws NoPruefungsPeriodeDefinedException {
+    LocalDate start = LocalDate.of(2022, FEBRUARY, 7);
+    LocalDate end = start.plusWeeks(1);
+    Pruefung plannedPruefung = randomPruefungAt(start.atStartOfDay().minus(1, MINUTES));
+
+    when(dataAccessService.getAnkertag()).thenReturn(start.plusDays(1));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(plannedPruefung));
+
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.setDatumPeriode(start, end));
+  }
+
+  private Pruefung randomPruefungAt(LocalDateTime schedule) {
+    Pruefung result = getRandomPlannedPruefung(1L);
+    result.setStartzeitpunkt(schedule);
+    return result;
+  }
+
+  @Test
+  void setDatumPeriode_endBeforePlannedPruefung() throws NoPruefungsPeriodeDefinedException {
+    LocalDate start = LocalDate.of(2022, FEBRUARY, 7);
+    LocalDate end = start.plusWeeks(1);
+    Pruefung plannedPruefung = randomPruefungAt(end.plusDays(1).atStartOfDay());
+
+    when(dataAccessService.getAnkertag()).thenReturn(start.plusDays(1));
+    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(plannedPruefung));
+
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.setDatumPeriode(start, end));
   }
 
 }
