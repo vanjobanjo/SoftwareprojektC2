@@ -121,12 +121,16 @@ public class ScheduleService {
       throw new IllegalArgumentException(
           "Pruefungen contained in a block can not be added to another block.");
     }
-    if (!block.geplant()) {
-      return emptyList();
-    }
-    Block newBlock = dataAccessService.addPruefungToBlock(block, pruefung);
+    Block modelBlock = dataAccessService.addPruefungToBlock(block, pruefung);
     checkHardCriteriaUndoAddPruefungToBlock(pruefung, block);
-    return getAffectedPruefungenBy(newBlock);
+    if (!modelBlock.isGeplant()) {
+      List<ReadOnlyPlanungseinheit> result = new ArrayList<>();
+      result.add(converter.convertToROBlock(modelBlock));
+      return result;
+    }
+    List<ReadOnlyPlanungseinheit> result = getAffectedPruefungenBy(modelBlock);
+    result.add(converter.convertToROBlock(modelBlock));
+    return result;
   }
 
   private void checkHardCriteriaUndoAddPruefungToBlock(ReadOnlyPruefung pruefung,
@@ -141,14 +145,14 @@ public class ScheduleService {
   }
 
   @NotNull
-  private List<ReadOnlyPlanungseinheit> getAffectedPruefungenBy(Block blockModel)
+  private List<ReadOnlyPlanungseinheit> getAffectedPruefungenBy(Block block)
       throws NoPruefungsPeriodeDefinedException {
-    if (!blockModel.isGeplant()) {
+    if (!block.isGeplant()) {
       return emptyList();
     }
     Set<Pruefung> changedScoring = new HashSet<>();
-    for (Pruefung p : blockModel.getPruefungen()) {
-      changedScoring.addAll(restrictionService.getPruefungenAffectedBy(p));
+    for (Pruefung pruefung : block.getPruefungen()) {
+      changedScoring.addAll(restrictionService.getPruefungenAffectedBy(pruefung));
     }
     return new LinkedList<>(converter.convertToROPlanungseinheitSet(
         getPlanungseinheitenWithBlock(changedScoring)));
