@@ -7,13 +7,15 @@ Funktionalität: Als Benutzer moechte ich Pruefungen zu Bloecken hinzufuegen koe
     Und es existiert der leere Block "block 1"
     Wenn ich die Pruefung "Analysis" zum Block "block 1" hinzufuege
     Dann enthalten die Planungseinheiten, die ich erhalte den Block "block 1"
-    Und der Block "block 1" enthaelt "Analysis"
+    Und der Block "block 1" enthaelt Analysis
 
-#  Szenario: Ich fuege erfolgreich eine Pruefung zu einem nicht leeren Block hinzu
-#    Angenommen es existiert der Block "block 1" mit der Pruefung "Analysis"
-#    Wenn ich die Pruefung "Diskrete Mathematik" hinzufuege
-#    Dann erhalte ich einen Block mit den Pruefungen "Diskrete Mathematik" und "Analysis"
-#
+  Szenario: Ich fuege erfolgreich eine Pruefung zu einem nicht leeren Block hinzu
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert der Block "block 1" mit der Pruefung "Analysis"
+    Wenn ich die Pruefung "Diskrete Mathematik" zum Block "block 1" hinzufuege
+    Dann enthalten die Planungseinheiten, die ich erhalte den Block "block 1"
+    Und der Block "block 1" enthaelt Diskrete Mathematik, Analysis
+
 #  Szenario: Ich versuche eine Pruefung zu einem Block hinzuzufuegen aber es gibt keine Pruefungsperiode
 #    Angenommen es existiert keine Pruefungsperiode
 #    Und es existiert der leere Block "block 1"

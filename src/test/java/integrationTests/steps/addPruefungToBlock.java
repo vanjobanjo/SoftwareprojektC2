@@ -15,7 +15,6 @@ import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedExcepti
 import de.fhwedel.klausps.model.api.Blocktyp;
 import io.cucumber.java.de.Angenommen;
 import io.cucumber.java.de.Dann;
-import io.cucumber.java.de.Und;
 import io.cucumber.java.de.Wenn;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -38,13 +37,26 @@ public class addPruefungToBlock extends BaseSteps {
   }
 
   @Angenommen("es existiert der Block {string} mit der Pruefung {string}")
-  public void esExistiertDerBlockMitDerPruefung(String block, String string) {
-    throw new AssumptionViolatedException("not implemented");
+  public void esExistiertDerBlockMitDerPruefung(String block, String pruefung)
+      throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
+    ReadOnlyBlock blockToChange = state.controller.createBlock(block, Blocktyp.PARALLEL);
+    ReadOnlyPruefung pruefungToChange = state.controller.createPruefung(pruefung, pruefung,
+        pruefung, emptySet(), Duration.ofHours(1), emptyMap());
+    state.controller.addPruefungToBlock(blockToChange, pruefungToChange);
   }
 
-  @Dann("erhalte ich einen Block mit den Pruefungen {string} und {string}")
-  public void erhalteIchEinenBlockMitDenPruefungenUnd(String pruefung1, String pruefung2) {
-    throw new AssumptionViolatedException("not implemented");
+  @Dann("der Block {string} enthaelt {stringList}")
+  public void erhalteIchEinenBlockMitDenPruefungenUnd(String blockName, List<String> pruefungen) {
+    List<ReadOnlyPlanungseinheit> results = toPlanungseinheiten(
+        state.results.get("planungseinheiten"));
+    Optional<ReadOnlyBlock> block = results.stream()
+        .filter(ReadOnlyPlanungseinheit::isBlock)
+        .map(ReadOnlyPlanungseinheit::asBlock)
+        .filter(b -> b.getName().equals(blockName))
+        .findFirst();
+    assertThat(block).isPresent();
+    assertThat(block.get().getROPruefungen()).anyMatch(
+        roPruefung -> pruefungen.contains(roPruefung.getName()));
   }
 
   @Angenommen("es gibt am selben Tag einen geplanten Block {string} und die geplante Pruefung {string}")
@@ -102,19 +114,6 @@ public class addPruefungToBlock extends BaseSteps {
       }
     }
     return result;
-  }
-
-  @Und("der Block {string} enthaelt {string}")
-  public void derBlockEnthaelt(String block, String pruefung) {
-    List<ReadOnlyPlanungseinheit> results = toPlanungseinheiten(
-        state.results.get("planungseinheiten"));
-    Optional<ReadOnlyBlock> roBlock = results.stream()
-        .filter(ReadOnlyPlanungseinheit::isBlock)
-        .filter(planungseinheit -> planungseinheit.getName().equals(block))
-        .map(ReadOnlyPlanungseinheit::asBlock).findFirst();
-    assertThat(roBlock).isPresent();
-    assertThat(roBlock.get().getROPruefungen()).anyMatch(
-        roPruefung -> roPruefung.getName().equals(pruefung));
   }
 
 }
