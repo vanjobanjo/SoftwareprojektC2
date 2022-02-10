@@ -44,7 +44,7 @@ public class addPrueferSteps extends BaseSteps {
     try {
       ReadOnlyPlanungseinheit result = state.controller.addPruefer(oldPruefung, prueferName);
       state.results.put("planungseinheit", result);
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalStateException e) {
       state.results.put("exception", e);
     }
   }

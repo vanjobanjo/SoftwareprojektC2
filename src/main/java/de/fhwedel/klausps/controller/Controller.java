@@ -198,7 +198,8 @@ public class Controller implements InterfaceController {
 
   @Override
   public Set<ReadOnlyPruefung> getGeplantePruefungenWithKonflikt(
-      ReadOnlyPlanungseinheit planungseinheit) throws NoPruefungsPeriodeDefinedException {
+      ReadOnlyPlanungseinheit planungseinheit)
+      throws NoPruefungsPeriodeDefinedException, IllegalStateException {
     LOGGER.debug("Call to getGeplantePruefungenWithKonflikt({}).", planungseinheit);
     noNullParameters(planungseinheit);
     return converter.convertToROPruefungSet(
@@ -208,7 +209,7 @@ public class Controller implements InterfaceController {
   @Override
   public Set<LocalDateTime> getHardConflictedTimes(Set<LocalDateTime> zeitpunkte,
       ReadOnlyPlanungseinheit planungseinheit)
-      throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
+      throws IllegalArgumentException, NoPruefungsPeriodeDefinedException, IllegalStateException {
     LOGGER.debug("Call to getHardConflictedTimes({}).", planungseinheit);
     noNullParameters(zeitpunkte, planungseinheit);
     return scheduleService.getHardConflictedTimes(zeitpunkte, planungseinheit);
@@ -216,7 +217,7 @@ public class Controller implements InterfaceController {
 
   @Override
   public Optional<ReadOnlyBlock> getBlockOfPruefung(ReadOnlyPruefung pruefung)
-      throws NoPruefungsPeriodeDefinedException {
+      throws NoPruefungsPeriodeDefinedException, IllegalStateException {
     LOGGER.debug("Call to getBlockOfPruefung({}).", pruefung);
     noNullParameters(pruefung);
     Optional<Block> block = dataAccessService.getBlockTo(pruefung);
@@ -229,7 +230,7 @@ public class Controller implements InterfaceController {
 
   @Override
   public List<ReadOnlyPlanungseinheit> setDatumPeriode(LocalDate startDatum, LocalDate endDatum)
-      throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
+      throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException, IllegalArgumentException {
     LOGGER.debug("Call to setDatumPeriode({}, {}).", startDatum, endDatum);
     noNullParameters(startDatum, endDatum);
     return converter.convertToROPlanungseinheitList(
@@ -263,7 +264,8 @@ public class Controller implements InterfaceController {
 
   @Override
   public ReadOnlyPlanungseinheit setPruefungsnummer(ReadOnlyPruefung pruefung,
-      String pruefungsnummer) throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
+      String pruefungsnummer)
+      throws IllegalArgumentException, NoPruefungsPeriodeDefinedException, IllegalStateException {
     LOGGER.debug("Call to setPruefungsnummer({}, {}).", pruefung, pruefungsnummer);
     noNullParameters(pruefung, pruefungsnummer);
     return converter.convertToReadOnlyPlanungseinheit(
@@ -272,7 +274,7 @@ public class Controller implements InterfaceController {
 
   @Override
   public ReadOnlyPlanungseinheit setName(ReadOnlyPruefung pruefung, String name)
-      throws NoPruefungsPeriodeDefinedException {
+      throws NoPruefungsPeriodeDefinedException, IllegalArgumentException, IllegalStateException {
     LOGGER.debug("Call to setName({}, {}).", pruefung, name);
     noNullParameters(pruefung, name);
     return converter.convertToReadOnlyPlanungseinheit(
@@ -281,7 +283,7 @@ public class Controller implements InterfaceController {
 
   @Override
   public ReadOnlyBlock setName(ReadOnlyBlock block, String name)
-      throws NoPruefungsPeriodeDefinedException {
+      throws NoPruefungsPeriodeDefinedException, IllegalArgumentException, IllegalStateException {
     LOGGER.debug("Call to setName({}, {}).", block, name);
     noNullParameters(block, name);
     return converter.convertToROBlock(dataAccessService.setNameOf(block, name));
@@ -301,7 +303,7 @@ public class Controller implements InterfaceController {
   @Override
   public ReadOnlyPruefung createPruefung(String ref, String name, String pruefungsNummer,
       Set<String> pruefer, Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreis)
-      throws NoPruefungsPeriodeDefinedException {
+      throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
     LOGGER.debug("Call to createPruefung({}, {}, {}, {}, {}, {}).", ref, name, pruefungsNummer,
         pruefer, duration, teilnehmerkreis);
     noNullParameters(name, pruefungsNummer, pruefer, duration, teilnehmerkreis);
@@ -313,11 +315,13 @@ public class Controller implements InterfaceController {
 
   @Override
   public Optional<ReadOnlyBlock> deletePruefung(ReadOnlyPruefung pruefung)
-      throws NoPruefungsPeriodeDefinedException {
+      throws NoPruefungsPeriodeDefinedException, IllegalStateException, IllegalArgumentException {
     LOGGER.debug("Call to deletePruefung({}).", pruefung);
     noNullParameters(pruefung);
     ensureAvailabilityOfPruefungsperiode();
-    return scheduleService.deletePruefung(pruefung);
+    Optional<Block> block = dataAccessService.deletePruefung(pruefung);
+    return block.isEmpty() ? Optional.empty()
+        : Optional.of(converter.convertToROBlock(block.get()));
   }
 
   @Override

@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +51,7 @@ public class DataAccessService {
 
   public void setKapazitaetStudents(int kapazitaet)
       throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
-    if (kapazitaet < 0) {
+    if (kapazitaet <= 0) {
       throw new IllegalArgumentException("Tried to set a negative capacity of students.");
     }
     checkForPruefungsperiode();
@@ -64,15 +63,24 @@ public class DataAccessService {
   public Pruefung createPruefung(String name, String pruefungsNr, String refVWS,
       Set<String> pruefer,
       Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreise)
-      throws NoPruefungsPeriodeDefinedException {
+      throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
     noNullParameters(name, pruefungsNr, pruefer, refVWS);
     noEmptyStrings(name, pruefungsNr, refVWS);
+    noEmptyStrings(pruefer.toArray(new String[0]));
     checkForPruefungsperiode();
     if (existsPruefungWith(pruefungsNr)) {
       LOGGER.trace("Found Pruefung with Pruefungsnummer {} in Model", pruefungsNr);
-      return null;
+      throw new IllegalArgumentException("Es existiert bereits eine Prüfung mit diesem Namen");
+    }
+    if (duration.isZero() || duration.isNegative()) {
+      throw new IllegalArgumentException("Die Dauer einer Prüfung muss positiv sein.");
     }
 
+    for (Integer schaetzung : teilnehmerkreise.values()) {
+      if (schaetzung < 0) {
+        throw new IllegalArgumentException("Schätzwerte müssen positiv sein");
+      }
+    }
     Pruefung pruefungModel = new PruefungImpl(pruefungsNr, name, refVWS, duration);
     pruefer.forEach(pruefungModel::addPruefer);
     addTeilnehmerKreisSchaetzungToModelPruefung(pruefungModel, teilnehmerkreise);
@@ -116,8 +124,8 @@ public class DataAccessService {
    * @param startTermin The time to schedule the pruefung to.
    */
   public Pruefung schedulePruefung(ReadOnlyPruefung pruefung, LocalDateTime startTermin)
-      throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
-    Pruefung pruefungFromModel = getPruefungFromModelOrException(pruefung);
+      throws IllegalArgumentException, NoPruefungsPeriodeDefinedException, IllegalStateException {
+    Pruefung pruefungFromModel = getPruefung(pruefung);
     if (pruefungsperiode.block(pruefungFromModel) != null) {
       throw new IllegalArgumentException("Prüfung befindet sich innerhalb eines Blockes");
     } else {
@@ -128,24 +136,18 @@ public class DataAccessService {
     }
   }
 
-  private Pruefung getPruefungFromModelOrException(ReadOnlyPruefung pruefung)
-      throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
-    Optional<Pruefung> possiblePruefung = getPruefung(pruefung);
-    if (possiblePruefung.isEmpty()) {
-      throw new IllegalArgumentException(
-          "Pruefung mit Pruefungsnummer " + pruefung.getPruefungsnummer()
-              + " ist in der Datenbank nicht vorhanden.");
-    }
-    return possiblePruefung.get();
-  }
 
-  public Optional<Pruefung> getPruefung(ReadOnlyPruefung readOnlyPruefung)
-      throws NoPruefungsPeriodeDefinedException {
+  public Pruefung getPruefung(ReadOnlyPruefung readOnlyPruefung)
+      throws NoPruefungsPeriodeDefinedException, IllegalStateException {
     noNullParameters(readOnlyPruefung);
     checkForPruefungsperiode();
     LOGGER.debug("Requesting Pruefung {} from Model results in {}.", readOnlyPruefung,
         pruefungsperiode.pruefung(readOnlyPruefung.getPruefungsnummer()));
-    return Optional.ofNullable(pruefungsperiode.pruefung(readOnlyPruefung.getPruefungsnummer()));
+    Pruefung pruefung = pruefungsperiode.pruefung(readOnlyPruefung.getPruefungsnummer());
+    if (pruefung == null) {
+      throw new IllegalStateException("Pruefung existiert nicht.");
+    }
+    return pruefung;
   }
 
   /**
@@ -155,8 +157,9 @@ public class DataAccessService {
    * @param block  The block to schedule
    * @param termin The time to schedule the pruefung to.
    */
-  Block scheduleBlock(ReadOnlyBlock block, LocalDateTime termin) {
-    Block blockFromModel = getBlockFromModelOrException(block);
+  Block scheduleBlock(ReadOnlyBlock block, LocalDateTime termin)
+      throws NoPruefungsPeriodeDefinedException {
+    Block blockFromModel = getBlock(block);
     LOGGER.debug("Scheduled {} from {} to {}.", blockFromModel, blockFromModel.getStartzeitpunkt(),
         termin);
     blockFromModel.setStartzeitpunkt(termin);
@@ -164,13 +167,6 @@ public class DataAccessService {
     return blockFromModel;
   }
 
-  private Block getBlockFromModelOrException(ReadOnlyBlock block) throws IllegalArgumentException {
-    if (!exists(block)) {
-      throw new IllegalArgumentException(
-          "Der angegebene Block ist in der Datenbank nicht vorhanden.");
-    }
-    return pruefungsperiode.block(block.getBlockId());
-  }
 
   /**
    * Checks the consistency of a ReadOnlyBlock
@@ -181,57 +177,8 @@ public class DataAccessService {
     return pruefungsperiode.block(block.getBlockId()) != null;
   }
 
-  private Optional<Block> searchInModel(ReadOnlyBlock block) {
-    // TODO a block is expected to get a unique identifier, this should be used for search
-    Iterator<ReadOnlyPruefung> blockIterator = block.getROPruefungen().iterator();
-    if (blockIterator.hasNext()) {
-      ReadOnlyPruefung pruefung = blockIterator.next();
-      Pruefung modelPruefung = pruefungsperiode.pruefung(pruefung.getPruefungsnummer());
-      if (modelPruefung != null) {
-        Block modelBlock = pruefungsperiode.block(modelPruefung);
-        if (modelBlock != null) {
-          return Optional.of(modelBlock);
-        }
-      }
-    }
-    return Optional.empty();
-  }
-
-  private boolean areSameBlocksBySpecs(ReadOnlyBlock readOnlyBlock, Block modelBlock) {
-    if (readOnlyBlock != null) {
-      Optional<LocalDateTime> readOnlyTermin = readOnlyBlock.getTermin();
-      return modelBlock != null
-          && readOnlyBlock.getBlockId() == modelBlock.getId()
-          && readOnlyBlock.getROPruefungen().size() == modelBlock.getPruefungen().size()
-          && readOnlyBlock.getName().equals(modelBlock.getName()) && (
-          (readOnlyBlock.getTermin().isEmpty() && modelBlock.getStartzeitpunkt() == null) || (
-              readOnlyTermin.isPresent() && readOnlyTermin.get()
-                  .equals(modelBlock.getStartzeitpunkt())));
-    }
-    return false;
-  }
-
-  private boolean haveSamePruefungen(ReadOnlyBlock readOnlyBlock, Block modelBlock) {
-    Set<Pruefung> modelPruefungen = modelBlock.getPruefungen();
-    if (modelPruefungen.size() != readOnlyBlock.getROPruefungen().size()) {
-      return false;
-    }
-    for (ReadOnlyPruefung pruefung : readOnlyBlock.getROPruefungen()) {
-      Pruefung pruefungFromModel = pruefungsperiode.pruefung(pruefung.getPruefungsnummer());
-      if (!existsPruefungWith(pruefung.getPruefungsnummer()) || modelPruefungen.stream().noneMatch(
-          (Pruefung p) -> hasPruefungsnummer(p, pruefungFromModel.getPruefungsnummer()))) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  private boolean hasPruefungsnummer(Pruefung pruefung, String pruefungsnummer) {
-    return pruefung.getPruefungsnummer().equals(pruefungsnummer);
-  }
-
-  public Block unscheduleBlock(ReadOnlyBlock block) {
-    Block modelBlock = getBlockFromModelOrException(block);
+  public Block unscheduleBlock(ReadOnlyBlock block) throws NoPruefungsPeriodeDefinedException {
+    Block modelBlock = getBlock(block);
     LOGGER.debug("Unscheduling {} from Model.", modelBlock);
     modelBlock.setStartzeitpunkt(null);
     return modelBlock;
@@ -242,7 +189,7 @@ public class DataAccessService {
     noNullParameters(toChange, name);
     noEmptyStrings(name);
 
-    Pruefung pruefung = getPruefungFromModelOrException(toChange);
+    Pruefung pruefung = getPruefung(toChange);
     LOGGER.debug("Change name for {} in Model from {} to {}.", pruefung, pruefung.getName(), name);
     pruefung.setName(name);
     return pruefung;
@@ -349,7 +296,7 @@ public class DataAccessService {
       throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
     checkForPruefungsperiode();
     noEmptyStrings(pruefer);
-    Pruefung modelPruefung = getPruefungFromModelOrException(pruefung);
+    Pruefung modelPruefung = getPruefung(pruefung);
     LOGGER.debug("Adding Pruefer {} to {} in Model.", pruefer, modelPruefung);
     modelPruefung.addPruefer(pruefer);
     Optional<Block> blockOfPruefung = getBlockTo(modelPruefung);
@@ -369,8 +316,8 @@ public class DataAccessService {
   }
 
   public Planungseinheit removePruefer(ReadOnlyPruefung pruefung, String pruefer)
-      throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
-    Pruefung modelPruefung = getPruefungFromModelOrException(pruefung);
+      throws NoPruefungsPeriodeDefinedException, IllegalStateException {
+    Pruefung modelPruefung = getPruefung(pruefung);
     LOGGER.debug("Removing Pruefer {} from {} in Model.", pruefer, modelPruefung);
     modelPruefung.removePruefer(pruefer);
     return modelPruefung;
@@ -383,13 +330,14 @@ public class DataAccessService {
    * @param pruefungsnummer nummer
    * @return modelpruefung
    * @throws NoPruefungsPeriodeDefinedException
-   * @throws IllegalArgumentException
+   * @throws IllegalStateException
    */
   public Planungseinheit setPruefungsnummer(ReadOnlyPruefung pruefung,
-      String pruefungsnummer) throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
+      String pruefungsnummer)
+      throws NoPruefungsPeriodeDefinedException, IllegalStateException, IllegalArgumentException {
     noNullParameters(pruefung, pruefungsnummer);
     noEmptyStrings(pruefungsnummer);
-    Pruefung modelPruefung = getPruefungFromModelOrException(pruefung);
+    Pruefung modelPruefung = getPruefung(pruefung);
 
     if (modelPruefung.getPruefungsnummer().equals(pruefungsnummer)) {
       return modelPruefung;
@@ -404,12 +352,17 @@ public class DataAccessService {
     return modelPruefung;
   }
 
-  public Block deletePruefung(ReadOnlyPruefung roPruefung)
-      throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
-    Pruefung pruefung = getPruefungFromModelOrException(roPruefung);
-    Block block = pruefungsperiode.block(pruefung);
-    LOGGER.debug("Deleting {} from Model.", pruefung);
+  public Optional<Block> deletePruefung(ReadOnlyPruefung roPruefung)
+      throws IllegalStateException, NoPruefungsPeriodeDefinedException {
+    Pruefung pruefung = getPruefung(roPruefung);
+    if (pruefung.isGeplant()) {
+      throw new IllegalArgumentException("Geplante Pruefungen dürfen nicht gelöscht werden.");
+    }
+    Optional<Block> block = getBlockTo(pruefung);
     pruefungsperiode.removePlanungseinheit(pruefung);
+    if (block.isPresent()) {
+      LOGGER.debug("Deleting {} from Model.", pruefung);
+    }
     return block;
   }
 
@@ -418,13 +371,18 @@ public class DataAccessService {
    *
    * @param pruefung The pruefung to schedule.
    */
-  public Pruefung unschedulePruefung(ReadOnlyPruefung pruefung)
-      throws NoPruefungsPeriodeDefinedException {
-    Pruefung pruefungFromModel = getPruefungFromModelOrException(pruefung);
-    LOGGER.debug("Unscheduling {} from previously {}.", pruefungFromModel,
-        pruefungFromModel.getStartzeitpunkt());
-    pruefungFromModel.setStartzeitpunkt(null);
-    return pruefungFromModel;
+  public void unschedulePruefung(Pruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException, IllegalStateException, IllegalArgumentException {
+
+    if (pruefungsperiode.pruefung(pruefung.getPruefungsnummer()) == null) {
+      throw new IllegalStateException("Pruefung existiert nicht.");
+    }
+    if (getBlockTo(pruefung).isPresent()) {
+      throw new IllegalArgumentException("Prüfungen in Blöcken dürfen nicht ausgeplant werden.");
+    }
+    LOGGER.debug("Unscheduling {} from previously {}.", pruefung,
+        pruefung.getStartzeitpunkt());
+    pruefung.setStartzeitpunkt(null);
   }
 
   public boolean terminIsInPeriod(LocalDateTime termin) {
@@ -443,12 +401,12 @@ public class DataAccessService {
 
   public List<Pruefung> deleteBlock(ReadOnlyBlock block)
       throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
+    Block model = getBlock(block);
     if (block.geplant()) {
       throw new IllegalArgumentException("Nur für ungeplante Blöcke möglich!");
     }
     noNullParameters(block);
     checkForPruefungsperiode();
-    Block model = getBlockFromModelOrException(block);
     Set<Pruefung> modelPruefungen = model.getPruefungen();
     LOGGER.debug("Deleting {} in Model.", model);
     pruefungsperiode.removePlanungseinheit(model);
@@ -505,8 +463,8 @@ public class DataAccessService {
 
   public Block removePruefungFromBlock(ReadOnlyBlock block,
       ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException {
-    Block modelBlock = getBlockFromModelOrException(block);
-    Pruefung modelPruefung = getPruefungFromModelOrException(pruefung);
+    Block modelBlock = getBlock(block);
+    Pruefung modelPruefung = getPruefung(pruefung);
 
     LOGGER.debug("Removing {} from {} in Model.", modelPruefung, modelBlock);
     modelBlock.removePruefung(modelPruefung);
@@ -519,8 +477,8 @@ public class DataAccessService {
 
   public Block addPruefungToBlock(ReadOnlyBlock block, ReadOnlyPruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
-    Block modelBlock = getBlockFromModelOrException(block);
-    Pruefung modelPruefung = getPruefungFromModelOrException(pruefung);
+    Block modelBlock = getBlock(block);
+    Pruefung modelPruefung = getPruefung(pruefung);
     LOGGER.debug("Adding {} to {} in Model.", modelPruefung, modelBlock);
     modelBlock.addPruefung(modelPruefung);
     return modelBlock;
@@ -553,15 +511,12 @@ public class DataAccessService {
   }
 
   public Optional<Block> getBlockTo(ReadOnlyPruefung pruefungToGetBlockFor)
-      throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
+      throws NoPruefungsPeriodeDefinedException, IllegalStateException {
     noNullParameters(pruefungToGetBlockFor);
     checkForPruefungsperiode();
-    Pruefung pruefung = pruefungsperiode.pruefung(pruefungToGetBlockFor.getPruefungsnummer());
-    if (pruefung != null) {
-      return getBlockTo(pruefung);
-    } else {
-      throw new IllegalArgumentException("Asked for block of a pruefung that is unknown.");
-    }
+    Pruefung pruefung = getPruefung(pruefungToGetBlockFor);
+    return getBlockTo(pruefung);
+
   }
 
   /**
@@ -601,11 +556,11 @@ public class DataAccessService {
   }
 
   public Block setNameOf(ReadOnlyBlock block, String name)
-      throws NoPruefungsPeriodeDefinedException {
+      throws NoPruefungsPeriodeDefinedException, IllegalArgumentException, IllegalStateException {
     noNullParameters(block, name);
     noEmptyStrings(name);
     checkForPruefungsperiode();
-    Block modelBlock = getBlockFromModelOrException(block);
+    Block modelBlock = getBlock(block);
     LOGGER.debug("Change name of {} in Model from {} to {}.", modelBlock, modelBlock.getName(),
         name);
     modelBlock.setName(name);
@@ -718,10 +673,14 @@ public class DataAccessService {
         .filter((Block block) -> block.getPruefungen().contains(otherPruefung)).isPresent();
   }
 
-  public Optional<Block> getBlock(ReadOnlyBlock block) throws NoPruefungsPeriodeDefinedException {
+  public Block getBlock(ReadOnlyBlock block) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block);
     checkForPruefungsperiode();
-    return Optional.ofNullable(pruefungsperiode.block(block.getBlockId()));
+    Block retrievedBlock = pruefungsperiode.block(block.getBlockId());
+    if (retrievedBlock == null) {
+      throw new IllegalStateException("Übergebener Block existiert nicht");
+    }
+    return retrievedBlock;
   }
 
   public boolean existsBlockWith(int blockId) throws NoPruefungsPeriodeDefinedException {
@@ -739,12 +698,9 @@ public class DataAccessService {
     return pruefungsperiode.planungseinheitenAt(time);
   }
 
-  public void adoptPruefungstermine(Pruefungsperiode adoptFrom)
+  public void unschedulePlanungseinheitenOutsideOfPeriode()
       throws NoPruefungsPeriodeDefinedException {
-    noNullParameters(adoptFrom);
     checkForPruefungsperiode();
-    LOGGER.debug("Tell Model to adopt {}.", adoptFrom);
-    pruefungsperiode.adoptPruefungstermine(adoptFrom);
     unscheduleAdoptedBloeckeOutsideOfPeriode();
     unscheduleAdoptedPruefungenOutsideOfPeriode();
   }
@@ -772,7 +728,7 @@ public class DataAccessService {
   }
 
   private boolean isAfterEndOfPeriode(LocalDate plannedDate) {
-    return plannedDate.isAfter(pruefungsperiode.getStartdatum());
+    return plannedDate.isAfter(pruefungsperiode.getEnddatum());
   }
 
   public void setDatumPeriode(LocalDate startDatum, LocalDate endDatum) {
