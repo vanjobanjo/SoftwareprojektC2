@@ -126,6 +126,7 @@ public class DataAccessService {
   public Pruefung schedulePruefung(ReadOnlyPruefung pruefung, LocalDateTime startTermin)
       throws IllegalArgumentException, NoPruefungsPeriodeDefinedException, IllegalStateException {
     Pruefung pruefungFromModel = getPruefung(pruefung);
+    ensurePruefungIsInPeriode(startTermin, pruefung.getDauer());
     if (pruefungsperiode.block(pruefungFromModel) != null) {
       throw new IllegalArgumentException("Prüfung befindet sich innerhalb eines Blockes");
     } else {
@@ -133,6 +134,18 @@ public class DataAccessService {
           pruefungFromModel.getStartzeitpunkt(), startTermin);
       pruefungFromModel.setStartzeitpunkt(startTermin);
       return pruefungFromModel;
+    }
+  }
+
+  private void ensurePruefungIsInPeriode(LocalDateTime startTermin, Duration duration) {
+    if (startTermin.isBefore(pruefungsperiode.getStartdatum().atStartOfDay())) {
+      throw new IllegalArgumentException(
+          "Prüfungstermin muss nach dem Start der Prüfungsperiode liegen");
+    }
+    if (!startTermin.plusMinutes(duration.toMinutes())
+        .isBefore(pruefungsperiode.getEnddatum().plusDays(1).atStartOfDay())) {
+      throw new IllegalArgumentException(
+          "Pruefung darf nicht außerhalb der Pruefungsperiode enden");
     }
   }
 

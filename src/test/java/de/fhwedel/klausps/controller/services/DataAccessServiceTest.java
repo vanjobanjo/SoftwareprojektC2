@@ -469,7 +469,8 @@ class DataAccessServiceTest {
     assertThrows(IllegalArgumentException.class,
         () -> deviceUnderTest.unschedulePruefung(pruefung));
   }
- @Test
+
+  @Test
   void unschedulePruefung_PruefungIsPartOfPlannedBlock() {
     Pruefung pruefung = getRandomPlannedPruefung(1);
     Block block = new BlockImpl(pruefungsperiode, 1, "name", PARALLEL);
@@ -574,10 +575,12 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void schedulePruefungTest() throws NoPruefungsPeriodeDefinedException {
-    LocalDateTime expectedSchedule = LocalDateTime.of(2022, 1, 1, 10, 30);
+  void schedulePruefungScheduleSuccessfully() throws NoPruefungsPeriodeDefinedException {
+    LocalDateTime expectedSchedule = LocalDateTime.of(2022, 2, 1, 10, 30);
     when(pruefungsperiode.pruefung(anyString())).thenReturn(
         new PruefungImpl("Pruefungsnummer", "name", "nbr", Duration.ofMinutes(90)));
+    when(pruefungsperiode.getStartdatum()).thenReturn(LocalDate.of(2022, 1, 1));
+    when(pruefungsperiode.getEnddatum()).thenReturn(LocalDate.of(2022, 3, 1));
     assertThat(
         deviceUnderTest.schedulePruefung(getReadOnlyPruefung(), expectedSchedule)
             .getStartzeitpunkt()).isEqualTo(expectedSchedule);
@@ -591,6 +594,71 @@ class DataAccessServiceTest {
     assertThrows(IllegalStateException.class,
         () -> deviceUnderTest.schedulePruefung(somePruefung, someSchedule));
   }
+
+
+  @Test
+  void schedulePruefung_terminMustBeAfterStartOfPeriode() {
+    LocalDateTime invalidDate = LocalDateTime.of(2022, 1, 1, 10, 30);
+    when(pruefungsperiode.pruefung(anyString())).thenReturn(
+        new PruefungImpl("Pruefungsnummer", "name", "nbr", Duration.ofMinutes(90)));
+
+    when(pruefungsperiode.getStartdatum()).thenReturn(LocalDate.of(2022, 2, 1));
+    when(pruefungsperiode.getEnddatum()).thenReturn(LocalDate.of(2022, 3, 1));
+    assertThrows(IllegalArgumentException.class, () ->
+        deviceUnderTest.schedulePruefung(getReadOnlyPruefung(), invalidDate));
+  }
+
+  @Test
+  void schedulePruefung_terminMustBeBeforeEndOfPeriode() {
+    LocalDateTime invalidDate = LocalDateTime.of(2022, 12, 1, 10, 30);
+    when(pruefungsperiode.pruefung(anyString())).thenReturn(
+        new PruefungImpl("Pruefungsnummer", "name", "nbr", Duration.ofMinutes(90)));
+
+    when(pruefungsperiode.getStartdatum()).thenReturn(LocalDate.of(2022, 2, 1));
+    when(pruefungsperiode.getEnddatum()).thenReturn(LocalDate.of(2022, 3, 1));
+    assertThrows(IllegalArgumentException.class, () ->
+        deviceUnderTest.schedulePruefung(getReadOnlyPruefung(), invalidDate));
+  }
+
+  @Test
+  void schedulePruefung_PruefungMustEndBeforeEndOfPeriode_endsOnMidnight() {
+    LocalDateTime invalidDate = LocalDateTime.of(2022, 3, 1, 23, 0);
+    when(pruefungsperiode.pruefung(anyString())).thenReturn(
+        new PruefungImpl("Pruefungsnummer", "name", "nbr", Duration.ofMinutes(60)));
+
+    when(pruefungsperiode.getStartdatum()).thenReturn(LocalDate.of(2022, 2, 1));
+    when(pruefungsperiode.getEnddatum()).thenReturn(LocalDate.of(2022, 3, 1));
+    assertThrows(IllegalArgumentException.class, () ->
+        deviceUnderTest.schedulePruefung(getReadOnlyPruefung(), invalidDate));
+  }
+
+  @Test
+  void schedulePruefung_PruefungMustEndBeforeEndOfPeriode_endsOneMinuteAfterMidnight() {
+    LocalDateTime invalidDate = LocalDateTime.of(2022, 3, 1, 23, 1);
+    when(pruefungsperiode.pruefung(anyString())).thenReturn(
+        new PruefungImpl("Pruefungsnummer", "name", "nbr", Duration.ofMinutes(60)));
+
+    when(pruefungsperiode.getStartdatum()).thenReturn(LocalDate.of(2022, 2, 1));
+    when(pruefungsperiode.getEnddatum()).thenReturn(LocalDate.of(2022, 3, 1));
+    assertThrows(IllegalArgumentException.class, () ->
+        deviceUnderTest.schedulePruefung(getReadOnlyPruefung(), invalidDate));
+  }
+
+
+  @Test
+  void schedulePruefung_PruefungMustNotBeInBlock() {
+    LocalDateTime validDate = LocalDateTime.of(2022, 2, 10, 8, 0);
+    Pruefung pruefung = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Block block = new BlockImpl(pruefungsperiode, 1, "block", PARALLEL);
+    block.addPruefung(pruefung);
+    when(pruefungsperiode.pruefung(pruefung.getPruefungsnummer())).thenReturn(pruefung);
+    when(pruefungsperiode.getStartdatum()).thenReturn(LocalDate.of(2022, 2, 1));
+    when(pruefungsperiode.getEnddatum()).thenReturn(LocalDate.of(2022, 3, 1));
+    when(pruefungsperiode.block(pruefung)).thenReturn(block);
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.schedulePruefung(RO_ANALYSIS_UNPLANNED, validDate));
+  }
+
 
   @Test
   void deletePruefung_successful() throws NoPruefungsPeriodeDefinedException {

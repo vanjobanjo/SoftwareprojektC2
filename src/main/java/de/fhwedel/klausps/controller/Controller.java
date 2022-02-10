@@ -326,7 +326,7 @@ public class Controller implements InterfaceController {
 
   @Override
   public List<ReadOnlyPlanungseinheit> unschedulePruefung(ReadOnlyPruefung pruefung)
-      throws NoPruefungsPeriodeDefinedException {
+      throws NoPruefungsPeriodeDefinedException, IllegalStateException, IllegalArgumentException {
     LOGGER.debug("Call to unschedulePruefung({}).", pruefung);
     noNullParameters(pruefung);
     return scheduleService.unschedulePruefung(pruefung);
@@ -335,7 +335,8 @@ public class Controller implements InterfaceController {
   @Override
   public List<ReadOnlyPlanungseinheit> schedulePruefung(ReadOnlyPruefung pruefung,
       LocalDateTime startTermin)
-      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
+      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException, IllegalArgumentException,
+      IllegalStateException {
     LOGGER.debug("Call to schedulePruefung({}, {}).", pruefung, startTermin);
     noNullParameters(pruefung, startTermin);
     ensureAvailabilityOfPruefungsperiode();

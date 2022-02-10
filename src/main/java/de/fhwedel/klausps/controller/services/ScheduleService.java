@@ -257,7 +257,8 @@ public class ScheduleService {
       throws NoPruefungsPeriodeDefinedException {
     Set<Planungseinheit> result = new HashSet<>();
     if (pruefung.isGeplant()) {
-      result.addAll(restrictionService.getPruefungenAffectedBy(pruefung));
+      result.addAll(
+          getPlanungseinheitenWithBlock(restrictionService.getPruefungenAffectedBy(pruefung)));
     }
     return result;
   }
