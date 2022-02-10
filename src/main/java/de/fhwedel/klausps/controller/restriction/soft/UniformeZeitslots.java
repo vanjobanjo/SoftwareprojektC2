@@ -31,7 +31,7 @@ public class UniformeZeitslots extends WeicheRestriktion {
       return Optional.empty();
     }
     Set<Pruefung> pruefungenAtSameTime = new HashSet<>(
-        dataAccessService.getGeplantePruefungen());
+        dataAccessService.getPlannedPruefungen());
     pruefungenAtSameTime = filter(pruefung, pruefungenAtSameTime);
 
     if (pruefungenAtSameTime.isEmpty()) {

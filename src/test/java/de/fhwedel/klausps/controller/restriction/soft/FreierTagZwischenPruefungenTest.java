@@ -98,7 +98,7 @@ class FreierTagZwischenPruefungenTest {
     modelDM.addTeilnehmerkreis(infBachelor);
     modelDM.setStartzeitpunkt(date);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(modelDM));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(modelDM));
 
     assertThat(deviceUnderTest.evaluateRestriction(modelAnalysis)).isEmpty();
   }
@@ -118,7 +118,7 @@ class FreierTagZwischenPruefungenTest {
     modelDM.addTeilnehmerkreis(infBachelor);
     modelDM.setStartzeitpunkt(date);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(modelDM, modelAnalysis));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(modelDM, modelAnalysis));
 
     assertThat(deviceUnderTest.evaluateRestriction(modelAnalysis)).isEmpty();
   }
@@ -137,7 +137,7 @@ class FreierTagZwischenPruefungenTest {
     dm.addTeilnehmerkreis(infBachelor);
     dm.setStartzeitpunkt(date);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis));
 
     validateResults(analysis, dm, infBachelor, amount_infBachelor);
   }
@@ -161,7 +161,7 @@ class FreierTagZwischenPruefungenTest {
     haskell.addTeilnehmerkreis(bwlBachelor, bwlB);
     haskell.setStartzeitpunkt(date);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
     validateResults(analysis, Set.of(dm, haskell), Set.of(infBachelor, bwlBachelor), affected);
   }
@@ -180,7 +180,7 @@ class FreierTagZwischenPruefungenTest {
     dm.setStartzeitpunkt(date);
     getBlockWithPruefungen(pruefungsperiode, "b", date, analysis, dm);
     when(dataAccessService.areInSameBlock(analysis, dm)).thenReturn(true);
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis));
 
     assertThat(deviceUnderTest.evaluateRestriction(analysis)).isEmpty();
   }
@@ -201,7 +201,7 @@ class FreierTagZwischenPruefungenTest {
     getBlockWithPruefungen(pruefungsperiode, "b", date, analysis);
     getBlockWithPruefungen(pruefungsperiode, "b2", date, dm);
     when(dataAccessService.areInSameBlock(analysis, dm)).thenReturn(false);
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis));
 
     validateResults(analysis, dm, infBachelor, infB);
   }
@@ -221,7 +221,7 @@ class FreierTagZwischenPruefungenTest {
     dm.setStartzeitpunkt(date);
     getBlockWithPruefungen(pruefungsperiode, "b", date, analysis);
     when(dataAccessService.areInSameBlock(analysis, dm)).thenReturn(false);
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis));
 
     validateResults(analysis, dm, infBachelor, affected);
   }
@@ -242,7 +242,7 @@ class FreierTagZwischenPruefungenTest {
     modelDM.addTeilnehmerkreis(infBachelor);
     modelDM.setStartzeitpunkt(dayBefore);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(modelDM, modelAnalysis));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(modelDM, modelAnalysis));
 
     assertThat(deviceUnderTest.evaluateRestriction(modelAnalysis)).isEmpty();
   }
@@ -263,7 +263,7 @@ class FreierTagZwischenPruefungenTest {
     dm.addTeilnehmerkreis(infBachelor, affected);
     dm.setStartzeitpunkt(dayBefore);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis));
     validateResults(analysis, dm, infBachelor, affected);
   }
 
@@ -286,7 +286,7 @@ class FreierTagZwischenPruefungenTest {
     haskell.addTeilnehmerkreis(bwlBachelor, schaetzung);
     haskell.setStartzeitpunkt(dayBefore);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
     validateResults(analysis, Set.of(dm, haskell), Set.of(infBachelor, bwlBachelor), affected);
   }
@@ -305,7 +305,7 @@ class FreierTagZwischenPruefungenTest {
     dm.addTeilnehmerkreis(infBachelor, affected);
     dm.setStartzeitpunkt(dayBefore);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis));
 
     validateResults(analysis, dm, infBachelor, affected);
   }
@@ -328,7 +328,7 @@ class FreierTagZwischenPruefungenTest {
     getBlockWithPruefungen(pruefungsperiode, "b", date, analysis);
     getBlockWithPruefungen(pruefungsperiode, "b2", date, dm);
     when(dataAccessService.areInSameBlock(analysis, dm)).thenReturn(false);
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis));
 
     validateResults(analysis, dm, infBachelor, affected);
   }
@@ -349,7 +349,7 @@ class FreierTagZwischenPruefungenTest {
     modelDM.addTeilnehmerkreis(infBachelor);
     modelDM.setStartzeitpunkt(dayAfter);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(modelDM, modelAnalysis));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(modelDM, modelAnalysis));
 
     assertThat(deviceUnderTest.evaluateRestriction(modelAnalysis)).isEmpty();
   }
@@ -369,7 +369,7 @@ class FreierTagZwischenPruefungenTest {
     dm.addTeilnehmerkreis(infBachelor, affected);
     dm.setStartzeitpunkt(dayAfter);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis));
 
     validateResults(analysis, dm, infBachelor, affected);
   }
@@ -394,7 +394,7 @@ class FreierTagZwischenPruefungenTest {
     haskell.addTeilnehmerkreis(bwlBachelor, bwlB);
     haskell.setStartzeitpunkt(dayAfter);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
     validateResults(analysis, Set.of(dm, haskell), Set.of(infBachelor, bwlBachelor), affected);
   }
@@ -413,7 +413,7 @@ class FreierTagZwischenPruefungenTest {
     dm.addTeilnehmerkreis(infBachelor, affected);
     dm.setStartzeitpunkt(dayAfter);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis));
 
     validateResults(analysis, dm, infBachelor, affected);
   }
@@ -436,7 +436,7 @@ class FreierTagZwischenPruefungenTest {
     getBlockWithPruefungen(pruefungsperiode, "b", dayBefore, analysis);
     getBlockWithPruefungen(pruefungsperiode, "b2", dayAfter, dm);
     when(dataAccessService.areInSameBlock(analysis, dm)).thenReturn(false);
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis));
 
     validateResults(analysis, dm, infBachelor, affected);
   }
@@ -457,7 +457,7 @@ class FreierTagZwischenPruefungenTest {
     dm.addTeilnehmerkreis(infBachelor);
     dm.setStartzeitpunkt(earlier);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis));
 
     assertThat(deviceUnderTest.evaluateRestriction(analysis)).isEmpty();
   }
@@ -476,7 +476,7 @@ class FreierTagZwischenPruefungenTest {
     dm.addTeilnehmerkreis(infBachelor);
     dm.setStartzeitpunkt(earlier);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis));
 
     assertThat(deviceUnderTest.evaluateRestriction(analysis)).isEmpty();
   }
@@ -497,7 +497,7 @@ class FreierTagZwischenPruefungenTest {
     haskell.addTeilnehmerkreis(bwlBachelor);
     haskell.setStartzeitpunkt(earlier);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
     assertThat(deviceUnderTest.evaluateRestriction(analysis)).isEmpty();
   }
@@ -518,7 +518,7 @@ class FreierTagZwischenPruefungenTest {
     dm.addTeilnehmerkreis(infBachelor);
     dm.setStartzeitpunkt(later);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis));
 
     assertThat(deviceUnderTest.evaluateRestriction(analysis)).isEmpty();
   }
@@ -537,7 +537,7 @@ class FreierTagZwischenPruefungenTest {
     dm.addTeilnehmerkreis(infBachelor);
     dm.setStartzeitpunkt(later);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis));
 
     assertThat(deviceUnderTest.evaluateRestriction(analysis)).isEmpty();
   }
@@ -558,7 +558,7 @@ class FreierTagZwischenPruefungenTest {
     haskell.addTeilnehmerkreis(bwlBachelor);
     haskell.setStartzeitpunkt(later);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
     assertThat(deviceUnderTest.evaluateRestriction(analysis)).isEmpty();
   }
@@ -583,7 +583,7 @@ class FreierTagZwischenPruefungenTest {
     haskell.addTeilnehmerkreis(infPtl);
     haskell.setStartzeitpunkt(later);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
     assertThat(deviceUnderTest.evaluateRestriction(analysis)).isEmpty();
   }
@@ -608,7 +608,7 @@ class FreierTagZwischenPruefungenTest {
     haskell.addTeilnehmerkreis(bwlBachelor, bwlB);
     haskell.setStartzeitpunkt(later);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
     validateResults(analysis, Set.of(dm, haskell), Set.of(bwlBachelor, infBachelor), affected);
   }
@@ -631,7 +631,7 @@ class FreierTagZwischenPruefungenTest {
     haskell.addTeilnehmerkreis(infPtl, affected);
     haskell.setStartzeitpunkt(later);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
     validateResults(analysis, dm, infBachelor, affected);
   }
@@ -654,7 +654,7 @@ class FreierTagZwischenPruefungenTest {
     haskell.addTeilnehmerkreis(infBachelor, affected);
     haskell.setStartzeitpunkt(later);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
     validateResults(analysis, haskell, infBachelor, affected);
   }
@@ -675,7 +675,7 @@ class FreierTagZwischenPruefungenTest {
     haskell.addTeilnehmerkreis(infPtl);
     haskell.setStartzeitpunkt(later);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
     assertThat(deviceUnderTest.evaluateRestriction(analysis)).isEmpty();
   }
@@ -697,7 +697,7 @@ class FreierTagZwischenPruefungenTest {
     haskell.addTeilnehmerkreis(bwlBachelor);
     haskell.setStartzeitpunkt(later);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
     assertThat(deviceUnderTest.evaluateRestriction(analysis)).isEmpty();
   }
@@ -720,7 +720,7 @@ class FreierTagZwischenPruefungenTest {
     haskell.addTeilnehmerkreis(infMaster);
     haskell.setStartzeitpunkt(later);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
     assertThat(deviceUnderTest.evaluateRestriction(analysis)).isEmpty();
   }
@@ -743,7 +743,7 @@ class FreierTagZwischenPruefungenTest {
     haskell.addTeilnehmerkreis(infBachelor);
     haskell.setStartzeitpunkt(later);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis, haskell));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis, haskell));
 
     assertThat(deviceUnderTest.evaluateRestriction(analysis)).isEmpty();
   }
@@ -769,7 +769,7 @@ class FreierTagZwischenPruefungenTest {
     dm.addTeilnehmerkreis(wingMaster, 12);
     dm.setStartzeitpunkt(dayAfter);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, analysis));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, analysis));
 
     validateResults(analysis, Set.of(dm), Set.of(infBachelor, bwlBachelor), affected);
   }

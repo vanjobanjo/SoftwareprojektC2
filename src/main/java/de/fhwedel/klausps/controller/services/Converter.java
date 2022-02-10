@@ -26,15 +26,15 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * <ul>
- * <li>Pruefung &rarr; ReadOnlyPruefung</li>
- * <li>Block &rarr; ReadOnlyBlock</li>
- * <li>Collection&lt;Pruefung&gt; &rarr; Collection&lt;ReadOnlyPruefung&gt;</li>
- * <li>Collection&lt;Block&gt; &rarr; Collection&lt;ReadOnlyBlock&gt;</li>
- * </ul>
+ * This class handles all conversion Operations from Controller-internal and model data types to
+ * read-only data types intended for view. In case of {@link Pruefung Pruefungen} a scoring will be
+ * calculated before conversion, because this information is not stored in model.
  */
 public class Converter {
 
+  /**
+   * ScheduleService used to calculate the scoring of a {@link Pruefung}
+   */
   private ScheduleService scheduleService;
 
   public void setScheduleService(ScheduleService service) {
@@ -43,6 +43,7 @@ public class Converter {
 
   /**
    * Converts the passed Collection of model blocks to Set of DTO ReadOnlyBlock
+   *
    * @param collection models blocks
    * @return dto  ro blocks
    * @throws NoPruefungsPeriodeDefinedException when no period is defined
@@ -58,6 +59,7 @@ public class Converter {
 
   /**
    * Converts single model block to DTO ReadOnlyBlock
+   *
    * @param block from model
    * @return DTO block RO
    * @throws NoPruefungsPeriodeDefinedException when no period is defined
@@ -74,6 +76,15 @@ public class Converter {
         block.getTyp());
   }
 
+  /**
+   * Convert a collection of {@link Pruefung} into a Set of {@link ReadOnlyPruefung}. Adds scoring
+   * information for each Pruefung
+   *
+   * @param collection the collection to convert
+   * @return a Set of ReadOnlyPruefungen
+   * @throws NoPruefungsPeriodeDefinedException when no {@link de.fhwedel.klausps.model.api.Pruefungsperiode
+   *                                            Pruefungsperiode} is defined
+   */
   public Set<ReadOnlyPruefung> convertToROPruefungSet(
       Collection<Pruefung> collection) throws NoPruefungsPeriodeDefinedException {
     Set<ReadOnlyPruefung> result = new HashSet<>();
@@ -82,15 +93,34 @@ public class Converter {
     }
     return result;
   }
- public List<ReadOnlyPruefung> convertToROPruefungList(
+
+  /**
+   * Convert a collection of {@link Pruefung} into a List of {@link ReadOnlyPruefung}. Adds scoring
+   * information for each Pruefung
+   *
+   * @param collection the collection to convert
+   * @return a List of ReadOnlyPruefungen
+   * @throws NoPruefungsPeriodeDefinedException when no {@link de.fhwedel.klausps.model.api.Pruefungsperiode
+   *                                            Pruefungsperiode} is defined
+   */
+  public List<ReadOnlyPruefung> convertToROPruefungList(
       Collection<Pruefung> collection) throws NoPruefungsPeriodeDefinedException {
     List<ReadOnlyPruefung> result = new ArrayList<>(collection.size());
     for (Pruefung pruefung : collection) {
       result.add(convertToReadOnlyPruefung(pruefung));
     }
     return result;
- }
+  }
 
+  /**
+   * Convert a collection of {@link Planungseinheit} into a Set of {@link ReadOnlyPlanungseinheit}.
+   * Adds scoring information for each Pruefung.
+   *
+   * @param collection the collection to convert
+   * @return a Set of ReadOnlyPlanungseinheit
+   * @throws NoPruefungsPeriodeDefinedException when no {@link de.fhwedel.klausps.model.api.Pruefungsperiode
+   *                                            Pruefungsperiode} is defined
+   */
   public Set<ReadOnlyPlanungseinheit> convertToROPlanungseinheitSet(
       Collection<Planungseinheit> collection) throws NoPruefungsPeriodeDefinedException {
     Set<ReadOnlyPlanungseinheit> result = new HashSet<>();
@@ -100,6 +130,15 @@ public class Converter {
     return result;
   }
 
+  /**
+   * Convert a collection of {@link Planungseinheit} into a List of {@link ReadOnlyPlanungseinheit}.
+   * Adds scoring information for each Pruefung.
+   *
+   * @param collection the collection to convert
+   * @return a List of ReadOnlyPlanungseinheit
+   * @throws NoPruefungsPeriodeDefinedException when no {@link de.fhwedel.klausps.model.api.Pruefungsperiode
+   *                                            Pruefungsperiode} is defined
+   */
   public List<ReadOnlyPlanungseinheit> convertToROPlanungseinheitList(
       Collection<Planungseinheit> collection) throws NoPruefungsPeriodeDefinedException {
     List<ReadOnlyPlanungseinheit> result = new ArrayList<>(collection.size());
@@ -109,6 +148,15 @@ public class Converter {
     return result;
   }
 
+  /**
+   * convert a single {@link Planungseinheit} to {@link ReadOnlyPlanungseinheit}. Scoring
+   * information is added, if Planungseinheit is a {@link Pruefung}.
+   *
+   * @param planungseinheit the Planungseinheit to convert
+   * @return a read only equivalent of the given planungseinheit
+   * @throws NoPruefungsPeriodeDefinedException when no {@link de.fhwedel.klausps.model.api.Pruefungsperiode
+   *                                            Pruefungsperiode} is defined
+   */
   public ReadOnlyPlanungseinheit convertToReadOnlyPlanungseinheit(
       Planungseinheit planungseinheit) throws NoPruefungsPeriodeDefinedException {
     if (planungseinheit.isBlock()) {
@@ -118,12 +166,30 @@ public class Converter {
     }
   }
 
+  /**
+   * convert a single {@link Pruefung} to {@link ReadOnlyPruefung}. Scoring information is added.
+   *
+   * @param pruefung the Pruefung to convert
+   * @return a read only equivalent of the given Pruefung
+   * @throws NoPruefungsPeriodeDefinedException when no {@link de.fhwedel.klausps.model.api.Pruefungsperiode
+   *                                            Pruefungsperiode} is defined
+   */
   public ReadOnlyPruefung convertToReadOnlyPruefung(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     return new PruefungDTOBuilder(pruefung).withScoring(scheduleService.scoringOfPruefung(pruefung))
         .build();
   }
 
+
+  /**
+   * Convert an array of {@link Planungseinheit} into a Set of {@link ReadOnlyPlanungseinheit}. Adds
+   * scoring information for each Pruefung.
+   *
+   * @param planungseinheiten the Planungseinheiten to convert
+   * @return a Set of ReadOnlyPlanungseinheit
+   * @throws NoPruefungsPeriodeDefinedException when no {@link de.fhwedel.klausps.model.api.Pruefungsperiode
+   *                                            Pruefungsperiode} is defined
+   */
   public Set<ReadOnlyPlanungseinheit> convertToROPlanungseinheitSet(
       Planungseinheit... planungseinheiten) throws NoPruefungsPeriodeDefinedException {
     Set<ReadOnlyPlanungseinheit> result = new HashSet<>();
@@ -133,6 +199,15 @@ public class Converter {
     return result;
   }
 
+  /**
+   * Converts a List of internally used {@link WeichesKriteriumAnalyse} into a List of {@link
+   * KriteriumsAnalyse}.
+   *
+   * @param analysen the List to convert
+   * @return a list of KriteriumsAnalyse
+   * @throws NoPruefungsPeriodeDefinedException {@link de.fhwedel.klausps.model.api.Pruefungsperiode
+   *                                            Pruefungsperiode} is defined
+   */
   public List<KriteriumsAnalyse> convertAnalyseList(
       List<WeichesKriteriumAnalyse> analysen) throws NoPruefungsPeriodeDefinedException {
 
@@ -143,6 +218,15 @@ public class Converter {
     return result;
   }
 
+  /**
+   * Converts a single internally used {@link WeichesKriteriumAnalyse} into a {@link
+   * KriteriumsAnalyse}.
+   *
+   * @param analyse the analysis to convert
+   * @return a corresponding KriteriumsAnalyse
+   * @throws NoPruefungsPeriodeDefinedException {@link de.fhwedel.klausps.model.api.Pruefungsperiode
+   *                                            Pruefungsperiode} is defined
+   */
   public KriteriumsAnalyse convertAnalyse(WeichesKriteriumAnalyse analyse)
       throws NoPruefungsPeriodeDefinedException {
     return new KriteriumsAnalyse(
@@ -151,13 +235,22 @@ public class Converter {
         analyse.getAmountAffectedStudents());
   }
 
+  /**
+   * Converts a List of internally used {@link HartesKriteriumAnalyse} into an externally used
+   * {@link HartesKriteriumException}.
+   *
+   * @param hard List of HartesKriteriumAnalyse to convert
+   * @return a HartesKriteriumException
+   * @throws NoPruefungsPeriodeDefinedException {@link de.fhwedel.klausps.model.api.Pruefungsperiode
+   *                                            Pruefungsperiode} is defined
+   */
   public HartesKriteriumException convertHardException(List<HartesKriteriumAnalyse> hard)
       throws NoPruefungsPeriodeDefinedException {
 
     Set<ReadOnlyPruefung> conflictPruefung = new HashSet<>();
     Set<Teilnehmerkreis> conflictTeilnehmer = new HashSet<>();
     int amountStudents = 0;
-    Map<Teilnehmerkreis, Integer> teilnehmercount = new HashMap<>();
+    Map<Teilnehmerkreis, Integer> teilnehmerCount = new HashMap<>();
 
     for (HartesKriteriumAnalyse hKA : hard) {
 
@@ -165,10 +258,10 @@ public class Converter {
         conflictPruefung.add(convertToReadOnlyPruefung(pruefung));
       }
 
-      TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung(teilnehmercount, hKA.getTeilnehmercount());
+      TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung(teilnehmerCount, hKA.getTeilnehmercount());
     }
 
-    for (Integer count : teilnehmercount.values()) {
+    for (Integer count : teilnehmerCount.values()) {
       amountStudents += count;
     }
 

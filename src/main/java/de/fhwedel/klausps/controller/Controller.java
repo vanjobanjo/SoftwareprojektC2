@@ -69,7 +69,7 @@ public class Controller implements InterfaceController {
   @NotNull
   public Set<ReadOnlyPruefung> getGeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
     LOGGER.debug("Call to getGeplantePruefungen().");
-    return converter.convertToROPruefungSet(dataAccessService.getGeplantePruefungen());
+    return converter.convertToROPruefungSet(dataAccessService.getPlannedPruefungen());
   }
 
   @Override
@@ -232,15 +232,16 @@ public class Controller implements InterfaceController {
       throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
     LOGGER.debug("Call to setDatumPeriode({}, {}).", startDatum, endDatum);
     noNullParameters(startDatum, endDatum);
-    return scheduleService.setDatumPeriode(startDatum, endDatum);
+    return converter.convertToROPlanungseinheitList(
+        scheduleService.setDatumPeriode(startDatum, endDatum));
   }
 
   @Override
-  public void setAnkerTagPeriode(LocalDate ankertag)
+  public List<ReadOnlyPlanungseinheit> setAnkerTagPeriode(LocalDate ankertag)
       throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
     LOGGER.debug("Call to setAnkerTagPeriode({}).", ankertag);
     noNullParameters(ankertag);
-    dataAccessService.setAnkertag(ankertag);
+    return converter.convertToROPlanungseinheitList(scheduleService.setAnkertag(ankertag));
   }
 
   @Override
@@ -486,28 +487,16 @@ public class Controller implements InterfaceController {
   }
 
   @Override
-  public void createEmptyPeriodeWithData(Semester semester, LocalDate start, LocalDate end,
-      LocalDate ankertag, int kapazitaet, Path path) throws ImportException, IOException {
-    LOGGER.debug("Call to createEmptyPeriodeWithData({}, {}, {}, {}, {}, {}).", semester, start,
-        end, ankertag, kapazitaet, path);
-    noNullParameters(semester, start, end, ankertag, kapazitaet, path);
-    // todo sollte auch eine IllegalTimeSpanException werfen falls Start, Ende
-    //  und/oder Ankertag falsch sind
-    try {
-      ioService.createEmptyPeriodeWithData(semester, start, end, ankertag, kapazitaet, path);
-    } catch (IllegalTimeSpanException e) {
-      throw new IllegalArgumentException("Die Daten der Prüfungsperiode passen nicht");
-    }
-  }
+  public void createNewPeriodeWithData(Semester semester, LocalDate start, LocalDate end,
+      LocalDate ankertag, int kapazitaet, Path pathCSV, Path adoptKlausPS)
+      throws IllegalTimeSpanException, IllegalArgumentException, ImportException, IOException {
+    LOGGER.debug("Call to createEmptyPeriodeWithData({}, {}, {}, {}, {}, {}, {}).", semester, start,
+        end, ankertag, kapazitaet, pathCSV, adoptKlausPS);
+    // only adoptKlausPS may be null
+    noNullParameters(semester, start, end, ankertag, kapazitaet, pathCSV);
+    scheduleService.createNewPeriodeWithData(ioService, semester, start, end, ankertag, kapazitaet,
+        pathCSV, adoptKlausPS);
 
-  @Override
-  public void createEmptyAndAdoptPeriode(Semester semester, LocalDate start, LocalDate end,
-      LocalDate ankertag, int kapazitaet, Path path) throws ImportException, IOException {
-    LOGGER.debug("Call to createEmptyAndAdoptPeriode({}, {}, {}, {}, {}, {}).", semester, start,
-        end, ankertag, kapazitaet, path);
-    noNullParameters(semester, start, end, ankertag, kapazitaet, path);
-    scheduleService.createEmptyAndAdoptPeriode(ioService, semester, start, end, ankertag,
-        kapazitaet, path);
   }
 
   @Override

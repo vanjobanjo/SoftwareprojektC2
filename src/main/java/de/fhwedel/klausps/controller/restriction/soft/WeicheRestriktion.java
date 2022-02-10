@@ -13,6 +13,7 @@ import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import org.jetbrains.annotations.Nullable;
@@ -105,4 +106,15 @@ public abstract class WeicheRestriktion extends Restriktion {
     return affected.getSchaetzungen();
   }
 
+
+  @Override
+  public boolean equals(Object obj) {
+    return (obj instanceof WeicheRestriktion weicheRestriktion)
+        && weicheRestriktion.kriterium == this.kriterium;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(dataAccessService, kriterium);
+  }
 }

@@ -82,14 +82,6 @@ public class DataAccessService {
 
   }
 
-  @Deprecated // duplicate method, getPlannedPruefungen already exists.
-  public Set<Pruefung> getGeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
-    checkForPruefungsperiode();
-    LOGGER.debug("Get all planned Pruefungen from Model: {}.",
-        pruefungsperiode.geplantePruefungen());
-    return pruefungsperiode.geplantePruefungen();
-  }
-
   public Pruefung createPruefung(String name, String pruefungsNr, String refVWS,
       String pruefer,
       Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreise)
@@ -292,7 +284,8 @@ public class DataAccessService {
     return getAllPruefungen(planungseinheitenBetween);
   }
 
-  public Set<Pruefung> getPlannedPruefungen() {
+  public Set<Pruefung> getPlannedPruefungen() throws NoPruefungsPeriodeDefinedException {
+    checkForPruefungsperiode();
     LOGGER.debug("Request all planned Pruefungen from Model: {}.",
         pruefungsperiode.geplantePruefungen());
     return pruefungsperiode.geplantePruefungen();

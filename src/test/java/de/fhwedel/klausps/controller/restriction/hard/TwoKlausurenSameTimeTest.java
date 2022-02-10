@@ -508,7 +508,8 @@ class TwoKlausurenSameTimeTest {
   }
 
   @Test
-  void getAllPotentialConflictingPruefungenWith_Successful() {
+  void getAllPotentialConflictingPruefungenWith_Successful()
+      throws NoPruefungsPeriodeDefinedException {
     LocalDateTime timeA = LocalDateTime.of(2022, 8, 11, 8, 0);
     LocalDateTime timeB = LocalDateTime.of(2022, 8, 12, 8, 0);
 
@@ -530,7 +531,8 @@ class TwoKlausurenSameTimeTest {
   }
 
   @Test
-  void getAllPotentialConflictingPruefungenWith_Successful_NotSameTeilnehmerkreis() {
+  void getAllPotentialConflictingPruefungenWith_Successful_NotSameTeilnehmerkreis()
+      throws NoPruefungsPeriodeDefinedException {
     LocalDateTime timeA = LocalDateTime.of(2022, 8, 11, 8, 0);
     LocalDateTime timeB = LocalDateTime.of(2022, 8, 12, 8, 0);
 
@@ -551,7 +553,8 @@ class TwoKlausurenSameTimeTest {
   }
 
   @Test
-  void getAllPotentialConflictingPruefungenWith_Successful_someTeilnehmerkreis() {
+  void getAllPotentialConflictingPruefungenWith_Successful_someTeilnehmerkreis()
+      throws NoPruefungsPeriodeDefinedException {
     LocalDateTime timeA = LocalDateTime.of(2022, 8, 11, 8, 0);
     LocalDateTime timeB = LocalDateTime.of(2022, 8, 12, 8, 0);
 
@@ -573,7 +576,8 @@ class TwoKlausurenSameTimeTest {
 
 
   @Test
-  void getAllPotentialConflictingPruefungenWith_Successful_sameTeilnehmerkreisButNotGeplant() {
+  void getAllPotentialConflictingPruefungenWith_Successful_sameTeilnehmerkreisButNotGeplant()
+      throws NoPruefungsPeriodeDefinedException {
 
     LocalDateTime timeA = LocalDateTime.of(2022, 8, 11, 8, 0);
 

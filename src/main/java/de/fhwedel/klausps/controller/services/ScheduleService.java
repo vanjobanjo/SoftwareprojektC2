@@ -318,7 +318,7 @@ public class ScheduleService {
     //Damit man eine Liste hat, wo sich das Scoring ändert
     Set<Planungseinheit> listOfRead = new HashSet<>(getAffectedPruefungenBy(pruefungModel));
 
-    //Hier muss ja nicht auf HarteKriteren gecheckt werden.
+    //Hier muss ja nicht auf HarteKriterien gecheckt werden.
     this.dataAccessService.removeTeilnehmerkreis(pruefungModel, teilnehmerkreis);
 
     return new ArrayList<>(listOfRead);
@@ -483,23 +483,57 @@ public class ScheduleService {
   }
 
 
-  public void createEmptyAndAdoptPeriode(IOService ioService, Semester semester, LocalDate start,
-      LocalDate end, LocalDate ankertag, int kapazitaet, Path path)
-      throws ImportException, IOException {
-
+  /**
+   * Creates a new {@link Pruefungsperiode} from a CSV File and an optional KlausPS-File. All {@link
+   * Pruefung Pruefungen} from the CSV-File will be added as unscheduled to the new Periode.<br> If
+   * a path to a KlausPS-File is present, all Pruefungen that are scheduled in the old Periode will
+   * be adapted and scheduled in the new Pruefungsperiode.<br> If a hard conflict is detected in the
+   * adapted Pruefungen and {@link  Block Blocks}, as many Pruefungen/Blocks will be unscheduled
+   * (sorted by date and time) to remove the conflict.<br> For any conflicting Pruefung in a Block,
+   * the whole Block will be unscheduled.
+   *
+   * @param ioService    performs the import and export operations
+   * @param semester     the semester of the new Pruefungsperiode
+   * @param start        the start date of the new Pruefungsperiode
+   * @param end          the end date of the new Pruefungsperiode
+   * @param ankertag     the ankertag of the new Pruefungsperiode
+   * @param kapazitaet   the kapazität of the new Pruefungsperiode
+   * @param pathCSV      path to the CSV-File
+   * @param adoptKlausPS path to the KlausPS-File (may be null, if no adaptation wanted)
+   * @throws ImportException          for syntactic or semantic errors
+   * @throws IOException              for technical errors when reading the files
+   * @throws IllegalTimeSpanException for invalid dates: begin is after end, ankertag is before
+   *                                  begin or after end
+   */
+  public void createNewPeriodeWithData(IOService ioService, Semester semester, LocalDate start,
+      LocalDate end, LocalDate ankertag, int kapazitaet, Path pathCSV, Path adoptKlausPS)
+      throws ImportException, IOException, IllegalTimeSpanException {
+    checkTimeSpanPeriode(start, end, ankertag);
+    if (kapazitaet <= 0) {
+      throw new IllegalArgumentException("Kapazität muss größer als 0 sein");
+    }
     Pruefungsperiode fallbackPeriode = dataAccessService.getPruefungsperiode();
     try {
-      ioService.createEmptyAndAdoptPeriode(semester, start, end, ankertag, kapazitaet, path);
+      ioService.createNewPeriodeWithData(semester, start, end, ankertag, kapazitaet, pathCSV,
+          adoptKlausPS);
       unscheduleHardConflictingFromAdoptedPeriode();
-    } catch (NoPruefungsPeriodeDefinedException e) {
+    } catch (ImportException | IOException e) {
       dataAccessService.setPruefungsperiode(fallbackPeriode);
-      throw new ImportException(
-          "Prüfungsperiode konnte nicht adaptiert werden, alter Zustand wurde wieder hergestellt.");
+      throw e;
+    } catch (NoPruefungsPeriodeDefinedException f) {
+      dataAccessService.setPruefungsperiode(fallbackPeriode);
+      throw new ImportException("Pruefungsperiode konnte nicht erstellt werden.");
     }
-
   }
 
 
+  /**
+   * Checks for hard conflicts of all scheduled {@link Pruefung Pruefungen} and {@link  Block
+   * Blocks} from the new {@link Pruefungsperiode} and unschedules them to remove inconsistencies.
+   *
+   * @throws NoPruefungsPeriodeDefinedException when no Pruefungsperiode is defined
+   * @throws ImportException                    when hard conflicts were found
+   */
   private void unscheduleHardConflictingFromAdoptedPeriode()
       throws NoPruefungsPeriodeDefinedException, ImportException {
     boolean foundConflicts = unscheduleConflictingBlocksFromAdoptedPeriode();
@@ -511,6 +545,13 @@ public class ScheduleService {
     }
   }
 
+  /**
+   * Checks for hard conflicts of all scheduled {@link  Block Blocks} from the new {@link
+   * Pruefungsperiode} and unschedules them and all their contained {@link Pruefung Pruefungen} to
+   * remove inconsistencies.
+   *
+   * @throws NoPruefungsPeriodeDefinedException when no Pruefungsperiode is defined
+   */
   private boolean unscheduleConflictingBlocksFromAdoptedPeriode()
       throws NoPruefungsPeriodeDefinedException {
     boolean foundConflicts = false;
@@ -525,11 +566,17 @@ public class ScheduleService {
     return foundConflicts;
   }
 
+  /**
+   * Checks for hard conflicts of all scheduled {@link  Pruefung Pruefungen} from the new {@link
+   * Pruefungsperiode} and unschedules them to remove inconsistencies.
+   *
+   * @throws NoPruefungsPeriodeDefinedException when no Pruefungsperiode is defined
+   */
   private boolean unscheduleConflictingPruefungFromAdoptedPeriode()
       throws NoPruefungsPeriodeDefinedException {
     boolean foundConflicts = false;
     Set<Planungseinheit> plannedPruefungen = sortPlanungseinheitenByStartzeitpunkt(
-        dataAccessService.getGeplantePruefungen());
+        dataAccessService.getPlannedPruefungen());
     for (Planungseinheit pruefung : plannedPruefungen) {
       if (!restrictionService.checkHarteKriterien(pruefung.asPruefung()).isEmpty()) {
         foundConflicts = true;
@@ -539,6 +586,12 @@ public class ScheduleService {
     return foundConflicts;
   }
 
+  /**
+   * Sorts a given Set of Planungseinheiten by their Startzeitpunkt.
+   *
+   * @param planungseinheiten the Planungseinheiten to sort
+   * @return a Set of sorted Planungseinheiten
+   */
   private Set<Planungseinheit> sortPlanungseinheitenByStartzeitpunkt(
       Set<? extends Planungseinheit> planungseinheiten) {
     Set<Planungseinheit> sortedByStartzeit = new TreeSet<>(
@@ -554,38 +607,25 @@ public class ScheduleService {
     return sortedByStartzeit;
   }
 
-  public List<ReadOnlyPlanungseinheit> setDatumPeriode(LocalDate startDatum, LocalDate endDatum)
+  public Set<Planungseinheit> setDatumPeriode(LocalDate startDatum, LocalDate endDatum)
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     checkDatesMaybeException(startDatum, endDatum);
 
-    Set<PruefungWithScoring> before = new HashSet<>();
-    for (Pruefung pruefung : dataAccessService.getGeplantePruefungen()) {
-      before.add(
-          new PruefungWithScoring(pruefung, restrictionService.getScoringOfPruefung(pruefung)));
-    }
+    Set<PruefungWithScoring> before = getPlannedPruefungenWithScoring();
 
     dataAccessService.setDatumPeriode(startDatum, endDatum);
 
-    Set<PruefungWithScoring> after = new HashSet<>();
-    for (Pruefung pruefung : dataAccessService.getGeplantePruefungen()) {
-      before.add(
-          new PruefungWithScoring(pruefung, restrictionService.getScoringOfPruefung(pruefung)));
-    }
-
-    return new LinkedList<>(converter.convertToROPlanungseinheitSet(
-        getPlanungseinheitenWithBlock(PlanungseinheitUtil.changedScoring(before, after))));
+    Set<PruefungWithScoring> after = getPlannedPruefungenWithScoring();
+    return getPlanungseinheitenWithBlock(PlanungseinheitUtil.changedScoring(before, after));
   }
 
   private void checkDatesMaybeException(LocalDate startDatum, LocalDate endDatum)
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     LocalDate ankerTag = dataAccessService.getAnkertag();
     Collection<Pruefung> plannedPruefungen = dataAccessService.getPlannedPruefungen();
-    if (startDatum.isAfter(ankerTag)) {
-      throw new IllegalTimeSpanException("Startdatum ist nach Ankertag");
-    }
-    if (endDatum.isBefore(ankerTag)) {
-      throw new IllegalTimeSpanException("Ankertag ist nach Enddatum");
-    }
+
+    checkTimeSpanPeriode(startDatum, endDatum, ankerTag);
+
     if (anyIsBefore(plannedPruefungen, startDatum)) {
       throw new IllegalArgumentException(
           "Startdatum ist nach geplanter Prüfungen, bitte Prüfungen entplanen");
@@ -619,4 +659,62 @@ public class ScheduleService {
     return anyIsAfter;
   }
 
+  /**
+   * checks if the given beginning, end and Ankertag are valid.
+   *
+   * @param begin    the beginning of the Pruefungsperiode
+   * @param end      the end of the Pruefungsperiode
+   * @param ankertag the Ankertag of the Pruefungsperiode
+   * @throws IllegalTimeSpanException when the beginning is after the end or the Ankertag is outside
+   *                                  the beginning and end of the Pruefungsperiode
+   */
+  private void checkTimeSpanPeriode(LocalDate begin, LocalDate end, LocalDate ankertag)
+      throws IllegalTimeSpanException {
+    if (begin.isAfter(end)) {
+      throw new IllegalTimeSpanException("Startdatum ist nach Enddatum");
+    }
+    if (begin.isAfter(ankertag)) {
+      throw new IllegalTimeSpanException("Startdatum ist nach Ankertag");
+    }
+    if (end.isBefore(ankertag)) {
+      throw new IllegalTimeSpanException("Ankertag ist nach Enddatum");
+    }
+  }
+
+  /**
+   * Sets the Ankertag for the current {@link Pruefungsperiode}.
+   *
+   * @param ankertag the new Date for the Ankertag
+   * @return all Pruefungen (and their blocks) that are affected by the change
+   * @throws IllegalTimeSpanException           when the Ankertag date is before the start or after
+   *                                            the end of the Pruefungsperiode
+   * @throws NoPruefungsPeriodeDefinedException when no Pruefungsperiode is defined
+   */
+  public Set<Planungseinheit> setAnkertag(LocalDate ankertag)
+      throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
+    Set<PruefungWithScoring> before = getPlannedPruefungenWithScoring();
+    dataAccessService.setAnkertag(ankertag);
+    Set<PruefungWithScoring> after = getPlannedPruefungenWithScoring();
+
+    return getPlanungseinheitenWithBlock(PlanungseinheitUtil.changedScoring(before, after));
+  }
+
+
+  /**
+   * Gets all planned Pruefungen and adds a scoring.
+   *
+   * @return a Set of all planned Pruefungen with their Scoring
+   * @throws NoPruefungsPeriodeDefinedException when no {@link Pruefungsperiode} is defined
+   */
+  private Set<PruefungWithScoring> getPlannedPruefungenWithScoring()
+      throws NoPruefungsPeriodeDefinedException {
+    Set<PruefungWithScoring> planned = new HashSet<>();
+    for (Pruefung pruefung : dataAccessService.getPlannedPruefungen()) {
+      planned.add(
+          new PruefungWithScoring(pruefung, restrictionService.getScoringOfPruefung(pruefung)));
+    }
+    return planned;
+  }
+
 }
+

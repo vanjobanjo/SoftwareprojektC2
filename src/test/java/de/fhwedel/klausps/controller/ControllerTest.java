@@ -299,7 +299,7 @@ class ControllerTest {
   void setAnkerTagPeriode_delegateToDataAccessService()
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     deviceUnderTest.setAnkerTagPeriode(getRandomTime(1998L).toLocalDate());
-    verify(dataAccessService).setAnkertag(any(LocalDate.class));
+    verify(scheduleService).setAnkertag(any(LocalDate.class));
   }
 
   @Test
@@ -356,13 +356,13 @@ class ControllerTest {
   void getGeplantePruefungen_delegateToDataAccessService()
       throws NoPruefungsPeriodeDefinedException {
     deviceUnderTest.getGeplantePruefungen();
-    verify(dataAccessService).getGeplantePruefungen();
+    verify(dataAccessService).getPlannedPruefungen();
   }
 
   @Test
   void getGeplantePruefungen_noPruefungsperiode()
       throws NoPruefungsPeriodeDefinedException {
-    when(dataAccessService.getGeplantePruefungen()).thenThrow(
+    when(dataAccessService.getPlannedPruefungen()).thenThrow(
         NoPruefungsPeriodeDefinedException.class);
     assertThrows(NoPruefungsPeriodeDefinedException.class,
         () -> deviceUnderTest.getGeplantePruefungen());

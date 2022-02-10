@@ -56,7 +56,7 @@ class UniformeZeitslotsTest {
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
     haskell.setStartzeitpunkt(before);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, haskell));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, haskell));
 
     assertThat(deviceUnderTest.evaluateRestriction(dm)).isEmpty();
   }
@@ -72,7 +72,7 @@ class UniformeZeitslotsTest {
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
     haskell.setStartzeitpunkt(after);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, haskell));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, haskell));
 
     assertThat(deviceUnderTest.evaluateRestriction(dm)).isEmpty();
   }
@@ -88,7 +88,7 @@ class UniformeZeitslotsTest {
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
     haskell.setStartzeitpunkt(before);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, haskell));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, haskell));
 
     assertThat(deviceUnderTest.evaluateRestriction(dm)).isEmpty();
   }
@@ -104,7 +104,7 @@ class UniformeZeitslotsTest {
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
     haskell.setStartzeitpunkt(after);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, haskell));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, haskell));
 
     assertThat(deviceUnderTest.evaluateRestriction(dm)).isEmpty();
   }
@@ -120,7 +120,7 @@ class UniformeZeitslotsTest {
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
     haskell.setStartzeitpunkt(time);
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, haskell));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, haskell));
 
     assertThat(deviceUnderTest.evaluateRestriction(dm)).isEmpty();
   }
@@ -138,7 +138,7 @@ class UniformeZeitslotsTest {
     haskell.setDauer(Duration.ofMinutes(60));
     haskell.setStartzeitpunkt(time);
     haskell.addTeilnehmerkreis(infBachelor);
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(Set.of(dm, haskell));
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(dm, haskell));
 
     testKriterium(haskell, dm, infBachelor);
   }

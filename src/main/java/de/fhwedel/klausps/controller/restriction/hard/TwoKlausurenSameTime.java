@@ -30,14 +30,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Klasse die für das Testen da ist, wenn zwei Klausuren gleichzeitig stattfinden, mit den gleichen Teilnehmerkreis
+ * Klasse, die für das Testen da ist, wenn zwei Klausuren gleichzeitig stattfinden, mit dem gleichen Teilnehmerkreis
  */
 public class TwoKlausurenSameTime extends HarteRestriktion {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TwoKlausurenSameTime.class);
 
   /**
-   * Speichern von der Zeit, die zwischen den Pruefungen mit den gleichen Teilnehmerkreis liegen darf
+   * Speichern von der Zeit, die zwischen den Pruefungen mit dem gleichen Teilnehmerkreis liegen darf
    */
   private final Duration bufferBetweenPlanungseinheiten;
 
@@ -247,7 +247,7 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
 
   @Override
   public Set<Pruefung> getAllPotentialConflictingPruefungenWith(
-      Planungseinheit planungseinheitToCheckFor) {
+      Planungseinheit planungseinheitToCheckFor) throws NoPruefungsPeriodeDefinedException {
 
     Set<Pruefung> geplantePruefungen = new HashSet<>(dataAccessService.getPlannedPruefungen());
     geplantePruefungen.removeIf(

@@ -244,14 +244,14 @@ class DataAccessServiceTest {
 
     when(pruefungsperiode.geplantePruefungen()).thenReturn(Set.of(p1, p2));
 
-    assertThat(deviceUnderTest.getGeplantePruefungen()).containsOnly(p1, p2);
+    assertThat(deviceUnderTest.getPlannedPruefungen()).containsOnly(p1, p2);
   }
 
   @Test
   void getGeplantePruefungen_noPruefungsperiode() {
     deviceUnderTest = new DataAccessService(null);
     assertThrows(NoPruefungsPeriodeDefinedException.class,
-        () -> deviceUnderTest.getGeplantePruefungen());
+        () -> deviceUnderTest.getPlannedPruefungen());
   }
 
   @Test

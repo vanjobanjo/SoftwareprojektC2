@@ -35,7 +35,7 @@ public class FreierTagZwischenPruefungen extends WeicheRestriktion {
       return Optional.empty();
     }
     Set<Pruefung> pruefungenWithSameTeilnehmerkreisen = new HashSet<>(
-        dataAccessService.getGeplantePruefungen());
+        dataAccessService.getPlannedPruefungen());
     // remove of no overlapping Teilnehmerkreise and more than one day apart
     pruefungenWithSameTeilnehmerkreisen = filterOnlyOverlappingTeilnehmerkreiseAndOnlyDayApart(
         pruefung, pruefungenWithSameTeilnehmerkreisen);

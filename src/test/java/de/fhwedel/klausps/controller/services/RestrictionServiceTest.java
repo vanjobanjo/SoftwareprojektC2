@@ -49,7 +49,8 @@ class RestrictionServiceTest {
   }
 
   @Test
-  void getPruefungenInHardConflictWith_noHardRestrictions_noConflicts() {
+  void getPruefungenInHardConflictWith_noHardRestrictions_noConflicts()
+      throws NoPruefungsPeriodeDefinedException {
     assertThat(
         deviceUnderTest.getPruefungenInHardConflictWith(getRandomPlannedPruefung(1L))).isEmpty();
   }

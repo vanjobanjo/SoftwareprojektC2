@@ -147,7 +147,8 @@ public class RestrictionService {
   }
 
   @NotNull
-  public Set<Pruefung> getPruefungenInHardConflictWith(Planungseinheit planungseinheitToCheckFor) {
+  public Set<Pruefung> getPruefungenInHardConflictWith(Planungseinheit planungseinheitToCheckFor)
+      throws NoPruefungsPeriodeDefinedException {
     noNullParameters(planungseinheitToCheckFor);
     Set<Pruefung> potentiallyConflictingPruefungen = new HashSet<>();
     for (HarteRestriktion hardRestriction : hardRestrictions) {

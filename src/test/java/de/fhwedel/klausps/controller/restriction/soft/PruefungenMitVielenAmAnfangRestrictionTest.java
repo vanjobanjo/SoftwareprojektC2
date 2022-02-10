@@ -88,7 +88,7 @@ class PruefungenMitVielenAmAnfangRestrictionTest {
     moreTeilnehmer.addTeilnehmerkreis(infBachelor, 100);
     lessTeilnehmer.addTeilnehmerkreis(infBachelor, 10);
     moreTeilnehmer.setStartzeitpunkt(ankerTag.atTime(8, 0));
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(
         Set.of(moreTeilnehmer, lessTeilnehmer));
     when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
     assertThat(deviceUnderTest.evaluateRestriction(moreTeilnehmer)).isEmpty();
@@ -108,7 +108,7 @@ class PruefungenMitVielenAmAnfangRestrictionTest {
     lessTeilnehmer.addTeilnehmerkreis(infBachelor, 10);
     moreTeilnehmer.setStartzeitpunkt(ankerTag.atTime(8, 0));
     lessTeilnehmer.setStartzeitpunkt(ankerTag.atTime(8, 0));
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(
         Set.of(moreTeilnehmer, lessTeilnehmer));
     when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
     assertThat(deviceUnderTest.evaluateRestriction(moreTeilnehmer)).isEmpty();
@@ -131,7 +131,7 @@ class PruefungenMitVielenAmAnfangRestrictionTest {
     moreTeilnehmer.setStartzeitpunkt(ankerTag.plusDays(7).atTime(8, 0));
     lessTeilnehmer.setStartzeitpunkt(ankerTag.plusDays(7).atTime(8, 0));
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(
         Set.of(moreTeilnehmer, lessTeilnehmer));
     when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
 
@@ -162,7 +162,7 @@ class PruefungenMitVielenAmAnfangRestrictionTest {
     lessTeilnehmer.setStartzeitpunkt(ankerTag.atTime(8, 0));
     moreTeilnehmer.setStartzeitpunkt(ankerTag.atTime(8, 0));
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(
         Set.of(moreTeilnehmer, lessTeilnehmer));
     when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
     Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluateRestriction(lessTeilnehmer);
@@ -186,7 +186,7 @@ class PruefungenMitVielenAmAnfangRestrictionTest {
     lessTeilnehmer.setStartzeitpunkt(ankerTag.plusDays(beginAfterAnker.toDays()).atTime(8, 0));
     moreTeilnehmer.setStartzeitpunkt(ankerTag.plusDays(beginAfterAnker.toDays()).atTime(8, 0));
 
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(
         Set.of(moreTeilnehmer, lessTeilnehmer));
     when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
     Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluateRestriction(lessTeilnehmer);
@@ -207,7 +207,7 @@ class PruefungenMitVielenAmAnfangRestrictionTest {
     lessTeilnehmer.addTeilnehmerkreis(infMaster, 10);
     moreTeilnehmer.setStartzeitpunkt(
         ankerTag.plusDays(beginAfterAnker.toDays()).atTime(8, 0));
-    when(dataAccessService.getGeplantePruefungen()).thenReturn(
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(
         Set.of(moreTeilnehmer, lessTeilnehmer));
     when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
     Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluateRestriction(moreTeilnehmer);
