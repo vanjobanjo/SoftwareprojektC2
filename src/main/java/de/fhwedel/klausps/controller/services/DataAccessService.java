@@ -306,7 +306,7 @@ public class DataAccessService {
   }
 
   public Planungseinheit addPruefer(ReadOnlyPruefung pruefung, String pruefer)
-      throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
+      throws NoPruefungsPeriodeDefinedException, IllegalStateException, IllegalArgumentException {
     checkForPruefungsperiode();
     noEmptyStrings(pruefer);
     Pruefung modelPruefung = getPruefung(pruefung);

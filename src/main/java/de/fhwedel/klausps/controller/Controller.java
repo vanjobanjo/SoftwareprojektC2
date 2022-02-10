@@ -346,7 +346,7 @@ public class Controller implements InterfaceController {
 
   @Override
   public ReadOnlyPlanungseinheit addPruefer(ReadOnlyPruefung pruefung, String kuerzel)
-      throws NoPruefungsPeriodeDefinedException {
+      throws NoPruefungsPeriodeDefinedException, IllegalStateException, IllegalArgumentException {
     LOGGER.debug("Call to addPruefer({}, {}).", pruefung, kuerzel);
     noNullParameters(pruefung, kuerzel);
     return converter.convertToReadOnlyPlanungseinheit(

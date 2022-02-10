@@ -233,7 +233,9 @@ public class ScheduleService {
    * @return Liste von veränderten Ergebnissen
    */
   public Set<Planungseinheit> schedulePruefung(ReadOnlyPruefung pruefung,
-      LocalDateTime termin) throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
+      LocalDateTime termin)
+      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException, IllegalStateException,
+      IllegalArgumentException {
     noNullParameters(pruefung, termin);
     Pruefung pruefungModel = dataAccessService.schedulePruefung(pruefung, termin);
     checkHardCriteriaUndoScheduling(pruefung, pruefungModel);
