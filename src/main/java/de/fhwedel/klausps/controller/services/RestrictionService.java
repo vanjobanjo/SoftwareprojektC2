@@ -84,6 +84,7 @@ public class RestrictionService {
     for (WeichesKriteriumAnalyse w : checkWeicheKriterien(pruefung)) {
       result.addAll(w.getCausingPruefungen());
     }
+    result.remove(pruefung);
     return result;
   }
 

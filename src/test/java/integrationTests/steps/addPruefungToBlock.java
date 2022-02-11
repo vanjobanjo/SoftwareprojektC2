@@ -13,15 +13,20 @@ import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
+import de.fhwedel.klausps.model.api.Ausbildungsgrad;
 import de.fhwedel.klausps.model.api.Blocktyp;
+import de.fhwedel.klausps.model.api.Teilnehmerkreis;
+import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
 import io.cucumber.java.de.Angenommen;
 import io.cucumber.java.de.Dann;
+import io.cucumber.java.de.Und;
 import io.cucumber.java.de.Wenn;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.AssumptionViolatedException;
@@ -71,11 +76,26 @@ public class addPruefungToBlock extends BaseSteps {
   public void ichDiePruefungZuHinzufuege(String pruefung, String block)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     ReadOnlyBlock blockToChange = getBlockFromModel(block);
-    ReadOnlyPruefung pruefungToChange = state.controller.createPruefung(pruefung, pruefung,
-        pruefung, emptySet(), Duration.ofHours(1), emptyMap());
-    List<ReadOnlyPlanungseinheit> result = state.controller.addPruefungToBlock(blockToChange,
-        pruefungToChange);
-    state.results.put("planungseinheiten", result);
+    ReadOnlyPruefung pruefungToChange = getOrCreate(pruefung);
+    try {
+      List<ReadOnlyPlanungseinheit> result = state.controller.addPruefungToBlock(blockToChange,
+          pruefungToChange);
+      state.results.put("planungseinheiten", result);
+    } catch (IllegalArgumentException exception) {
+      state.results.put("exception", exception);
+    }
+  }
+
+  private ReadOnlyPruefung getOrCreate(String pruefungName)
+      throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung pruefung;
+    if (existsPruefungWith(pruefungName)) {
+      pruefung = getPruefungFromControllerWith(pruefungName);
+    } else {
+      pruefung = state.controller.createPruefung(pruefungName, pruefungName,
+          pruefungName, emptySet(), Duration.ofHours(1), emptyMap());
+    }
+    return pruefung;
   }
 
   private ReadOnlyBlock getBlockFromModel(String name) throws NoPruefungsPeriodeDefinedException {
@@ -83,6 +103,29 @@ public class addPruefungToBlock extends BaseSteps {
     bloecke.addAll(state.controller.getGeplanteBloecke());
     bloecke.addAll(state.controller.getUngeplanteBloecke());
     return bloecke.stream().filter(block -> block.getName().equals(name)).findFirst().get();
+  }
+
+  @Wenn("ich die geplante Pruefung {string} zum Block {string} hinzufuege")
+  public void ichDieGeplantePruefungZumBlockHinzufuege(String pruefungName, String blockName)
+      throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
+    ReadOnlyBlock blockToChange = getBlockFromModel(blockName);
+    ReadOnlyPruefung pruefungToChange = state.controller.createPruefung(pruefungName, pruefungName,
+        pruefungName, emptySet(), Duration.ofHours(1), emptyMap());
+    state.controller.schedulePruefung(pruefungToChange, LocalDateTime.of(2022, FEBRUARY, 7, 8, 0));
+    try {
+      List<ReadOnlyPlanungseinheit> result = state.controller.addPruefungToBlock(blockToChange,
+          pruefungToChange);
+      state.results.put("planungseinheiten", result);
+    } catch (IllegalArgumentException exception) {
+      state.results.put("exception", exception);
+    }
+  }
+
+  @Dann("aendert sich nichts")
+  public void aendertSichNichts() {
+    List<ReadOnlyPlanungseinheit> results = toPlanungseinheiten(
+        state.results.get("planungseinheiten"));
+    assertThat(results).isEmpty();
   }
 
   @Angenommen("es existiert keine Pruefungsperiode")
@@ -144,19 +187,75 @@ public class addPruefungToBlock extends BaseSteps {
     }
   }
 
-  @Wenn("ich die geplante Pruefung {string} zum Block {string} hinzufuege")
-  public void ichDieGeplantePruefungZumBlockHinzufuege(String pruefungName, String blockName)
+  @Und("es existiert der geplante Block {string} mit der Pruefung {string}")
+  public void esExistiertDerGeplanteBlockMitDerPruefung(String blockName, String pruefungName)
       throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
-    ReadOnlyBlock blockToChange = getBlockFromModel(blockName);
+    ReadOnlyBlock blockToChange = state.controller.createBlock(blockName, Blocktyp.PARALLEL);
     ReadOnlyPruefung pruefungToChange = state.controller.createPruefung(pruefungName, pruefungName,
         pruefungName, emptySet(), Duration.ofHours(1), emptyMap());
-    state.controller.schedulePruefung(pruefungToChange, LocalDateTime.of(2022, FEBRUARY, 7, 8, 0));
+    state.controller.addPruefungToBlock(blockToChange, pruefungToChange);
+    state.controller.scheduleBlock(blockToChange,
+        state.controller.getStartDatumPeriode().atStartOfDay());
+  }
+
+  @Und("die Pruefung {string} ist direkt nach {string} geplant")
+  public void esExistiertEineGeplantePruefung(String pruefungName, String other)
+      throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
+    ReadOnlyPruefung pruefung = getOrCreate(pruefungName);
+    ReadOnlyPlanungseinheit before = getPlanungseinheitFromModel(other);
+    // 30 min buffer // TODO make buffer a property and use it here
+    LocalDateTime schedule = before.getTermin().get().plus(before.getDauer()).plusMinutes(30);
+    state.controller.schedulePruefung(pruefung, schedule);
+  }
+
+  private ReadOnlyPlanungseinheit getPlanungseinheitFromModel(String name)
+      throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPlanungseinheit result;
     try {
-      List<ReadOnlyPlanungseinheit> result = state.controller.addPruefungToBlock(blockToChange,
-          pruefungToChange);
-      state.results.put("planungseinheiten", result);
-    } catch (IllegalStateException exception) {
-      state.results.put("exception", exception);
+      result = getPruefungFromModel(name);
+    } catch (NoSuchElementException exception) {
+      result = getBlockFromModel(name);
     }
+    return result;
+  }
+
+  private ReadOnlyPruefung getPruefungFromModel(String name)
+      throws NoPruefungsPeriodeDefinedException {
+    Set<ReadOnlyPruefung> pruefungen = new HashSet<>();
+    pruefungen.addAll(state.controller.getGeplantePruefungen());
+    pruefungen.addAll(state.controller.getUngeplantePruefungen());
+    return pruefungen.stream().filter(pruefung -> pruefung.getName().equals(name)).findFirst()
+        .get();
+  }
+
+  @Und("es existiert eine ungeplante Pruefung {string}")
+  public void esExistiertEineUngeplantePruefung(String pruefungName)
+      throws NoPruefungsPeriodeDefinedException {
+    state.controller.createPruefung(pruefungName,
+        pruefungName,
+        pruefungName,
+        emptySet(),
+        Duration.ofHours(1),
+        emptyMap());
+  }
+
+  @Und("{string} und {string} haben einen gemeinsamen Teilnehmerkreis")
+  public void undHabenEinenGemeinsamenTeilnehmerkreis(String fstPruefung, String sndPruefung)
+      throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
+    Teilnehmerkreis teilnehmerkreis = new TeilnehmerkreisImpl("Informatik", "14.0", 1,
+        Ausbildungsgrad.BACHELOR);
+    ReadOnlyPruefung p1 = getPruefungFromModel(fstPruefung);
+    ReadOnlyPruefung p2 = getPruefungFromModel(sndPruefung);
+    state.controller.addTeilnehmerkreis(p1, teilnehmerkreis, 22);
+    state.controller.addTeilnehmerkreis(p2, teilnehmerkreis, 33);
+  }
+
+  @Dann("ist {string} Teil der beeinflussten Planungseinheiten")
+  public void istTeilDerBeeinflusstenPlanungseinheiten(String planungseinheitName)
+      throws NoPruefungsPeriodeDefinedException {
+    List<ReadOnlyPlanungseinheit> results = toPlanungseinheiten(
+        state.results.get("planungseinheiten"));
+    ReadOnlyPlanungseinheit planungseinheit = getPlanungseinheitFromModel(planungseinheitName);
+    assertThat(results).contains(planungseinheit);
   }
 }

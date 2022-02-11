@@ -30,15 +30,32 @@ Funktionalität: Als Benutzer moechte ich Pruefungen zu Bloecken hinzufuegen koe
   Szenario: Ich versuche eine geplante Pruefung zu einem Block hinzuzufügen
     Angenommen es existiert eine Pruefungsperiode
     Und es existiert der leere Block "block 1"
-#    Wenn ich die geplante Pruefung "Analysis" zum Block "block 1" hinzufuege
-#    Dann erhalte ich einen Fehler
+    Wenn ich die geplante Pruefung "Analysis" zum Block "block 1" hinzufuege
+    Dann erhalte ich einen Fehler
 
-#  Szenario: Ich versuche eine Pruefung aus einem Block in einen anderen Block einzuplanen
-#
+  Szenario: Ich versuche eine Pruefung aus einem Block in einen anderen Block einzuplanen
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert der Block "block 1" mit der Pruefung "Analysis"
+    Und es existiert der leere Block "block 2"
+    Wenn ich die Pruefung "Analysis" zum Block "block 2" hinzufuege
+    Dann erhalte ich einen Fehler
+
 #  Szenario: Ich versuche eine Pruefung aus einem Block in den selben Block einzuplanen
-#
-#  Szenario: Ich fuege eine Pruefung zu einem geplanten Block hinzu und beeinflusse andere Pruefungen
-#
+  Szenario: Ich versuche eine Pruefung aus einem Block in den selben Block einzuplanen
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert der Block "block 1" mit der Pruefung "Analysis"
+    Wenn ich die Pruefung "Analysis" zum Block "block 1" hinzufuege
+    Dann aendert sich nichts
+
+  Szenario: Ich fuege eine Pruefung zu einem geplanten Block hinzu und beeinflusse andere Pruefungen
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert der geplante Block "block 1" mit der Pruefung "Analysis"
+    Und die Pruefung "Rechnernetze" ist direkt nach "block 1" geplant
+    Und es existiert eine ungeplante Pruefung "Diskrete Mathematik"
+    Und "Rechnernetze" und "Diskrete Mathematik" haben einen gemeinsamen Teilnehmerkreis
+    Wenn ich die Pruefung "Diskrete Mathematik" zum Block "block 1" hinzufuege
+    Dann ist "Rechnernetze" Teil der beeinflussten Planungseinheiten
+
 #  Szenario: Ich fuege eine Pruefung zu einem geplanten Block hinzu und beeinflusse andere Pruefungen in Bloecken
 #
 #  Szenario: Ich fuege eine Pruefung zu einem geplanten Block hinzu und verletze ein hartes Kriterium

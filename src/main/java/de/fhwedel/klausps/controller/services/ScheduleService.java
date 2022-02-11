@@ -103,7 +103,7 @@ public class ScheduleService {
     Pruefung pruefung = dataAccessService.getPruefung(readOnlyPruefung);
     Block block = dataAccessService.getBlock(readOnlyBlock);
     checkExistenceOfPruefungenInBlock(readOnlyBlock);
-    if (block.getPruefungen() != null && block.getPruefungen().contains(pruefung)) {
+    if (block.getPruefungen().contains(pruefung)) {
       // todo return block and pruefung?
       return emptyList();
     }

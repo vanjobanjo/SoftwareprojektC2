@@ -17,11 +17,8 @@ import io.cucumber.java.de.Dann;
 import io.cucumber.java.de.Und;
 import io.cucumber.java.de.Wenn;
 import java.time.Duration;
-import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Set;
-import org.jetbrains.annotations.NotNull;
 import org.junit.AssumptionViolatedException;
 
 public class addPrueferSteps extends BaseSteps {
@@ -54,23 +51,6 @@ public class addPrueferSteps extends BaseSteps {
       throws NoPruefungsPeriodeDefinedException {
     ReadOnlyPruefung pruefung = getPruefungFromControllerWith(pruefungsName);
     assertThat(pruefung.getPruefer()).containsExactly(prueferName);
-  }
-
-  @NotNull
-  private ReadOnlyPruefung getPruefungFromControllerWith(String pruefungsName)
-      throws NoPruefungsPeriodeDefinedException {
-    ReadOnlyPruefung pruefung = getAllPruefungen().stream().filter(
-            (ReadOnlyPruefung readOnlyPruefung) -> readOnlyPruefung.getPruefungsnummer()
-                .equals(pruefungsName))
-        .findFirst().get();
-    return pruefung;
-  }
-
-  private Set<ReadOnlyPruefung> getAllPruefungen() throws NoPruefungsPeriodeDefinedException {
-    Set<ReadOnlyPruefung> allPruefungen = new HashSet<>();
-    allPruefungen.addAll(state.controller.getGeplantePruefungen());
-    allPruefungen.addAll(state.controller.getUngeplantePruefungen());
-    return allPruefungen;
   }
 
   @Angenommen("die Pruefung {pruefung} hat {string} als Pruefer")
@@ -146,4 +126,5 @@ public class addPrueferSteps extends BaseSteps {
     assertThrows(NoSuchElementException.class,
         () -> getPruefungFromControllerWith(pruefungsName));
   }
+
 }

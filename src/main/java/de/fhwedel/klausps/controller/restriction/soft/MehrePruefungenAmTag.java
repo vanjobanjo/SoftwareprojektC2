@@ -23,10 +23,6 @@ import java.util.Set;
 
 public class MehrePruefungenAmTag extends WeicheRestriktion {
 
-  static final int START_ZEIT = 8;
-  static final int END_ZEIT = 18;
-
-
   protected MehrePruefungenAmTag(DataAccessService dataAccessService) {
     super(dataAccessService, MEHRERE_PRUEFUNGEN_AM_TAG);
   }
@@ -169,7 +165,7 @@ public class MehrePruefungenAmTag extends WeicheRestriktion {
    * @return der gleiche Tag wie in time, aber mit der START_ZEIT
    */
   private LocalDateTime startDay(LocalDateTime time) {
-    return LocalDateTime.of(time.getYear(), time.getMonth(), time.getDayOfMonth(), START_ZEIT, 0);
+    return time.toLocalDate().atStartOfDay();
   }
 
   /**
@@ -180,7 +176,7 @@ public class MehrePruefungenAmTag extends WeicheRestriktion {
    * @return der gleiche Tag wie in time, aber mit der END_ZEIT
    */
   private LocalDateTime endDay(LocalDateTime time) {
-    return LocalDateTime.of(time.getYear(), time.getMonth(), time.getDayOfMonth(), END_ZEIT, 0);
+    return time.toLocalDate().plusDays(1).atStartOfDay();
   }
 
   @Override
