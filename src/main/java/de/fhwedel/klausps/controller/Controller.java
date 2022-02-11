@@ -454,7 +454,7 @@ public class Controller implements InterfaceController {
 
   @Override
   public List<ReadOnlyPlanungseinheit> removePruefungFromBlock(ReadOnlyBlock block,
-      ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException {
+      ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException, IllegalStateException {
     LOGGER.debug("Call to removePruefungFromBlock({}, {}).", block, pruefung);
     noNullParameters(block, pruefung);
     ensureAvailabilityOfPruefungsperiode();

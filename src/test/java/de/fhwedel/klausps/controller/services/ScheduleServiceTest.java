@@ -677,6 +677,9 @@ class ScheduleServiceTest {
         List.of(getNewHartesKriteriumAnalyse()));
     when(dataAccessService.addPruefungToBlock(roBlock, RO_ANALYSIS_UNPLANNED)).thenReturn(block);
     when(dataAccessService.getPruefung(any())).thenReturn(analysis);
+    when(dataAccessService.removePruefungFromBlock(roBlock,
+        converter.convertToReadOnlyPruefung(analysis)))
+        .thenReturn(block);
 
     assertThrows(HartesKriteriumException.class, () -> deviceUnderTest.addPruefungToBlock(roBlock,
         converter.convertToReadOnlyPruefung(analysis)));
@@ -782,6 +785,42 @@ class ScheduleServiceTest {
     deviceUnderTest.removePruefungFromBlock(block, RO_HASKELL_UNPLANNED);
     verify(dataAccessService, times(0)).removePruefungFromBlock(any(), any());
   }
+
+  @Test
+  void removePruefungFromBlock_aPruefungInROBlockDoesntExistInModel()
+      throws NoPruefungsPeriodeDefinedException {
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    ReadOnlyBlock roBlock = new BlockDTO("block", null, RO_ANALYSIS_UNPLANNED.getDauer(),
+        Set.of(RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED), 1, PARALLEL);
+    Block block = new BlockImpl(mock(Pruefungsperiode.class), 1, "name", PARALLEL);
+    block.addPruefung(haskell);
+    when(dataAccessService.getBlock(roBlock)).thenReturn(block);
+    when(dataAccessService.getPruefung(RO_HASKELL_UNPLANNED)).thenReturn(haskell);
+    when(dataAccessService.getBlockTo(haskell)).thenReturn(Optional.of(block));
+    when(dataAccessService.getPruefung(RO_ANALYSIS_UNPLANNED)).thenThrow(
+        IllegalStateException.class);
+
+    assertThrows(IllegalStateException.class, () -> deviceUnderTest.removePruefungFromBlock(roBlock,
+        RO_HASKELL_UNPLANNED));
+
+  }
+
+@Test
+  void removePruefungFromBlock_BlockDoesNotExist()
+      throws NoPruefungsPeriodeDefinedException {
+    Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
+    ReadOnlyBlock roBlock = new BlockDTO("block", null, RO_ANALYSIS_UNPLANNED.getDauer(),
+        Set.of(RO_HASKELL_UNPLANNED), 1, PARALLEL);
+    when(dataAccessService.getBlock(roBlock)).thenThrow(IllegalStateException.class);
+    when(dataAccessService.getPruefung(RO_HASKELL_UNPLANNED)).thenReturn(haskell);
+    when(dataAccessService.getBlockTo(haskell)).thenReturn(Optional.empty());
+
+
+    assertThrows(IllegalStateException.class, () -> deviceUnderTest.removePruefungFromBlock(roBlock,
+        RO_HASKELL_UNPLANNED));
+
+  }
+
 
   @Test
   void getGeplantePruefungenWithKonflikt_noNullParametersAllowed() {

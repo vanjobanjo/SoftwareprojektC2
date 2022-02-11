@@ -111,7 +111,7 @@ public class ScheduleService {
       throw new IllegalArgumentException("Planned Pruefungen can not be added to a Block.");
     }
     Optional<Block> oldBlock = dataAccessService.getBlockTo(pruefung);
-    if (oldBlock.isPresent() && (oldBlock.get().getId() != block.getId())) {
+    if (oldBlock.isPresent() && (!oldBlock.get().equals(block))) {
       throw new IllegalArgumentException(
           "Pruefungen contained in a block can not be added to another block.");
     }
@@ -153,11 +153,15 @@ public class ScheduleService {
   }
 
   public List<ReadOnlyPlanungseinheit> removePruefungFromBlock(ReadOnlyBlock block,
-      ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException {
+      ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException, IllegalStateException {
     noNullParameters(block, pruefung);
     Pruefung toRemove = dataAccessService.getPruefung(pruefung);
-    Optional<Block> toRemoveFrom = dataAccessService.getBlockTo(toRemove);
-    if (toRemoveFrom.isEmpty()) {
+    // only check if block exists
+    dataAccessService.getBlock(block);
+    checkExistenceOfPruefungenInBlock(block);
+    Optional<Block> oldBlock = dataAccessService.getBlockTo(toRemove);
+    if (oldBlock.isEmpty()) {
+      // todo muss hier etwas zurückgegeben werden?
       return emptyList();
     }
     if (!block.geplant()) {
