@@ -443,6 +443,13 @@ class DataAccessServiceTest {
   }
 
   @Test
+  void removePruefer_emptyString() {
+    when(pruefungsperiode.pruefung(anyString())).thenReturn(getRandomUnplannedPruefung(1));
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.removePruefer(RO_DM_UNPLANNED, ""));
+  }
+
+  @Test
   void unschedulePruefung_successfullyUnscheduled() throws NoPruefungsPeriodeDefinedException {
     Pruefung pruefung = getRandomPlannedPruefung(1L);
     when(pruefungsperiode.pruefung(pruefung.getPruefungsnummer())).thenReturn(pruefung);
@@ -506,6 +513,8 @@ class DataAccessServiceTest {
     when(pruefungsperiode.pruefung(analysis.getPruefungsnummer())).thenReturn(analysis);
     when(pruefungsperiode.pruefung(dm.getPruefungsnummer())).thenReturn(dm);
     when(pruefungsperiode.pruefung(haskell.getPruefungsnummer())).thenReturn(haskell);
+    when(pruefungsperiode.getStartdatum()).thenReturn(LocalDate.of(1999, 1, 1));
+    when(pruefungsperiode.getEnddatum()).thenReturn(LocalDate.of(2000, 2, 1));
 
     Block result = deviceUnderTest.scheduleBlock(blockToSchedule, termin);
 
@@ -529,6 +538,72 @@ class DataAccessServiceTest {
       when(pruefungsperiode.block(modelBlock.getId())).thenReturn(modelBlock);
     }
   }
+
+  @Test
+  void scheduleBlock_invalidTimeOneDayAfterEnd() {
+    Pruefung model_analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    when(pruefungsperiode.pruefung(model_analysis.getPruefungsnummer())).thenReturn(model_analysis);
+
+    Block block = new BlockImpl(pruefungsperiode, 1, "AnalysisAndDm", PARALLEL);
+    block.addPruefung(model_analysis);
+
+    when(pruefungsperiode.block(model_analysis)).thenReturn(block);
+    when(pruefungsperiode.block(block.getId())).thenReturn(block);
+
+    ReadOnlyBlock consistentBlock = new BlockDTO("block", null,
+        RO_ANALYSIS_UNPLANNED.getDauer(), Set.of(RO_ANALYSIS_UNPLANNED), 1, PARALLEL);
+
+    when(pruefungsperiode.getStartdatum()).thenReturn(LocalDate.of(2022, 1, 2));
+    when(pruefungsperiode.getEnddatum()).thenReturn(LocalDate.of(2022, 2, 1));
+    // Time is one day after end
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.scheduleBlock(consistentBlock, LocalDateTime.of(2022, 2,
+            2, 8, 0)));
+  }
+
+  @Test
+  void scheduleBlock_invalidDateOneDayBeforeStart() {
+    Pruefung model_analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+
+    when(pruefungsperiode.pruefung(model_analysis.getPruefungsnummer())).thenReturn(model_analysis);
+    Block blockWithAnalysisDM = new BlockImpl(pruefungsperiode, 1, "AnalysisAndDm", PARALLEL);
+    blockWithAnalysisDM.addPruefung(model_analysis);
+
+    when(pruefungsperiode.block(blockWithAnalysisDM.getId())).thenReturn(blockWithAnalysisDM);
+
+    ReadOnlyBlock readOnlyBlock = new BlockDTO("block", null, RO_ANALYSIS_UNPLANNED.getDauer(),
+        Set.of(RO_ANALYSIS_UNPLANNED), 1, PARALLEL);
+    when(pruefungsperiode.getStartdatum()).thenReturn(LocalDate.of(2022, 1, 2));
+    when(pruefungsperiode.getEnddatum()).thenReturn(LocalDate.of(2022, 2, 1));
+    // Time is one day before start
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.scheduleBlock(readOnlyBlock, LocalDateTime.of(2022, 1,
+            1, 8, 0)));
+  }
+
+
+  @Test
+  void scheduleEmptyBlock() {
+    Pruefung model_analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    when(pruefungsperiode.pruefung(RO_ANALYSIS_UNPLANNED.getPruefungsnummer())).thenReturn(
+        model_analysis);
+    when(pruefungsperiode.block(model_analysis)).thenReturn(null);
+
+    ReadOnlyBlock emptyROBlock = new BlockDTO("block", null,
+        null,
+        emptySet(), 1, PARALLEL);
+    Block block = new BlockImpl(pruefungsperiode, 1, "block", PARALLEL);
+    when(pruefungsperiode.block(emptyROBlock.getBlockId())).thenReturn(block);
+
+    // Not allowed schedule empty block
+    when(pruefungsperiode.getStartdatum()).thenReturn(LocalDate.of(2022, 1, 1));
+    when(pruefungsperiode.getEnddatum()).thenReturn(LocalDate.of(2022, 2, 1));
+
+    LocalDateTime termin = LocalDateTime.of(2022, 1, 12, 10, 0);
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.scheduleBlock(emptyROBlock, termin));
+  }
+
 
   @Test
   void unscheduleBlock_integration() throws NoPruefungsPeriodeDefinedException {
@@ -838,7 +913,7 @@ class DataAccessServiceTest {
   }
 
   @Test
-  void getPruuefungBetween_throwIllegal() {
+  void getPruefungBetween_throwIllegal() {
 
     LocalDateTime start = LocalDateTime.of(2021, 8, 11, 9, 0);
     LocalDateTime end = LocalDateTime.of(2021, 8, 11, 10, 0);
@@ -1926,5 +2001,11 @@ class DataAccessServiceTest {
 
     assertThrows(IllegalStateException.class,
         () -> deviceUnderTest.deletePruefung(pruefungToCheck));
+  }
+
+  @Test
+  void addTeilnehmerkreis_schaetzungMustNotBeNegative() {
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.addTeilnehmerkreis(getRandomPlannedPruefung(1), infBachelor, -1));
   }
 }

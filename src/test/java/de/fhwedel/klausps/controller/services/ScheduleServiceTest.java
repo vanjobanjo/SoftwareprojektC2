@@ -107,17 +107,16 @@ class ScheduleServiceTest {
   void scheduleBlockUnConsistentBlock() throws NoPruefungsPeriodeDefinedException {
     Pruefung model_analysis = TestFactory.getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     Pruefung model_dm = TestFactory.getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
-    Pruefung model_haskell = TestFactory.getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
 
     when(dataAccessService.getPruefung(RO_ANALYSIS_UNPLANNED)).thenReturn(model_analysis);
     when(dataAccessService.getPruefung(RO_DM_UNPLANNED)).thenReturn(model_dm);
-    when(dataAccessService.getPruefung(RO_HASKELL_UNPLANNED)).thenReturn(model_haskell);
+    when(dataAccessService.getPruefung(RO_HASKELL_UNPLANNED)).thenThrow(
+        IllegalStateException.class);
 
     Block blockWithAnalysisDM = getModelBlockFromROPruefungen("AnalysisAndDm", null,
         RO_ANALYSIS_UNPLANNED,
         RO_DM_UNPLANNED);
 
-    when(dataAccessService.getBlockTo(any(Pruefung.class))).thenReturn(Optional.empty());
     when(dataAccessService.getBlockTo(model_analysis)).thenReturn(Optional.of(blockWithAnalysisDM));
     when(dataAccessService.getBlockTo(model_dm)).thenReturn(Optional.of(blockWithAnalysisDM));
 
@@ -127,7 +126,7 @@ class ScheduleServiceTest {
 
     //Block doesn't exist
     LocalDateTime termin = START_PERIOD.atTime(_1000);
-    assertThrows(IllegalArgumentException.class,
+    assertThrows(IllegalStateException.class,
         () -> deviceUnderTest.scheduleBlock(inConsistentBlock, termin));
   }
 
@@ -177,109 +176,30 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void scheduleBlock_invalidTimeOneDayAfterEnd() throws NoPruefungsPeriodeDefinedException {
-    Pruefung model_analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    Pruefung model_dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
-    Pruefung model_haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
-
-    when(dataAccessService.getPruefung(RO_ANALYSIS_UNPLANNED)).thenReturn(model_analysis);
-    when(dataAccessService.getPruefung(RO_DM_UNPLANNED)).thenReturn(model_dm);
-    when(dataAccessService.getPruefung(RO_HASKELL_UNPLANNED)).thenReturn(model_haskell);
-
-    Block blockWithAnalysisDM = getModelBlockFromROPruefungen("AnalysisAndDm", null,
-        RO_ANALYSIS_UNPLANNED,
-        RO_DM_UNPLANNED);
-
-    when(dataAccessService.getBlockTo(any(Pruefung.class))).thenReturn(Optional.empty());
-    when(dataAccessService.getBlockTo(model_analysis)).thenReturn(Optional.of(blockWithAnalysisDM));
-    when(dataAccessService.getBlockTo(model_dm)).thenReturn(Optional.of(blockWithAnalysisDM));
-
-    ReadOnlyBlock consistentBlock = getROBlockFromROPruefungen("AnalysisAndDm", null,
-        RO_DM_UNPLANNED,
-        RO_ANALYSIS_UNPLANNED);
-
-    LocalDateTime endOfPeriodPlus1 = END_PERIOD.plusDays(1).atTime(_1000);
-
-    // Time is one day after of end
-    assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.scheduleBlock(consistentBlock, endOfPeriodPlus1));
-  }
-
-  @Test
-  void scheduleBlock_invalidDateOneDayBeforeStart() throws NoPruefungsPeriodeDefinedException {
-    Pruefung model_analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    Pruefung model_dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
-    Pruefung model_haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
-
-    when(dataAccessService.getPruefung(RO_ANALYSIS_UNPLANNED)).thenReturn(model_analysis);
-    when(dataAccessService.getPruefung(RO_DM_UNPLANNED)).thenReturn(model_dm);
-    when(dataAccessService.getPruefung(RO_HASKELL_UNPLANNED)).thenReturn(model_haskell);
-
-    Block blockWithAnalysisDM = getModelBlockFromROPruefungen("AnalysisAndDm", null,
-        RO_ANALYSIS_UNPLANNED,
-        RO_DM_UNPLANNED);
-
-    when(dataAccessService.getBlockTo(any(Pruefung.class))).thenReturn(Optional.empty());
-    when(dataAccessService.getBlockTo(model_analysis)).thenReturn(Optional.of(blockWithAnalysisDM));
-    when(dataAccessService.getBlockTo(model_dm)).thenReturn(Optional.of(blockWithAnalysisDM));
-
-    ReadOnlyBlock consistentBlock = getROBlockFromROPruefungen("AnalysisAndDm", null,
-        RO_DM_UNPLANNED,
-        RO_ANALYSIS_UNPLANNED);
-
-    LocalDateTime endOfPeriodPlus1 = START_PERIOD.minusDays(1).atTime(_1000);
-    // Time is one day before start
-    assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.scheduleBlock(consistentBlock, endOfPeriodPlus1));
-  }
-
-  @Test
   void scheduledBlockExamInBlockIsNotInPeriod() throws NoPruefungsPeriodeDefinedException {
     Pruefung model_analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    Pruefung model_dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
 
-    when(dataAccessService.getPruefung(RO_ANALYSIS_UNPLANNED)).thenReturn(model_analysis);
-    when(dataAccessService.getPruefung(RO_DM_UNPLANNED)).thenReturn(model_dm);
-    // Haskell is not in period
+    when(dataAccessService.getPruefung(RO_ANALYSIS_UNPLANNED)).thenThrow(
+        IllegalStateException.class);
+    Pruefungsperiode pruefungsperiode = mock(Pruefungsperiode.class);
+    dataAccessService = new DataAccessService(pruefungsperiode);
+    deviceUnderTest = new ScheduleService(dataAccessService, restrictionService, converter);
+    Block block = new BlockImpl(mock(Pruefungsperiode.class), 1, "AnalysisAndDm", PARALLEL);
+    block.addPruefung(model_analysis);
+    ReadOnlyBlock readOnlyBlock = new BlockDTO("block", null, Duration.ZERO,
+        Set.of(RO_ANALYSIS_UNPLANNED), 1, PARALLEL);
+    when(pruefungsperiode.block(readOnlyBlock.getBlockId())).thenReturn(block);
+    ReadOnlyBlock inConsistentBlock = new BlockDTO("block", null,
+        RO_ANALYSIS_UNPLANNED.getDauer(), Set.of(RO_ANALYSIS_UNPLANNED), 1, PARALLEL);
 
-    // in the data model analysis and dm are in a block. haskell is not part of the block
-    Block blockWithAnalysisDM = getModelBlockFromROPruefungen("AnalysisAndDm", null,
-        RO_ANALYSIS_UNPLANNED,
-        RO_DM_UNPLANNED);
+    when(pruefungsperiode.getStartdatum()).thenReturn(LocalDate.of(2022, 1, 1));
+    when(pruefungsperiode.getStartdatum()).thenReturn(LocalDate.of(2022, 2, 1));
 
-    when(dataAccessService.getBlockTo(any(Pruefung.class))).thenReturn(Optional.empty());
-    when(dataAccessService.getBlockTo(model_analysis)).thenReturn(Optional.of(blockWithAnalysisDM));
-    when(dataAccessService.getBlockTo(model_dm)).thenReturn(Optional.of(blockWithAnalysisDM));
-
-    ReadOnlyBlock inConsistentBlock = getROBlockFromROPruefungen("AnalysisAndDm", null,
-        RO_DM_UNPLANNED,
-        RO_ANALYSIS_UNPLANNED, RO_HASKELL_UNPLANNED);
-
-    //Exam 3 Haskell doesn't exist
-    LocalDateTime termin = START_PERIOD.atTime(_1000);
-    assertThrows(IllegalArgumentException.class,
+    LocalDateTime termin = LocalDateTime.of(2022, 1, 12, 10, 0);
+    assertThrows(IllegalStateException.class,
         () -> deviceUnderTest.scheduleBlock(inConsistentBlock, termin));
   }
 
-  @Test
-  void scheduleEmptyBlock() throws NoPruefungsPeriodeDefinedException {
-    Pruefung model_analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    Pruefung model_dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
-
-    //when(dataAccessService.getPruefung(any(ReadOnlyPruefung.class))).thenReturn(Optional.empty());
-    when(dataAccessService.getPruefung(RO_ANALYSIS_UNPLANNED)).thenReturn(
-        model_analysis);
-    when(dataAccessService.getPruefung(RO_DM_UNPLANNED)).thenReturn(model_dm);
-    // Haskell is not in period
-    when(dataAccessService.getBlockTo(any(Pruefung.class))).thenReturn(Optional.empty());
-
-    ReadOnlyBlock emptyROBlock = getROBlockFromROPruefungen("Empty", null);
-
-    // Not allowed schedule empty block
-    LocalDateTime termin = START_PERIOD.atTime(_1000);
-    assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.scheduleBlock(emptyROBlock, termin));
-  }
 
   @Test
   void unscheduleBlock() throws NoPruefungsPeriodeDefinedException {
@@ -291,10 +211,8 @@ class ScheduleServiceTest {
     model_analysis.setStartzeitpunkt(now);
     model_dm.setStartzeitpunkt(now);
 
-    //when(dataAccessService.getPruefung(any(ReadOnlyPruefung.class))).thenReturn(Optional.empty());
     when(dataAccessService.getPruefung(RO_ANALYSIS_UNPLANNED)).thenReturn(model_analysis);
     when(dataAccessService.getPruefung(RO_DM_UNPLANNED)).thenReturn(model_dm);
-    // Haskell is not in period
 
     ReadOnlyPruefung ro_analysis = new PruefungDTOBuilder(RO_ANALYSIS_UNPLANNED).withStartZeitpunkt(
             now)
@@ -354,6 +272,18 @@ class ScheduleServiceTest {
     when(dataAccessService.getPruefung(any())).thenThrow(NoPruefungsPeriodeDefinedException.class);
 
     assertThrows(NoPruefungsPeriodeDefinedException.class,
+        () -> deviceUnderTest.removeTeilnehmerKreis(pruefung, informatik));
+  }
+
+  @Test
+  void removeTeilnehmerkreis_pruefungDoesNotExist() throws NoPruefungsPeriodeDefinedException {
+    Teilnehmerkreis informatik = mock(Teilnehmerkreis.class);
+    ReadOnlyPruefung pruefung = converter.convertToReadOnlyPruefung(
+        getRandomPruefungWith(1L, informatik));
+
+    when(dataAccessService.getPruefung(any())).thenThrow(IllegalStateException.class);
+
+    assertThrows(IllegalStateException.class,
         () -> deviceUnderTest.removeTeilnehmerKreis(pruefung, informatik));
   }
 
@@ -449,6 +379,16 @@ class ScheduleServiceTest {
         () -> deviceUnderTest.setTeilnehmerkreisSchaetzung(getRandomUnplannedROPruefung(1L),
             mock(Teilnehmerkreis.class), 42));
   }
+
+  @Test
+  void setTeilnehmerkreisSchaetzung_PruefungDoesNotExist()
+      throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getPruefung(any())).thenThrow(IllegalStateException.class);
+    assertThrows(IllegalStateException.class,
+        () -> deviceUnderTest.setTeilnehmerkreisSchaetzung(getRandomUnplannedROPruefung(1L),
+            mock(Teilnehmerkreis.class), 42));
+  }
+
 
   @Test
   void setTeilnehmerkreisSchaetzung_not_planned() throws NoPruefungsPeriodeDefinedException {
@@ -597,24 +537,36 @@ class ScheduleServiceTest {
   }
 
   @Test
-  void addPruefungToBlock_plannedPruefungenMayNotBeAddedToBlocks() {
-    ReadOnlyPruefung pruefung = getRandomPlannedROPruefung(1L);
+  void addPruefungToBlock_plannedPruefungenMayNotBeAddedToBlocks()
+      throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung readOnlyPruefung = new PruefungDTOBuilder().withPruefungsNummer(
+            RO_DM_UNPLANNED.getPruefungsnummer())
+        .withStartZeitpunkt(LocalDateTime.of(2022, 2, 10, 10, 0))
+        .build();
+    Pruefung pruefung = getPruefungOfReadOnlyPruefung(readOnlyPruefung);
+    when(dataAccessService.getPruefung(readOnlyPruefung)).thenReturn(pruefung);
     ReadOnlyBlock emptyBlock = getEmptyROBlock();
+    when(dataAccessService.getBlock(emptyBlock)).thenReturn(
+        new BlockImpl(mock(Pruefungsperiode.class), 1, "block", PARALLEL));
     assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.addPruefungToBlock(emptyBlock, pruefung));
+        () -> deviceUnderTest.addPruefungToBlock(emptyBlock, readOnlyPruefung));
   }
 
   @Test
   void addPruefungToBlock_pruefungIsPartOfOtherBlock() throws NoPruefungsPeriodeDefinedException {
-    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
+    ReadOnlyPruefung roPruefung = getRandomUnplannedROPruefung(1L);
     Block otherBlock = getUnplannedBlockWith1RandomPruefung();
-
-    when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(
+    Pruefung pruefung = getPruefungOfReadOnlyPruefung(roPruefung);
+    when(dataAccessService.getBlockTo(pruefung)).thenReturn(
         Optional.of(otherBlock));
-
+    when(dataAccessService.getPruefung(roPruefung)).thenReturn(pruefung);
     ReadOnlyBlock emptyBlock = getEmptyROBlock();
+    when(dataAccessService.getBlock(emptyBlock)).thenReturn(
+        new BlockImpl(mock(Pruefungsperiode.class), 1, "name", PARALLEL));
+    when(dataAccessService.getBlock(emptyBlock)).thenReturn(
+        new BlockImpl(mock(Pruefungsperiode.class), 1, "test", PARALLEL));
     assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.addPruefungToBlock(emptyBlock, pruefung));
+        () -> deviceUnderTest.addPruefungToBlock(emptyBlock, roPruefung));
   }
 
   private Block getUnplannedBlockWith1RandomPruefung() {
@@ -623,16 +575,17 @@ class ScheduleServiceTest {
 
   @Test
   void addPruefungToBlock_pruefungIsAlreadyInSameBlock()
-      throws NoPruefungsPeriodeDefinedException {
-    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
-    ReadOnlyBlock block = getPlannedBlockWith(pruefung);
-    Block modelBlock = mock(Block.class);
-    when(modelBlock.getId()).thenReturn(block.getBlockId());
-
-    when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(
-        Optional.of(modelBlock));
-
-    assertDoesNotThrow(() -> deviceUnderTest.addPruefungToBlock(block, pruefung));
+      throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
+    ReadOnlyPruefung roPruefung = getRandomUnplannedROPruefung(1L);
+    Block block = getUnplannedBlockWith1RandomPruefung();
+    ReadOnlyBlock readOnlyBlock = new BlockDTO("block", null, roPruefung.getDauer(),
+        Set.of(roPruefung), 1, PARALLEL);
+    Pruefung pruefung = getPruefungOfReadOnlyPruefung(roPruefung);
+    block.addPruefung(pruefung);
+    when(dataAccessService.getBlockTo(pruefung)).thenReturn(Optional.of(block));
+    when(dataAccessService.getPruefung(roPruefung)).thenReturn(pruefung);
+    when(dataAccessService.getBlock(readOnlyBlock)).thenReturn(block);
+    assertThat(deviceUnderTest.addPruefungToBlock(readOnlyBlock, roPruefung)).isEmpty();
   }
 
   private ReadOnlyBlock getPlannedBlockWith(ReadOnlyPruefung pruefung) {
@@ -643,15 +596,16 @@ class ScheduleServiceTest {
   @Test
   void addPruefungToBlock_pruefungIsAlreadyInSameBlock_empty_result()
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
-    ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
-    ReadOnlyBlock block = getPlannedBlockWith(pruefung);
-    Block modelBlock = mock(Block.class);
-    when(modelBlock.getId()).thenReturn(block.getBlockId());
+    Pruefung pruefung = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    ReadOnlyBlock block = getPlannedBlockWith(RO_ANALYSIS_UNPLANNED);
+    Block modelBlock = new BlockImpl(mock(Pruefungsperiode.class), 1, "block", PARALLEL);
+    modelBlock.addPruefung(pruefung);
 
-    when(dataAccessService.getBlockTo(any(ReadOnlyPruefung.class))).thenReturn(
-        Optional.of(modelBlock));
+    when(dataAccessService.getBlock(block)).thenReturn(modelBlock);
+    when(dataAccessService.getPruefung(RO_ANALYSIS_UNPLANNED)).thenReturn(
+        pruefung);
 
-    assertThat(deviceUnderTest.addPruefungToBlock(block, pruefung)).isEmpty();
+    assertThat(deviceUnderTest.addPruefungToBlock(block, RO_ANALYSIS_UNPLANNED)).isEmpty();
   }
 
   @Test
@@ -661,8 +615,9 @@ class ScheduleServiceTest {
     ReadOnlyBlock block = getUnplannedBlockWith();
     Block modelBlock = new BlockImpl(mock(Pruefungsperiode.class), block.getBlockId(),
         block.getName(), block.getTyp());
-
+    when(dataAccessService.getBlock(block)).thenReturn(modelBlock);
     when(dataAccessService.getBlockTo(pruefung)).thenReturn(Optional.of(modelBlock));
+    when(dataAccessService.getBlock(block)).thenReturn(modelBlock);
     when(dataAccessService.getBlockTo(argThat(new IsNotMatcher<>(pruefung)))).thenReturn(
         Optional.empty());
     when(dataAccessService.addPruefungToBlock(any(), any())).thenReturn(modelBlock);
@@ -681,6 +636,8 @@ class ScheduleServiceTest {
     when(modelBlock.isGeplant()).thenReturn(true);
 
     when(dataAccessService.getBlockTo(pruefung)).thenReturn(Optional.of(modelBlock));
+    when(dataAccessService.getBlock(block)).thenReturn(
+        modelBlock);
     when(dataAccessService.getBlockTo(argThat(new IsNotMatcher<>(pruefung)))).thenReturn(
         Optional.empty());
     when(dataAccessService.addPruefungToBlock(any(), any())).thenReturn(modelBlock);
@@ -715,6 +672,7 @@ class ScheduleServiceTest {
     ReadOnlyBlock roBlock = converter.convertToROBlock(block);
 
     when(dataAccessService.getBlockTo(haskell)).thenReturn(Optional.of(block));
+    when(dataAccessService.getBlock(roBlock)).thenReturn(block);
     when(restrictionService.checkHarteKriterien(any())).thenReturn(
         List.of(getNewHartesKriteriumAnalyse()));
     when(dataAccessService.addPruefungToBlock(roBlock, RO_ANALYSIS_UNPLANNED)).thenReturn(block);
@@ -764,6 +722,7 @@ class ScheduleServiceTest {
 
     when(dataAccessService.getBlockTo(haskell)).thenReturn(Optional.of(block));
     when(dataAccessService.getBlockTo(analysis)).thenReturn(Optional.of(block));
+    when(dataAccessService.getBlock(roBlock)).thenReturn(block);
     when(restrictionService.checkHarteKriterien(any())).thenReturn(
         List.of(getNewHartesKriteriumAnalyse()));
     when(dataAccessService.addPruefungToBlock(roBlock, RO_ANALYSIS_UNPLANNED)).thenReturn(block);
@@ -1125,6 +1084,31 @@ class ScheduleServiceTest {
   }
 
   @Test
+  void makeBlockSequential_pruefungInBlockDoesNotExist() throws NoPruefungsPeriodeDefinedException {
+    Block modelBlock = new BlockImpl(mock(Pruefungsperiode.class), 1, "name", PARALLEL);
+    when(dataAccessService.getBlock(any())).thenReturn(modelBlock);
+    modelBlock.addPruefung(getRandomUnplannedPruefung(1));
+    when(dataAccessService.getPruefung(any())).thenThrow(IllegalStateException.class);
+    ReadOnlyBlock block = new BlockDTO("name", null, RO_DM_UNPLANNED.getDauer(),
+        Set.of(RO_DM_UNPLANNED), 1, PARALLEL);
+    assertThrows(IllegalStateException.class,
+        () -> deviceUnderTest.setBlockType(block, SEQUENTIAL));
+  }
+
+  @Test
+  void makeBlockParallel_pruefungInBlockDoesNotExist() throws NoPruefungsPeriodeDefinedException {
+    Block modelBlock = new BlockImpl(mock(Pruefungsperiode.class), 1, "name", SEQUENTIAL);
+    when(dataAccessService.getBlock(any())).thenReturn(modelBlock);
+    modelBlock.addPruefung(getRandomUnplannedPruefung(1));
+    when(dataAccessService.getPruefung(any())).thenThrow(IllegalStateException.class);
+    ReadOnlyBlock block = new BlockDTO("name", null, RO_DM_UNPLANNED.getDauer(),
+        Set.of(RO_DM_UNPLANNED), 1, SEQUENTIAL);
+    assertThrows(IllegalStateException.class,
+        () -> deviceUnderTest.setBlockType(block, PARALLEL));
+  }
+
+
+  @Test
   void makeBlockSequential_hard_restriction_failures() throws NoPruefungsPeriodeDefinedException {
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
@@ -1397,7 +1381,7 @@ class ScheduleServiceTest {
 
   @Test
   void bulkTest_createNewPeriodeWithData()
-      throws ImportException, IOException, NoPruefungsPeriodeDefinedException {
+      throws ImportException, IOException {
     int errorCount = 0;
     for (int i = 0; i < 100; i++) {
       try {
@@ -1412,7 +1396,7 @@ class ScheduleServiceTest {
 
   @Test
   void createNewPeriodeWithDataTest_more_than_two_at_same_time()
-      throws ImportException, IOException, NoPruefungsPeriodeDefinedException {
+      throws ImportException, IOException {
 
     IOService ioService = mock(IOService.class);
     Semester semester = new SemesterImpl(WINTERSEMESTER, Year.of(2022));
@@ -1627,7 +1611,6 @@ class ScheduleServiceTest {
     assertThrows(IllegalArgumentException.class,
         () -> deviceUnderTest.setDatumPeriode(start, end));
   }
-
 
 
 }

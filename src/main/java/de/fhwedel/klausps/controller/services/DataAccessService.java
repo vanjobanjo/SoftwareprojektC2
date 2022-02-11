@@ -126,7 +126,7 @@ public class DataAccessService {
   public Pruefung schedulePruefung(ReadOnlyPruefung pruefung, LocalDateTime startTermin)
       throws IllegalArgumentException, NoPruefungsPeriodeDefinedException, IllegalStateException {
     Pruefung pruefungFromModel = getPruefung(pruefung);
-    ensurePruefungIsInPeriode(startTermin, pruefung.getDauer());
+    ensurePlanungseinheitIsInPeriode(startTermin, pruefung.getDauer());
     if (pruefungsperiode.block(pruefungFromModel) != null) {
       throw new IllegalArgumentException("Prüfung befindet sich innerhalb eines Blockes");
     } else {
@@ -137,7 +137,7 @@ public class DataAccessService {
     }
   }
 
-  private void ensurePruefungIsInPeriode(LocalDateTime startTermin, Duration duration) {
+  private void ensurePlanungseinheitIsInPeriode(LocalDateTime startTermin, Duration duration) {
     if (startTermin.isBefore(pruefungsperiode.getStartdatum().atStartOfDay())) {
       throw new IllegalArgumentException(
           "Prüfungstermin muss nach dem Start der Prüfungsperiode liegen");
@@ -173,6 +173,10 @@ public class DataAccessService {
   Block scheduleBlock(ReadOnlyBlock block, LocalDateTime termin)
       throws NoPruefungsPeriodeDefinedException {
     Block blockFromModel = getBlock(block);
+    if (blockFromModel.getPruefungen().isEmpty()) {
+      throw new IllegalArgumentException("Leere Blöcke dürfen nicht geplant werden.");
+    }
+    ensurePlanungseinheitIsInPeriode(termin, block.getDauer());
     LOGGER.debug("Scheduled {} from {} to {}.", blockFromModel, blockFromModel.getStartzeitpunkt(),
         termin);
     blockFromModel.setStartzeitpunkt(termin);
@@ -329,8 +333,9 @@ public class DataAccessService {
   }
 
   public Planungseinheit removePruefer(ReadOnlyPruefung pruefung, String pruefer)
-      throws NoPruefungsPeriodeDefinedException, IllegalStateException {
+      throws NoPruefungsPeriodeDefinedException, IllegalStateException, IllegalArgumentException {
     Pruefung modelPruefung = getPruefung(pruefung);
+    noEmptyStrings(pruefer);
     LOGGER.debug("Removing Pruefer {} from {} in Model.", pruefer, modelPruefung);
     modelPruefung.removePruefer(pruefer);
     return modelPruefung;
@@ -413,13 +418,17 @@ public class DataAccessService {
   }
 
   public List<Pruefung> deleteBlock(ReadOnlyBlock block)
-      throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
-    Block model = getBlock(block);
-    if (block.geplant()) {
-      throw new IllegalArgumentException("Nur für ungeplante Blöcke möglich!");
-    }
+      throws NoPruefungsPeriodeDefinedException, IllegalArgumentException, IllegalStateException {
     noNullParameters(block);
     checkForPruefungsperiode();
+    Block model = getBlock(block);
+    if (model.isGeplant()) {
+      throw new IllegalArgumentException("Nur für ungeplante Blöcke möglich!");
+    }
+    // check if Pruefungen in Block exist
+    for (ReadOnlyPruefung pruefung : block.getROPruefungen()) {
+      getPruefung(pruefung);
+    }
     Set<Pruefung> modelPruefungen = model.getPruefungen();
     LOGGER.debug("Deleting {} in Model.", model);
     pruefungsperiode.removePlanungseinheit(model);
@@ -562,7 +571,10 @@ public class DataAccessService {
   }
 
   public boolean addTeilnehmerkreis(Pruefung pruefung, Teilnehmerkreis teilnehmerkreis,
-      int schaetzung) {
+      int schaetzung) throws IllegalArgumentException {
+    if (schaetzung < 0) {
+      throw new IllegalArgumentException("Schätzwert darf nicht negativ sein.");
+    }
     LOGGER.debug("Adding {} with {} Students to {} in Model.", teilnehmerkreis, schaetzung,
         pruefung);
     return pruefung.addTeilnehmerkreis(teilnehmerkreis, schaetzung);

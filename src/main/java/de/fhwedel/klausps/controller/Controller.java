@@ -355,7 +355,7 @@ public class Controller implements InterfaceController {
 
   @Override
   public ReadOnlyPlanungseinheit removePruefer(ReadOnlyPruefung pruefung, String kuerzel)
-      throws NoPruefungsPeriodeDefinedException {
+      throws NoPruefungsPeriodeDefinedException, IllegalStateException, IllegalArgumentException {
     LOGGER.debug("Call to removePruefer({}, {}).", pruefung, kuerzel);
     noNullParameters(pruefung, kuerzel);
     ensureAvailabilityOfPruefungsperiode();
@@ -366,7 +366,8 @@ public class Controller implements InterfaceController {
   @Override
   public List<ReadOnlyPlanungseinheit> addTeilnehmerkreis(ReadOnlyPruefung pruefung,
       Teilnehmerkreis teilnehmerkreis, Integer schaetzung)
-      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
+      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException, IllegalStateException,
+      IllegalArgumentException {
     LOGGER.debug("Call to addTeilnehmerkreis({}, {}, {}).", pruefung, teilnehmerkreis, schaetzung);
     noNullParameters(pruefung, teilnehmerkreis, schaetzung);
     ensureAvailabilityOfPruefungsperiode();
@@ -376,7 +377,8 @@ public class Controller implements InterfaceController {
 
   @Override
   public List<ReadOnlyPlanungseinheit> removeTeilnehmerkreis(ReadOnlyPruefung pruefung,
-      Teilnehmerkreis teilnehmerkreis) throws NoPruefungsPeriodeDefinedException {
+      Teilnehmerkreis teilnehmerkreis)
+      throws NoPruefungsPeriodeDefinedException, IllegalStateException {
     LOGGER.debug("Call to removeTeilnehmerkreis({}, {}).", pruefung, teilnehmerkreis);
     noNullParameters(pruefung, teilnehmerkreis);
     ensureAvailabilityOfPruefungsperiode();
@@ -395,7 +397,7 @@ public class Controller implements InterfaceController {
 
   @Override
   public List<ReadOnlyPlanungseinheit> makeBlockSequential(ReadOnlyBlock block)
-      throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
+      throws NoPruefungsPeriodeDefinedException, HartesKriteriumException, IllegalStateException {
     LOGGER.debug("Call to makeBlockSequential({}).", block);
     noNullParameters(block);
     ensureAvailabilityOfPruefungsperiode();
@@ -404,7 +406,7 @@ public class Controller implements InterfaceController {
 
   @Override
   public List<ReadOnlyPlanungseinheit> makeBlockParallel(ReadOnlyBlock block)
-      throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
+      throws NoPruefungsPeriodeDefinedException, HartesKriteriumException, IllegalStateException {
     LOGGER.debug("Call to makeBlockParallel({}).", block);
     noNullParameters(block);
     ensureAvailabilityOfPruefungsperiode();
@@ -413,7 +415,8 @@ public class Controller implements InterfaceController {
 
   @Override
   public List<ReadOnlyPlanungseinheit> scheduleBlock(ReadOnlyBlock block, LocalDateTime start)
-      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
+      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException, IllegalStateException,
+      IllegalArgumentException {
     LOGGER.debug("Call to scheduleBlock({}, {}).", block, start);
     noNullParameters(block, start);
     ensureAvailabilityOfPruefungsperiode();
@@ -422,7 +425,7 @@ public class Controller implements InterfaceController {
 
   @Override
   public List<ReadOnlyPruefung> deleteBlock(ReadOnlyBlock block)
-      throws NoPruefungsPeriodeDefinedException {
+      throws NoPruefungsPeriodeDefinedException, IllegalStateException, IllegalArgumentException {
     LOGGER.debug("Call to deleteBlock({}).", block);
     noNullParameters(block);
     ensureAvailabilityOfPruefungsperiode();
@@ -431,7 +434,7 @@ public class Controller implements InterfaceController {
 
   @Override
   public List<ReadOnlyPlanungseinheit> unscheduleBlock(ReadOnlyBlock block)
-      throws NoPruefungsPeriodeDefinedException {
+      throws NoPruefungsPeriodeDefinedException, IllegalStateException {
     LOGGER.debug("Call to unscheduleBlock({}).", block);
     noNullParameters(block);
     ensureAvailabilityOfPruefungsperiode();
@@ -441,7 +444,8 @@ public class Controller implements InterfaceController {
   @Override
   public List<ReadOnlyPlanungseinheit> addPruefungToBlock(ReadOnlyBlock block,
       ReadOnlyPruefung pruefung)
-      throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
+      throws NoPruefungsPeriodeDefinedException, HartesKriteriumException, IllegalStateException,
+      IllegalArgumentException {
     LOGGER.debug("Call to addPruefungToBlock({}, {}).", block, pruefung);
     noNullParameters(block, pruefung);
     ensureAvailabilityOfPruefungsperiode();
