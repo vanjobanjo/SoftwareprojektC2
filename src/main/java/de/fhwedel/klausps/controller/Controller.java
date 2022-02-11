@@ -488,7 +488,8 @@ public class Controller implements InterfaceController {
 
   @Override
   public void createEmptyPeriode(Semester semester, LocalDate start, LocalDate end,
-      LocalDate ankertag, int kapazitaet) throws IllegalTimeSpanException, IllegalArgumentException {
+      LocalDate ankertag, int kapazitaet)
+      throws IllegalTimeSpanException, IllegalArgumentException {
     LOGGER.debug("Call to createEmptyPeriode({}, {}, {}, {}, {}).", semester, start, end, ankertag,
         kapazitaet);
     noNullParameters(semester, start, end, kapazitaet);
@@ -510,11 +511,14 @@ public class Controller implements InterfaceController {
 
   @Override
   public Teilnehmerkreis createTeilnehmerkreis(Ausbildungsgrad grad, String studiengang,
-      String ordnung, int semester) {
+      String ordnung, int semester) throws IllegalArgumentException {
     LOGGER.debug("Call to createTeilnehmerkreis({}, {}, {}, {}).", grad, studiengang, ordnung,
         semester);
     noNullParameters(grad, studiengang, ordnung);
     noEmptyStrings(studiengang, ordnung);
+    if (semester <= 0) {
+      throw new IllegalArgumentException("Semester darf nicht 0 oder negativ sein.");
+    }
     return new TeilnehmerkreisImpl(studiengang, ordnung, semester, grad);
   }
 

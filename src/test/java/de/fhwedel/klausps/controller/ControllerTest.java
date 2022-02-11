@@ -10,6 +10,7 @@ import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedROP
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
@@ -122,15 +123,39 @@ class ControllerTest {
   }
 
   @Test
-  void createTeilnehmerkreis_unsuccessful() {
+  void createTeilnehmerkreis_ausbildungsgradMustNotBeNull() {
     assertThrows(NullPointerException.class,
         () -> deviceUnderTest.createTeilnehmerkreis(null, "Informatik", "b", 1));
+  }
+
+  @Test
+  void createTeilnehmerkreis_studiengangMustNotBeNull() {
     assertThrows(NullPointerException.class,
         () -> deviceUnderTest.createTeilnehmerkreis(Ausbildungsgrad.BACHELOR, null, "b", 1));
+  }
+
+  @Test
+  void createTeilnehmerkreis_studienordnungMustNotBeNull() {
     assertThrows(NullPointerException.class,
         () -> deviceUnderTest.createTeilnehmerkreis(Ausbildungsgrad.BACHELOR, "BWL", null, 1));
+  }
+
+  @Test
+  void createTeilnehmerkreis_noParameterMayBeNull() {
     assertThrows(NullPointerException.class,
         () -> deviceUnderTest.createTeilnehmerkreis(null, null, null, 1));
+  }
+
+  @Test
+  void createTeilnehmerkreis_semesterMustBeNonNegative() {
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.createTeilnehmerkreis(Ausbildungsgrad.BACHELOR, "BWL", "b", -1));
+  }
+
+  @Test
+  void createTeilnehmerkreis_semesterMustBeNonZero() {
+    assertThrows(IllegalArgumentException.class,
+        () -> deviceUnderTest.createTeilnehmerkreis(Ausbildungsgrad.BACHELOR, "BWL", "b", 0));
   }
 
   @Test
@@ -671,10 +696,12 @@ class ControllerTest {
   }
 
   @Test
-  void test_createEmptyPeriode() throws IllegalTimeSpanException {
+  void test_createEmptyPeriode() {
     Controller c = new Controller();
-    c.createEmptyPeriode(new SemesterImpl(Semestertyp.WINTERSEMESTER, Year.now()), LocalDate.now(),
-        LocalDate.now().plusDays(30), LocalDate.now().plusDays(1), 30);
+    assertDoesNotThrow(
+        () -> c.createEmptyPeriode(new SemesterImpl(Semestertyp.WINTERSEMESTER, Year.now()),
+            LocalDate.now(),
+            LocalDate.now().plusDays(30), LocalDate.now().plusDays(1), 30));
   }
 
   @Test

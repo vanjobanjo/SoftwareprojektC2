@@ -141,12 +141,13 @@ public class IOService {
    *   <li>Ankertag must be before end </li>
    *   <li>Kapazitaet must be larger than zero </li>
    * </ul>
-   * @param start the start date of the {@link Pruefungsperiode}
-   * @param end the end date of the Pruefungsperiode
-   * @param ankertag the ankertag of the Pruefungsperiode
+   *
+   * @param start      the start date of the {@link Pruefungsperiode}
+   * @param end        the end date of the Pruefungsperiode
+   * @param ankertag   the ankertag of the Pruefungsperiode
    * @param kapazitaet the Kapazitaet of the Pruefungsperiode
    * @throws IllegalTimeSpanException if start is before end or ankertag is outside of start and end
-   * date of the Pruefungsperiode
+   *                                  date of the Pruefungsperiode
    * @throws IllegalArgumentException When the kapazitaet is less than one
    */
   private void checkDatesAndCapacity(LocalDate start, LocalDate end, LocalDate ankertag,
