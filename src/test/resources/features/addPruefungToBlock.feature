@@ -40,7 +40,6 @@ Funktionalität: Als Benutzer moechte ich Pruefungen zu Bloecken hinzufuegen koe
     Wenn ich die Pruefung "Analysis" zum Block "block 2" hinzufuege
     Dann erhalte ich einen Fehler
 
-#  Szenario: Ich versuche eine Pruefung aus einem Block in den selben Block einzuplanen
   Szenario: Ich versuche eine Pruefung aus einem Block in den selben Block einzuplanen
     Angenommen es existiert eine Pruefungsperiode
     Und es existiert der Block "block 1" mit der Pruefung "Analysis"
@@ -56,6 +55,13 @@ Funktionalität: Als Benutzer moechte ich Pruefungen zu Bloecken hinzufuegen koe
     Wenn ich die Pruefung "Diskrete Mathematik" zum Block "block 1" hinzufuege
     Dann ist "Rechnernetze" Teil der beeinflussten Planungseinheiten
 
-#  Szenario: Ich fuege eine Pruefung zu einem geplanten Block hinzu und beeinflusse andere Pruefungen in Bloecken
-#
+  Szenario: Ich fuege eine Pruefung zu einem geplanten Block hinzu und beeinflusse andere Pruefungen in Bloecken
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert der geplante Block "block 1" mit der Pruefung "Analysis"
+    Und es existiert der geplante Block "block 2" mit der Pruefung "Lineare Algebra" direkt nach "block 1"
+    Und es existiert eine ungeplante Pruefung "Diskrete Mathematik"
+    Und "Lineare Algebra" und "Diskrete Mathematik" haben einen gemeinsamen Teilnehmerkreis
+    Wenn ich die Pruefung "Diskrete Mathematik" zum Block "block 1" hinzufuege
+    Dann ist "block 2" Teil der beeinflussten Planungseinheiten
+
 #  Szenario: Ich fuege eine Pruefung zu einem geplanten Block hinzu und verletze ein hartes Kriterium

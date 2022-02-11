@@ -29,18 +29,12 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
-import org.junit.AssumptionViolatedException;
 
 public class addPruefungToBlock extends BaseSteps {
 
   @Angenommen("es existiert der leere Block {string}")
   public void esExistiertDerLeereBlock(String block) throws NoPruefungsPeriodeDefinedException {
     state.controller.createBlock(block, Blocktyp.PARALLEL);
-  }
-
-  @Dann("erhalte ich einen Block der die Pruefung {string} enthaelt")
-  public void erhalteIchEinenBlockDerDiePruefungEnthaelt(String Pruefung) {
-//    state
   }
 
   @Angenommen("es existiert der Block {string} mit der Pruefung {string}")
@@ -66,10 +60,19 @@ public class addPruefungToBlock extends BaseSteps {
         roPruefung -> pruefungen.contains(roPruefung.getName()));
   }
 
-  @Angenommen("es gibt am selben Tag einen geplanten Block {string} und die geplante Pruefung {string}")
-  public void esGibtAmSelbenTagEinenGeplantenBlockUndDieGeplantePruefung(String block,
-      String klausur) {
-    throw new AssumptionViolatedException("not implemented");
+  private List<ReadOnlyPlanungseinheit> toPlanungseinheiten(Object obj) {
+    List<ReadOnlyPlanungseinheit> result = new ArrayList<>();
+    List<Object> input = (List<Object>) obj;
+    for (Object planungseinheit : input) {
+      if (planungseinheit instanceof BlockDTO) {
+        result.add((BlockDTO) planungseinheit);
+      } else if (planungseinheit instanceof PruefungDTO) {
+        result.add((PruefungDTO) planungseinheit);
+      } else {
+        throw new IllegalStateException();
+      }
+    }
+    return result;
   }
 
   @Wenn("ich die Pruefung {string} zum Block {string} hinzufuege")
@@ -86,6 +89,13 @@ public class addPruefungToBlock extends BaseSteps {
     }
   }
 
+  private ReadOnlyBlock getBlockFromModel(String name) throws NoPruefungsPeriodeDefinedException {
+    Set<ReadOnlyBlock> bloecke = new HashSet<>();
+    bloecke.addAll(state.controller.getGeplanteBloecke());
+    bloecke.addAll(state.controller.getUngeplanteBloecke());
+    return bloecke.stream().filter(block -> block.getName().equals(name)).findFirst().get();
+  }
+
   private ReadOnlyPruefung getOrCreate(String pruefungName)
       throws NoPruefungsPeriodeDefinedException {
     ReadOnlyPruefung pruefung;
@@ -96,13 +106,6 @@ public class addPruefungToBlock extends BaseSteps {
           pruefungName, emptySet(), Duration.ofHours(1), emptyMap());
     }
     return pruefung;
-  }
-
-  private ReadOnlyBlock getBlockFromModel(String name) throws NoPruefungsPeriodeDefinedException {
-    Set<ReadOnlyBlock> bloecke = new HashSet<>();
-    bloecke.addAll(state.controller.getGeplanteBloecke());
-    bloecke.addAll(state.controller.getUngeplanteBloecke());
-    return bloecke.stream().filter(block -> block.getName().equals(name)).findFirst().get();
   }
 
   @Wenn("ich die geplante Pruefung {string} zum Block {string} hinzufuege")
@@ -128,32 +131,12 @@ public class addPruefungToBlock extends BaseSteps {
     assertThat(results).isEmpty();
   }
 
-  @Angenommen("es existiert keine Pruefungsperiode")
-  public void esExistiertKeinePruefungsperiode() {
-    throw new AssumptionViolatedException("not implemented");
-  }
-
   @Dann("enthalten die Planungseinheiten, die ich erhalte den Block {string}")
   public void enthaltenDiePlanungseinheitenDieIchErhalteDenBlock(String blockName) {
     List<ReadOnlyPlanungseinheit> results = toPlanungseinheiten(
         state.results.get("planungseinheiten"));
     assertThat(results).anyMatch(
         (ReadOnlyPlanungseinheit p) -> p.isBlock() && p.asBlock().getName().equals(blockName));
-  }
-
-  private List<ReadOnlyPlanungseinheit> toPlanungseinheiten(Object obj) {
-    List<ReadOnlyPlanungseinheit> result = new ArrayList<>();
-    List<Object> input = (List<Object>) obj;
-    for (Object planungseinheit : input) {
-      if (planungseinheit instanceof BlockDTO) {
-        result.add((BlockDTO) planungseinheit);
-      } else if (planungseinheit instanceof PruefungDTO) {
-        result.add((PruefungDTO) planungseinheit);
-      } else {
-        throw new IllegalStateException();
-      }
-    }
-    return result;
   }
 
   @Wenn("ich die unbekannte Pruefung {string} zum Block {string} hinzufuege")
@@ -257,5 +240,19 @@ public class addPruefungToBlock extends BaseSteps {
         state.results.get("planungseinheiten"));
     ReadOnlyPlanungseinheit planungseinheit = getPlanungseinheitFromModel(planungseinheitName);
     assertThat(results).contains(planungseinheit);
+  }
+
+  @Und("es existiert der geplante Block {string} mit der Pruefung {string} direkt nach {string}")
+  public void esExistiertDerGeplanteBlockMitDerPruefungDirektNach(String blockName,
+      String pruefungName,
+      String other) throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
+    ReadOnlyBlock blockToChange = state.controller.createBlock(blockName, Blocktyp.PARALLEL);
+    ReadOnlyPruefung pruefung = state.controller.createPruefung(pruefungName, pruefungName,
+        pruefungName, emptySet(), Duration.ofHours(1), emptyMap());
+    ReadOnlyPlanungseinheit previousPlanungseinheit = getPlanungseinheitFromModel(other);
+    LocalDateTime schedule = previousPlanungseinheit.getTermin().get()
+        .plus(previousPlanungseinheit.getDauer()).plusMinutes(30);
+    state.controller.addPruefungToBlock(blockToChange, pruefung);
+    state.controller.scheduleBlock(blockToChange, schedule);
   }
 }
