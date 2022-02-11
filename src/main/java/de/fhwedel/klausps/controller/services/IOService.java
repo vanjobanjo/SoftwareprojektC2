@@ -2,6 +2,7 @@ package de.fhwedel.klausps.controller.services;
 
 import static de.fhwedel.klausps.controller.util.ParameterUtil.noNullParameters;
 
+import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.export.ExportTyp;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Semester;
@@ -98,8 +99,9 @@ public class IOService {
    */
   public void createNewPeriodeWithData(Semester semester, LocalDate start, LocalDate end,
       LocalDate ankertag, int kapazitaet, Path csvPath, Path klausPsPath)
-      throws ImportException, IOException {
+      throws ImportException, IOException, IllegalTimeSpanException {
     noNullParameters(semester, start, end, ankertag, csvPath);
+    checkDatesAndCapacity(start, end, ankertag, kapazitaet);
     Pruefungsperiode pruefungsperiode = new PruefungsperiodeImpl(semester, start, end, ankertag,
         kapazitaet);
     LOGGER.debug("Creating importer with {} and {}", pruefungsperiode, klausPsPath);
@@ -119,11 +121,49 @@ public class IOService {
    * @param end        start date of Pruefungsperiode
    * @param ankertag   ankertag date of Pruefungsperiode
    * @param kapazitaet amount of students
+   * @throws IllegalTimeSpanException when the ankertag is outside start and end or end is after
+   *                                  start
+   * @throws IllegalArgumentException when Kapazitaet is zero or negative
    */
   public void createEmptyPeriode(
-      Semester semester, LocalDate start, LocalDate end, LocalDate ankertag, int kapazitaet) {
+      Semester semester, LocalDate start, LocalDate end, LocalDate ankertag, int kapazitaet)
+      throws IllegalTimeSpanException, IllegalArgumentException {
+    checkDatesAndCapacity(start, end, ankertag, kapazitaet);
     dataAccessService.setPruefungsperiode(
         new PruefungsperiodeImpl(semester, start, end, ankertag, kapazitaet));
   }
+
+  /**
+   * checks if data for a new Pruefungsperiode is valid.<br>
+   * <ul>
+   *   <li>Start must be before End</li>
+   *   <li>Ankertag must be after or at start</li>
+   *   <li>Ankertag must be before end </li>
+   *   <li>Kapazitaet must be larger than zero </li>
+   * </ul>
+   * @param start the start date of the {@link Pruefungsperiode}
+   * @param end the end date of the Pruefungsperiode
+   * @param ankertag the ankertag of the Pruefungsperiode
+   * @param kapazitaet the Kapazitaet of the Pruefungsperiode
+   * @throws IllegalTimeSpanException if start is before end or ankertag is outside of start and end
+   * date of the Pruefungsperiode
+   * @throws IllegalArgumentException When the kapazitaet is less than one
+   */
+  private void checkDatesAndCapacity(LocalDate start, LocalDate end, LocalDate ankertag,
+      int kapazitaet) throws IllegalTimeSpanException, IllegalArgumentException {
+    if (end.isBefore(start)) {
+      throw new IllegalTimeSpanException("Das Enddatum darf nicht vor dem Startdatum liegen.");
+    }
+    if (ankertag.isBefore(start)) {
+      throw new IllegalTimeSpanException("Der Ankertag darf nicht vor dem Startdatum liegen.");
+    }
+    if (ankertag.isAfter(end)) {
+      throw new IllegalTimeSpanException("Der Ankertag darf nicht nach dem Enddatum liegen.");
+    }
+    if (kapazitaet <= 0) {
+      throw new IllegalArgumentException("Die Kapazitaet darf nicht kleiner oder gleich 0 sein");
+    }
+  }
+
 
 }

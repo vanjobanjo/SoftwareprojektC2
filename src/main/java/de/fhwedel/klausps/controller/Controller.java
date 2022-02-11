@@ -488,7 +488,7 @@ public class Controller implements InterfaceController {
 
   @Override
   public void createEmptyPeriode(Semester semester, LocalDate start, LocalDate end,
-      LocalDate ankertag, int kapazitaet) {
+      LocalDate ankertag, int kapazitaet) throws IllegalTimeSpanException, IllegalArgumentException {
     LOGGER.debug("Call to createEmptyPeriode({}, {}, {}, {}, {}).", semester, start, end, ankertag,
         kapazitaet);
     noNullParameters(semester, start, end, kapazitaet);

@@ -671,7 +671,7 @@ class ControllerTest {
   }
 
   @Test
-  void test_createEmptyPeriode() {
+  void test_createEmptyPeriode() throws IllegalTimeSpanException {
     Controller c = new Controller();
     c.createEmptyPeriode(new SemesterImpl(Semestertyp.WINTERSEMESTER, Year.now()), LocalDate.now(),
         LocalDate.now().plusDays(30), LocalDate.now().plusDays(1), 30);

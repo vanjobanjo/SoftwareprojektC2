@@ -481,18 +481,14 @@ public class ScheduleService {
    */
   public void createNewPeriodeWithData(IOService ioService, Semester semester, LocalDate start,
       LocalDate end, LocalDate ankertag, int kapazitaet, Path pathCSV, Path adoptKlausPS)
-      throws ImportException, IOException, IllegalTimeSpanException {
-    checkTimeSpanPeriode(start, end, ankertag);
-    if (kapazitaet <= 0) {
-      throw new IllegalArgumentException("Kapazität muss größer als 0 sein");
-    }
+      throws ImportException, IOException, IllegalTimeSpanException, IllegalArgumentException {
     Pruefungsperiode fallbackPeriode = dataAccessService.getPruefungsperiode();
     try {
       ioService.createNewPeriodeWithData(semester, start, end, ankertag, kapazitaet, pathCSV,
           adoptKlausPS);
       dataAccessService.unschedulePlanungseinheitenOutsideOfPeriode();
       unscheduleHardConflictingFromAdoptedPeriode();
-    } catch (ImportException | IOException e) {
+    } catch (ImportException | IOException | IllegalTimeSpanException | IllegalArgumentException e) {
       dataAccessService.setPruefungsperiode(fallbackPeriode);
       throw e;
     } catch (NoPruefungsPeriodeDefinedException f) {

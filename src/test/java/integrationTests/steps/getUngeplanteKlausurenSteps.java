@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
+import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Semester;
@@ -86,7 +87,7 @@ public class getUngeplanteKlausurenSteps extends BaseSteps {
   }
 
   @Angenommen("es existieren keine Klausuren")
-  public void esExistierenKeineKlausuren() {
+  public void esExistierenKeineKlausuren() throws IllegalTimeSpanException {
     Semester semester = new SemesterImpl(WINTERSEMESTER, Year.of(2022));
     LocalDate start = LocalDate.of(2022, 1, 31);
     LocalDate end = LocalDate.of(2022, 2, 27);

@@ -2,6 +2,7 @@ package integrationTests.steps;
 
 import static de.fhwedel.klausps.model.api.Semestertyp.WINTERSEMESTER;
 
+import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.impl.SemesterImpl;
 import integrationTests.state.State;
@@ -16,7 +17,7 @@ public class BaseSteps {
 
   public static State state;
 
-  protected void createSemester() {
+  protected void createSemester() throws IllegalTimeSpanException {
     Semester semester = new SemesterImpl(WINTERSEMESTER, Year.of(2022));
     LocalDate start = LocalDate.of(2022, 1, 31);
     LocalDate end = LocalDate.of(2022, 2, 27);

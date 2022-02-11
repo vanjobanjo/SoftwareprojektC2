@@ -1319,8 +1319,8 @@ class ScheduleServiceTest {
 
   @Test
   void createNewPeriodeWithDataTest_kapazitaet_too_low()
-      throws ImportException, IOException, NoPruefungsPeriodeDefinedException {
-    IOService ioService = mock(IOService.class);
+      throws NoPruefungsPeriodeDefinedException {
+    IOService ioService = new IOService(dataAccessService);
     Semester semester = new SemesterImpl(WINTERSEMESTER, Year.of(2022));
     LocalDate start = LocalDate.of(2022, 2, 2);
     LocalDate end = LocalDate.of(2022, 2, 25);
@@ -1329,9 +1329,6 @@ class ScheduleServiceTest {
     Path path = mock(Path.class);
     Path path2 = mock(Path.class);
 
-    doNothing().when(ioService)
-        .createNewPeriodeWithData(semester, start, end, ankerTag, kapazitaet,
-            path, path2);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
     Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
     analysis.addTeilnehmerkreis(infBachelor, 30);
@@ -1351,8 +1348,96 @@ class ScheduleServiceTest {
   }
 
   @Test
+  void createNewPeriodeWithDataTest_startMustBeBeforeEnd()
+      throws NoPruefungsPeriodeDefinedException {
+    IOService ioService = new IOService(dataAccessService);
+    Semester semester = new SemesterImpl(WINTERSEMESTER, Year.of(2022));
+    LocalDate end = LocalDate.of(2022, 2, 2);
+    LocalDate start = LocalDate.of(2022, 2, 25);
+    LocalDate ankerTag = LocalDate.of(2022, 2, 9);
+    int kapazitaet = 100;
+    Path path = mock(Path.class);
+    Path path2 = mock(Path.class);
+
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+    analysis.addTeilnehmerkreis(infBachelor, 30);
+    dm.addTeilnehmerkreis(infBachelor, 12);
+    LocalDateTime termin = LocalDateTime.of(2022, 2, 12, 8, 0);
+    analysis.setStartzeitpunkt(termin);
+    dm.setStartzeitpunkt(termin);
+
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(analysis, dm));
+    when(dataAccessService.getGeplanteBloecke()).thenReturn(Collections.emptySet());
+    when(restrictionService.checkHarteKriterien(analysis)).thenReturn(
+        List.of(mock(HartesKriteriumAnalyse.class)));
+
+    assertThrows(IllegalTimeSpanException.class,
+        () -> deviceUnderTest.createNewPeriodeWithData(ioService, semester, start, end, ankerTag,
+            kapazitaet, path, path2));
+  }
+  @Test
+  void createNewPeriodeWithDataTest_ankertagMustBeAfterStart()
+      throws NoPruefungsPeriodeDefinedException {
+    IOService ioService = new IOService(dataAccessService);
+    Semester semester = new SemesterImpl(WINTERSEMESTER, Year.of(2022));
+    LocalDate start = LocalDate.of(2022, 2, 2);
+    LocalDate end = LocalDate.of(2022, 2, 25);
+    LocalDate ankerTag = LocalDate.of(2022, 2, 1);
+    int kapazitaet = 100;
+    Path path = mock(Path.class);
+    Path path2 = mock(Path.class);
+
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+    analysis.addTeilnehmerkreis(infBachelor, 30);
+    dm.addTeilnehmerkreis(infBachelor, 12);
+    LocalDateTime termin = LocalDateTime.of(2022, 2, 12, 8, 0);
+    analysis.setStartzeitpunkt(termin);
+    dm.setStartzeitpunkt(termin);
+
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(analysis, dm));
+    when(dataAccessService.getGeplanteBloecke()).thenReturn(Collections.emptySet());
+    when(restrictionService.checkHarteKriterien(analysis)).thenReturn(
+        List.of(mock(HartesKriteriumAnalyse.class)));
+
+    assertThrows(IllegalTimeSpanException.class,
+        () -> deviceUnderTest.createNewPeriodeWithData(ioService, semester, start, end, ankerTag,
+            kapazitaet, path, path2));
+  }
+  @Test
+  void createNewPeriodeWithDataTest_ankertagMustBeforeEnd()
+      throws NoPruefungsPeriodeDefinedException {
+    IOService ioService = new IOService(dataAccessService);
+    Semester semester = new SemesterImpl(WINTERSEMESTER, Year.of(2022));
+    LocalDate start = LocalDate.of(2022, 2, 2);
+    LocalDate end = LocalDate.of(2022, 2, 25);
+    LocalDate ankerTag = LocalDate.of(2022, 2, 26);
+    int kapazitaet = 100;
+    Path path = mock(Path.class);
+    Path path2 = mock(Path.class);
+
+    Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
+    Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
+    analysis.addTeilnehmerkreis(infBachelor, 30);
+    dm.addTeilnehmerkreis(infBachelor, 12);
+    LocalDateTime termin = LocalDateTime.of(2022, 2, 12, 8, 0);
+    analysis.setStartzeitpunkt(termin);
+    dm.setStartzeitpunkt(termin);
+
+    when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(analysis, dm));
+    when(dataAccessService.getGeplanteBloecke()).thenReturn(Collections.emptySet());
+    when(restrictionService.checkHarteKriterien(analysis)).thenReturn(
+        List.of(mock(HartesKriteriumAnalyse.class)));
+
+    assertThrows(IllegalTimeSpanException.class,
+        () -> deviceUnderTest.createNewPeriodeWithData(ioService, semester, start, end, ankerTag,
+            kapazitaet, path, path2));
+  }
+
+  @Test
   void createNewPeriodeWithDataTest_two_at_same_time()
-      throws ImportException, IOException, NoPruefungsPeriodeDefinedException {
+      throws ImportException, IOException, NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
     IOService ioService = mock(IOService.class);
     Semester semester = new SemesterImpl(WINTERSEMESTER, Year.of(2022));
     LocalDate start = LocalDate.of(2022, 2, 2);
@@ -1391,7 +1476,7 @@ class ScheduleServiceTest {
 
   @Test
   void createNewPeriodeWithDataTest_none_at_same_time()
-      throws ImportException, IOException, NoPruefungsPeriodeDefinedException {
+      throws ImportException, IOException, NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
     IOService ioService = mock(IOService.class);
     Semester semester = new SemesterImpl(WINTERSEMESTER, Year.of(2022));
     LocalDate start = LocalDate.of(2022, 2, 2);
@@ -1426,7 +1511,7 @@ class ScheduleServiceTest {
 
   @Test
   void bulkTest_createNewPeriodeWithData()
-      throws ImportException, IOException {
+      throws ImportException, IOException, IllegalTimeSpanException {
     int errorCount = 0;
     for (int i = 0; i < 100; i++) {
       try {
@@ -1441,7 +1526,7 @@ class ScheduleServiceTest {
 
   @Test
   void createNewPeriodeWithDataTest_more_than_two_at_same_time()
-      throws ImportException, IOException {
+      throws ImportException, IOException, IllegalTimeSpanException {
 
     IOService ioService = mock(IOService.class);
     Semester semester = new SemesterImpl(WINTERSEMESTER, Year.of(2022));
@@ -1476,7 +1561,7 @@ class ScheduleServiceTest {
 
   private Pruefungsperiode setUpPruefungsperiodeAndIgnoreIOService(Semester semester,
       LocalDate start, LocalDate end, LocalDate ankerTag, int kapazitaet, Path path,
-      IOService ioService) throws ImportException, IOException {
+      IOService ioService) throws ImportException, IOException, IllegalTimeSpanException {
     doNothing().when(ioService)
         .createNewPeriodeWithData(semester, start, end, ankerTag, kapazitaet,
             path, null);
@@ -1501,7 +1586,7 @@ class ScheduleServiceTest {
 
   @Test
   void createNewPeriodeWithDataTest_two_at_same_time_different_days()
-      throws ImportException, IOException {
+      throws ImportException, IOException, IllegalTimeSpanException {
 
     IOService ioService = mock(IOService.class);
     Semester semester = new SemesterImpl(WINTERSEMESTER, Year.of(2022));
