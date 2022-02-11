@@ -961,6 +961,12 @@ class ScheduleServiceTest {
   }
 
   @Test
+  void analyseScoring_pruefungDoesNotExist() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getPruefung(any())).thenThrow(IllegalStateException.class);
+    assertThrows(IllegalStateException.class, () -> deviceUnderTest.analyseScoring(RO_ANALYSIS_UNPLANNED));
+  }
+
+  @Test
   void getHardConflictedTimes_timesToCheckMustNotBeNull() {
     ReadOnlyPruefung pruefung = getRandomUnplannedROPruefung(1L);
     assertThrows(NullPointerException.class,

@@ -463,7 +463,7 @@ public class Controller implements InterfaceController {
 
   @Override
   public List<KriteriumsAnalyse> analyseScoring(ReadOnlyPruefung pruefung)
-      throws NoPruefungsPeriodeDefinedException {
+      throws NoPruefungsPeriodeDefinedException, IllegalStateException {
     LOGGER.debug("Call to analyseScoring({}).", pruefung);
     noNullParameters(pruefung);
     ensureAvailabilityOfPruefungsperiode();
