@@ -1,6 +1,7 @@
 package integrationTests.steps;
 
 
+import static java.time.Month.FEBRUARY;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,6 +18,7 @@ import io.cucumber.java.de.Angenommen;
 import io.cucumber.java.de.Dann;
 import io.cucumber.java.de.Wenn;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -83,11 +85,6 @@ public class addPruefungToBlock extends BaseSteps {
     return bloecke.stream().filter(block -> block.getName().equals(name)).findFirst().get();
   }
 
-  @Dann("erhalte ich eine Fehlermeldung")
-  public void erhalteIchEineFehlermeldung() {
-    throw new AssumptionViolatedException("not implemented");
-  }
-
   @Angenommen("es existiert keine Pruefungsperiode")
   public void esExistiertKeinePruefungsperiode() {
     throw new AssumptionViolatedException("not implemented");
@@ -116,4 +113,50 @@ public class addPruefungToBlock extends BaseSteps {
     return result;
   }
 
+  @Wenn("ich die unbekannte Pruefung {string} zum Block {string} hinzufuege")
+  public void ichDieUnbekanntePruefungZumBlockHinzufuege(String pruefungsName, String blockName)
+      throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
+    ReadOnlyBlock blockToChange = getBlockFromModel(blockName);
+    ReadOnlyPruefung pruefungToChange = new PruefungDTO(pruefungsName, pruefungsName,
+        Duration.ofHours(1), emptyMap(), emptySet(), 12);
+    try {
+      List<ReadOnlyPlanungseinheit> result = state.controller.addPruefungToBlock(blockToChange,
+          pruefungToChange);
+      state.results.put("planungseinheiten", result);
+    } catch (IllegalStateException exception) {
+      state.results.put("exception", exception);
+    }
+  }
+
+  @Wenn("ich die Pruefung {string} zu einem unbekannten Block {string} hinzufuege")
+  public void ichDiePruefungZuEinemUnbekanntenBlockHinzufuege(String pruefungName, String blockName)
+      throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
+    ReadOnlyBlock blockToChange = new BlockDTO(blockName, null, Duration.ZERO, emptySet(), 1234,
+        Blocktyp.PARALLEL);
+    ReadOnlyPruefung pruefungToChange = state.controller.createPruefung(pruefungName, pruefungName,
+        pruefungName, emptySet(), Duration.ofHours(1), emptyMap());
+    try {
+      List<ReadOnlyPlanungseinheit> result = state.controller.addPruefungToBlock(blockToChange,
+          pruefungToChange);
+      state.results.put("planungseinheiten", result);
+    } catch (IllegalStateException exception) {
+      state.results.put("exception", exception);
+    }
+  }
+
+  @Wenn("ich die geplante Pruefung {string} zum Block {string} hinzufuege")
+  public void ichDieGeplantePruefungZumBlockHinzufuege(String pruefungName, String blockName)
+      throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
+    ReadOnlyBlock blockToChange = getBlockFromModel(blockName);
+    ReadOnlyPruefung pruefungToChange = state.controller.createPruefung(pruefungName, pruefungName,
+        pruefungName, emptySet(), Duration.ofHours(1), emptyMap());
+    state.controller.schedulePruefung(pruefungToChange, LocalDateTime.of(2022, FEBRUARY, 7, 8, 0));
+    try {
+      List<ReadOnlyPlanungseinheit> result = state.controller.addPruefungToBlock(blockToChange,
+          pruefungToChange);
+      state.results.put("planungseinheiten", result);
+    } catch (IllegalStateException exception) {
+      state.results.put("exception", exception);
+    }
+  }
 }

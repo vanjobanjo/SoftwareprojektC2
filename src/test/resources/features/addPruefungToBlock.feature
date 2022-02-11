@@ -16,26 +16,23 @@ Funktionalität: Als Benutzer moechte ich Pruefungen zu Bloecken hinzufuegen koe
     Dann enthalten die Planungseinheiten, die ich erhalte den Block "block 1"
     Und der Block "block 1" enthaelt Diskrete Mathematik, Analysis
 
-#  Szenario: Ich versuche eine Pruefung zu einem Block hinzuzufuegen aber es gibt keine Pruefungsperiode
-#    Angenommen es existiert keine Pruefungsperiode
-#    Und es existiert der leere Block "block 1"
-#    Wenn ich die Pruefung "Rechnerstrukturen" hinzufuege
-#    Dann erhalte ich eine Fehlermeldung
-#
-#  Szenario: Ich versuche eine unbekannte Pruefung zu einem Block hinzuzufuegen
-#    Angenommen es existiert keine Pruefungsperiode
-#    Und es existiert der Block "block 1" mit der Pruefung "GdfP"
-#    Wenn ich die Pruefung "Rechnerstrukturen" hinzufuege
-#    Dann erhalte ich eine Fehlermeldung
-#
-#  Szenario: Ich versuche eine Pruefung zu einem unbekannten Block hinzuzufuegen
-#    Angenommen es existiert keine Pruefungsperiode
-#    Und es existiert der Block "block 1" mit der Pruefung "GdfP"
-#    Wenn ich die Pruefung "Rechnerstrukturen" hinzufuege
-#    Dann erhalte ich eine Fehlermeldung
-#
-#  Szenario: Ich versuche eine geplante Pruefung zu einem Block hinzuzufuegen
-#
+  Szenario: Ich versuche eine unbekannte Pruefung zu einem Block hinzuzufuegen
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert der Block "block 1" mit der Pruefung "GdfP"
+    Wenn ich die unbekannte Pruefung "Rechnerstrukturen" zum Block "block 1" hinzufuege
+    Dann erhalte ich einen Fehler
+
+  Szenario: Ich versuche eine Pruefung zu einem unbekannten Block hinzuzufuegen
+    Angenommen es existiert eine Pruefungsperiode
+    Wenn ich die Pruefung "Rechnerstrukturen" zu einem unbekannten Block "block 42" hinzufuege
+    Dann erhalte ich einen Fehler
+
+  Szenario: Ich versuche eine geplante Pruefung zu einem Block hinzuzufügen
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert der leere Block "block 1"
+#    Wenn ich die geplante Pruefung "Analysis" zum Block "block 1" hinzufuege
+#    Dann erhalte ich einen Fehler
+
 #  Szenario: Ich versuche eine Pruefung aus einem Block in einen anderen Block einzuplanen
 #
 #  Szenario: Ich versuche eine Pruefung aus einem Block in den selben Block einzuplanen
