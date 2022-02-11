@@ -1,12 +1,6 @@
 # language: de
 Funktionalität: Als Planende*r moechte ich Bloecke erstellen koennen
 
-  Szenario: Ich moechte einen Block erstellen, aber es gibt noch keine Pruefungsperiode
-    Angenommen es existiert keine Pruefungsperiode
-    Wenn ich einen Block mit den Pruefungen "Operations Research" und "Applications of AI" erstelle
-    Dann erhalte ich eine Fehlermeldung
-
-
   Szenario: Ich erstelle erfolgreich einen Block mit geplanten Klausuren, die sich eigentlich ausschließen
     Angenommen es existieren die geplanten Klausuren "Analysis" und "Diskrete Mathematik"
     Wenn ich einen Block mit den Pruefungen "Analysis" und "Diskrete Mathematik" erstelle

@@ -84,7 +84,7 @@ public class addPruefungToBlock extends BaseSteps {
       List<ReadOnlyPlanungseinheit> result = state.controller.addPruefungToBlock(blockToChange,
           pruefungToChange);
       state.results.put("planungseinheiten", result);
-    } catch (IllegalArgumentException exception) {
+    } catch (IllegalArgumentException | HartesKriteriumException exception) {
       state.results.put("exception", exception);
     }
   }
@@ -254,5 +254,20 @@ public class addPruefungToBlock extends BaseSteps {
         .plus(previousPlanungseinheit.getDauer()).plusMinutes(30);
     state.controller.addPruefungToBlock(blockToChange, pruefung);
     state.controller.scheduleBlock(blockToChange, schedule);
+  }
+
+  @Und("die Pruefung {string} ist zeitgleich mit {string} geplant")
+  public void diePruefungIstZeitgleichMitGeplant(String pruefungName, String planungseinheitName)
+      throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
+    ReadOnlyPruefung pruefung = getOrCreate(pruefungName);
+    ReadOnlyPlanungseinheit other = getPlanungseinheitFromModel(planungseinheitName);
+    LocalDateTime schedule = other.getTermin().get();
+    state.controller.schedulePruefung(pruefung, schedule);
+  }
+
+  @Dann("ist ein hartes Kriterium verletzt")
+  public void istEinHartesKriteriumVerletzt() {
+    assertThat((Exception) state.results.get("exception")).isInstanceOf(
+        HartesKriteriumException.class);
   }
 }

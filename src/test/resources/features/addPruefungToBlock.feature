@@ -64,4 +64,12 @@ Funktionalität: Als Benutzer moechte ich Pruefungen zu Bloecken hinzufuegen koe
     Wenn ich die Pruefung "Diskrete Mathematik" zum Block "block 1" hinzufuege
     Dann ist "block 2" Teil der beeinflussten Planungseinheiten
 
-#  Szenario: Ich fuege eine Pruefung zu einem geplanten Block hinzu und verletze ein hartes Kriterium
+  Szenario: Ich fuege eine Pruefung zu einem geplanten Block hinzu und verletze ein hartes Kriterium
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert der geplante Block "block 1" mit der Pruefung "Analysis"
+    Und es existiert eine ungeplante Pruefung "Rechnernetze"
+    Und es existiert eine ungeplante Pruefung "WebTech"
+    Und die Pruefung "Rechnernetze" ist zeitgleich mit "block 1" geplant
+    Und "Rechnernetze" und "WebTech" haben einen gemeinsamen Teilnehmerkreis
+    Wenn ich die Pruefung "WebTech" zum Block "block 1" hinzufuege
+    Dann ist ein hartes Kriterium verletzt

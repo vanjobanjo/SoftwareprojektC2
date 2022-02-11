@@ -19,14 +19,6 @@
       Wenn ich den Namen der Pruefung auf "Pruefung 42" aendere
       Dann erhalte ich eine Fehlermeldung
 
-
-    Szenario: Ich versuche den Namen einer Pruefung zu aendern, aber es gibt keine Pruefungsperiode
-      Angenommen es existiert keine Pruefungsperiode
-      Und es existiert die ungeplante Pruefung "Pruefung 1"
-      Wenn ich den Namen der Pruefung auf "Pruefung 21" aendere
-      Dann erhalte ich eine Fehlermeldung
-
-
     Szenario: Ich versuche den Namen einer Pruefung auf einen bereits vergebenen Namen zu ändern
       Angenommen es existieren die Pruefungen "Pruefung 1" und "Pruefung 2"
       Wenn ich den Namen von "Pruefung 1" auf "Pruefung 2" aendere

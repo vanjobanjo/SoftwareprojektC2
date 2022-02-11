@@ -18,14 +18,6 @@ Funktionalität: Als Planer*in moechte ich den Namen von Bloecken anpassen koenn
     Wenn ich den Namen des Blocks auf "Block 42" aendere
     Dann erhalte ich eine Fehlermeldung
 
-
-  Szenario: Ich versuche den Namen eines Blocks zu aendern, aber es gibt keine Pruefungsperiode
-    Angenommen es existiert keine Pruefungsperiode
-    Und es existiert der ungeplante Block "Block 1"
-    Wenn ich den Namen des Blocks auf "Block 21" aendere
-    Dann erhalte ich eine Fehlermeldung
-
-
     Szenario: Ich versuche den Namen eines Blocks auf einen bereits vergebenen Namen zu ändern
       Angenommen es existieren die Bloecke "Block 1" und "Block 2"
       Wenn ich den Namen von "Block 1" auf "Block 2" aendere
