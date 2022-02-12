@@ -315,7 +315,7 @@ class ScheduleServiceTest {
 
     when(restrictionService.getPruefungenAffectedBy(haskell)).thenReturn(conflictedPruefung);
     when(this.dataAccessService.getPruefung(roHaskel)).thenReturn(haskell);
-    when(this.dataAccessService.addTeilnehmerkreis(haskell, informatik,
+    when(this.dataAccessService.setTeilnehmerkreis(haskell, informatik,
         schaetzungInformatik)).thenReturn(true);
 
     assertThat(deviceUnderTest.addTeilnehmerkreis(roHaskel, informatik,
@@ -356,7 +356,7 @@ class ScheduleServiceTest {
     when(restrictionService.checkHarteKriterien(haskell)).thenReturn(listHard);
     when(restrictionService.getPruefungenAffectedBy(haskell)).thenReturn(conflictedPruefung);
     when(this.dataAccessService.getPruefung(roHaskel)).thenReturn(haskell);
-    when(this.dataAccessService.addTeilnehmerkreis(haskell, informatik,
+    when(this.dataAccessService.setTeilnehmerkreis(haskell, informatik,
         schaetzungInformatik)).thenReturn(true);
 
     assertThrows(HartesKriteriumException.class,

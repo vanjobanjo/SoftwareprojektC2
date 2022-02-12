@@ -49,7 +49,7 @@ public class addPrueferSteps extends BaseSteps {
   @Dann("hat die Pruefung {string} den Pruefer {string} eingetragen")
   public void hatDiePruefungDenPrueferEingetragen(String pruefungsName, String prueferName)
       throws NoPruefungsPeriodeDefinedException {
-    ReadOnlyPruefung pruefung = getPruefungFromControllerWith(pruefungsName);
+    ReadOnlyPruefung pruefung = getPruefungFromModel(pruefungsName);
     assertThat(pruefung.getPruefer()).containsExactly(prueferName);
   }
 
@@ -93,14 +93,14 @@ public class addPrueferSteps extends BaseSteps {
   public void hatDiePruefungDiePrueferProfDrDennisSaeringBirgerWolter(String pruefungsName,
       List<String> pruefer)
       throws NoPruefungsPeriodeDefinedException {
-    ReadOnlyPruefung pruefung = getPruefungFromControllerWith(pruefungsName);
+    ReadOnlyPruefung pruefung = getPruefungFromModel(pruefungsName);
     assertThat(pruefung.getPruefer()).containsExactlyInAnyOrderElementsOf(pruefer);
   }
 
   @Dann("hat die Pruefung {string} nur den Pruefer {string} eingetragen")
   public void hatDiePruefungNurDenPrueferEingetragen(String pruefungsName, String pruefer)
       throws NoPruefungsPeriodeDefinedException {
-    ReadOnlyPruefung pruefung = getPruefungFromControllerWith(pruefungsName);
+    ReadOnlyPruefung pruefung = getPruefungFromModel(pruefungsName);
     assertThat(pruefung.getPruefer()).hasSize(1);
     assertThat(pruefung.getPruefer()).containsExactly(pruefer);
   }
@@ -109,7 +109,7 @@ public class addPrueferSteps extends BaseSteps {
   public void diePruefungIstImBlock(String pruefungsName, String blockName)
       throws NoPruefungsPeriodeDefinedException {
     ReadOnlyBlock block = state.controller.createBlock(blockName, Blocktyp.PARALLEL,
-        getPruefungFromControllerWith(pruefungsName));
+        getPruefungFromModel(pruefungsName));
     System.out.println("blah");
   }
 
@@ -124,7 +124,7 @@ public class addPrueferSteps extends BaseSteps {
   public void esExistiertKeinePruefung(String pruefungsName)
       throws NoPruefungsPeriodeDefinedException {
     assertThrows(NoSuchElementException.class,
-        () -> getPruefungFromControllerWith(pruefungsName));
+        () -> getPruefungFromModel(pruefungsName));
   }
 
 }

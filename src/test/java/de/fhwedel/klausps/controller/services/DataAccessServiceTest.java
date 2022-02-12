@@ -2006,6 +2006,6 @@ class DataAccessServiceTest {
   @Test
   void addTeilnehmerkreis_schaetzungMustNotBeNegative() {
     assertThrows(IllegalArgumentException.class,
-        () -> deviceUnderTest.addTeilnehmerkreis(getRandomPlannedPruefung(1), infBachelor, -1));
+        () -> deviceUnderTest.setTeilnehmerkreis(getRandomPlannedPruefung(1), infBachelor, -1));
   }
 }

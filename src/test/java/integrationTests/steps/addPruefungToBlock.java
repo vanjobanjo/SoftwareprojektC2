@@ -24,11 +24,8 @@ import io.cucumber.java.de.Wenn;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.Set;
 
 public class addPruefungToBlock extends BaseSteps {
 
@@ -77,7 +74,7 @@ public class addPruefungToBlock extends BaseSteps {
 
   @Wenn("ich die Pruefung {string} zum Block {string} hinzufuege")
   public void ichDiePruefungZuHinzufuege(String pruefung, String block)
-      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
+      throws NoPruefungsPeriodeDefinedException {
     ReadOnlyBlock blockToChange = getBlockFromModel(block);
     ReadOnlyPruefung pruefungToChange = getOrCreate(pruefung);
     try {
@@ -87,25 +84,6 @@ public class addPruefungToBlock extends BaseSteps {
     } catch (IllegalArgumentException | HartesKriteriumException exception) {
       state.results.put("exception", exception);
     }
-  }
-
-  private ReadOnlyBlock getBlockFromModel(String name) throws NoPruefungsPeriodeDefinedException {
-    Set<ReadOnlyBlock> bloecke = new HashSet<>();
-    bloecke.addAll(state.controller.getGeplanteBloecke());
-    bloecke.addAll(state.controller.getUngeplanteBloecke());
-    return bloecke.stream().filter(block -> block.getName().equals(name)).findFirst().get();
-  }
-
-  private ReadOnlyPruefung getOrCreate(String pruefungName)
-      throws NoPruefungsPeriodeDefinedException {
-    ReadOnlyPruefung pruefung;
-    if (existsPruefungWith(pruefungName)) {
-      pruefung = getPruefungFromControllerWith(pruefungName);
-    } else {
-      pruefung = state.controller.createPruefung(pruefungName, pruefungName,
-          pruefungName, emptySet(), Duration.ofHours(1), emptyMap());
-    }
-    return pruefung;
   }
 
   @Wenn("ich die geplante Pruefung {string} zum Block {string} hinzufuege")
@@ -189,26 +167,6 @@ public class addPruefungToBlock extends BaseSteps {
     // 30 min buffer // TODO make buffer a property and use it here
     LocalDateTime schedule = before.getTermin().get().plus(before.getDauer()).plusMinutes(30);
     state.controller.schedulePruefung(pruefung, schedule);
-  }
-
-  private ReadOnlyPlanungseinheit getPlanungseinheitFromModel(String name)
-      throws NoPruefungsPeriodeDefinedException {
-    ReadOnlyPlanungseinheit result;
-    try {
-      result = getPruefungFromModel(name);
-    } catch (NoSuchElementException exception) {
-      result = getBlockFromModel(name);
-    }
-    return result;
-  }
-
-  private ReadOnlyPruefung getPruefungFromModel(String name)
-      throws NoPruefungsPeriodeDefinedException {
-    Set<ReadOnlyPruefung> pruefungen = new HashSet<>();
-    pruefungen.addAll(state.controller.getGeplantePruefungen());
-    pruefungen.addAll(state.controller.getUngeplantePruefungen());
-    return pruefungen.stream().filter(pruefung -> pruefung.getName().equals(name)).findFirst()
-        .get();
   }
 
   @Und("es existiert eine ungeplante Pruefung {string}")

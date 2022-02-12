@@ -1,47 +1,66 @@
 # language: de
-Funktionalität: Als Planender moechter ich zu einer Klausur einen Teilnehmerkreis und die dazugehoerige
-  geschaetze Anzahl an Teilnehmer definieren bzw. hinzufügen oder sogar aendern.
+Funktionalität: Als Planender moechte ich zu einer Klausur einen Teilnehmerkreis hinzufuegen koennen.
 
-  Szenario: Die Klausur hat keinen TeilnehmerKreis + Schaetzung und fuegen neuen hinzu
-    Angenommen die Pruefung "Analysis" hat als Teilnehmerkreisschaetzung: ""
-    Wenn ich den Studiengang "B_BWL" Fachsemester 1 mit Ordnung "10.0" und 60 schaetze und hinzufuege
-    Dann hat die Pruefung "Analysis" die Teilnehmerkreischaetzungen: "B_BWL 1 10.0 50"
+  Szenario: Ich fuege einen ersten Teilnehmerkreis zu einer Pruefung hinzu.
+    Angenommen es existiert eine Pruefungsperiode
+    Und die Pruefung "Analysis" hat keinen Teilnehmerkreis
+    Wenn ich den Teilnehmerkreis "BWL 1 10.0" zu "Analysis" hinzufuege
+    Dann ist "Analysis" Teil der beeinflussten Planungseinheiten
+    Und "Analysis" hat den Teilnehmerkreis "BWL 1 10.0"
 
-  Szenario: Die Klausur hat bereits einen Teilnehmerkreis + Schaetzung fuege neuen hinzu
-    Angenommen die Pruefung "Analysis" hat als Teilnehmerkreisschaetzung: "B_BWL 1 10.0 50"
-    Wenn ich den Studiengang "B_WING" Fachsemester 1 mit Ordnung "11.0" und 100 schaetze und hinzufuege
-    Dann hat die Pruefung "Analysis" die Teilnehmerkreischaetzungen: "B_BWL 1 10.0 50, B_WING 1 11.0 100"
+  Szenario: Ich fuege einen Teilnehmerkreis zu einer Pruefung hinzu, die bereits einen Teilnehmerkreis hat.
+    Angenommen es existiert eine Pruefungsperiode
+    Und die Pruefung "Analysis" hat einen Teilnehmerkreis "INF 3 14.0"
+    Wenn ich den Teilnehmerkreis "BWL 1 10.0" zu "Analysis" hinzufuege
+    Dann ist "Analysis" Teil der beeinflussten Planungseinheiten
+    Und "Analysis" hat den Teilnehmerkreis "BWL 1 10.0"
+    Und "Analysis" hat den Teilnehmerkreis "INF 3 14.0"
 
-  Szenario: Die Klausur hat bereits einen Teilnehmerkreis + Schaetzung und aendere Teilnehmerkreis Schaetzung
-    Angenommen die Pruefung "Analysis" hat als Teilnehmerkreisschaetzung: "B_BWL 1 10.0 50, B_WING 1 11.0 100"
-    Wenn ich den Studiengang "B_WING" Fachsemester 1 mit Ordnung "11.0" und 120 schaetze und hinzufuege
-    Dann hat die Pruefung "Analysis" die Teilnehmerkreischaetzungen: "B_BWL 1 10.0 50, B_WING 1 11.0 120"
+  Szenario: Ich fuege einen Teilnehmerkreis zu einer Pruefung hinzu, obwohl der Teilnehmerkreis schon zu ihr zugeordnet ist.
+    Angenommen es existiert eine Pruefungsperiode
+    Und die Pruefung "Analysis" hat einen Teilnehmerkreis "INF 3 14.0" mit 10 Studenten
+    Wenn ich den Teilnehmerkreis "INF 3 14.0" mit 5 Studenten zu "Analysis" hinzufuege
+    Dann ist "Analysis" Teil der beeinflussten Planungseinheiten
+    Und "Analysis" hat den Teilnehmerkreis "INF 3 14.0" mit 5 Studenten
 
-  Szenario: Die Klausur hat bereits einen Teilnehmerkreis + Schaetzung, fuege selben Studiengang aber anderes Semester hinzu
-    Angenommen die Pruefung "Analysis" hat als Teilnehmerkreisschaetzung: "B_BWL 1 10.0 50, B_WING 1 11.0 100"
-    Wenn ich den Studiengang "B_WING" Fachsemester 2 mit Ordnung "11.0" und 10 schaetze und hinzufuege
-    Dann hat die Pruefung "Analysis" die Teilnehmerkreischaetzungen: "B_BWL 1 10.0 50, B_WING 1 11.0 120, B_WING 2 11.0 10"
+  Szenario: Ich fuege einen Teilnehmerkreis zu einer Pruefung hinzu und beeinflusse damit andere Pruefungen und Bloecke.
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert der geplante Block "block 1" mit der Pruefung "Analysis"
+    Und die Pruefung "Analysis" hat einen Teilnehmerkreis "INF 3 14.0" mit 10 Studenten
+    Und die Pruefung "Rechnernetze" ist direkt nach "block 1" geplant
+    Wenn ich den Teilnehmerkreis "INF 3 14.0" mit 5 Studenten zu "Rechnernetze" hinzufuege
+    Dann ist "Analysis" Teil der beeinflussten Planungseinheiten
+    Dann ist "block 1" Teil der beeinflussten Planungseinheiten
 
-  Szenario: Die Klausur hat bereits einen Teilnehmerkreis + Schaetzung fuege den selben TK hinzu
-    Angenommen die Pruefung "Analysis" hat als Teilnehmerkreisschaetzung: "B_BWL 1 10.0 50"
-    Wenn ich den Studiengang "B_BWL" Fachsemester 1 mit Ordnung "10.0" und 50 schaetze und hinzufuege
-    Dann hat die Pruefung "Analysis" die Teilnehmerkreischaetzungen: "B_BWL 1 10.0 50"
+  Szenario: Ich fuege einen Teilnehmerkreis zu einer Pruefung in einem Block hinzu.
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert der geplante Block "block 1" mit der Pruefung "Analysis"
+    Wenn ich den Teilnehmerkreis "INF 3 14.0" mit 5 Studenten zu "Analysis" hinzufuege
+    Dann ist "Analysis" Teil der beeinflussten Planungseinheiten
+    Dann ist "block 1" Teil der beeinflussten Planungseinheiten
 
+  Szenario: Ich fuege einen Teilnehmerkreis ohne Teilnehmer zu einer Pruefung hinzu.
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert eine ungeplante Pruefung "Analysis"
+    Wenn ich den Teilnehmerkreis "INF 3 14.0" mit 0 Studenten zu "Analysis" hinzufuege
+    Dann ist "Analysis" Teil der beeinflussten Planungseinheiten
+    Und "Analysis" hat den Teilnehmerkreis "INF 3 14.0" mit 0 Studenten
 
-  Szenario: Die Klausur hat bereits einen Teilnehmerkreis + Schaetzung, fuege negative Schaetzzahl hinzu. Invalider TK
-    Angenommen die Pruefung "Analysis" hat als Teilnehmerkreisschaetzung: "B_BWL 1 10.0 50, B_WING 1 11.0 100"
-    Wenn ich den Studiengang "B_WING" Fachsemester 2 mit Ordnung "11.0" und -1 schaetze und hinzufuege
-    Dann erhalte ich eine Fehlermeldung
+  Szenario: Ich fuege einen Teilnehmerkreis mit negativer Teilnehmerzahl zu einer Pruefung hinzu.
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert eine ungeplante Pruefung "Analysis"
+    Wenn ich den Teilnehmerkreis "INF 3 14.0" mit -1 Studenten zu "Analysis" hinzufuege
+    Dann erhalte ich einen Fehler
 
-  Szenario: Die Klausur hat zugewiesene Teilnehmerkreise + Schaetzung, aendere Schaetzung nach oben hin
-            das Scoring wird veraendert und eine Liste von Klausuren werden zurueckgegeben
-    #TODO: das Scoring muss veraendert werden, wie genau wird noch später definiert
-    #TODO: wenn das Scoring definiert ist, werden neue Testfaelle definiert.
+  Szenario: Ich fuege einen Teilnehmerkreis zu einer unbekannten Pruefung hinzu.
+    Angenommen es existiert eine Pruefungsperiode
+    Wenn ich den Teilnehmerkreis "BWL 1 10.0" zu einer unbekannten Pruefung "Analysis" hinzufuege
+    Dann erhalte ich einen Fehler
 
-  Szenario: Die Klausur hat zugewiesene Teilnehmerkreise + Schaetzung, entferne einen Teilnehmerkreis
-    #TODO: das Scoring muss veraendert werden, wie genau wird noch später definiert
-    #TODO: wenn das Scoring definiert ist, werden neue Testfaelle definiert.
-
-  Szenario: Der Klausur werden Teilnehmerkreise hinzugefuegt, die eigentlich nicht vom TK geschrieben wird
-    #TODO: Was soll hier geschehen? Ist es moeglich, dass der Kunde beliebige TK hinzufuegen kann?
-
+  Szenario: Ich fuege einen Teilnehmerkreis zu einer Pruefung hinzu und verletze eine harte Restriktion
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert der geplante Block "block 1" mit der Pruefung "Analysis"
+    Und die Pruefung "Analysis" hat einen Teilnehmerkreis "INF 3 14.0" mit 10 Studenten
+    Und die Pruefung "Rechnernetze" ist zeitgleich mit "block 1" geplant
+    Wenn ich den Teilnehmerkreis "INF 3 14.0" mit 5 Studenten zu "Rechnernetze" hinzufuege
+    Dann ist ein hartes Kriterium verletzt

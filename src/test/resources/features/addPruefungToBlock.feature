@@ -67,7 +67,6 @@ Funktionalität: Als Benutzer moechte ich Pruefungen zu Bloecken hinzufuegen koe
   Szenario: Ich fuege eine Pruefung zu einem geplanten Block hinzu und verletze ein hartes Kriterium
     Angenommen es existiert eine Pruefungsperiode
     Und es existiert der geplante Block "block 1" mit der Pruefung "Analysis"
-    Und es existiert eine ungeplante Pruefung "Rechnernetze"
     Und es existiert eine ungeplante Pruefung "WebTech"
     Und die Pruefung "Rechnernetze" ist zeitgleich mit "block 1" geplant
     Und "Rechnernetze" und "WebTech" haben einen gemeinsamen Teilnehmerkreis

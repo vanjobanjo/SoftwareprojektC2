@@ -1,19 +1,24 @@
 package integrationTests.steps;
 
 import static de.fhwedel.klausps.model.api.Semestertyp.WINTERSEMESTER;
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
 
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.impl.SemesterImpl;
 import integrationTests.state.State;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Year;
 import java.util.HashSet;
+import java.util.NoSuchElementException;
 import java.util.Set;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * A common point for helper methods required in many step definitions.
@@ -45,29 +50,93 @@ public class BaseSteps {
     return LocalTime.of(hours, minutes);
   }
 
-  @NotNull
-  protected ReadOnlyPruefung getPruefungFromControllerWith(String pruefungsName)
+  /**
+   * Gets any Planungseinheit (either Block or Pruefung) with a specific name out of the model.
+   * Throws exception if not existent!
+   *
+   * @param name The name of the planungseinheit to find.
+   * @return The requested Planungseinheit.
+   * @throws NoPruefungsPeriodeDefinedException In case there is no Pruefungsperiode.
+   */
+  protected ReadOnlyPlanungseinheit getPlanungseinheitFromModel(String name)
       throws NoPruefungsPeriodeDefinedException {
-    ReadOnlyPruefung pruefung = getAllPruefungen().stream().filter(
-            (ReadOnlyPruefung readOnlyPruefung) -> readOnlyPruefung.getPruefungsnummer()
-                .equals(pruefungsName))
-        .findFirst().get();
+    ReadOnlyPlanungseinheit result;
+    try {
+      result = getPruefungFromModel(name);
+    } catch (NoSuchElementException exception) {
+      result = getBlockFromModel(name);
+    }
+    return result;
+  }
+
+  /**
+   * Gets a pruefung with a specific name out of the model. Throws exception if not existent!
+   *
+   * @param name The name of the pruefung to find.
+   * @return The requested Pruefung.
+   * @throws NoPruefungsPeriodeDefinedException In case there is no Pruefungsperiode.
+   */
+  protected ReadOnlyPruefung getPruefungFromModel(String name)
+      throws NoPruefungsPeriodeDefinedException {
+    Set<ReadOnlyPruefung> pruefungen = new HashSet<>();
+    pruefungen.addAll(state.controller.getGeplantePruefungen());
+    pruefungen.addAll(state.controller.getUngeplantePruefungen());
+    return pruefungen.stream().filter(pruefung -> pruefung.getName().equals(name)).findFirst()
+        .get();
+  }
+
+  /**
+   * Gets a block with a specific name out of the model. Throws exception if not existent!
+   *
+   * @param name The name of the block to find.
+   * @return The requested block.
+   * @throws NoPruefungsPeriodeDefinedException In case there is no Pruefungsperiode.
+   */
+  protected ReadOnlyBlock getBlockFromModel(String name) throws NoPruefungsPeriodeDefinedException {
+    Set<ReadOnlyBlock> bloecke = new HashSet<>();
+    bloecke.addAll(state.controller.getGeplanteBloecke());
+    bloecke.addAll(state.controller.getUngeplanteBloecke());
+    return bloecke.stream().filter(block -> block.getName().equals(name)).findFirst().get();
+  }
+
+  /**
+   * Gets a pruefung from model if existent or else creates it.
+   *
+   * @param pruefungName The name of the requested pruefung.
+   * @return The requested pruefung.
+   * @throws NoPruefungsPeriodeDefinedException In case there is no Pruefungsperiode.
+   */
+  protected ReadOnlyPruefung getOrCreate(String pruefungName)
+      throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung pruefung;
+    if (existsPruefungWith(pruefungName)) {
+      pruefung = getPruefungFromModel(pruefungName);
+    } else {
+      pruefung = state.controller.createPruefung(pruefungName, pruefungName,
+          pruefungName, emptySet(), Duration.ofHours(1), emptyMap());
+    }
     return pruefung;
   }
 
-  protected Set<ReadOnlyPruefung> getAllPruefungen() throws NoPruefungsPeriodeDefinedException {
+  /**
+   * Check whether a pruefung with a specific name exists in the model.
+   *
+   * @param pruefungName The name of the pruefung to check for.
+   * @return True in case the pruefung exists in the model, otherwise False.
+   * @throws NoPruefungsPeriodeDefinedException In case there is no Pruefungsperiode.
+   */
+  protected boolean existsPruefungWith(String pruefungName)
+      throws NoPruefungsPeriodeDefinedException {
+    return getAllPruefungen().stream().anyMatch(
+        (ReadOnlyPruefung readOnlyPruefung) -> readOnlyPruefung.getPruefungsnummer()
+            .equals(pruefungName));
+  }
+
+  private Set<ReadOnlyPruefung> getAllPruefungen() throws NoPruefungsPeriodeDefinedException {
     Set<ReadOnlyPruefung> allPruefungen = new HashSet<>();
     allPruefungen.addAll(state.controller.getGeplantePruefungen());
     allPruefungen.addAll(state.controller.getUngeplantePruefungen());
     return allPruefungen;
-  }
-
-  protected boolean existsPruefungWith(String pruefungName)
-      throws NoPruefungsPeriodeDefinedException {
-    return getAllPruefungen().stream().filter(
-            (ReadOnlyPruefung readOnlyPruefung) -> readOnlyPruefung.getPruefungsnummer()
-                .equals(pruefungName))
-        .findFirst().isPresent();
   }
 
 }

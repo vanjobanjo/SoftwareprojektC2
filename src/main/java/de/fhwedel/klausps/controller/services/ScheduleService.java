@@ -307,22 +307,19 @@ public class ScheduleService {
       Teilnehmerkreis teilnehmerkreis, int schaetzung)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException, IllegalStateException {
     noNullParameters(roPruefung, teilnehmerkreis);
-    Set<Planungseinheit> listOfRead = new HashSet<>();
 
     Pruefung pruefungModel = dataAccessService.getPruefung(roPruefung);
-    if (pruefungModel.getTeilnehmerkreise().contains(teilnehmerkreis)) {
-      return listOfRead;
-    }
-    if (dataAccessService.addTeilnehmerkreis(pruefungModel, teilnehmerkreis, schaetzung)) {
+    if (dataAccessService.setTeilnehmerkreis(pruefungModel, teilnehmerkreis, schaetzung)) {
       List<HartesKriteriumAnalyse> hard = restrictionService.checkHarteKriterien(pruefungModel);
       if (!hard.isEmpty()) {
         dataAccessService.removeTeilnehmerkreis(pruefungModel, teilnehmerkreis);
         throw converter.convertHardException(hard);
       }
     }
-    listOfRead = getAffectedPruefungenBy(pruefungModel);
-
-    return listOfRead;
+    Set<Planungseinheit> affected = getAffectedPruefungenBy(pruefungModel);
+    affected.add(pruefungModel);
+    dataAccessService.getBlockTo(pruefungModel).ifPresent(affected::add);
+    return affected;
   }
 
   public Set<Planungseinheit> setTeilnehmerkreisSchaetzung(ReadOnlyPruefung pruefung,

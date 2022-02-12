@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
@@ -108,9 +109,11 @@ public class DataAccessService {
     return pruefungsperiode.pruefung(pruefungsNummer) != null;
   }
 
-  private void addTeilnehmerKreisSchaetzungToModelPruefung(Pruefung pruefungModel,
+  private void addTeilnehmerKreisSchaetzungToModelPruefung(Pruefung pruefung,
       Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
-    teilnehmerkreise.forEach(pruefungModel::setSchaetzung);
+    for (Entry<Teilnehmerkreis, Integer> teilnehmerkreis : teilnehmerkreise.entrySet()) {
+      pruefung.addTeilnehmerkreis(teilnehmerkreis.getKey(), teilnehmerkreis.getValue());
+    }
   }
 
   public boolean isPruefungsperiodeSet() {
@@ -570,14 +573,18 @@ public class DataAccessService {
     return pruefung.removeTeilnehmerkreis(teilnehmerkreis);
   }
 
-  public boolean addTeilnehmerkreis(Pruefung pruefung, Teilnehmerkreis teilnehmerkreis,
+  public boolean setTeilnehmerkreis(Pruefung pruefung, Teilnehmerkreis teilnehmerkreis,
       int schaetzung) throws IllegalArgumentException {
     if (schaetzung < 0) {
       throw new IllegalArgumentException("Schätzwert darf nicht negativ sein.");
     }
     LOGGER.debug("Adding {} with {} Students to {} in Model.", teilnehmerkreis, schaetzung,
         pruefung);
-    return pruefung.addTeilnehmerkreis(teilnehmerkreis, schaetzung);
+    if (!pruefung.addTeilnehmerkreis(teilnehmerkreis, schaetzung)) {
+      pruefung.removeTeilnehmerkreis(teilnehmerkreis);
+      return pruefung.addTeilnehmerkreis(teilnehmerkreis, schaetzung);
+    }
+    return true;
   }
 
   public Block setNameOf(ReadOnlyBlock block, String name)
