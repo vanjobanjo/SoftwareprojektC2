@@ -8,6 +8,7 @@ import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.impl.SemesterImpl;
 import io.cucumber.java.de.Angenommen;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Year;
 
 public class PruefungsperiodeSteps {
@@ -25,4 +26,11 @@ public class PruefungsperiodeSteps {
     state.controller.createEmptyPeriode(semester, start, end, ankertag, 400);
   }
 
+  @Angenommen("es existiert eine Pruefungsperiode von {localDateTime} - {localDateTime}")
+  public void esExistiertEinePruefungsperiodeVon(LocalDateTime start, LocalDateTime ende)
+      throws IllegalTimeSpanException {
+    Semester semester = new SemesterImpl(WINTERSEMESTER, Year.of(2022));
+    LocalDate ankertag = start.toLocalDate();
+    state.controller.createEmptyPeriode(semester, start.toLocalDate(), ende.toLocalDate(), ankertag, 400);
+  }
 }
