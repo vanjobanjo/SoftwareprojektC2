@@ -164,7 +164,7 @@ public class setTerminSteps extends BaseSteps {
         .withPruefungsName(pruefung).build();
     try {
       state.controller.schedulePruefung(r, time);
-    } catch (HartesKriteriumException | NoPruefungsPeriodeDefinedException | IllegalArgumentException e) {
+    } catch (HartesKriteriumException | NoPruefungsPeriodeDefinedException | IllegalArgumentException | IllegalStateException e) {
       state.results.put("exception", e);
     }
   }
@@ -179,5 +179,13 @@ public class setTerminSteps extends BaseSteps {
   @Und("es existiert die Pruefung {string}")
   public void esExistiertDiePruefung(String pruefung) throws NoPruefungsPeriodeDefinedException {
     getOrCreate(pruefung);
+  }
+
+
+  @Dann("bekomme ich eine Fehlermeldung IllegalStateException")
+  public void bekommeIchEineFehlermeldungIllegalStateException() {
+    Object exception = state.results.get("exception");
+    assertThat(exception).isNotNull();
+    assertThat(exception).isInstanceOf(IllegalStateException.class);
   }
 }

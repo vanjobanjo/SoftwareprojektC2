@@ -79,6 +79,10 @@ Funktionalität: Als Planender moechte ich den Termin von einer Pruefung aendern
     Dann bekomme ich eine Fehlermeldung IlligaleArgumentException, da sie in ein Block liegt
 
 
+  Szenario:  eine unbekannte Pruefung soll ein Termin zugeordnet werden
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert keine Pruefung "Informationstechnik"
+    Wenn ich der Pruefung "Informationstechnik" einen Termin gebe
+    Dann bekomme ich eine Fehlermeldung IllegalStateException
 
-  #IllegalArgumentException – Wenn Prüfung in einem Block ist.
- # IllegalStateException – Wenn die übergebene Prüfung nicht der Prüfungsperiode zugeordnet ist.
+
