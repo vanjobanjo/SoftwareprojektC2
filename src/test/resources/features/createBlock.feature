@@ -28,7 +28,7 @@ Funktionalität: Als Planende*r moechte ich Bloecke erstellen koennen
   Szenario: Ich moechte einen Block mit ungeplanten und geplanten Pruefungen erstellen
     Angenommen es existiert die geplante Pruefung "Digitaltechnik" und die ungeplante Pruefung "Rechnernetze"
     Wenn ich einen Block mit den Pruefungen "Digitaltechnik" und "Rechnerstrukturen" erstelle
-    Dann erhalte ich eine Fehlermeldung
+    Dann erhalte ich ein Fehlermeldung vom Model
 
 
     Szenario: Ich erstelle einen Block mit nur einer ungeplanten Pruefung

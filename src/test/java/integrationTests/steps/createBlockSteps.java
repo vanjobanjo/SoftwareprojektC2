@@ -60,4 +60,12 @@ public class createBlockSteps {
     throw new AssumptionViolatedException("not implemented");
   }
 
+  @Dann("erhalte ich einen Block mit den Pruefungen {string} und {string}")
+  public void erhalteIchEinenBlockMitDenPruefungenUnd(String pruefung1, String pruefung2) {
+  }
+
+  @Dann("erhalte ich ein Fehlermeldung vom Model")
+  public void erhalteIchEinFehlermeldungVomModel() {
+
+  }
 }
