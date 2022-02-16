@@ -2,9 +2,10 @@
 Funktionalität: Als Planende*r moechte ich Bloecke erstellen koennen
 
   Szenario: Ich erstelle erfolgreich einen Block mit geplanten Klausuren, die sich eigentlich ausschließen
-    Angenommen es existieren die geplanten Klausuren "Analysis" und "Diskrete Mathematik"
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existieren die geplanten Pruefungen "Analysis" und "Diskrete Mathematik"
     Wenn ich einen Block mit den Pruefungen "Analysis" und "Diskrete Mathematik" erstelle
-    Dann erhalte ich einen Block mit den Pruefungen "Analysis" und "Diskrete Mathematik"
+    Dann erhalte ich ein Fehlermeldung Pruefungen sind geplant
 
 
   Szenario: Ich erstelle erfolgreich einen Block mit geplanten Klausuren, die sich nicht ausschließen
