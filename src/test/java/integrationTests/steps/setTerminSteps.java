@@ -5,12 +5,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import de.fhwedel.klausps.controller.Controller;
 import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
+import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Ausbildungsgrad;
 import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
@@ -21,12 +23,16 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.ParameterType;
 import io.cucumber.java.de.Angenommen;
 import io.cucumber.java.de.Dann;
+import io.cucumber.java.de.Und;
 import io.cucumber.java.de.Wenn;
 
+
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.List;
 import java.util.Optional;
+import org.slf4j.Logger;
 
 public class setTerminSteps extends BaseSteps {
 
@@ -54,22 +60,21 @@ public class setTerminSteps extends BaseSteps {
       LocalDateTime termin, LocalDateTime pruefStart, LocalDateTime pruefEnd)
       throws IllegalTimeSpanException, HartesKriteriumException, NoPruefungsPeriodeDefinedException {
 
-
-
     ReadOnlyPruefung oldPruefung = getOrCreate(pruefung);
 
-    if(termin != null)
-    state.controller.schedulePruefung(oldPruefung, termin);
+    if (termin != null) {
+      state.controller.schedulePruefung(oldPruefung, termin);
+    }
 
   }
 
   @Wenn("ich den Termin von {string} auf den {localDateTime} aendere")
   public void pruefungsTerminAEndern(String pruefung, LocalDateTime newTermin)
-      throws  NoPruefungsPeriodeDefinedException {
+      throws NoPruefungsPeriodeDefinedException {
     ReadOnlyPruefung readPruefung = getPruefungFromModel(pruefung);
     try {
       state.controller.schedulePruefung(readPruefung, newTermin);
-    } catch (IllegalArgumentException | HartesKriteriumException e){
+    } catch (IllegalArgumentException | HartesKriteriumException e) {
       state.results.put("exception", e);
     }
 
@@ -87,9 +92,9 @@ public class setTerminSteps extends BaseSteps {
   @Dann("ist der Termin von {string} {localDateTime} und bekommt eine Fehlermeldung")
   public void terminAenderungMitFehlermeldung(String pruefung, LocalDateTime resultTermin)
       throws NoPruefungsPeriodeDefinedException {
-      ReadOnlyPruefung r = getOrCreate(pruefung);
-      Object exception = state.results.get("exception");
-      assertThat(exception).isNotNull();
+    ReadOnlyPruefung r = getOrCreate(pruefung);
+    Object exception = state.results.get("exception");
+    assertThat(exception).isNotNull();
     assertThat(exception).isInstanceOf(IllegalArgumentException.class);
   }
 
@@ -105,8 +110,9 @@ public class setTerminSteps extends BaseSteps {
 
     ReadOnlyPruefung r = getOrCreate(pruefung);
 
-    if(termin != null)
-    state.controller.schedulePruefung(r, termin);
+    if (termin != null) {
+      state.controller.schedulePruefung(r, termin);
+    }
 
   }
 
@@ -114,10 +120,10 @@ public class setTerminSteps extends BaseSteps {
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     for (List<String> l : pruefungMitTerminen.cells()) {
       assertThat(l).hasSize(2);
-      if(!l.get(1).equals("Termin")){
+      if (!l.get(1).equals("Termin")) {
         ReadOnlyPruefung r = getOrCreate(l.get(0));
-        Teilnehmerkreis t = new TeilnehmerkreisImpl("Informatik","1",1, Ausbildungsgrad.BACHELOR);
-        state.controller.addTeilnehmerkreis(r,t,5);
+        Teilnehmerkreis t = new TeilnehmerkreisImpl("Informatik", "1", 1, Ausbildungsgrad.BACHELOR);
+        state.controller.addTeilnehmerkreis(r, t, 5);
         state.controller.schedulePruefung(r, localDateTime((l.get(1))));
       }
     }
@@ -125,7 +131,8 @@ public class setTerminSteps extends BaseSteps {
 
 
   @Dann("ist der Termin von {string} {localDateTime} und bekommt eine HarteKriterums Fehlermeldung")
-  public void istDerTerminVonDannTerminUndBekommtEineHarteKriterumsFehlermeldung(String pruefung, LocalDateTime resultTermin)
+  public void istDerTerminVonDannTerminUndBekommtEineHarteKriterumsFehlermeldung(String pruefung,
+      LocalDateTime resultTermin)
       throws NoPruefungsPeriodeDefinedException {
     ReadOnlyPruefung r = getOrCreate(pruefung);
     Object exception = state.results.get("exception");
@@ -134,4 +141,43 @@ public class setTerminSteps extends BaseSteps {
   }
 
 
+  @Angenommen("es existiert keine Pruefungsperiode und die Pruefung {string} soll eingeplant werden")
+  public void esExistiertKeinePruefungsperiodeUndDiePruefungSollEingeplantWerden(String pruefung)
+      throws IllegalAccessException {
+
+    resetAll();
+
+
+  }
+
+  @Dann("bekomme ich eine Fehlermeldung NoPRuefungsPeriodeDefinedException")
+  public void bekommeIchEineFehlermeldungNoPRuefungsPeriodeDefinedException() {
+    Object exception = state.results.get("exception");
+    assertThat(exception).isNotNull();
+    assertThat(exception).isInstanceOf(NoPruefungsPeriodeDefinedException.class);
+  }
+
+  @Wenn("ich der Pruefung {string} einen Termin gebe")
+  public void ichDerPruefungEinenTerminGebe(String pruefung) {
+    LocalDateTime time = LocalDateTime.of(2021, 12, 11, 9, 0);
+    ReadOnlyPruefung r = new PruefungDTOBuilder().withPruefungsNummer(pruefung)
+        .withPruefungsName(pruefung).build();
+    try {
+      state.controller.schedulePruefung(r, time);
+    } catch (HartesKriteriumException | NoPruefungsPeriodeDefinedException | IllegalArgumentException e) {
+      state.results.put("exception", e);
+    }
+  }
+
+  @Dann("bekomme ich eine Fehlermeldung IlligaleArgumentException, da sie in ein Block liegt")
+  public void bekommeIchEineFehlermeldungIlligaleArgumentExceptionDaSieInEinBlockLiegt() {
+    Object exception = state.results.get("exception");
+    assertThat(exception).isNotNull();
+    assertThat(exception).isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Und("es existiert die Pruefung {string}")
+  public void esExistiertDiePruefung(String pruefung) throws NoPruefungsPeriodeDefinedException {
+    getOrCreate(pruefung);
+  }
 }

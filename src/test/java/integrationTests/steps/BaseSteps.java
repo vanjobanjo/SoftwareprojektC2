@@ -4,14 +4,17 @@ import static de.fhwedel.klausps.model.api.Semestertyp.WINTERSEMESTER;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 
+import de.fhwedel.klausps.controller.Controller;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
+import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.impl.SemesterImpl;
 import integrationTests.state.State;
+import java.lang.reflect.Field;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -139,4 +142,17 @@ public class BaseSteps {
     return allPruefungen;
   }
 
+  protected void resetAll() throws IllegalAccessException {
+    // Multiple Fields access
+    Field[] fields = ServiceProvider.class.getDeclaredFields();
+    for (Field field : fields) {
+      field.setAccessible(true);
+      if (!field.getName().equals("LOGGER")) {
+        field.set(field, null);
+      }
+      System.out.println(field.getName());
+    }
+
+    state.controller = new Controller();
+  }
 }

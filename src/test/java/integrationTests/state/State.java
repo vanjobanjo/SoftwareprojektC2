@@ -9,7 +9,7 @@ import java.util.Map;
  */
 public class State {
 
-  public final Controller controller;
+  public  Controller controller;
   public final Map<String, Object> results;
 
   public State() {

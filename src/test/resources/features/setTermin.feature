@@ -33,7 +33,7 @@ Funktionalität: Als Planender moechte ich den Termin von einer Pruefung aendern
   Szenariogrundriss: Der Termin einer Pruefung wird erfolgreich geaendert, da er innerhalb der Pruefungperiode liegt
     Angenommen es existiert eine Pruefungsperiode von 04.08.2021 - 10.08.2021
     Und  die Pruefung "Analysis" hat den Termin <aktueller Termin> und die Pruefungsperiode von 04.08.2021 - 10.08.2021 und es gibt schon Pruefungen
-      | Pruefung              | Termin     |
+      | Pruefung            | Termin     |
       | Analysis            | 05.08.2021 |
       | Informationstechnik | 06.08.2021 |
     Wenn ich den Termin von "Analysis" auf den <neuer Termin> aendere
@@ -64,10 +64,21 @@ Funktionalität: Als Planender moechte ich den Termin von einer Pruefung aendern
       |                  | 06.08.2021   |             |
 
 
+  Szenario: Ich will eine Pruefung hinzufügen, aber es existiert noch keine Pruefungsperiode
+    Angenommen es existiert keine Pruefungsperiode und die Pruefung "Analysis" soll eingeplant werden
+    Wenn ich der Pruefung "Analysis" einen Termin gebe
+    Dann bekomme ich eine Fehlermeldung NoPRuefungsPeriodeDefinedException
+
+
+  Szenario: Ich will einer Pruefung einen neuen starttermin geben, wenn diese sich schon in einen Block befindet
+    Angenommen es existiert eine Pruefungsperiode von 01.12.2021 - 21.02.2022
+    Und es existiert die Pruefung "Informationstechnik"
+    Und die Pruefung "Informationstechnik" ist im Block "tollerBlock"
+
+    Wenn ich der Pruefung "Informationstechnik" einen Termin gebe
+    Dann bekomme ich eine Fehlermeldung IlligaleArgumentException, da sie in ein Block liegt
 
 
 
-
- # NoPruefungsPeriodeDefinedException – Wenn zuvor keine Prüfungsperiode definiert wurde.
   #IllegalArgumentException – Wenn Prüfung in einem Block ist.
  # IllegalStateException – Wenn die übergebene Prüfung nicht der Prüfungsperiode zugeordnet ist.
