@@ -1,39 +1,93 @@
 package integrationTests.steps;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import io.cucumber.java.de.Angenommen;
 import io.cucumber.java.de.Dann;
+import io.cucumber.java.de.Und;
 import io.cucumber.java.de.Wenn;
 import org.junit.AssumptionViolatedException;
 
-public class removePrueferSteps {
+public class removePrueferSteps extends BaseSteps {
+
 
   @Angenommen("die Pruefung {string} hat den Pruefer {string}")
-  public void diePruefungPruefungHatDenPrueferPrueferEins(String pruefung, String pruefer) {
-    throw new AssumptionViolatedException("Not implemented yet!");
+  public void diePruefungPruefungHatDenPrueferPrueferEins(String pruefung, String pruefer)
+      throws NoPruefungsPeriodeDefinedException {
+    getOrCreate(pruefung);
+
+    state.controller.addPruefer(getOrCreate(pruefung), pruefer);
   }
 
-  @Wenn("ich den Pruefer {string} entferne")
-  public void ichDenPrueferPrueferentfernenEntferne(String pruefer) {
-    throw new AssumptionViolatedException("Not implemented yet!");
-  }
 
   @Dann("hat die Pruefung {string} {string}")
-  public void hatDiePruefungPruefungResult(String pruefung, String pruefer) {
-    throw new AssumptionViolatedException("Not implemented yet!");
+  public void hatDiePruefungPruefungResult(String pruefung, String pruefer)
+      throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung readPruefung = getPruefungFromModel(pruefung);
+    if (pruefer.equals("\"\"")) {
+      pruefer = null;
+    }
+
+    assertThat(readPruefung.getPruefer()).containsOnly(pruefer);
   }
 
-  @Angenommen("die Pruefung {string} hat den Pruefer {string} und {string}")
-  public void diePruefungPruefungHatDenPrueferPrueferEinsUndPrueferZwei(String pruefung, String prueferOne, String prueferTwo) {
-    throw new AssumptionViolatedException("Not implemented yet!");
+  @Angenommen("die Pruefung {string} hat den Pruefer {string} und {string} als Pruefer")
+  public void diePruefungPruefungHatDenPrueferPrueferEinsUndPrueferZwei(String pruefung,
+      String prueferOne, String prueferTwo) throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung readPruefung = getOrCreate(pruefung);
+state.controller.addPruefer(readPruefung, prueferOne);
+state.controller.addPruefer(readPruefung, prueferTwo);
   }
 
   @Dann("hat die Pruefung {string} {string} und {string}")
-  public void hatDiePruefungPruefungResultUndResultTwo(String pruefung, String resultOne, String resultTwo) {
+  public void hatDiePruefungPruefungResultUndResultTwo(String pruefung, String resultOne,
+      String resultTwo) {
     throw new AssumptionViolatedException("Not implemented yet!");
   }
 
   @Angenommen("die Pruefung {string} hat keinen Pruefer eingetragen")
   public void diePruefungPruefungHatKeinenPrueferEingetragen(String pruefung) {
     throw new AssumptionViolatedException("Not implemented yet!");
+  }
+
+  @Wenn("ich den Pruefer {string} entferne von der {string} entferne")
+  public void ichDenPrueferPrueferentfernenEntferneVonDerPruefungEntferne(String pruefer,
+      String pruefung)
+      throws NoPruefungsPeriodeDefinedException {
+
+    state.controller.removePruefer(getPruefungFromModel(pruefung), pruefer);
+  }
+
+
+  @Dann("hat die Pruefung {string} {string} als Pruefer")
+  public void hatDiePruefungPruefungResultAlsPruefer(String pruefung, String pruefer)
+      throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung readOnlyPruefung = getPruefungFromModel(pruefung);
+    if (pruefer.equals("")) {
+      assertThat(readOnlyPruefung.getPruefer()).isEmpty();
+    } else {
+      assertThat(readOnlyPruefung.getPruefer()).containsOnly(pruefer);
+    }
+  }
+
+
+  @Wenn("ich den Pruefer {string} von der {string} entferne")
+  public void ichDenPrueferPrueferentfernenVonDerPruefungEntferne(String pruefer, String pruefung)
+      throws NoPruefungsPeriodeDefinedException {
+    state.controller.removePruefer(getPruefungFromModel(pruefung), pruefer);
+  }
+
+  @Dann("hat die Pruefung {string} {string} und {string} als Pruefer")
+  public void hatDiePruefungPruefungResultUndResultTwoAlsPruefer(String pruefung,
+      String prueferOne, String prueferTwo) throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung readPruefung = getPruefungFromModel(pruefung);
+
+    assertThat(readPruefung.getPruefer()).contains(prueferOne);
+
+    if(!prueferTwo.equals("")){
+      assertThat(readPruefung.getPruefer()).contains(prueferTwo);
+    }
   }
 }
