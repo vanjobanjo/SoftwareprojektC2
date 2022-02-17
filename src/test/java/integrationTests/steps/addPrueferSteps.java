@@ -27,8 +27,7 @@ public class addPrueferSteps extends BaseSteps {
   public Pruefung pruefung(String name) {
     Duration duration = Duration.ofHours(2);
     name = name.substring(1, name.length() - 1);
-    Pruefung result = new PruefungImpl(name, name, name, duration);
-    return result;
+    return new PruefungImpl(name, name, name, duration);
   }
 
   @Wenn("ich der Pruefung {string} den Pruefer {string} hinzufuege")
@@ -110,7 +109,6 @@ public class addPrueferSteps extends BaseSteps {
       throws NoPruefungsPeriodeDefinedException {
     ReadOnlyBlock block = state.controller.createBlock(blockName, Blocktyp.PARALLEL,
         getPruefungFromModel(pruefungsName));
-    System.out.println("blah");
   }
 
   @Dann("erhalte ich den Block {string} zurueck")
@@ -121,8 +119,7 @@ public class addPrueferSteps extends BaseSteps {
   }
 
   @Und("es existiert keine Pruefung {string}")
-  public void esExistiertKeinePruefung(String pruefungsName)
-      throws NoPruefungsPeriodeDefinedException {
+  public void esExistiertKeinePruefung(String pruefungsName) {
     assertThrows(NoSuchElementException.class,
         () -> getPruefungFromModel(pruefungsName));
   }
