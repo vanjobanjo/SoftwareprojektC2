@@ -8,8 +8,8 @@ import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.impl.SemesterImpl;
 import io.cucumber.java.de.Angenommen;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.Year;
+import org.junit.AssumptionViolatedException;
 
 public class PruefungsperiodeSteps {
 
@@ -17,6 +17,12 @@ public class PruefungsperiodeSteps {
   public void esExistiertEinePruefungsperiode() throws IllegalTimeSpanException {
     createSemester();
   }
+
+  @Angenommen("es existiert keine Pruefungsperiode")
+  public void esExistiertKeinePruefungsperiode() {
+    throw new AssumptionViolatedException("not implemented");
+  }
+
 
   protected void createSemester() throws IllegalTimeSpanException {
     Semester semester = new SemesterImpl(WINTERSEMESTER, Year.of(2022));
@@ -26,11 +32,17 @@ public class PruefungsperiodeSteps {
     state.controller.createEmptyPeriode(semester, start, end, ankertag, 400);
   }
 
-  @Angenommen("es existiert eine Pruefungsperiode von {localDateTime} - {localDateTime}")
-  public void esExistiertEinePruefungsperiodeVon(LocalDateTime start, LocalDateTime ende)
+  @Angenommen("es existiert eine Pruefungsperiode von {localDate} - {localDate}")
+  public void esExistiertEinePruefungsperiodeVon(LocalDate start, LocalDate ende)
       throws IllegalTimeSpanException {
     Semester semester = new SemesterImpl(WINTERSEMESTER, Year.of(2022));
-    LocalDate ankertag = start.toLocalDate();
-    state.controller.createEmptyPeriode(semester, start.toLocalDate(), ende.toLocalDate(), ankertag, 400);
+    state.controller.createEmptyPeriode(semester, start, ende, start, 400);
+  }
+
+  @Angenommen("es existiert eine Pruefungsperiode von {localDate} - {localDate} mit dem Ankertag {localDate}")
+  public void esExistiertEinePruefungsperiodeVon(LocalDate start, LocalDate end, LocalDate ankertag)
+      throws IllegalTimeSpanException {
+    Semester semester = new SemesterImpl(WINTERSEMESTER, Year.of(2022));
+    state.controller.createEmptyPeriode(semester, start, end, ankertag, 400);
   }
 }

@@ -2,17 +2,12 @@ package integrationTests.steps;
 
 import static de.fhwedel.klausps.model.api.Semestertyp.WINTERSEMESTER;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import de.fhwedel.klausps.controller.Controller;
-import de.fhwedel.klausps.controller.api.PruefungDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
-import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Ausbildungsgrad;
 import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
@@ -25,14 +20,9 @@ import io.cucumber.java.de.Angenommen;
 import io.cucumber.java.de.Dann;
 import io.cucumber.java.de.Und;
 import io.cucumber.java.de.Wenn;
-
-
-import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.List;
-import java.util.Optional;
-import org.slf4j.Logger;
 
 public class setTerminSteps extends BaseSteps {
 
@@ -58,7 +48,7 @@ public class setTerminSteps extends BaseSteps {
   @Angenommen("die Pruefung {string} hat den Termin {localDateTime} und die Pruefungsperiode von {localDateTime} - {localDateTime} und es gibt noch keine Pruefungen")
   public void pruefungHatTerminAberKeineAnderePruefungVorhanden(String pruefung,
       LocalDateTime termin, LocalDateTime pruefStart, LocalDateTime pruefEnd)
-      throws IllegalTimeSpanException, HartesKriteriumException, NoPruefungsPeriodeDefinedException {
+      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
 
     ReadOnlyPruefung oldPruefung = getOrCreate(pruefung);
 
@@ -142,9 +132,7 @@ public class setTerminSteps extends BaseSteps {
 
 
   @Angenommen("es existiert keine Pruefungsperiode und die Pruefung {string} soll eingeplant werden")
-  public void esExistiertKeinePruefungsperiodeUndDiePruefungSollEingeplantWerden(String pruefung)
-       {
-
+  public void esExistiertKeinePruefungsperiodeUndDiePruefungSollEingeplantWerden(String pruefung) {
 
   }
 
@@ -187,14 +175,9 @@ public class setTerminSteps extends BaseSteps {
     assertThat(exception).isInstanceOf(IllegalStateException.class);
   }
 
-  @Angenommen("es existiert keine Pruefungsperiode")
-  public void esExistiertKeinePruefungsperiode() throws IllegalAccessException {
-    resetAll();
-  }
 
   @Und("die Pruefung {string} soll eingeplant werden")
-  public void diePruefungSollEingeplantWerden(String pruefung)
-     {
+  public void diePruefungSollEingeplantWerden(String pruefung) {
 
   }
 }

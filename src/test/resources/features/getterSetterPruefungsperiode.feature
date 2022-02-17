@@ -7,146 +7,150 @@ Funktionalität: Als Planer moechte ich Informationen der Pruefungsperiode abfra
     ################################################################
 
   Szenario: Es gibt keine geplante Pruefungsperiode und ich moechte das Startdatum der Periode wissen
-    Angenommen es ist keine Pruefungsperiode geplant
+    Angenommen es existiert keine Pruefungsperiode
     Wenn ich das Startdatum der Periode anfrage
     Dann erhalte ich einen Fehler
 
 
   Szenario: Es gibt eine geplante Pruefungsperiode und ich moechte das Startdatum der Periode wissen
-    Angenommen es ist eine Pruefungsperiode geplant
+    Angenommen es existiert eine Pruefungsperiode
     Wenn ich das Startdatum der Periode anfrage
     Dann erhalte ich das Startdatum
 
 
   Szenario: Es gibt keine geplante Pruefungsperiode und ich moechte das Enddatum der Periode wissen
-    Angenommen es ist keine Pruefungsperiode geplant
+    Angenommen es existiert keine Pruefungsperiode
     Wenn ich das Enddatum der Periode anfrage
     Dann erhalte ich einen Fehler
 
 
   Szenario: Es gibt eine geplante Pruefungsperiode und ich moechte das Enddatum der Periode wissen
-    Angenommen es ist eine Pruefungsperiode geplant
+    Angenommen es existiert eine Pruefungsperiode
     Wenn ich das Enddatum der Periode anfrage
     Dann erhalte ich das Enddatum
 
 
-  Szenariogrundriss: Es gibt keine geplante Pruefungsperiode und ich moechte das Start und Enddatum aendern
-    Angenommen es ist keine Pruefungsperiode geplant
-    Wenn ich das <Startdatum> und das <Enddatum> der Periode aendere
+  Szenario: Es gibt keine geplante Pruefungsperiode und ich moechte das Start und Enddatum aendern
+    Angenommen es existiert keine Pruefungsperiode
+    Wenn ich das Startdatum auf 01.12.2022 und das Enddatum auf 20.01.2023 setze
     Dann erhalte ich einen Fehler
-    Beispiele:
-      | Startdatum | Enddatum   |
-      | 01.01.2021 | 02.02.2021 |
-      | 12.03.2021 | 12.04.2021 |
-      | 01.12.2021 | 20.01.2021 |
 
-  Szenariogrundriss: Es gibt eine geplante Pruefungsperiode und ich moechte das Start und Enddatum aendern
-    Angenommen es ist eine Pruefungsperiode geplant
-    Wenn ich das <Startdatum> und das <Enddatum> der Periode aendere
-    Dann werden die Daten entsprechend geaendert
-    Beispiele:
-      | Startdatum | Enddatum   |
-      | 01.01.2021 | 02.02.2021 |
-      | 12.03.2021 | 12.04.2021 |
-      | 01.12.2021 | 20.01.2021 |
+  Szenario: Es gibt eine geplante Pruefungsperiode und ich moechte das Start und Enddatum aendern
+    Angenommen es existiert eine Pruefungsperiode von 01.10.2021 - 02.02.2022 mit dem Ankertag 02.12.2021
+    Wenn ich das Startdatum auf 01.12.2021 und das Enddatum auf 20.01.2022 setze
+    Dann werden die Daten auf 01.12.2021 und 20.01.2022 geaendert
+
+    ################################################################
+    ##########################  Ankertag  ##########################
+    ################################################################
+
+  Szenario: Es gibt keine geplante Pruefungsperiode und ich moechte den Ankertag der Periode wissen
+    Angenommen es existiert keine Pruefungsperiode
+    Wenn ich den Ankertag der Periode anfrage
+    Dann erhalte ich einen Fehler
+
+
+  Szenario: Es gibt eine geplante Pruefungsperiode und ich moechte  den Ankertag der Periode wissen
+    Angenommen es existiert eine Pruefungsperiode
+    Wenn ich den Ankertag der Periode anfrage
+    Dann erhalte ich den Ankertag
+
+  Szenario: Es gibt keine geplante Pruefungsperiode und ich moechte den Ankertag aendern
+    Angenommen es existiert keine Pruefungsperiode
+    Wenn ich den Ankertag auf 01.12.2022 setze
+    Dann erhalte ich einen Fehler
+
+  Szenario: Es gibt eine geplante Pruefungsperiode und ich moechte den Ankertag aendern
+    Angenommen es existiert eine Pruefungsperiode von 01.10.2021 - 02.02.2022 mit dem Ankertag 02.10.2021
+    Wenn ich den Ankertag auf 03.01.2022 setze
+    Dann wird der Ankertag auf 03.01.2022 geaendert
+
+  Szenario: Es gibt eine geplante Pruefungsperiode und ich moechte den Ankertag auf nach dem Ende der Pruefungsperiode aendern
+    Angenommen es existiert eine Pruefungsperiode von 01.10.2021 - 02.02.2022
+    Wenn ich den Ankertag auf 03.01.2023 setze
+    Dann erhalte ich einen Fehler
+
+  Szenario: Es gibt eine geplante Pruefungsperiode und ich moechte den Ankertag auf vor dem Anfang der Pruefungsperiode aendern
+    Angenommen es existiert eine Pruefungsperiode von 01.10.2021 - 02.02.2022
+    Wenn ich den Ankertag auf 03.01.2020 setze
+    Dann erhalte ich einen Fehler
 
     ################################################################
     #########################  Kapazitaet  #########################
     ################################################################
 
   Szenario: Es gibt keine geplante Pruefungsperiode und ich moechte die Gesamtkapazitaet wissen
-    Angenommen es ist keine Pruefungsperiode geplant
+    Angenommen es existiert keine Pruefungsperiode
     Wenn ich die Kapazitaet anfrage
     Dann erhalte ich einen Fehler
 
   Szenario: Es gibt eine geplante Pruefungsperiode und ich moechte die Gesamtkapazitaet wissen
-    Angenommen es ist eine Pruefungsperiode geplant
+    Angenommen es existiert eine Pruefungsperiode
     Wenn ich die Kapazitaet anfrage
     Dann erhalte ich die Kapazitaet
 
 
-  Szenariogrundriss: Es gibt keine geplante Pruefungsperiode und ich moechte die Gesamtkapazitaet aendern
-    Angenommen es ist keine Pruefungsperiode geplant
-    Wenn ich die <Kapazitaet> aendere
+  Szenario: Es gibt keine geplante Pruefungsperiode und ich moechte die Gesamtkapazitaet aendern
+    Angenommen es existiert keine Pruefungsperiode
+    Wenn ich die Kapazitaet auf den Wert 100 setze
     Dann erhalte ich einen Fehler
-    Beispiele:
-      | Kapazitaet |
-      | 0          |
-      | 100        |
-      | 3453       |
-      | 3          |
-      | 40         |
 
   Szenario: Es gibt eine geplante Pruefungsperiode und ich moechte die Kapazitaet auf einen negativen
   Wert aendern
-    Angenommen es ist eine Pruefungsperiode geplant
+    Angenommen es existiert eine Pruefungsperiode
     Wenn ich die Kapazitaet auf den Wert -1 setze
     Dann erhalte ich einen Fehler
 
   Szenario: Es gibt eine geplante Pruefungsperiode sowie geplante Klausuren und ich moechte die Kapazitaet auf 0 aendern
-    Angenommen es ist eine Pruefungsperiode geplant und es sind Pruefungen geplant
+    Angenommen es existiert eine Pruefungsperiode
     Wenn ich die Kapazitaet auf den Wert 0 setze
+    Dann erhalte ich einen Fehler
+
+
+  Szenario: Es gibt eine geplante Pruefungsperiode sowie Klausuren und ich moechte die Kapazitaet aendern
+    Angenommen es existiert eine Pruefungsperiode
+    Und es sind Pruefungen geplant
+    Wenn ich die Kapazitaet auf den Wert 10 setze
     Dann erhalte ich eine Liste mit Klausuren deren Bewertung veraendert wurde
 
-
-  Szenariogrundriss: Es gibt eine geplante Pruefungsperiode sowie Klausuren und ich moechte die Kapazitaet aendern
-    Angenommen es ist eine Pruefungsperiode geplant und es sind Pruefungen geplant
-    Wenn ich die Kapazitaet auf den Wert <Kapazitaet> setze
-    Dann erhalte ich eine Liste mit Klausuren deren Bewertung veraendert wurde
-    Beispiele:
-      | Kapazitaet |
-      | 0          |
-      | 100        |
-      | 3453       |
-      | 3          |
-      | 40         |
-
-  Szenariogrundriss: Es gibt eine geplante Pruefungsperiode aber keine geplanten Klausuren und
+  Szenario: Es gibt eine geplante Pruefungsperiode aber keine geplanten Klausuren und
   ich moechte die Kapazitaet aendern
-    Angenommen es ist eine Pruefungsperiode geplant und es sind keine Pruefungen geplant
-    Wenn ich die Kapazitaet auf den Wert <Kapazitaet> setze
+    Angenommen es existiert eine Pruefungsperiode
+    Und es sind keine Pruefungen geplant
+    Wenn ich die Kapazitaet auf den Wert 140 setze
     Dann erhalte ich eine Liste ohne Klausuren
-    Beispiele:
-      | Kapazitaet |
-      | 0          |
-      | 1200       |
-      | 2222       |
-      | 34         |
-      | 423        |
 
     ################################################################
     ###########################  Semester  #########################
     ################################################################
 
   Szenario: Es gibt keine geplante Pruefungsperiode und ich moechte das Semester wissen
-    Angenommen es ist keine Pruefungsperiode geplant
+    Angenommen es existiert keine Pruefungsperiode
     Wenn ich das Semester abfrage
     Dann erhalte ich einen Fehler
 
   Szenario: Es gibt eine geplante Pruefungsperiode und ich moechte das Semester wissen
-    Angenommen es ist eine Pruefungsperiode geplant
+    Angenommen es existiert eine Pruefungsperiode
     Wenn ich das Semester abfrage
     Dann erhalte ich das Semester
 
   Szenario: Es gibt keine geplante Pruefungsperiode und ich moechte das Semester aendern
-    Angenommen es ist keine Pruefungsperiode geplant
-    Wenn ich das Semester auf 2021 "Sommersemester" aendere
-    Dann erhalte ich einen Fehler
+    Angenommen es existiert keine Pruefungsperiode
+    Wenn ich ein neues Semester mit dem Jahr 2021 und dem Typ Sommersemester erstelle
+    Dann erhalte ich das Semester Sommersemester 2021
 
 
   Szenariogrundriss: Es gibt eine geplante Pruefungsperiode und ich moechte das Semester aendern
-    Angenommen es ist eine Pruefungsperiode geplant
-    Wenn ich das Semester von <AltesJahr> <AlterSemestertyp> auf <NeuesJahr> <NeuerSemestertyp> aendere
-    Dann ist am Ende das Semester <NeuesJahr> <NeuerSemestertyp> eingetragen
+    Angenommen es existiert eine Pruefungsperiode
+    Wenn ich ein neues Semester mit dem Jahr <Jahr> und dem Typ <Semestertyp> erstelle
+    Dann erhalte ich das Semester <Semestertyp> <Jahr>
     Beispiele:
-      | AltesJahr | AlterSemestertyp | NeuesJahr | NeuerSemestertyp |
-      | 2020      | "Wintersemester" | 2020      | "Sommersemester" |
-      | 2019      | "Wintersemester" | 2020      | "Sommersemester" |
-      | 2022      | "Sommersemester" | 2021      | "Wintersemester" |
-      | 2021      | "Sommersemester" | 2021      | "Wintersemester" |
-      | 2020      | "Wintersemester" | 2021      | "Wintersemester" |
-
-
+      | Jahr | Semestertyp    |
+      | 2020 | Sommersemester |
+      | 2020 | Sommersemester |
+      | 2021 | Wintersemester |
+      | 2021 | Wintersemester |
+      | 2021 | Wintersemester |
 
     ################################################################
     #####################  Teilnehmerkreise  #######################
@@ -154,17 +158,19 @@ Funktionalität: Als Planer moechte ich Informationen der Pruefungsperiode abfra
 
 
   Szenario: Es gibt keine geplante Pruefungsperiode und ich moechte alle Teilnehmerkreise abfragen
-    Angenommen es ist keine Pruefungsperiode geplant
+    Angenommen es existiert keine Pruefungsperiode
     Wenn ich alle Teilnehmerkreise anfrage
     Dann erhalte ich einen Fehler
 
   Szenario: Es gibt eine geplante Pruefungsperiode und ich moechte alle Teilnehmerkreise abfragen
-    Angenommen es existieren die Teilnehmerkreise B_INF 1 20.0 40, b_inf 2 20.0 40, b_inf 3 20.0 50, b_inf 4 20.0 13
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existieren die Teilnehmerkreise B_INF 1 20.0 40, b_inf 2 20.0 40, b_inf 3 20.0 50, b_inf 4 20.0 13
     Wenn ich alle Teilnehmerkreise anfrage
-    Dann bekomme ich die Teilnehmerkreise "b_inf 1 20.0 40, b_inf 2 20.0 40 ,b_inf 3 20.0 50, b_inf 4 20.0 13"
+    Dann bekomme ich die Teilnehmerkreise B_INF 1 20.0 40, b_inf 2 20.0 40, b_inf 3 20.0 50, b_inf 4 20.0 13
 
 
   Szenario: Es gibt eine geplante Pruefungsperiode und ich moechte alle Teilnehmerkreise abfragen
-    Angenommen es ist eine Pruefungsperiode geplant und es gibt keine Teilnehmerkreise
+    Angenommen es existiert eine Pruefungsperiode
+    Und es gibt keine Teilnehmerkreise
     Wenn ich alle Teilnehmerkreise anfrage
     Dann bekomme ich eine leere Liste

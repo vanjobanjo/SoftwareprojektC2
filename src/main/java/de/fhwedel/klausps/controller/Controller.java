@@ -255,7 +255,7 @@ public class Controller implements InterfaceController {
 
   @Override
   public List<ReadOnlyPlanungseinheit> setKapazitaetPeriode(int kapazitaet)
-      throws NoPruefungsPeriodeDefinedException {
+      throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
     LOGGER.debug("Call to setKapazitaetPeriode({}).", kapazitaet);
     noNullParameters(kapazitaet);
     return converter.convertToROPlanungseinheitList(
