@@ -143,9 +143,7 @@ public class setTerminSteps extends BaseSteps {
 
   @Angenommen("es existiert keine Pruefungsperiode und die Pruefung {string} soll eingeplant werden")
   public void esExistiertKeinePruefungsperiodeUndDiePruefungSollEingeplantWerden(String pruefung)
-      throws IllegalAccessException {
-
-    resetAll();
+       {
 
 
   }
@@ -169,7 +167,7 @@ public class setTerminSteps extends BaseSteps {
     }
   }
 
-  @Dann("bekomme ich eine Fehlermeldung IlligaleArgumentException, da sie in ein Block liegt")
+  @Dann("bekomme ich eine Fehlermeldung IlligaleArgumentException")
   public void bekommeIchEineFehlermeldungIlligaleArgumentExceptionDaSieInEinBlockLiegt() {
     Object exception = state.results.get("exception");
     assertThat(exception).isNotNull();
@@ -187,5 +185,16 @@ public class setTerminSteps extends BaseSteps {
     Object exception = state.results.get("exception");
     assertThat(exception).isNotNull();
     assertThat(exception).isInstanceOf(IllegalStateException.class);
+  }
+
+  @Angenommen("es existiert keine Pruefungsperiode")
+  public void esExistiertKeinePruefungsperiode() throws IllegalAccessException {
+    resetAll();
+  }
+
+  @Und("die Pruefung {string} soll eingeplant werden")
+  public void diePruefungSollEingeplantWerden(String pruefung)
+     {
+
   }
 }

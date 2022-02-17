@@ -142,6 +142,10 @@ public class BaseSteps {
     return allPruefungen;
   }
 
+  /**
+   * Methode um alle static Felder von dem ServiceProvider auf null zu setzen
+   * @throws IllegalAccessException wenn das Feld nicht sichtbar ist
+   */
   protected void resetAll() throws IllegalAccessException {
     // Multiple Fields access
     Field[] fields = ServiceProvider.class.getDeclaredFields();
