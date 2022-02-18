@@ -30,6 +30,9 @@ public class BaseSteps {
 
   public static State state;
 
+  protected static final String EXCEPTION = "exception";
+
+
   protected void createSemester() throws IllegalTimeSpanException {
     Semester semester = new SemesterImpl(WINTERSEMESTER, Year.of(2022));
     LocalDate start = LocalDate.of(2022, 1, 31);
@@ -51,6 +54,10 @@ public class BaseSteps {
     int hours = Integer.parseInt(tmp[0]);
     int minutes = Integer.parseInt(tmp[1]);
     return LocalTime.of(hours, minutes);
+  }
+
+  protected void putExceptionInResult(Exception exception) {
+    state.results.put(EXCEPTION, exception);
   }
 
   /**
@@ -144,6 +151,7 @@ public class BaseSteps {
 
   /**
    * Methode um alle static Felder von dem ServiceProvider auf null zu setzen
+   *
    * @throws IllegalAccessException wenn das Feld nicht sichtbar ist
    */
   protected void resetAll() throws IllegalAccessException {

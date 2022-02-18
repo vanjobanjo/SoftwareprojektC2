@@ -1,7 +1,6 @@
 package integrationTests.steps;
 
 import static de.fhwedel.klausps.model.api.Ausbildungsgrad.BACHELOR;
-import static integrationTests.steps.BaseSteps.state;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,9 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 
-public class getterSetterPruefungsperiode {
-
-  private static final String EXCEPTION = "exception";
+public class getterSetterPruefungsperiode extends BaseSteps {
 
   /**
    * Wandelt ein String in Format dd.mm.yyyy in eine LocalDate um
@@ -86,7 +83,7 @@ public class getterSetterPruefungsperiode {
       LocalDate result = state.controller.getStartDatumPeriode();
       state.results.put("startDate", result);
     } catch (NoPruefungsPeriodeDefinedException e) {
-      state.results.put(EXCEPTION, e);
+      putExceptionInResult(e);
     }
   }
 
@@ -102,7 +99,7 @@ public class getterSetterPruefungsperiode {
       LocalDate result = state.controller.getEndDatumPeriode();
       state.results.put("endDate", result);
     } catch (NoPruefungsPeriodeDefinedException e) {
-      state.results.put(EXCEPTION, e);
+      putExceptionInResult(e);
     }
   }
 
@@ -118,7 +115,7 @@ public class getterSetterPruefungsperiode {
     try {
       state.controller.setDatumPeriode(start, end);
     } catch (NoPruefungsPeriodeDefinedException | IllegalTimeSpanException e) {
-      state.results.put(EXCEPTION, e);
+      putExceptionInResult(e);
     }
   }
 
@@ -135,7 +132,7 @@ public class getterSetterPruefungsperiode {
     try {
       state.controller.setDatumPeriode(start, end);
     } catch (NoPruefungsPeriodeDefinedException | IllegalTimeSpanException e) {
-      state.results.put(EXCEPTION, e);
+      putExceptionInResult(e);
     }
   }
 
@@ -149,7 +146,7 @@ public class getterSetterPruefungsperiode {
       LocalDate result = state.controller.getAnkerPeriode();
       state.results.put("ankertag", result);
     } catch (NoPruefungsPeriodeDefinedException e) {
-      state.results.put(EXCEPTION, e);
+      putExceptionInResult(e);
     }
   }
 
@@ -164,7 +161,7 @@ public class getterSetterPruefungsperiode {
     try {
       state.controller.setAnkerTagPeriode(ankertag);
     } catch (IllegalTimeSpanException | NoPruefungsPeriodeDefinedException e) {
-      state.results.put(EXCEPTION, e);
+      putExceptionInResult(e);
     }
   }
 
@@ -185,7 +182,7 @@ public class getterSetterPruefungsperiode {
       int result = state.controller.getKapazitaetPeriode();
       state.results.put("kapazitaet", result);
     } catch (NoPruefungsPeriodeDefinedException e) {
-      state.results.put(EXCEPTION, e);
+      putExceptionInResult(e);
     }
   }
 
@@ -201,7 +198,7 @@ public class getterSetterPruefungsperiode {
       List<ReadOnlyPlanungseinheit> result = state.controller.setKapazitaetPeriode(kapazitaet);
       state.results.put("changed", result);
     } catch (NoPruefungsPeriodeDefinedException | IllegalArgumentException e) {
-      state.results.put(EXCEPTION, e);
+      putExceptionInResult(e);
     }
   }
 
@@ -224,7 +221,7 @@ public class getterSetterPruefungsperiode {
       result.add(teilnehmerkreis);
       state.results.put("changed", result);
     } catch (NoPruefungsPeriodeDefinedException e) {
-      state.results.put(EXCEPTION, e);
+      putExceptionInResult(e);
     }
   }
 
@@ -259,7 +256,7 @@ public class getterSetterPruefungsperiode {
       Semester result = state.controller.getSemester();
       state.results.put("semester", result);
     } catch (NoPruefungsPeriodeDefinedException e) {
-      state.results.put(EXCEPTION, e);
+      putExceptionInResult(e);
     }
   }
 
@@ -296,7 +293,7 @@ public class getterSetterPruefungsperiode {
       Set<Teilnehmerkreis> result = state.controller.getAllTeilnehmerKreise();
       state.results.put("teilnehmerkreise", result);
     } catch (NoPruefungsPeriodeDefinedException e) {
-      state.results.put(EXCEPTION, e);
+      putExceptionInResult(e);
     }
   }
 
