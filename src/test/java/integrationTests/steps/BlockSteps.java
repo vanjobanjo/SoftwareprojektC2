@@ -40,7 +40,7 @@ public class BlockSteps extends BaseSteps {
       state.results.put("bloecke",
           state.controller.getUngeplanteBloecke());
     } catch (NoPruefungsPeriodeDefinedException e) {
-      state.results.put("exception", e);
+      putExceptionInResult(e);
     }
   }
 }

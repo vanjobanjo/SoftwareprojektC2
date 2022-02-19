@@ -1,6 +1,5 @@
 package integrationTests.steps;
 
-import static integrationTests.steps.BaseSteps.state;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
@@ -14,7 +13,7 @@ import java.util.List;
 import java.util.Set;
 import org.junit.AssumptionViolatedException;
 
-public class getGeplanteBloeckeIT {
+public class getGeplanteBloeckeIT extends BaseSteps {
 
   @Und("es gibt die folgenden geplanten Bloecke:")
   public void esGibtDieBloecke(DataTable table) {
@@ -28,7 +27,7 @@ public class getGeplanteBloeckeIT {
       state.results.put("bloecke",
           state.controller.getGeplanteBloecke());
     } catch (NoPruefungsPeriodeDefinedException e) {
-      state.results.put("exception", e);
+      putExceptionInResult(e);
     }
   }
 
@@ -56,6 +55,4 @@ public class getGeplanteBloeckeIT {
   public void esGibtDieFolgendenGeplantenUndUngeplantenBloecke(DataTable table) {
     throw new AssumptionViolatedException("Not implemented yet!");
   }
-
-
 }

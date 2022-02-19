@@ -360,9 +360,10 @@ public class DataAccessService {
     noNullParameters(pruefung, pruefungsnummer);
     noEmptyStrings(pruefungsnummer);
     Pruefung modelPruefung = getPruefung(pruefung);
+    Optional<Block> modelBlock = getBlockTo(pruefung);
 
     if (modelPruefung.getPruefungsnummer().equals(pruefungsnummer)) {
-      return modelPruefung;
+      return modelBlock.isPresent() ? modelBlock.get() : modelPruefung;
     }
 
     if (existsPruefungWith(pruefungsnummer)) {
@@ -371,7 +372,7 @@ public class DataAccessService {
     LOGGER.debug("Changing Pruefungsnummer for {} in Model from {} to {}.", modelPruefung,
         modelPruefung.getPruefungsnummer(), pruefungsnummer);
     modelPruefung.setPruefungsnummer(pruefungsnummer);
-    return modelPruefung;
+    return modelBlock.isPresent() ? modelBlock.get() : modelPruefung;
   }
 
   public Optional<Block> deletePruefung(ReadOnlyPruefung roPruefung)
@@ -624,19 +625,19 @@ public class DataAccessService {
     Set<Planungseinheit> planungseinheiten = pruefungsperiode.getPlanungseinheiten();
     Set<Pruefung> result = new HashSet<>();
     for (Planungseinheit planungseinheit : planungseinheiten) {
-     addPruefungToResultIfItHasPruefer(result, pruefer, planungseinheit);
+      addPruefungToResultIfItHasPruefer(result, pruefer, planungseinheit);
     }
     LOGGER.debug("All Pruefungen from {} are: {}", pruefer, result);
     return result;
   }
 
   /**
-   * Adds Pruefungen with the specified pruefer to the result.<br>
-   * If planungseinheit is a Pruefung, the Planungseinheit may be added as a Pruefung.<br>
-   * If planungseinheit is a Block, all contained Pruefungen with the specified Pruefer are added
-   * to the result.
-   * @param result the set of pruefungen with this pruefer
-   * @param pruefer the pruefer to check for
+   * Adds Pruefungen with the specified pruefer to the result.<br> If planungseinheit is a Pruefung,
+   * the Planungseinheit may be added as a Pruefung.<br> If planungseinheit is a Block, all
+   * contained Pruefungen with the specified Pruefer are added to the result.
+   *
+   * @param result          the set of pruefungen with this pruefer
+   * @param pruefer         the pruefer to check for
    * @param planungseinheit the Planungseinheit to check
    */
   private void addPruefungToResultIfItHasPruefer(Set<Pruefung> result, String pruefer,
