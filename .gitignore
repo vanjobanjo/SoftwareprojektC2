@@ -34,3 +34,10 @@ bin/
 
 # reporting
 /reports
+
+# latex
+*.aux
+*.pdf
+*.toc
+*.gz
+*.out
