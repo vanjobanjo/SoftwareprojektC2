@@ -1,15 +1,30 @@
 package integrationTests.steps;
 
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
+
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
+import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
+import de.fhwedel.klausps.model.api.Blocktyp;
 import io.cucumber.java.de.Angenommen;
 import io.cucumber.java.de.Dann;
 import io.cucumber.java.de.Wenn;
+import java.time.Duration;
 import org.junit.AssumptionViolatedException;
 
-public class setNameBlockSteps {
+public class setNameBlockSteps extends BaseSteps {
 
   @Angenommen("es existiert der geplante Block {string}")
-  public void esExistiertDerGeplanteBlock(String blockName) {
-    throw new AssumptionViolatedException("Not implemented yet!");
+  public void esExistiertDerGeplanteBlock(String blockName)
+      throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
+    ReadOnlyBlock blockToChange = state.controller.createBlock(blockName, Blocktyp.PARALLEL);
+    ReadOnlyPruefung pruefungToChange = state.controller.createPruefung("name", "name",
+        "name", emptySet(), Duration.ofHours(1), emptyMap());
+    state.controller.addPruefungToBlock(blockToChange, pruefungToChange);
+    state.controller.scheduleBlock(blockToChange,
+        state.controller.getStartDatumPeriode().atStartOfDay());
   }
 
   @Wenn("ich den Namen des Blocks auf {string} aendere")
