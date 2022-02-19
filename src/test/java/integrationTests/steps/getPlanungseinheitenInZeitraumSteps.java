@@ -31,7 +31,7 @@ public class getPlanungseinheitenInZeitraumSteps extends BaseSteps {
     List<String> splitBloecke = List.of(bloecke.split(", "));
     int blockCount = 0;
     int pruefungsCount = 0;
-    assertThat(state.results.get(EXCEPTION)).isNull();
+    assertThat(getExceptionFromResult()).isNull();
     assertThat(state.results.get("planungseinheiten")).isNotNull();
 
     if (state.results.get("planungseinheiten") instanceof Set<?> result) {
@@ -59,7 +59,7 @@ public class getPlanungseinheitenInZeitraumSteps extends BaseSteps {
 
   @Dann("dann erhalte ich keine Planungseinheiten")
   public void dannErhalteIchKeinePlanungseinheiten() {
-    assertThat(state.results.get(EXCEPTION)).isNull();
+    assertThat(getExceptionFromResult()).isNull();
     assertThat(state.results.get("planungseinheiten")).isNotNull();
     assertThat((Set<ReadOnlyPlanungseinheit>) state.results.get("planungseinheiten")).isEmpty();
   }
@@ -67,7 +67,7 @@ public class getPlanungseinheitenInZeitraumSteps extends BaseSteps {
   @Dann("erhalte ich die Pruefungen {string}")
   public void erhalteIchDiePruefungen(String pruefungen) {
     List<String> splitPruefungen = List.of(pruefungen.split(", "));
-    assertThat(state.results.get(EXCEPTION)).isNull();
+    assertThat(getExceptionFromResult()).isNull();
     assertThat(state.results.get("planungseinheiten")).isNotNull();
 
     if (state.results.get("planungseinheiten") instanceof Set<?> result) {

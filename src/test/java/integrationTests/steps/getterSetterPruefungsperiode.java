@@ -71,7 +71,7 @@ public class getterSetterPruefungsperiode extends BaseSteps {
 
   @Dann("erhalte ich einen Fehler")
   public void erhalteIchEinenFehler() {
-    assertThat(state.results.get(EXCEPTION)).isNotNull();
+    assertThat(getExceptionFromResult()).isNotNull();
   }
   // ------------------------------------------------------------
   // ------------------ Start- und Enddatum ---------------------
@@ -90,7 +90,7 @@ public class getterSetterPruefungsperiode extends BaseSteps {
   @Dann("erhalte ich das Startdatum")
   public void erhalteIchDasStartdatum() {
     assertThat(state.results.get("startDate")).isNotNull();
-    assertThat(state.results.get(EXCEPTION)).isNull();
+    assertThat(getExceptionFromResult()).isNull();
   }
 
   @Wenn("ich das Enddatum der Periode anfrage")
@@ -105,8 +105,8 @@ public class getterSetterPruefungsperiode extends BaseSteps {
 
   @Dann("erhalte ich das Enddatum")
   public void erhalteIchDasEnddatum() {
+    assertThat(getExceptionFromResult()).isNull();
     assertThat(state.results.get("endDate")).isNotNull();
-    assertThat(state.results.get(EXCEPTION)).isNull();
   }
 
   @Wenn("ich das {localDate} und das {localDate} der Periode aendere")
@@ -122,9 +122,9 @@ public class getterSetterPruefungsperiode extends BaseSteps {
   @Dann("werden die Daten auf {localDate} und {localDate} geaendert")
   public void werdenDieDatenEntsprechendGeaendert(LocalDate start, LocalDate end)
       throws NoPruefungsPeriodeDefinedException {
+    assertThat(getExceptionFromResult()).isNull();
     assertThat(state.controller.getStartDatumPeriode()).isEqualTo(start);
     assertThat(state.controller.getEndDatumPeriode()).isEqualTo(end);
-    assertThat(state.results.get(EXCEPTION)).isNull();
   }
 
   @Wenn("ich das Startdatum auf {localDate} und das Enddatum auf {localDate} setze")
@@ -152,8 +152,8 @@ public class getterSetterPruefungsperiode extends BaseSteps {
 
   @Dann("erhalte ich den Ankertag")
   public void erhalteIchDenAnkertag() {
+    assertThat(getExceptionFromResult()).isNull();
     assertThat(state.results.get("ankertag")).isNotNull();
-    assertThat(state.results.get(EXCEPTION)).isNull();
   }
 
   @Wenn("ich den Ankertag auf {localDate} setze")
@@ -168,7 +168,7 @@ public class getterSetterPruefungsperiode extends BaseSteps {
   @Dann("wird der Ankertag auf {localDate} geaendert")
   public void wirdDerAnkertagAufGeaendert(LocalDate ankertag)
       throws NoPruefungsPeriodeDefinedException {
-    assertThat(state.results.get(EXCEPTION)).isNull();
+    assertThat(getExceptionFromResult()).isNull();
     assertThat(state.controller.getAnkerPeriode()).isEqualTo(ankertag);
   }
 
@@ -189,7 +189,7 @@ public class getterSetterPruefungsperiode extends BaseSteps {
   @Dann("erhalte ich die Kapazitaet")
   public void erhalteIchDieKapazitaet() {
     assertThat(state.results.get("kapazitaet")).isNotNull();
-    assertThat(state.results.get(EXCEPTION)).isNull();
+    assertThat(getExceptionFromResult()).isNull();
   }
 
   @Wenn("ich die Kapazitaet auf den Wert {int} setze")
@@ -204,8 +204,8 @@ public class getterSetterPruefungsperiode extends BaseSteps {
 
   @Dann("erhalte ich eine Liste mit Klausuren deren Bewertung veraendert wurde")
   public void erhalteListeMitGeaenderterBewertung() {
+    assertThat(getExceptionFromResult()).isNull();
     assertThat(state.results.get("changed")).isNotNull();
-    assertThat(state.results.get(EXCEPTION)).isNull();
   }
 
   @Und("es sind Pruefungen geplant")
@@ -227,8 +227,8 @@ public class getterSetterPruefungsperiode extends BaseSteps {
 
   @Dann("erhalte ich eine Liste ohne Klausuren")
   public void erhalteIchEineListeOhneKlausuren() {
+    assertThat(getExceptionFromResult()).isNull();
     assertThat(state.results.get("changed")).isNotNull();
-    assertThat(state.results.get(EXCEPTION)).isNull();
     if (state.results.get("changed") instanceof List<?> changed) {
       assertThat(changed).isEmpty();
     } else {
@@ -269,7 +269,7 @@ public class getterSetterPruefungsperiode extends BaseSteps {
 
   @Dann("erhalte ich das Semester")
   public void erhalteIchDasSemester() {
-    assertThat(state.results.get(EXCEPTION)).isNull();
+    assertThat(getExceptionFromResult()).isNull();
     assertThat(state.results.get("semester")).isNotNull();
   }
 

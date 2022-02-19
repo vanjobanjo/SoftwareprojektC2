@@ -60,6 +60,10 @@ public class BaseSteps {
     state.results.put(EXCEPTION, exception);
   }
 
+  protected Object getExceptionFromResult() {
+    return state.results.get(EXCEPTION);
+  }
+
   /**
    * Gets any Planungseinheit (either Block or Pruefung) with a specific name out of the model.
    * Throws exception if not existent!
