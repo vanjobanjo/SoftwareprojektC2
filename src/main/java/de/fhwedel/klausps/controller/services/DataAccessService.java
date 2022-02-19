@@ -22,6 +22,7 @@ import de.fhwedel.klausps.model.impl.PruefungImpl;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -429,13 +430,27 @@ public class DataAccessService {
       throw new IllegalArgumentException("Nur für ungeplante Blöcke möglich!");
     }
     // check if Pruefungen in Block exist
-    for (ReadOnlyPruefung pruefung : block.getROPruefungen()) {
-      getPruefung(pruefung);
-    }
-    Set<Pruefung> modelPruefungen = model.getPruefungen();
+    getPruefungenOf(block);
     LOGGER.debug("Deleting {} in Model.", model);
     pruefungsperiode.removePlanungseinheit(model);
-    return new LinkedList<>(modelPruefungen);
+    return new LinkedList<>(getPruefungenOf(block));
+  }
+
+  /**
+   * Get the pruefungen associated with the model representation of a block.
+   *
+   * @param block The blk to get the pruefungen for.
+   * @return The pruefungen associated with the model representation of a block.
+   * @throws NoPruefungsPeriodeDefinedException In case the method is called without an existing
+   *                                            Pruefungsperiode.
+   */
+  private List<Pruefung> getPruefungenOf(ReadOnlyBlock block)
+      throws NoPruefungsPeriodeDefinedException {
+    List<Pruefung> pruefungen = new ArrayList<>(block.getROPruefungen().size());
+    for (ReadOnlyPruefung pruefung : block.getROPruefungen()) {
+      pruefungen.add(getPruefung(pruefung));
+    }
+    return pruefungen;
   }
 
   public Block createBlock(String name, Blocktyp type, ReadOnlyPruefung... pruefungen)
