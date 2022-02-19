@@ -1,5 +1,5 @@
 # language: de
-Funktionalität: Als Planende*r moechte ich Pruefungen und Bloecke innerhalb eines Zeitraums abfragen.
+Funktionalität: Als Planende*r moechte ich Pruefungen innerhalb eines Zeitraums abfragen.
   Datatable:
 
   Szenario: Ich frage den gesamten Zeitraum der Pruefungsperiode ab
@@ -13,10 +13,10 @@ Funktionalität: Als Planende*r moechte ich Pruefungen und Bloecke innerhalb ein
     Angenommen es existieren die folgenden Bloecke:
       | Block   | Datum      | StartZeit | Pruefungen  |
       | block 1 | 11.02.2022 | 08:30     | Datascience |
-    Wenn ich alle Planungseinheiten im Zeitraum 01.01.2022 - 01.03.2022 anfrage
-    Dann erhalte ich die Pruefungen "AuD, DM" und die Bloecke "block 1"
+    Wenn ich alle Pruefungen im Zeitraum 01.01.2022 - 01.03.2022 anfrage
+    Dann bekomme ich die Pruefungen "AuD, DM, Datascience"
 
-Szenario: Ich frage einen Zeitraum ab, der die Pruefungsperiode einschliesst
+  Szenario: Ich frage einen Zeitraum ab, der die Pruefungsperiode einschliesst
     Angenommen es existiert eine Pruefungsperiode von 01.01.2022 - 01.03.2022
     Angenommen es existieren die folgenden Klausuren:
       | Name        | Datum      | StartZeit | Dauer |
@@ -27,8 +27,8 @@ Szenario: Ich frage einen Zeitraum ab, der die Pruefungsperiode einschliesst
     Angenommen es existieren die folgenden Bloecke:
       | Block   | Datum      | StartZeit | Pruefungen  |
       | block 1 | 11.02.2022 | 08:30     | Datascience |
-    Wenn ich alle Planungseinheiten im Zeitraum 01.01.2021 - 01.03.2023 anfrage
-    Dann erhalte ich die Pruefungen "AuD, DM" und die Bloecke "block 1"
+    Wenn ich alle Pruefungen im Zeitraum 01.01.2021 - 01.03.2023 anfrage
+    Dann bekomme ich die Pruefungen "AuD, DM, Datascience"
 
 
   Szenario: Ich frage einen Zeitraum innerhalb der Pruefungsperiode ab
@@ -42,8 +42,8 @@ Szenario: Ich frage einen Zeitraum ab, der die Pruefungsperiode einschliesst
     Angenommen es existieren die folgenden Bloecke:
       | Block   | Datum      | StartZeit | Pruefungen  |
       | block 1 | 09.03.2022 | 08:30     | Datascience |
-    Wenn ich alle Planungseinheiten im Zeitraum 15.01.2022 - 01.03.2022 anfrage
-    Dann erhalte ich die Pruefungen "DM, AuD"
+    Wenn ich alle Pruefungen im Zeitraum 15.01.2022 - 01.03.2022 anfrage
+    Dann bekomme ich die Pruefungen "DM, AuD"
 
 
   Szenario: Ich frage einen Zeitraum vor der Pruefungsperiode ab
@@ -57,10 +57,10 @@ Szenario: Ich frage einen Zeitraum ab, der die Pruefungsperiode einschliesst
     Angenommen es existieren die folgenden Bloecke:
       | Block   | Datum      | StartZeit | Pruefungen  |
       | block 1 | 11.02.2022 | 08:30     | Datascience |
-    Wenn ich alle Planungseinheiten im Zeitraum 01.12.2021 - 31.12.2021 anfrage
-    Dann erhalte ich keine Planungseinheiten
+    Wenn ich alle Pruefungen im Zeitraum 01.12.2021 - 31.12.2021 anfrage
+    Dann bekomme ich keine Pruefungen
 
-Szenario: Ich frage einen Zeitraum nach der Pruefungsperiode ab
+  Szenario: Ich frage einen Zeitraum nach der Pruefungsperiode ab
     Angenommen es existiert eine Pruefungsperiode von 01.01.2022 - 01.03.2022
     Angenommen es existieren die folgenden Klausuren:
       | Name        | Datum      | StartZeit | Dauer |
@@ -71,10 +71,10 @@ Szenario: Ich frage einen Zeitraum nach der Pruefungsperiode ab
     Angenommen es existieren die folgenden Bloecke:
       | Block   | Datum      | StartZeit | Pruefungen  |
       | block 1 | 11.02.2022 | 08:30     | Datascience |
-    Wenn ich alle Planungseinheiten im Zeitraum 02.03.2022 - 01.04.2022 anfrage
-    Dann erhalte ich keine Planungseinheiten
+    Wenn ich alle Pruefungen im Zeitraum 02.03.2022 - 01.04.2022 anfrage
+    Dann bekomme ich keine Pruefungen
 
-Szenario: Ich frage einen Zeitraum der teilweise vor der Pruefungsperiode liegt ab
+  Szenario: Ich frage einen Zeitraum der teilweise vor der Pruefungsperiode liegt ab
     Angenommen es existiert eine Pruefungsperiode von 01.01.2022 - 01.03.2022
     Angenommen es existieren die folgenden Klausuren:
       | Name        | Datum      | StartZeit | Dauer |
@@ -85,11 +85,11 @@ Szenario: Ich frage einen Zeitraum der teilweise vor der Pruefungsperiode liegt 
     Angenommen es existieren die folgenden Bloecke:
       | Block   | Datum      | StartZeit | Pruefungen  |
       | block 1 | 09.01.2022 | 08:30     | Datascience |
-    Wenn ich alle Planungseinheiten im Zeitraum 12.12.2021 - 10.01.2022 anfrage
-    Dann erhalte ich die Pruefungen "AuD" und die Bloecke "block 1"
+    Wenn ich alle Pruefungen im Zeitraum 12.12.2021 - 10.01.2022 anfrage
+    Dann bekomme ich die Pruefungen "AuD, Datascience"
 
 
-Szenario: Ich frage einen Zeitraum der teilweise nach der Pruefungsperiode liegt ab
+  Szenario: Ich frage einen Zeitraum der teilweise nach der Pruefungsperiode liegt ab
     Angenommen es existiert eine Pruefungsperiode von 01.01.2022 - 01.03.2022
     Angenommen es existieren die folgenden Klausuren:
       | Name        | Datum      | StartZeit | Dauer |
@@ -100,5 +100,5 @@ Szenario: Ich frage einen Zeitraum der teilweise nach der Pruefungsperiode liegt
     Angenommen es existieren die folgenden Bloecke:
       | Block   | Datum      | StartZeit | Pruefungen  |
       | block 1 | 09.02.2022 | 08:30     | Datascience |
-    Wenn ich alle Planungseinheiten im Zeitraum 15.01.2022 - 01.04.2022 anfrage
-    Dann erhalte ich die Pruefungen "DM" und die Bloecke "block 1"
+    Wenn ich alle Pruefungen im Zeitraum 15.01.2022 - 01.04.2022 anfrage
+    Dann bekomme ich die Pruefungen "DM, Datascience"

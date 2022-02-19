@@ -57,7 +57,7 @@ public class getPlanungseinheitenInZeitraumSteps extends BaseSteps {
     }
   }
 
-  @Dann("dann erhalte ich keine Planungseinheiten")
+  @Dann("erhalte ich keine Planungseinheiten")
   public void dannErhalteIchKeinePlanungseinheiten() {
     assertThat(getExceptionFromResult()).isNull();
     assertThat(state.results.get("planungseinheiten")).isNotNull();
