@@ -608,17 +608,36 @@ public class DataAccessService {
         pruefungsperiode.getPlanungseinheiten());
     Set<Planungseinheit> planungseinheiten = pruefungsperiode.getPlanungseinheiten();
     Set<Pruefung> result = new HashSet<>();
-    Pruefung pruefung;
     for (Planungseinheit planungseinheit : planungseinheiten) {
-      if (!planungseinheit.isBlock()) {
-        pruefung = planungseinheit.asPruefung();
-        if (pruefung.getPruefer().contains(pruefer)) {
-          result.add(pruefung);
-        }
-      }
+     addPruefungToResultIfItHasPruefer(result, pruefer, planungseinheit);
     }
     LOGGER.debug("All Pruefungen from {} are: {}", pruefer, result);
     return result;
+  }
+
+  /**
+   * Adds Pruefungen with the specified pruefer to the result.<br>
+   * If planungseinheit is a Pruefung, the Planungseinheit may be added as a Pruefung.<br>
+   * If planungseinheit is a Block, all contained Pruefungen with the specified Pruefer are added
+   * to the result.
+   * @param result the set of pruefungen with this pruefer
+   * @param pruefer the pruefer to check for
+   * @param planungseinheit the Planungseinheit to check
+   */
+  private void addPruefungToResultIfItHasPruefer(Set<Pruefung> result, String pruefer,
+      Planungseinheit planungseinheit) {
+    if (planungseinheit.isBlock()) {
+      for (Pruefung bPruefung : planungseinheit.asBlock().getPruefungen()) {
+        if (bPruefung.getPruefer().contains(pruefer)) {
+          result.add(bPruefung);
+        }
+      }
+    } else {
+      Pruefung pruefung = planungseinheit.asPruefung();
+      if (pruefung.getPruefer().contains(pruefer)) {
+        result.add(pruefung);
+      }
+    }
   }
 
   @NotNull
