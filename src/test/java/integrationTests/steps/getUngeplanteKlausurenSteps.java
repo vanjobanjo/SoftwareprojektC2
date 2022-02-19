@@ -18,7 +18,6 @@ import io.cucumber.java.DataTableType;
 import io.cucumber.java.de.Angenommen;
 import io.cucumber.java.de.Dann;
 import io.cucumber.java.de.Wenn;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Year;
@@ -38,11 +37,6 @@ public class getUngeplanteKlausurenSteps extends BaseSteps {
         parseDuration(entry.get("Dauer")));
   }
 
-  private Duration parseDuration(String durationTxt) {
-    String[] tmp = durationTxt.split(":");
-    return Duration.ofHours(Integer.parseInt(tmp[0]))
-        .plus(Duration.ofMinutes(Integer.parseInt(tmp[1])));
-  }
 
   @Angenommen("es existieren die folgenden Klausuren:")
   public void esExistierenDieFolgendenKlausuren(List<Map<String, String>> pruefungen)

@@ -8,18 +8,23 @@ import de.fhwedel.klausps.controller.Controller;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
+import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.impl.SemesterImpl;
 import integrationTests.state.State;
+import io.cucumber.java.de.Angenommen;
 import java.lang.reflect.Field;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Year;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
@@ -32,6 +37,12 @@ public class BaseSteps {
 
   protected static final String EXCEPTION = "exception";
 
+
+  protected Duration parseDuration(String durationTxt) {
+    String[] tmp = durationTxt.split(":");
+    return Duration.ofHours(Integer.parseInt(tmp[0]))
+        .plus(Duration.ofMinutes(Integer.parseInt(tmp[1])));
+  }
 
   protected void createSemester() throws IllegalTimeSpanException {
     Semester semester = new SemesterImpl(WINTERSEMESTER, Year.of(2022));
