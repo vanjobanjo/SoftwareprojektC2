@@ -105,8 +105,7 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
   private Optional<WeichesKriteriumAnalyse> concatAnalyse(
       WeichesKriteriumAnalyse newAnalyse, Optional<WeichesKriteriumAnalyse> oldAnalyse) {
     assert newAnalyse != null;
-    // todo zweiter Parameter muss gar nicht erst übergeben werden, wenn vor Aufruf der
-    //  Methode schon auf isEmpty() überprüft wird
+
     if (oldAnalyse.isEmpty()) {
       return Optional.of(newAnalyse);
     }
@@ -126,7 +125,7 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
   }
 
   /**
-   * Evaluation for the Anzahl Prufung Pro Woche Teilnehmerkreis. Will concate the analysen when
+   * Evaluation for the Anzahl Prufung Pro Woche Teilnehmerkreis. Will concat the analysen when
    * there was another violation.
    *
    * @param pruefung           Pruefung to check the violation

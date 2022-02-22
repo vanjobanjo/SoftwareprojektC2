@@ -51,6 +51,13 @@ public class DataAccessService {
     this.pruefungsperiode = pruefungsperiode;
   }
 
+  /**
+   * Sets the kapazität of the periode with the passed kapazitaet
+   *
+   * @param kapazitaet to set
+   * @throws IllegalArgumentException           when the passed number is negative
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   */
   public void setKapazitaetStudents(int kapazitaet)
       throws IllegalArgumentException, NoPruefungsPeriodeDefinedException {
     if (kapazitaet <= 0) {
@@ -62,6 +69,19 @@ public class DataAccessService {
     pruefungsperiode.setKapazitaet(kapazitaet);
   }
 
+  /**
+   * Creates a pruefung inside the periode which is set
+   *
+   * @param name             name of the pruefung
+   * @param pruefungsNr      number of the pruefung
+   * @param refVWS           reference of the pruefung
+   * @param pruefer          set of pruefer
+   * @param duration         duration of the pruefung
+   * @param teilnehmerkreise teilnehmerkreise with schaetzung as a map
+   * @return the created pruefung is ungeplant
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   * @throws IllegalArgumentException           when duplicated pruefungsnummern
+   */
   public Pruefung createPruefung(String name, String pruefungsNr, String refVWS,
       Set<String> pruefer,
       Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreise)
@@ -72,7 +92,7 @@ public class DataAccessService {
     checkForPruefungsperiode();
     if (existsPruefungWith(pruefungsNr)) {
       LOGGER.trace("Found Pruefung with Pruefungsnummer {} in Model", pruefungsNr);
-      throw new IllegalArgumentException("Es existiert bereits eine Prüfung mit diesem Namen");
+      throw new IllegalArgumentException("Es existiert bereits eine Prüfung mit dieser Nummer");
     }
     if (duration.isZero() || duration.isNegative()) {
       throw new IllegalArgumentException("Die Dauer einer Prüfung muss positiv sein.");
@@ -92,6 +112,18 @@ public class DataAccessService {
 
   }
 
+  /**
+   * Creates a pruefung with only one pruefer
+   *
+   * @param name             name of the pruefung
+   * @param pruefungsNr      number of the pruefung
+   * @param refVWS           reference of the pruefung
+   * @param pruefer          name of the pruefer
+   * @param duration         duration of the pruefung
+   * @param teilnehmerkreise teilnehmerkreise with schaetzungen
+   * @return the created model pruefung
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   */
   public Pruefung createPruefung(String name, String pruefungsNr, String refVWS,
       String pruefer,
       Duration duration, Map<Teilnehmerkreis, Integer> teilnehmerkreise)
@@ -99,6 +131,11 @@ public class DataAccessService {
     return createPruefung(name, pruefungsNr, refVWS, Set.of(pruefer), duration, teilnehmerkreise);
   }
 
+  /**
+   * Checks if periode is set
+   *
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   */
   private void checkForPruefungsperiode() throws NoPruefungsPeriodeDefinedException {
     LOGGER.trace("Check if pruefungsperiode is set.");
     if (pruefungsperiode == null) {
@@ -106,10 +143,22 @@ public class DataAccessService {
     }
   }
 
+  /**
+   * Checks if a pruefung with the passed number is set
+   *
+   * @param pruefungsNummer passed number
+   * @return true when a pruefung with the passed number is set
+   */
   public boolean existsPruefungWith(String pruefungsNummer) {
     return pruefungsperiode.pruefung(pruefungsNummer) != null;
   }
 
+  /**
+   * Adds the passed teilnehmerkreisschaetzung to the passed pruefung
+   *
+   * @param pruefung         to add the teilnehmerkreis to
+   * @param teilnehmerkreise passed teilnehmerkreisschaetzung to be added to the passed pruefung
+   */
   private void addTeilnehmerKreisSchaetzungToModelPruefung(Pruefung pruefung,
       Map<Teilnehmerkreis, Integer> teilnehmerkreise) {
     for (Entry<Teilnehmerkreis, Integer> teilnehmerkreis : teilnehmerkreise.entrySet()) {
@@ -117,6 +166,11 @@ public class DataAccessService {
     }
   }
 
+  /**
+   * Checks if a periode is set
+   *
+   * @return true when it is set otherwise false
+   */
   public boolean isPruefungsperiodeSet() {
     return nonNull(pruefungsperiode);
   }
@@ -141,6 +195,13 @@ public class DataAccessService {
     }
   }
 
+  /**
+   * Ensures that the passed termin with the passed duration is in the periode of the periode which
+   * is set
+   *
+   * @param startTermin start termin of the pruefung to ensure
+   * @param duration    duration of the pruefung to ensure
+   */
   private void ensurePlanungseinheitIsInPeriode(LocalDateTime startTermin, Duration duration) {
     if (startTermin.isBefore(pruefungsperiode.getStartdatum().atStartOfDay())) {
       throw new IllegalArgumentException(
@@ -153,7 +214,14 @@ public class DataAccessService {
     }
   }
 
-
+  /**
+   * Gets the model pruefung to the passed DTO pruefung
+   *
+   * @param readOnlyPruefung DTOPruefung to get the model pruefung
+   * @return model pruefung
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   * @throws IllegalStateException              an exception from the model
+   */
   public Pruefung getPruefung(ReadOnlyPruefung readOnlyPruefung)
       throws NoPruefungsPeriodeDefinedException, IllegalStateException {
     noNullParameters(readOnlyPruefung);
@@ -205,6 +273,15 @@ public class DataAccessService {
     return modelBlock;
   }
 
+  /**
+   * Changes the name of the passed pruefung to passed name
+   *
+   * @param toChange DTOPruefung to change the name
+   * @param name     the new name
+   * @return the block when the pruefung was inside a block, or a pruefung
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   * @throws IllegalArgumentException           when the pruefung doesn't exist
+   */
   public Planungseinheit changeNameOf(ReadOnlyPruefung toChange, String name)
       throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
     noNullParameters(toChange, name);
@@ -216,6 +293,16 @@ public class DataAccessService {
     return pruefung;
   }
 
+  /**
+   * Gets a set of Planungseinheiten, which are scheduled between the passed start and end. Uses the
+   * model implementation. Check the documentation of the model for further details.
+   *
+   * @param start start
+   * @param end   end
+   * @return set of planungseinheiten without duplicates
+   * @throws IllegalTimeSpanException           when start is after end or inversly
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   */
   public Set<Planungseinheit> getAllPlanungseinheitenBetween(LocalDateTime start,
       LocalDateTime end) throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     noNullParameters(start, end);
@@ -237,6 +324,16 @@ public class DataAccessService {
     this.pruefungsperiode = pruefungsperiode;
   }
 
+  /**
+   * Gets a set of Pruefungen, which are scheduled between the passed start and end. Uses the model
+   * implementation. Check the documentation of the model for further details.
+   *
+   * @param start start
+   * @param end   end
+   * @return set of pruefungen, also the one which are inside a block
+   * @throws IllegalTimeSpanException           when start is after end or inversly
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   */
   @NotNull
   public Set<Pruefung> getAllPruefungenBetween(LocalDateTime start, LocalDateTime end)
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
@@ -252,6 +349,12 @@ public class DataAccessService {
     return getAllPruefungen(planungseinheitenBetween);
   }
 
+  /**
+   * Gets all planned pruefungen of the periode
+   *
+   * @return set of pruefungen which are planned, also the ones which are inside a block
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   */
   public Set<Pruefung> getPlannedPruefungen() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
     LOGGER.debug("Request all planned Pruefungen from Model: {}.",
@@ -259,6 +362,12 @@ public class DataAccessService {
     return pruefungsperiode.geplantePruefungen();
   }
 
+  /**
+   * Gets all unplanned pruefungen of the periode
+   *
+   * @return set of pruefungen which are unplanned, also the ones which are inside a block
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   */
   @NotNull
   public Set<Pruefung> getUngeplantePruefungen() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
@@ -267,6 +376,12 @@ public class DataAccessService {
     return pruefungsperiode.ungeplantePruefungen();
   }
 
+  /**
+   * Gets all planned blocks of the periode
+   *
+   * @return set of blocks which are planned
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   */
   @NotNull
   public Set<Block> getGeplanteBloecke() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
@@ -274,6 +389,12 @@ public class DataAccessService {
     return pruefungsperiode.geplanteBloecke();
   }
 
+  /**
+   * Gets all unplanned blocks of the periode
+   *
+   * @return set of blocks which are unplanned
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   */
   @NotNull
   public Set<Block> getUngeplanteBloecke() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
@@ -281,6 +402,13 @@ public class DataAccessService {
     return pruefungsperiode.ungeplanteBloecke();
   }
 
+  /**
+   * Gets unplannend pruefungen filtered by the passed teilnehmerkreis
+   *
+   * @param teilnehmerkreis pruefungen with teilnehmerkreis to consider
+   * @return set of unplanned pruefungen which contain the passed teilnehmerkreis
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   */
   @NotNull
   public Set<Pruefung> ungeplantePruefungenForTeilnehmerkreis(Teilnehmerkreis teilnehmerkreis)
       throws NoPruefungsPeriodeDefinedException {
@@ -292,6 +420,13 @@ public class DataAccessService {
     return result;
   }
 
+  /**
+   * Filters the passed collection of pruefung with the passed teilnehmerkreis
+   *
+   * @param pruefungen      collection of pruefungen to filter with the passed teilnehmerkreis
+   * @param teilnehmerkreis to consider
+   * @return set of pruefungen which contain the passed teilnehmerkreis
+   */
   private Set<Pruefung> filterPruefungenWith(Collection<Pruefung> pruefungen,
       Teilnehmerkreis teilnehmerkreis) {
     Set<Pruefung> result = new HashSet<>();
@@ -303,6 +438,13 @@ public class DataAccessService {
     return result;
   }
 
+  /**
+   * Gets plannend pruefungen filtered by the passed teilnehmerkreis
+   *
+   * @param teilnehmerkreis pruefungen with teilnehmerkreis to consider
+   * @return set of planned pruefungen which contain the passed teilnehmerkreis
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   */
   public Set<Pruefung> geplantePruefungenForTeilnehmerkreis(Teilnehmerkreis teilnehmerkreis)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(teilnehmerkreis);
@@ -313,6 +455,16 @@ public class DataAccessService {
     return result;
   }
 
+  /**
+   * Adds a pruefer to passed pruefung
+   *
+   * @param pruefung DTOPruefung
+   * @param pruefer  pruefer which should be added
+   * @return a block when the pruefung was inside a block
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   * @throws IllegalStateException              an exception from the model
+   * @throws IllegalArgumentException           when the passed pruefung doesn't exist
+   */
   public Planungseinheit addPruefer(ReadOnlyPruefung pruefung, String pruefer)
       throws NoPruefungsPeriodeDefinedException, IllegalStateException, IllegalArgumentException {
     checkForPruefungsperiode();
@@ -328,6 +480,13 @@ public class DataAccessService {
     }
   }
 
+  /**
+   * Gets the block to pruefung when the pruefung is inside one
+   *
+   * @param pruefung get the block to the passed pruefung
+   * @return empty when pruefung was not in a block, or the block
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   */
   public Optional<Block> getBlockTo(Pruefung pruefung) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung);
     checkForPruefungsperiode();
@@ -336,6 +495,16 @@ public class DataAccessService {
     return Optional.ofNullable(pruefungsperiode.block(pruefung));
   }
 
+  /**
+   * Removes the pruefer from the passed pruefung
+   *
+   * @param pruefung pruefung to remove the pruefer from
+   * @param pruefer  to remove from the pruefung
+   * @return a block when the passed pruefung was inside one or a pruefung
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   * @throws IllegalStateException              an exception from the block
+   * @throws IllegalArgumentException           when the passsed pruefer is is an empty string
+   */
   public Planungseinheit removePruefer(ReadOnlyPruefung pruefung, String pruefer)
       throws NoPruefungsPeriodeDefinedException, IllegalStateException, IllegalArgumentException {
     Pruefung modelPruefung = getPruefung(pruefung);
@@ -350,9 +519,9 @@ public class DataAccessService {
    *
    * @param pruefung        pruefung
    * @param pruefungsnummer nummer
-   * @return modelpruefung
-   * @throws NoPruefungsPeriodeDefinedException
-   * @throws IllegalStateException
+   * @return modelpruefung a pruefung or the block, when the pruefung was inside one
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   * @throws IllegalStateException              an exception from the model
    */
   public Planungseinheit setPruefungsnummer(ReadOnlyPruefung pruefung,
       String pruefungsnummer)
@@ -375,8 +544,17 @@ public class DataAccessService {
     return modelBlock.isPresent() ? modelBlock.get() : modelPruefung;
   }
 
+  /**
+   * Deletes the passed pruefung and returns maybe a block, when pruefung was inside a block
+   *
+   * @param roPruefung pruefung to delete
+   * @return a maybe block when the pruefung was inside one
+   * @throws IllegalStateException              exception from the model
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   * @throws IllegalArgumentException           when the passed pruefung is planned
+   */
   public Optional<Block> deletePruefung(ReadOnlyPruefung roPruefung)
-      throws IllegalStateException, NoPruefungsPeriodeDefinedException {
+      throws IllegalStateException, NoPruefungsPeriodeDefinedException, IllegalArgumentException {
     Pruefung pruefung = getPruefung(roPruefung);
     if (pruefung.isGeplant()) {
       throw new IllegalArgumentException("Geplante Pruefungen dürfen nicht gelöscht werden.");
@@ -408,20 +586,47 @@ public class DataAccessService {
     pruefung.setStartzeitpunkt(null);
   }
 
+  /**
+   * Checks the passed termin with endtermin and starttermin of the periode
+   *
+   * @param termin passed termin to check
+   * @return true when the passed termin is in the period
+   */
   public boolean terminIsInPeriod(LocalDateTime termin) {
     return terminIsSameDayOrAfterPeriodStart(termin) && terminIsSameDayOrBeforePeriodEnd(termin);
   }
 
+  /**
+   * Checks the passed termin with startermin of the periode
+   *
+   * @param termin passed termin to check
+   * @return true when the passed termin is te same day or after the periodendtermin
+   */
   private boolean terminIsSameDayOrAfterPeriodStart(LocalDateTime termin) {
     LocalDate start = pruefungsperiode.getStartdatum();
     return start.isBefore(termin.toLocalDate()) || start.isEqual(termin.toLocalDate());
   }
 
+  /**
+   * Checks the passed termin with endtermin of periode
+   *
+   * @param termin passed termin to check
+   * @return true when the passed termin is te same day or before the periodendtermin
+   */
   private boolean terminIsSameDayOrBeforePeriodEnd(LocalDateTime termin) {
     LocalDate end = pruefungsperiode.getEnddatum();
     return end.isAfter(termin.toLocalDate()) || end.isEqual(termin.toLocalDate());
   }
 
+  /**
+   * Deletes the passed block inside the model
+   *
+   * @param block block to delete
+   * @return exams that are inside the passed block but model pruefung
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   * @throws IllegalArgumentException           when the passed block is planned
+   * @throws IllegalStateException              is an exception from the model
+   */
   public List<Pruefung> deleteBlock(ReadOnlyBlock block)
       throws NoPruefungsPeriodeDefinedException, IllegalArgumentException, IllegalStateException {
     noNullParameters(block);
@@ -454,6 +659,17 @@ public class DataAccessService {
     return pruefungen;
   }
 
+  /**
+   * Creates a block in the pruefungsperiode
+   *
+   * @param name       name of the block
+   * @param type       type of the block
+   * @param pruefungen the pruefungen to put into a block
+   * @return model block with the pruefung (is unplanned)
+   * @throws NoPruefungsPeriodeDefinedException when there is no periode set
+   * @throws IllegalArgumentException           when a pruefung is another block, or is planned or
+   *                                            already in the block
+   */
   public Block createBlock(String name, Blocktyp type, ReadOnlyPruefung... pruefungen)
       throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
     noNullParameters(name, type, pruefungen);
@@ -485,15 +701,33 @@ public class DataAccessService {
     return blockModel;
   }
 
+  /**
+   * Is on the passed pruefungen in a block?
+   *
+   * @param pruefungen collection of pruefungen to check if one is a block
+   * @return true when any is in a block
+   */
   private boolean isAnyInBlock(Collection<ReadOnlyPruefung> pruefungen) {
     return pruefungen.stream()
         .anyMatch(pruefung -> this.pruefungIsInBlock(pruefung.getPruefungsnummer()));
   }
 
+  /**
+   * Checks for duplicates in the passed array
+   *
+   * @param pruefungen array of pruefungen
+   * @return when there are duplicated inside the array
+   */
   private boolean containsDuplicatePruefung(ReadOnlyPruefung[] pruefungen) {
     return pruefungen.length != Arrays.stream(pruefungen).distinct().count();
   }
 
+  /**
+   * Checks if the passed number of a pruefung is inside a block
+   * @param pruefungsNummer number of the pruefung to check
+   * @return true when the pruefung is inside a block otherwise false
+   * @throws IllegalArgumentException when the pruefung doesn't exist
+   */
   private boolean pruefungIsInBlock(String pruefungsNummer) throws IllegalArgumentException {
     if (existsPruefungWith(pruefungsNummer)) {
       return Optional.ofNullable(pruefungsperiode.block(pruefungsperiode.pruefung(pruefungsNummer)))
@@ -502,6 +736,14 @@ public class DataAccessService {
     throw new IllegalArgumentException("Pruefung existiert nicht.");
   }
 
+  /**
+   * Removes the passed pruefung from the passed block.
+   * No consistency checks.
+   * @param block block to remove the passed pruefung from
+   * @param pruefung to be removed from the passed block
+   * @return the block with the removed pruefung from, pruefung is not inside the block anymore
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   */
   public Block removePruefungFromBlock(ReadOnlyBlock block,
       ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException {
     Block modelBlock = getBlock(block);
@@ -516,6 +758,14 @@ public class DataAccessService {
     return modelBlock;
   }
 
+  /**
+   * Adds the passed pruefung to the passed block.
+   * No consistency checks.
+   * @param block block to add the passed pruefung
+   * @param pruefung to be added to the passed block
+   * @return block with the added pruefung
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   */
   public Block addPruefungToBlock(ReadOnlyBlock block, ReadOnlyPruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     Block modelBlock = getBlock(block);
@@ -790,14 +1040,27 @@ public class DataAccessService {
     }
   }
 
+  /**
+   * @param plannedDate passed date to check
+   * @return true when the passed date is before the start of the period otherwise false
+   */
   private boolean isBeforeStartOfPeriode(LocalDate plannedDate) {
     return plannedDate.isBefore(pruefungsperiode.getStartdatum());
   }
 
+  /**
+   * @param plannedDate passed date to check
+   * @return true when the passed date is after the end of the period otherwise false
+   */
   private boolean isAfterEndOfPeriode(LocalDate plannedDate) {
     return plannedDate.isAfter(pruefungsperiode.getEnddatum());
   }
 
+  /**
+   * Sets the passed dates to periode wich is set
+   * @param startDatum start
+   * @param endDatum end
+   */
   public void setDatumPeriode(LocalDate startDatum, LocalDate endDatum) {
     LOGGER.debug("Changing start date of Pruefungsperiode in Model from {} to {}.",
         pruefungsperiode.getStartdatum(), startDatum);
