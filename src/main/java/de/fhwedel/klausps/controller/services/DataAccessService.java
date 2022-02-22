@@ -724,6 +724,7 @@ public class DataAccessService {
 
   /**
    * Checks if the passed number of a pruefung is inside a block
+   *
    * @param pruefungsNummer number of the pruefung to check
    * @return true when the pruefung is inside a block otherwise false
    * @throws IllegalArgumentException when the pruefung doesn't exist
@@ -737,9 +738,9 @@ public class DataAccessService {
   }
 
   /**
-   * Removes the passed pruefung from the passed block.
-   * No consistency checks.
-   * @param block block to remove the passed pruefung from
+   * Removes the passed pruefung from the passed block. No consistency checks.
+   *
+   * @param block    block to remove the passed pruefung from
    * @param pruefung to be removed from the passed block
    * @return the block with the removed pruefung from, pruefung is not inside the block anymore
    * @throws NoPruefungsPeriodeDefinedException when no periode is set
@@ -759,9 +760,9 @@ public class DataAccessService {
   }
 
   /**
-   * Adds the passed pruefung to the passed block.
-   * No consistency checks.
-   * @param block block to add the passed pruefung
+   * Adds the passed pruefung to the passed block. No consistency checks.
+   *
+   * @param block    block to add the passed pruefung
    * @param pruefung to be added to the passed block
    * @return block with the added pruefung
    * @throws NoPruefungsPeriodeDefinedException when no periode is set
@@ -775,6 +776,12 @@ public class DataAccessService {
     return modelBlock;
   }
 
+  /**
+   * Gets the start date of the current periode
+   *
+   * @return start date
+   * @throws NoPruefungsPeriodeDefinedException when no period is set
+   */
   @NotNull
   public LocalDate getStartOfPeriode() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
@@ -782,6 +789,12 @@ public class DataAccessService {
     return pruefungsperiode.getStartdatum();
   }
 
+  /**
+   * Gets the end date of the current periode
+   *
+   * @return end date
+   * @throws NoPruefungsPeriodeDefinedException when no period is set
+   */
   @NotNull
   public LocalDate getEndOfPeriode() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
@@ -789,18 +802,38 @@ public class DataAccessService {
     return pruefungsperiode.getEnddatum();
   }
 
+  /**
+   * Gets the capacity of the current periode
+   *
+   * @return capacity
+   * @throws NoPruefungsPeriodeDefinedException when no period is set
+   */
   public int getPeriodenKapazitaet() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
     LOGGER.debug("Get capacity of the Pruefungsperiode from Model.");
     return pruefungsperiode.getKapazitaet();
   }
 
+  /**
+   * Gets the semester of the current period
+   *
+   * @return semester
+   * @throws NoPruefungsPeriodeDefinedException when no period is set
+   */
   public Semester getSemester() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
     LOGGER.debug("Get the Semester from Model.");
     return pruefungsperiode.getSemester();
   }
 
+  /**
+   * Gets the block to passed DTOPruefung
+   *
+   * @param pruefungToGetBlockFor get the block of
+   * @return empty when the passed pruefung is not inside a block, otherwise the block
+   * @throws NoPruefungsPeriodeDefinedException when no period is set
+   * @throws IllegalStateException              an exception from the model
+   */
   public Optional<Block> getBlockTo(ReadOnlyPruefung pruefungToGetBlockFor)
       throws NoPruefungsPeriodeDefinedException, IllegalStateException {
     noNullParameters(pruefungToGetBlockFor);
@@ -833,12 +866,29 @@ public class DataAccessService {
     return allTeilnehmerkreise;
   }
 
+  /**
+   * Removes the passed teilnehmerkreis from the passed pruefung
+   *
+   * @param pruefung        to remove the teilnehmerkreis from
+   * @param teilnehmerkreis to be removed from the passed pruefung
+   * @return true when it's succeeded otherwise false
+   */
   public boolean removeTeilnehmerkreis(Pruefung pruefung,
       Teilnehmerkreis teilnehmerkreis) {
     LOGGER.debug("Removing {} from {} in Model.", teilnehmerkreis, pruefung);
     return pruefung.removeTeilnehmerkreis(teilnehmerkreis);
   }
 
+  /**
+   * Sets the passed teilnehmerkreis with the passed the estimated number of students to the passed
+   * pruefung
+   *
+   * @param pruefung        pruefung from model
+   * @param teilnehmerkreis to set the new estimated number for
+   * @param schaetzung      estimated participants
+   * @return true when it was successful
+   * @throws IllegalArgumentException when the estimated number of participants is negative
+   */
   public boolean setTeilnehmerkreis(Pruefung pruefung, Teilnehmerkreis teilnehmerkreis,
       int schaetzung) throws IllegalArgumentException {
     if (schaetzung < 0) {
@@ -853,6 +903,16 @@ public class DataAccessService {
     return true;
   }
 
+  /**
+   * Sets the new name of the passed block
+   *
+   * @param block block to change the name
+   * @param name  to be set
+   * @return model block with the new name
+   * @throws NoPruefungsPeriodeDefinedException when no period is set
+   * @throws IllegalArgumentException           when the passed string is empty
+   * @throws IllegalStateException              a model exception
+   */
   public Block setNameOf(ReadOnlyBlock block, String name)
       throws NoPruefungsPeriodeDefinedException, IllegalArgumentException, IllegalStateException {
     noNullParameters(block, name);
@@ -865,6 +925,13 @@ public class DataAccessService {
     return modelBlock;
   }
 
+  /**
+   * Gets all pruefungen from a specific pruefer
+   *
+   * @param pruefer pruefer
+   * @return pruefungen from a specific pruefer
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   */
   @NotNull
   public Set<Pruefung> getAllKlausurenFromPruefer(String pruefer)
       throws NoPruefungsPeriodeDefinedException {
@@ -906,6 +973,12 @@ public class DataAccessService {
     }
   }
 
+  /**
+   * Gets the anker tag of the periode
+   *
+   * @return anker tag of the periode which is set
+   * @throws NoPruefungsPeriodeDefinedException when no period is set
+   */
   @NotNull
   public LocalDate getAnkertag() throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
@@ -913,6 +986,13 @@ public class DataAccessService {
     return pruefungsperiode.getAnkertag();
   }
 
+  /**
+   * Sets the ankertag to the periode which is set
+   *
+   * @param newAnkerTag the new ankertag to set
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   * @throws IllegalTimeSpanException           when the ankertag is not in the period of time
+   */
   public void setAnkertag(LocalDate newAnkerTag)
       throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
     noNullParameters(newAnkerTag);
@@ -924,6 +1004,12 @@ public class DataAccessService {
     pruefungsperiode.setAnkertag(newAnkerTag);
   }
 
+  /**
+   * Ensures if the ankertag is not after the end
+   *
+   * @param newAnkerTag ankertag to check
+   * @throws IllegalTimeSpanException when the passed ankertag is after the end
+   */
   private void ensureNotBeforePruefungsperiode(LocalDate newAnkerTag)
       throws IllegalTimeSpanException {
     if (newAnkerTag.isBefore(pruefungsperiode.getStartdatum())) {
@@ -932,6 +1018,12 @@ public class DataAccessService {
     }
   }
 
+  /**
+   * Ensures if the ankertag is not before the start
+   *
+   * @param newAnkerTag ankertag to check
+   * @throws IllegalTimeSpanException when the passed ankertag is before start
+   */
   private void ensureNotAfterPruefungsperiode(LocalDate newAnkerTag)
       throws IllegalTimeSpanException {
     if (newAnkerTag.isAfter(pruefungsperiode.getEnddatum())) {
@@ -940,6 +1032,13 @@ public class DataAccessService {
     }
   }
 
+  /**
+   * Get the number of students which are writing an exam at the passed time
+   *
+   * @param zeitpunkt passed time
+   * @return number of students
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   */
   public int getAnzahlStudentenZeitpunkt(LocalDateTime zeitpunkt)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(zeitpunkt);
@@ -954,6 +1053,13 @@ public class DataAccessService {
     return result;
   }
 
+  /**
+   * Gets the planned pruefungen its time period (start - end) cross the passed time. Also, the
+   * pruefungen inside a block.
+   *
+   * @param moment passed time
+   * @return set of pruefungen
+   */
   private Set<Pruefung> getPruefungenAt(LocalDateTime moment) {
     Set<Pruefung> result = new HashSet<>();
     for (Pruefung pruefung : pruefungsperiode.geplantePruefungen()) {
@@ -967,6 +1073,12 @@ public class DataAccessService {
     return result;
   }
 
+  /**
+   * Gets the max. of teilnehmerkreisschätzung of the passed pruefungen
+   *
+   * @param pruefungen pruefungen to get the merged teilnehmerkreisschaetzung (merge: max)
+   * @return teilnehmerkreisschätzung with max of schaetzung
+   */
   @NotNull
   private HashMap<Teilnehmerkreis, Integer> getMaxTeilnehmerPerTeilnehmerkreis(
       Set<Pruefung> pruefungen) {
@@ -983,6 +1095,14 @@ public class DataAccessService {
     return schaetzungen;
   }
 
+  /**
+   * Checks if the passed pruefungen are in the same block.
+   *
+   * @param pruefung      pruefung to check
+   * @param otherPruefung pruefung to check
+   * @return true when the passed pruefung are in the same block otherwise false
+   * @throws NoPruefungsPeriodeDefinedException when periode is set
+   */
   public boolean areInSameBlock(Pruefung pruefung, Pruefung otherPruefung)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung, otherPruefung);
@@ -990,6 +1110,13 @@ public class DataAccessService {
         .filter((Block block) -> block.getPruefungen().contains(otherPruefung)).isPresent();
   }
 
+  /**
+   * Gets the model block to the passed dtoblock
+   *
+   * @param block dtoblock to get the modelblock of
+   * @return model block
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   */
   public Block getBlock(ReadOnlyBlock block) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(block);
     checkForPruefungsperiode();
@@ -1000,11 +1127,25 @@ public class DataAccessService {
     return retrievedBlock;
   }
 
+  /**
+   * Checks if a block with the passed id exists
+   *
+   * @param blockId passed id
+   * @return true when there is a block with the passed id, otherwise false
+   * @throws NoPruefungsPeriodeDefinedException when o periode is set
+   */
   public boolean existsBlockWith(int blockId) throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
     return pruefungsperiode.block(blockId) != null;
   }
 
+  /**
+   * Gets the planned planungseinheiten its time period (start - end) cross the passed time
+   *
+   * @param time passed time
+   * @return set of planungsheiten
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   */
   @NotNull
   public Set<Planungseinheit> getPlanungseinheitenAt(LocalDateTime time)
       throws NoPruefungsPeriodeDefinedException {
@@ -1015,6 +1156,9 @@ public class DataAccessService {
     return pruefungsperiode.planungseinheitenAt(time);
   }
 
+  /**
+   * Unschedules the planungseinheiten after adoption, when they are not in the period.
+   */
   public void unschedulePlanungseinheitenOutsideOfPeriode()
       throws NoPruefungsPeriodeDefinedException {
     checkForPruefungsperiode();
@@ -1022,6 +1166,9 @@ public class DataAccessService {
     unscheduleAdoptedPruefungenOutsideOfPeriode();
   }
 
+  /**
+   * Unschedules the blocks after adoption, when they are not in the period.
+   */
   private void unscheduleAdoptedBloeckeOutsideOfPeriode() {
     for (Block block : pruefungsperiode.geplanteBloecke()) {
       LocalDate plannedDate = block.getStartzeitpunkt().toLocalDate();
@@ -1031,6 +1178,9 @@ public class DataAccessService {
     }
   }
 
+  /**
+   * Unschedules the pruefungen after adoption, when they are not in the period.
+   */
   private void unscheduleAdoptedPruefungenOutsideOfPeriode() {
     for (Pruefung pruefung : pruefungsperiode.geplantePruefungen()) {
       LocalDate plannedDate = pruefung.getStartzeitpunkt().toLocalDate();
@@ -1050,16 +1200,17 @@ public class DataAccessService {
 
   /**
    * @param plannedDate passed date to check
-   * @return true when the passed date is after the end of the period otherwise false
+   * @return true when the passed date is after the end of the set period otherwise false
    */
   private boolean isAfterEndOfPeriode(LocalDate plannedDate) {
     return plannedDate.isAfter(pruefungsperiode.getEnddatum());
   }
 
   /**
-   * Sets the passed dates to periode wich is set
+   * Sets the passed dates to the periode which is set
+   *
    * @param startDatum start
-   * @param endDatum end
+   * @param endDatum   end
    */
   public void setDatumPeriode(LocalDate startDatum, LocalDate endDatum) {
     LOGGER.debug("Changing start date of Pruefungsperiode in Model from {} to {}.",
