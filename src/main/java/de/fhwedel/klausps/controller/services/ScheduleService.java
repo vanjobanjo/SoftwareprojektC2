@@ -52,6 +52,13 @@ public class ScheduleService {
 
   private final Converter converter;
 
+  /**
+   * Constructor
+   *
+   * @param dataAccessService  service
+   * @param restrictionService service
+   * @param converter          service
+   */
   public ScheduleService(DataAccessService dataAccessService, RestrictionService restrictionService,
       Converter converter) {
     this.dataAccessService = dataAccessService;
@@ -61,11 +68,11 @@ public class ScheduleService {
   }
 
   /**
-   * Nimmt eine uebergebene Pruefung aus der Planung. Übergebene Pruefung muss Teil des
-   * Rückgabewertes sein.
+   * Will unschedule the passed pruefung, scoring might be changed.
    *
-   * @param pruefungToUnschedule Pruefung zum ausplanen
-   * @return Liste von veraenderte Pruefungen
+   * @param pruefungToUnschedule pruefung to be unschduled
+   * @return DTOPlanungseinheiten, which are changed after the operation with duplicates (parents
+   * and children)
    */
   public List<ReadOnlyPlanungseinheit> unschedulePruefung(ReadOnlyPruefung pruefungToUnschedule)
       throws NoPruefungsPeriodeDefinedException {
@@ -78,23 +85,50 @@ public class ScheduleService {
     return result;
   }
 
+  /**
+   * Converts and calculates the scoring of the passed pruefungen
+   *
+   * @param affected pruefungen that are affected
+   * @return List of DTOPlanungseinheiten, it can contain the parent (block) and also the children
+   * (pruefung of a block)
+   * @throws NoPruefungsPeriodeDefinedException when no period is set
+   */
   private List<ReadOnlyPlanungseinheit> calculateScoringForCachedAffected(Set<Pruefung> affected)
       throws NoPruefungsPeriodeDefinedException {
     return new ArrayList<>(
         converter.convertToROPlanungseinheitSet(getPlanungseinheitenWithBlock(affected)));
   }
 
+  /**
+   * Gets the block of the pruefung, when there is one and also the pruefung itself.
+   *
+   * @param pruefungen passed pruefungen
+   * @return Set of Planungseinheiten, it can contain the parent (block) and also the children
+   * (pruefung of a block)
+   * @throws NoPruefungsPeriodeDefinedException when no periode is set
+   */
   private Set<Planungseinheit> getPlanungseinheitenWithBlock(Set<Pruefung> pruefungen)
       throws NoPruefungsPeriodeDefinedException {
     Set<Planungseinheit> planungseinheiten = new HashSet<>();
     for (Pruefung p : pruefungen) {
       Optional<Block> blockOpt = dataAccessService.getBlockTo(p);
+      // add the block also
       blockOpt.ifPresent(planungseinheiten::add);
       planungseinheiten.add(p);
     }
     return planungseinheiten;
   }
 
+  /**
+   * Adds a pruefung to a block, with consistency check and scoring calculation.
+   * @param readOnlyBlock to add the passed pruefung to
+   * @param readOnlyPruefung to be added to the passed block
+   * @return List of changed DTOPlanungsheiten
+   * @throws HartesKriteriumException when a hard constraint is violated
+   * @throws NoPruefungsPeriodeDefinedException when no period is set
+   * @throws IllegalStateException a model expcetion
+   * @throws IllegalArgumentException when the passed arguments aren't valid
+   */
   public List<ReadOnlyPlanungseinheit> addPruefungToBlock(ReadOnlyBlock readOnlyBlock,
       ReadOnlyPruefung readOnlyPruefung)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException, IllegalStateException,
