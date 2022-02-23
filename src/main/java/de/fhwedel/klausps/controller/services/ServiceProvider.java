@@ -4,6 +4,10 @@ import de.fhwedel.klausps.controller.Controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class provide ever other service.
+ * If the Service is not instantiated then the class instantiated and saved.
+ */
 public class ServiceProvider {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Controller.class);

@@ -37,6 +37,10 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class is the only one who change the data in the model.
+ * And provide the Data from the model.
+ */
 public class DataAccessService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DataAccessService.class);
