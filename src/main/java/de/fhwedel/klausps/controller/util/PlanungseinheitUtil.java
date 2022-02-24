@@ -47,6 +47,7 @@ public class PlanungseinheitUtil {
       Set<PruefungWithScoring> after) {
 
     return after.stream().filter(afterPruefung -> before.stream()
+        // O(n^2)
             .noneMatch(beforePruefung -> beforePruefung.equals(afterPruefung)))
         .map(PruefungWithScoring::pruefung).collect(Collectors.toSet());
   }
