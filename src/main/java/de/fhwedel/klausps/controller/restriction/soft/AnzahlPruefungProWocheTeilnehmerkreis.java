@@ -86,6 +86,8 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
     }
 
     Optional<WeichesKriteriumAnalyse> analyseForTks = Optional.empty();
+    // every tk of the pruefung must be checked with all other pruefung of the same week
+    // and every violation must be counted
     for (Teilnehmerkreis tk : pruefung.getTeilnehmerkreise()) {
       int week = getWeek(start, pruefung);
       Set<Pruefung> pruefungenScheduleSameWeek = weekPruefungMap.get(week);
@@ -141,6 +143,7 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
     assert pruefung.getTeilnehmerkreise().contains(tk);
 
     Optional<Block> blockOpt = dataAccessService.getBlockTo(pruefung);
+    // filter the pruefungen that are in the same block of the parameter
     if (blockOpt.isPresent()) {
       pruefungenSameWeek = filterSiblingsOfPruefung(pruefung, pruefungenSameWeek);
     }
@@ -149,6 +152,7 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
       return analyse;
     }
 
+    // put the violated pruefungen in a set
     Set<Pruefung> pruefungenSameTk = pruefungenSameWeek.stream()
         .filter(pr -> pr.getTeilnehmerkreise().contains(tk)).collect(
             Collectors.toSet());
