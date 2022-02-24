@@ -6,10 +6,18 @@ import java.util.Map;
 
 public class TeilnehmerkreisUtil {
 
+  /**
+   * No instancing
+   */
   private TeilnehmerkreisUtil() {
 
   }
 
+  /**
+   * Will merge to Teilnehmerkreis Schätzung together with following merge bi function: (X,Y) -> X.Schaetzung > Y.Schaetzung
+   * @param collectedTeilnehmerkreise the collected
+   * @param toAdd the to be added
+   */
   public static void compareAndPutBiggerSchaetzung(
       Map<Teilnehmerkreis, Integer> collectedTeilnehmerkreise,
       Map<Teilnehmerkreis, Integer> toAdd) {

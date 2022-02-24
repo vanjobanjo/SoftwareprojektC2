@@ -4,6 +4,9 @@ import de.fhwedel.klausps.model.api.Pruefung;
 import java.util.Objects;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Is needed to check a scoring befor an operation and afterwards.
+ */
 public record PruefungWithScoring(@NotNull Pruefung pruefung, int scoring) {
 
   @Override

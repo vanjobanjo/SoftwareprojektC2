@@ -17,6 +17,11 @@ public class PlanungseinheitUtil {
     // util should not be instantiated
   }
 
+  /**
+   * Extracts the pruefungen of a possible block.
+   * @param planungseinheiten bock or pruefung
+   * @return set of pruefungen
+   */
   public static Set<Pruefung> getAllPruefungen(Collection<Planungseinheit> planungseinheiten) {
     LOGGER.trace("Extracting Pruefungen from {}.", planungseinheiten);
     Set<Pruefung> result = new HashSet<>();

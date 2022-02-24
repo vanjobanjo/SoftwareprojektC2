@@ -21,6 +21,10 @@ public class ParameterUtil {
     }
   }
 
+  /**
+   * Checks for empty strings
+   * @param strings to check
+   */
   public static void noEmptyStrings(String... strings) {
     for (String parameter : strings) {
       if (Objects.equals(parameter, "")) {
