@@ -1,0 +1,9 @@
+\subsection{Erbauer - Muster}
+Dadurch, dass der Controller nach Außen hin nicht veränderbare DTO Objekte nutzt,
+kann zum Erzeugen der DTO Prüfungen der sogenannte DTOPruefungsBuilder genutzt werden.
+Eine DTO Prüfung hat eine hohe an Anzahl an Felder die im Rahmen der Erzeugung, alle mit angegeben werden müssen.
+Durch das Anwenden des Erbauer-Musters könnnen Default-Werte angelegt werden und somit DTO Prüfungen durch den/die Entwickler/in
+mit weniger Code erstellt werden.
+Dies hat besondere Vorteile beim Testen.
+Dem Builder können auch Model Prüfungen übergeben werden und durch ein gesonderten Konstruktor,
+wird dann ein äquivalentes DTO Objekt erzeugt.
