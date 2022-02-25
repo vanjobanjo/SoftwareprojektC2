@@ -14,23 +14,23 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Abstrakte Klasse fuer die harten Kriterien. Hier werden die einheitlichen Methoden bestimmt, die
- * gebraucht werden um auf ein hartes Kriterium getestet zu werden
+ * This abstract class is for the hard criteria.
+ * Here are the standard methods for testing the hard criteria. n
  */
 
 public abstract class HarteRestriktion extends Restriktion {
 
   /**
-   * hardRestriction, hier wird das HarteKriterium, um welches es sich handelt gespeichert
+   * this is to safe witch criterion is tested
    */
   protected final HartesKriterium hardRestriction;
   /**
-   * Zum Speichern des DataAccessService
+   * to safe the DataAccessService for getting other Pruefungen
    */
   protected DataAccessService dataAccessService;
 
   /**
-   * Super Konstruktor, welcher sich den DataAccessService speichert und das HarteKriterium
+   * Super Konstruktor
    *
    * @param dataAccessService der DataAccessService, der gespeichert wird
    * @param kriterium         das Kriterium, welches getestet werden soll
