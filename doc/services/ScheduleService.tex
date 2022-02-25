@@ -1,0 +1,8 @@
+\subsection{ScheduleService}\label{subsec:ScheduleService}
+Der ScheduleService ist für die Verarbeitung von Klausuren zuständig.
+Über diese Klasse geht jede Planungsrelevante Änderung von Prüfungen,
+da dann immer nochmal die Kriterien getestet werden und gegebenenfalls
+eine HarteKriteriumsException geschmissen wird.
+Wenn eine HarteKriteriumsException geschmissen wird, dann wird die Änderung wieder rückgängig gemacht.
+Wenn keines der HartenKriterien fehlschlägt, wird das Scoring von der veränderten Prüfung berechnet
+und allen Klausuren, die von der einen Klausur beeinflusst sind.
