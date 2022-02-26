@@ -6,7 +6,7 @@ import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.util.Set;
 
-public class WeichesKriteriumAnalyse {
+public class WeichesKriteriumAnalysis {
 
 
   Set<Pruefung> causingPruefungen;
@@ -23,7 +23,7 @@ public class WeichesKriteriumAnalyse {
    * @deprecated delta scoring
    */
   @Deprecated
-  public WeichesKriteriumAnalyse(Set<Pruefung> causingPruefungen, WeichesKriterium kriterium,
+  public WeichesKriteriumAnalysis(Set<Pruefung> causingPruefungen, WeichesKriterium kriterium,
       Set<Teilnehmerkreis> affectedTeilnehmerKreise, int affectedStudents) {
     this.causingPruefungen = causingPruefungen;
     this.kriterium = kriterium;
@@ -31,7 +31,7 @@ public class WeichesKriteriumAnalyse {
     this.amountAffectedStudents = affectedStudents;
   }
 
-  public WeichesKriteriumAnalyse(Set<Pruefung> causingPruefungen, WeichesKriterium kriterium,
+  public WeichesKriteriumAnalysis(Set<Pruefung> causingPruefungen, WeichesKriterium kriterium,
       Set<Teilnehmerkreis> affectedTeilnehmerKreise, int affectedStudents, int scoring) {
     this.causingPruefungen = causingPruefungen;
     this.kriterium = kriterium;

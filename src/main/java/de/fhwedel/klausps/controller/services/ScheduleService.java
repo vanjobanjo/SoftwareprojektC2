@@ -4,8 +4,8 @@ import static de.fhwedel.klausps.controller.util.ParameterUtil.noNullParameters;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 
-import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalysis;
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
@@ -165,7 +165,7 @@ public class ScheduleService {
   private void checkHardCriteriaUndoAddPruefungToBlock(ReadOnlyPruefung pruefung,
       ReadOnlyBlock block) throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     Pruefung modelPruefung = dataAccessService.getPruefung(pruefung);
-    List<HartesKriteriumAnalyse> hardAnalyses = restrictionService.checkHarteKriterien(
+    List<HartesKriteriumAnalysis> hardAnalyses = restrictionService.checkHarteKriterien(
         modelPruefung);
     if (!hardAnalyses.isEmpty()) {
       removePruefungFromBlock(block, pruefung);
@@ -225,7 +225,7 @@ public class ScheduleService {
 
   private void checkHardCriteriaUndoScheduling(ReadOnlyBlock roBlock, Block modelBlock)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
-    List<HartesKriteriumAnalyse> list = new LinkedList<>();
+    List<HartesKriteriumAnalysis> list = new LinkedList<>();
     for (Pruefung p : modelBlock.getPruefungen()) {
       list.addAll(restrictionService.checkHarteKriterien(p));
     }
@@ -281,7 +281,7 @@ public class ScheduleService {
 
   private void checkHardCriteriaUndoScheduling(ReadOnlyPruefung pruefung, Pruefung pruefungModel)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
-    List<HartesKriteriumAnalyse> hard = restrictionService.checkHarteKriterien(pruefungModel);
+    List<HartesKriteriumAnalysis> hard = restrictionService.checkHarteKriterien(pruefungModel);
 
     Optional<LocalDateTime> termin = pruefung.getTermin();
     if (!hard.isEmpty()) {
@@ -317,7 +317,7 @@ public class ScheduleService {
     Pruefung pruefungModel = dataAccessService.getPruefung(pruefung);
     Duration oldDuration = pruefungModel.getDauer();
     pruefungModel.setDauer(dauer);
-    List<HartesKriteriumAnalyse> hard = restrictionService.checkHarteKriterien(
+    List<HartesKriteriumAnalysis> hard = restrictionService.checkHarteKriterien(
         pruefungModel);
     if (!hard.isEmpty()) {
       pruefungModel.setDauer(oldDuration);
@@ -350,7 +350,7 @@ public class ScheduleService {
 
     Pruefung pruefungModel = dataAccessService.getPruefung(roPruefung);
     if (dataAccessService.setTeilnehmerkreis(pruefungModel, teilnehmerkreis, schaetzung)) {
-      List<HartesKriteriumAnalyse> hard = restrictionService.checkHarteKriterien(pruefungModel);
+      List<HartesKriteriumAnalysis> hard = restrictionService.checkHarteKriterien(pruefungModel);
       if (!hard.isEmpty()) {
         dataAccessService.removeTeilnehmerkreis(pruefungModel, teilnehmerkreis);
         throw converter.convertHardException(hard);
@@ -417,7 +417,7 @@ public class ScheduleService {
   public List<KriteriumsAnalyse> analyseScoring(ReadOnlyPruefung pruefung)
       throws NoPruefungsPeriodeDefinedException, IllegalStateException {
     noNullParameters(pruefung);
-    List<WeichesKriteriumAnalyse> analyses = restrictionService.checkWeicheKriterien(
+    List<WeichesKriteriumAnalysis> analyses = restrictionService.checkWeicheKriterien(
         dataAccessService.getPruefung(pruefung));
     return converter.convertAnalyseList(analyses);
   }
@@ -472,7 +472,7 @@ public class ScheduleService {
     Set<Pruefung> affected = restrictionService.getPruefungenAffectedBy(modelBlock);
     modelBlock.setTyp(changeTo);
 
-    List<HartesKriteriumAnalyse> hard = restrictionService.checkHarteKriterienAll(
+    List<HartesKriteriumAnalysis> hard = restrictionService.checkHarteKriterienAll(
         affected);
     if (!hard.isEmpty()) {
       modelBlock.setTyp(block.getTyp());

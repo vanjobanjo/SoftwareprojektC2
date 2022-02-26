@@ -2,7 +2,7 @@ package de.fhwedel.klausps.controller.restriction.soft;
 
 import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.FREIER_TAG_ZWISCHEN_PRUEFUNGEN;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
@@ -15,20 +15,20 @@ import java.util.Optional;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 
-public class FreierTagZwischenPruefungen extends WeicheRestriktion {
+public class FreierTagZwischenPruefungenRestriction extends SoftRestriction {
 
   static final int MAX_DAY = 365;
 
-  public FreierTagZwischenPruefungen() {
+  public FreierTagZwischenPruefungenRestriction() {
     this(ServiceProvider.getDataAccessService());
   }
 
-  protected FreierTagZwischenPruefungen(@NotNull DataAccessService dataAccessService) {
+  protected FreierTagZwischenPruefungenRestriction(@NotNull DataAccessService dataAccessService) {
     super(dataAccessService, FREIER_TAG_ZWISCHEN_PRUEFUNGEN);
   }
 
   @Override
-  public Optional<WeichesKriteriumAnalyse> evaluateRestriction(@NotNull Pruefung pruefung)
+  public Optional<WeichesKriteriumAnalysis> evaluateRestriction(@NotNull Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
 
     if (!pruefung.isGeplant()) {

@@ -6,20 +6,20 @@ import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.util.Map;
 import java.util.Set;
 
-public class HartesKriteriumAnalyse {
+public class HartesKriteriumAnalysis {
 
   Set<Pruefung> causingPruefungen;
 
 
   HartesKriterium kriterium;
 
-  Map<Teilnehmerkreis, Integer>  teilnehmercount ;
-  public HartesKriteriumAnalyse(
+  Map<Teilnehmerkreis, Integer>  teilnehmerCount ;
+  public HartesKriteriumAnalysis(
       Set<Pruefung> causingPruefungen,
-      HartesKriterium kriterium, Map<Teilnehmerkreis, Integer> teilnehmercount) {
+      HartesKriterium kriterium, Map<Teilnehmerkreis, Integer> teilnehmerCount) {
     this.causingPruefungen = causingPruefungen;
     this.kriterium = kriterium;
-    this.teilnehmercount = teilnehmercount;
+    this.teilnehmerCount = teilnehmerCount;
   }
 
   public Set<Pruefung> getCausingPruefungen() {
@@ -29,7 +29,7 @@ public class HartesKriteriumAnalyse {
   public HartesKriterium getKriterium() {
     return this.kriterium;
   }
-  public Map<Teilnehmerkreis, Integer> getTeilnehmercount(){
-    return teilnehmercount;
+  public Map<Teilnehmerkreis, Integer> getTeilnehmerCount(){
+    return teilnehmerCount;
   }
 }

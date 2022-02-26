@@ -19,28 +19,28 @@ import java.util.Optional;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 
-public class AnzahlPruefungenGleichzeitigRestriktion extends AtSameTimeRestriction {
+public class AnzahlPruefungenGleichzeitigRestriction extends AtSameTimeRestriction {
 
   protected static final int DEFAULT_MAX_PRUEFUNGEN_AT_A_TIME = 6;
 
   private final int maxPruefungenAtATime;
 
-  public AnzahlPruefungenGleichzeitigRestriktion() {
+  public AnzahlPruefungenGleichzeitigRestriction() {
     this(ServiceProvider.getDataAccessService());
   }
 
-  protected AnzahlPruefungenGleichzeitigRestriktion(@NotNull DataAccessService dataAccessService) {
+  protected AnzahlPruefungenGleichzeitigRestriction(@NotNull DataAccessService dataAccessService) {
     this(dataAccessService, DEFAULT_MAX_PRUEFUNGEN_AT_A_TIME,
         DEFAULT_BUFFER_BETWEEN_PLANUNGSEINHEITEN);
   }
 
-  protected AnzahlPruefungenGleichzeitigRestriktion(@NotNull DataAccessService dataAccessService,
+  protected AnzahlPruefungenGleichzeitigRestriction(@NotNull DataAccessService dataAccessService,
       int maxPruefungenAtATime, @NotNull Duration puffer) {
     super(dataAccessService, ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH, puffer);
     this.maxPruefungenAtATime = maxPruefungenAtATime;
   }
 
-  protected AnzahlPruefungenGleichzeitigRestriktion(@NotNull DataAccessService dataAccessService,
+  protected AnzahlPruefungenGleichzeitigRestriction(@NotNull DataAccessService dataAccessService,
       int maxPruefungenAtATime) {
     this(dataAccessService, maxPruefungenAtATime, DEFAULT_BUFFER_BETWEEN_PLANUNGSEINHEITEN);
   }

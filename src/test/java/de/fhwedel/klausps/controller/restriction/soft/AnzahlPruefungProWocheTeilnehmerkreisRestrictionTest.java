@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
@@ -22,10 +22,10 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class AnzahlPruefungProWocheTeilnehmerkreisTest {
+class AnzahlPruefungProWocheTeilnehmerkreisRestrictionTest {
 
   private Pruefungsperiode mocked_periode;
-  private AnzahlPruefungProWocheTeilnehmerkreis deviceUnderTest;
+  private AnzahlPruefungProWocheTeilnehmerkreisRestriction deviceUnderTest;
   private DataAccessService accessService;
   private final LocalDate START_PERIODE = LocalDate.of(2021, 1, 1);
   private final LocalDate END_PERIODE = LocalDate.of(2021, 12, 31);
@@ -57,7 +57,7 @@ class AnzahlPruefungProWocheTeilnehmerkreisTest {
         Set.of(mathe_0, dm_0));
 
     //mock must be configured before constructor call
-    this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreis(accessService, LIMIT_PER_WEEK);
+    this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreisRestriction(accessService, LIMIT_PER_WEEK);
 
     assertThat(deviceUnderTest.evaluateRestriction(mathe_0)).isPresent();
   }
@@ -79,8 +79,8 @@ class AnzahlPruefungProWocheTeilnehmerkreisTest {
         Set.of(mathe_0, dm_0));
 
     //mock must be configured before constructor call
-    this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreis(accessService, LIMIT_PER_WEEK);
-    WeichesKriteriumAnalyse ev = deviceUnderTest.evaluateRestriction(mathe_0).get();
+    this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreisRestriction(accessService, LIMIT_PER_WEEK);
+    WeichesKriteriumAnalysis ev = deviceUnderTest.evaluateRestriction(mathe_0).get();
     assertThat(ev.getCausingPruefungen()).containsOnly(mathe_0, dm_0);
   }
 
@@ -104,8 +104,8 @@ class AnzahlPruefungProWocheTeilnehmerkreisTest {
         Set.of(mathe_0, dm_0));
 
     //mock must be configured before constructor call
-    this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreis(accessService, LIMIT_PER_WEEK);
-    WeichesKriteriumAnalyse ev = deviceUnderTest.evaluateRestriction(mathe_0).get();
+    this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreisRestriction(accessService, LIMIT_PER_WEEK);
+    WeichesKriteriumAnalysis ev = deviceUnderTest.evaluateRestriction(mathe_0).get();
     assertThat(ev.getCausingPruefungen()).containsOnly(mathe_0, dm_0);
     assertThat(ev.getAffectedTeilnehmerKreise()).containsOnly(bwl, inf);
     assertThat(ev.getDeltaScoring().intValue()).isEqualTo(
@@ -139,7 +139,7 @@ class AnzahlPruefungProWocheTeilnehmerkreisTest {
         Set.of(mathe_0, dm_0));
 
     //mock must be configured before constructor call
-    this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreis(accessService, 2);
+    this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreisRestriction(accessService, 2);
     assertThat(deviceUnderTest.evaluateRestriction(mathe_0)).isEmpty();
     assertThat(deviceUnderTest.evaluateRestriction(dm_0)).isEmpty();
   }
@@ -174,7 +174,7 @@ class AnzahlPruefungProWocheTeilnehmerkreisTest {
         Set.of(mathe_0, dm_0, haskell_0));
 
     //mock must be configured before constructor call
-    this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreis(accessService, LIMIT_PER_WEEK);
+    this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreisRestriction(accessService, LIMIT_PER_WEEK);
     assertThat(deviceUnderTest.evaluateRestriction(mathe_0)).isPresent();
     assertThat(deviceUnderTest.evaluateRestriction(mathe_0).get().getCausingPruefungen()).containsOnly(mathe_0,
         haskell_0);

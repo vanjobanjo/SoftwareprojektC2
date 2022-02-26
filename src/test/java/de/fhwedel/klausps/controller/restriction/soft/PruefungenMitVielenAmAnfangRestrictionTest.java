@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Pruefung;
@@ -135,7 +135,7 @@ class PruefungenMitVielenAmAnfangRestrictionTest {
         Set.of(moreTeilnehmer, lessTeilnehmer));
     when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
 
-    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluateRestriction(moreTeilnehmer);
+    Optional<WeichesKriteriumAnalysis> result = deviceUnderTest.evaluateRestriction(moreTeilnehmer);
     assertThat(result).isPresent();
     assertThat(result.get().getAmountAffectedStudents()).isEqualTo(schaetzungMore);
     assertThat(result.get().getDeltaScoring()).isEqualTo(PRUEFUNGEN_MIT_VIELEN_AN_ANFANG.getWert());
@@ -165,7 +165,7 @@ class PruefungenMitVielenAmAnfangRestrictionTest {
     when(dataAccessService.getPlannedPruefungen()).thenReturn(
         Set.of(moreTeilnehmer, lessTeilnehmer));
     when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
-    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluateRestriction(lessTeilnehmer);
+    Optional<WeichesKriteriumAnalysis> result = deviceUnderTest.evaluateRestriction(lessTeilnehmer);
     assertThat(result).isEmpty();
   }
 
@@ -189,7 +189,7 @@ class PruefungenMitVielenAmAnfangRestrictionTest {
     when(dataAccessService.getPlannedPruefungen()).thenReturn(
         Set.of(moreTeilnehmer, lessTeilnehmer));
     when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
-    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluateRestriction(lessTeilnehmer);
+    Optional<WeichesKriteriumAnalysis> result = deviceUnderTest.evaluateRestriction(lessTeilnehmer);
     assertThat(result).isEmpty();
   }
 
@@ -210,7 +210,7 @@ class PruefungenMitVielenAmAnfangRestrictionTest {
     when(dataAccessService.getPlannedPruefungen()).thenReturn(
         Set.of(moreTeilnehmer, lessTeilnehmer));
     when(dataAccessService.getAnkertag()).thenReturn(ankerTag);
-    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluateRestriction(moreTeilnehmer);
+    Optional<WeichesKriteriumAnalysis> result = deviceUnderTest.evaluateRestriction(moreTeilnehmer);
     assertThat(result).isPresent();
     assertThat(result.get().getAmountAffectedStudents()).isEqualTo(schaetzungMore);
     assertThat(result.get().getCausingPruefungen()).containsOnly(moreTeilnehmer);

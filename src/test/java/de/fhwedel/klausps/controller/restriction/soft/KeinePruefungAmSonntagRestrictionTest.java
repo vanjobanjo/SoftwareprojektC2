@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
@@ -18,10 +18,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 
-class KeineKlausurAmSonntagTest {
+class KeinePruefungAmSonntagRestrictionTest {
 
   private Pruefungsperiode mocked_periode;
-  private KeineKlausurAmSonntag deviceUnderTest;
+  private KeinePruefungAmSonntagRestriction deviceUnderTest;
   private final LocalDate START_PERIODE = LocalDate.of(2021, 1, 1);
   private final LocalDate END_PERIODE = LocalDate.of(2021, 12, 31);
 
@@ -30,7 +30,7 @@ class KeineKlausurAmSonntagTest {
     this.mocked_periode = mock(Pruefungsperiode.class);
     DataAccessService accessService = ServiceProvider.getDataAccessService();
     accessService.setPruefungsperiode(this.mocked_periode);
-    this.deviceUnderTest = new KeineKlausurAmSonntag(accessService);
+    this.deviceUnderTest = new KeinePruefungAmSonntagRestriction(accessService);
     TestFactory.configureMock_setStartEndOfPeriode(mocked_periode, START_PERIODE, END_PERIODE);
   }
 
@@ -82,7 +82,7 @@ class KeineKlausurAmSonntagTest {
     model_pruefung_so.addTeilnehmerkreis(TestFactory.bwlBachelor, 30);
     model_pruefung_so.addTeilnehmerkreis(TestFactory.infBachelor, 50);
     TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, model_pruefung_so);
-    WeichesKriteriumAnalyse result = deviceUnderTest.evaluateRestriction(model_pruefung_so)
+    WeichesKriteriumAnalysis result = deviceUnderTest.evaluateRestriction(model_pruefung_so)
         .orElseThrow(IllegalArgumentException::new
         );
     assertThat(result.getCausingPruefungen()).containsOnly(model_pruefung_so);

@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Block;
@@ -36,55 +36,55 @@ import org.junit.jupiter.api.Test;
 /**
  * Testfälle
  * <ol>
- *   <li>{@link FreierTagZwischenPruefungenTest#not_planned() Prüfung ist nicht geplant} </li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#not_planned() Prüfung ist nicht geplant} </li>
  *   <br>
- *   <li>{@link FreierTagZwischenPruefungenTest#same_day_no_overlap() gleicher Tag  + keine Überschneidungen} </li>
- *   <li>{@link FreierTagZwischenPruefungenTest#same_day_overlap() gleicher Tag  + Überschneidung}</li>
- *   <li>{@link FreierTagZwischenPruefungenTest#same_day_overlap_multiple() gleicher Tag  + mehrere Überschneidungen}</li>
- *   <li>{@link FreierTagZwischenPruefungenTest#same_day_overlap_block()  gleicher Tag  + Überschneidungen  + im Block}</li>
- *   <li>{@link FreierTagZwischenPruefungenTest#same_day_overlap_one_in_block()  gleicher Tag  + Überschneidungen  + eine Block}</li>
- *   <li>{@link FreierTagZwischenPruefungenTest#same_day_overlap_different_blocks() gleicher Tag  + Überschneidungen  + unterschiedliche Blöcke}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#same_day_no_overlap() gleicher Tag  + keine Überschneidungen} </li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#same_day_overlap() gleicher Tag  + Überschneidung}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#same_day_overlap_multiple() gleicher Tag  + mehrere Überschneidungen}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#same_day_overlap_block()  gleicher Tag  + Überschneidungen  + im Block}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#same_day_overlap_one_in_block()  gleicher Tag  + Überschneidungen  + eine Block}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#same_day_overlap_different_blocks() gleicher Tag  + Überschneidungen  + unterschiedliche Blöcke}</li>
  *   <br>
- *   <li>{@link FreierTagZwischenPruefungenTest#day_before_no_overlap()  ein Tag davor + keine Überschneidungen}</li>
- *   <li>{@link FreierTagZwischenPruefungenTest#day_before_overlap() ein Tag davor  + Überschneidung}</li>
- *   <li>{@link FreierTagZwischenPruefungenTest#day_before_overlap_multiple() ein Tag davor  + mehrere Überschneidungen}</li>
- *   <li>{@link FreierTagZwischenPruefungenTest#day_before_overlap_different_years() ein Tag davor + Überschneidungen + Jahreswechsel}</li>
- *   <li>{@link FreierTagZwischenPruefungenTest#day_before_overlap_different_blocks() ein Tag davor + Überschneidungen + unterschiedliche Blöcke}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#day_before_no_overlap()  ein Tag davor + keine Überschneidungen}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#day_before_overlap() ein Tag davor  + Überschneidung}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#day_before_overlap_multiple() ein Tag davor  + mehrere Überschneidungen}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#day_before_overlap_different_years() ein Tag davor + Überschneidungen + Jahreswechsel}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#day_before_overlap_different_blocks() ein Tag davor + Überschneidungen + unterschiedliche Blöcke}</li>
  *   <br>
- *   <li>{@link FreierTagZwischenPruefungenTest#day_after_no_overlap() ein Tag danach + keine Überschneidungen}</li>
- *   <li>{@link FreierTagZwischenPruefungenTest#day_after_overlap() ein Tag danach  + Überschneidung}</li>
- *   <li>{@link FreierTagZwischenPruefungenTest#day_after_overlap_multiple() ein Tag danach  + mehrere Überschneidungen}</li>
- *   <li>{@link FreierTagZwischenPruefungenTest#day_after_overlap_different_years() ein Tag danach  + Überschneidungen + Jahreswechsel}</li>
- *   <li>{@link FreierTagZwischenPruefungenTest#day_after_overlap_different_blocks() ein Tag danach + Überschneidungen  + unterschiedliche Blöcke}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#day_after_no_overlap() ein Tag danach + keine Überschneidungen}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#day_after_overlap() ein Tag danach  + Überschneidung}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#day_after_overlap_multiple() ein Tag danach  + mehrere Überschneidungen}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#day_after_overlap_different_years() ein Tag danach  + Überschneidungen + Jahreswechsel}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#day_after_overlap_different_blocks() ein Tag danach + Überschneidungen  + unterschiedliche Blöcke}</li>
  *   <br>
- *   <li>{@link FreierTagZwischenPruefungenTest#more_than_one_day_before_no_overlap() keine Überschneidungen mehr als einen Tag davor}</li>
- *   <li>{@link FreierTagZwischenPruefungenTest#more_than_one_day_before_overlap() Überschneidung mehr als einen Tag davor}</li>
- *   <li>{@link FreierTagZwischenPruefungenTest#more_than_one_day_before_overlap_multiple() mehrere Überschneidungen mehr als einen Tag davor}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#more_than_one_day_before_no_overlap() keine Überschneidungen mehr als einen Tag davor}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#more_than_one_day_before_overlap() Überschneidung mehr als einen Tag davor}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#more_than_one_day_before_overlap_multiple() mehrere Überschneidungen mehr als einen Tag davor}</li>
  *   <br>
- *   <li>{@link FreierTagZwischenPruefungenTest#more_than_one_day_after_no_overlap() keine Überschneidungen mehr als einen Tag danach}</li>
- *   <li>{@link FreierTagZwischenPruefungenTest#more_than_one_day_after_overlap() Überschneidung mehr als einen Tag danach}</li>
- *   <li>{@link FreierTagZwischenPruefungenTest#more_than_one_day_after_overlap_multiple() mehrere Überschneidungen mehr als einen Tag danach}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#more_than_one_day_after_no_overlap() keine Überschneidungen mehr als einen Tag danach}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#more_than_one_day_after_overlap() Überschneidung mehr als einen Tag danach}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#more_than_one_day_after_overlap_multiple() mehrere Überschneidungen mehr als einen Tag danach}</li>
  *   <br>
- *   <li>{@link FreierTagZwischenPruefungenTest#one_day_before_and_after_no_overlap() keine Überschneidungen einen Tag davor + danach}</li>
- *   <li>{@link FreierTagZwischenPruefungenTest#one_day_before_and_after_overlap() Überschneidungen einen Tag davor + danach}</li>
- *   <li>{@link FreierTagZwischenPruefungenTest#one_day_before_and_after_overlap_before() einen Tag davor + danach + Überschneidung davor}</li>
- *   <li>{@link FreierTagZwischenPruefungenTest#one_day_before_and_after_overlap_after() einen Tag davor + danach + Überschneidung danach}</li>
- *   <li>{@link FreierTagZwischenPruefungenTest#more_than_one_day_before_and_after_no_overlap() keine Überschneidungen mehr als einen Tag davor + danach}</li>
- *   <li>{@link FreierTagZwischenPruefungenTest#more_than_one_day_before_and_after_overlap() Überschneidungen mehr als einen Tag davor + danach}</li>
- *   <li>{@link FreierTagZwischenPruefungenTest#more_than_one_day_before_and_after_overlap_before() mehr als  einen Tag davor + danach + Überschneidung davor}</li>
- *   <li>{@link FreierTagZwischenPruefungenTest#more_than_one_day_before_and_after_overlap_after() mehr als einen Tag davor + danach + Überschneidung danach}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#one_day_before_and_after_no_overlap() keine Überschneidungen einen Tag davor + danach}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#one_day_before_and_after_overlap() Überschneidungen einen Tag davor + danach}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#one_day_before_and_after_overlap_before() einen Tag davor + danach + Überschneidung davor}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#one_day_before_and_after_overlap_after() einen Tag davor + danach + Überschneidung danach}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#more_than_one_day_before_and_after_no_overlap() keine Überschneidungen mehr als einen Tag davor + danach}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#more_than_one_day_before_and_after_overlap() Überschneidungen mehr als einen Tag davor + danach}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#more_than_one_day_before_and_after_overlap_before() mehr als  einen Tag davor + danach + Überschneidung davor}</li>
+ *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#more_than_one_day_before_and_after_overlap_after() mehr als einen Tag davor + danach + Überschneidung danach}</li>
  * </ol>
  */
-class FreierTagZwischenPruefungenTest {
+class FreierTagZwischenPruefungenRestrictionTest {
 
-  public FreierTagZwischenPruefungen deviceUnderTest;
+  public FreierTagZwischenPruefungenRestriction deviceUnderTest;
   public DataAccessService dataAccessService;
   private static final int SCORING = FREIER_TAG_ZWISCHEN_PRUEFUNGEN.getWert();
 
   @BeforeEach
   public void setUp() {
     this.dataAccessService = mock(DataAccessService.class);
-    this.deviceUnderTest = new FreierTagZwischenPruefungen(dataAccessService);
+    this.deviceUnderTest = new FreierTagZwischenPruefungenRestriction(dataAccessService);
   }
 
   @Test
@@ -790,7 +790,7 @@ class FreierTagZwischenPruefungenTest {
       Set<Teilnehmerkreis> causingTeilnehmerkreise, int affected)
       throws NoPruefungsPeriodeDefinedException {
 
-    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluateRestriction(toEvaluate);
+    Optional<WeichesKriteriumAnalysis> result = deviceUnderTest.evaluateRestriction(toEvaluate);
     assertThat(result).isPresent();
     assertThat(result.get().getAffectedTeilnehmerKreise()).containsExactlyInAnyOrderElementsOf(
         causingTeilnehmerkreise);

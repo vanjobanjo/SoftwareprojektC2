@@ -3,7 +3,7 @@ package de.fhwedel.klausps.controller.restriction.hard;
 import static de.fhwedel.klausps.controller.kriterium.HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG;
 import static de.fhwedel.klausps.controller.util.ParameterUtil.noNullParameters;
 
-import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalysis;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
@@ -32,32 +32,33 @@ import org.slf4j.LoggerFactory;
 /**
  * Klasse, die für das Testen da ist, wenn zwei Klausuren gleichzeitig stattfinden, mit dem gleichen Teilnehmerkreis
  */
-public class TwoKlausurenSameTime extends HarteRestriktion {
+public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(TwoKlausurenSameTime.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(
+      ZweiPruefungenGleichzeitigRestriction.class);
 
   /**
    * Speichern von der Zeit, die zwischen den Pruefungen mit dem gleichen Teilnehmerkreis liegen darf
    */
   private final Duration bufferBetweenPlanungseinheiten;
 
-  public TwoKlausurenSameTime() {
+  public ZweiPruefungenGleichzeitigRestriction() {
     this(ServiceProvider.getDataAccessService());
   }
 
-  protected TwoKlausurenSameTime(DataAccessService dataAccessService) {
+  protected ZweiPruefungenGleichzeitigRestriction(DataAccessService dataAccessService) {
     super(dataAccessService, ZWEI_KLAUSUREN_GLEICHZEITIG);
     this.bufferBetweenPlanungseinheiten = DEFAULT_BUFFER_BETWEEN_PLANUNGSEINHEITEN;
   }
 
-  protected TwoKlausurenSameTime(DataAccessService dataAccessService,
+  protected ZweiPruefungenGleichzeitigRestriction(DataAccessService dataAccessService,
       Duration bufferBetweenPlanungseinheiten) {
     super(dataAccessService, ZWEI_KLAUSUREN_GLEICHZEITIG);
     this.bufferBetweenPlanungseinheiten = bufferBetweenPlanungseinheiten;
   }
 
   @Override
-  public Optional<HartesKriteriumAnalyse> evaluateRestriction(Pruefung pruefung)
+  public Optional<HartesKriteriumAnalysis> evaluateRestriction(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     if (pruefung.isGeplant()) {
       //Setzen von den start und end Termin, wo das Kriterium verletzt werden könnte
@@ -66,7 +67,7 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
       // Anm.: Liste muss kopiert werden, da Model nur unmodifiable Lists zurückgibt
       List<Planungseinheit> testList = new ArrayList<>(
           tryToGetAllPlanungseinheitenBetween(start, end));
-      Optional<HartesKriteriumAnalyse> hKA = checkForPlanungseinheitenHartesKriterium(
+      Optional<HartesKriteriumAnalysis> hKA = checkForPlanungseinheitenHartesKriterium(
           pruefung, start, end, testList);
       if (hKA.isPresent()) {
         return hKA;
@@ -96,16 +97,16 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
    * @param end      der Endtermin bis wohin die Überprüfung durchgeführt werden sol (Nur für Blöcke
    *                 relevant)
    * @param testList die Liste mit Planungseinheiten, die zu dem Startzeitpunkt stattfinden
-   * @return Entweder eine HartesKriteriumAnalyse, wo die Pruefungen, das Kriterium und die
+   * @return Entweder eine HartesKriteriumAnalysis, wo die Pruefungen, das Kriterium und die
    * Teilnehmer mit ihrer Anzahl drin steht oder ein leeres Optional
    */
-  private Optional<HartesKriteriumAnalyse> checkForPlanungseinheitenHartesKriterium(
+  private Optional<HartesKriteriumAnalysis> checkForPlanungseinheitenHartesKriterium(
       Pruefung pruefung, LocalDateTime start, LocalDateTime end, List<Planungseinheit> testList) {
 
     //Zum Sammeln der Teilnehmerkreise und die Pruefungen, die einen harten Konflikt verursachen
     Map<Teilnehmerkreis, Integer> teilnehmerCount = new HashMap<>();
     HashSet<Pruefung> inConflictROPruefung = new HashSet<>();
-    Optional<HartesKriteriumAnalyse> hKA = Optional.empty();
+    Optional<HartesKriteriumAnalysis> hKA = Optional.empty();
     if (testList != null) {
       testList.remove(pruefung);
 
@@ -135,11 +136,11 @@ public class TwoKlausurenSameTime extends HarteRestriktion {
    * @return Entweder die HarteKriteriumsAnalyse mit den in Konflikt stehenden Pruefungen und
    * Teilnehmerkreisen oder ein leeres Optional
    */
-  private Optional<HartesKriteriumAnalyse> testAndCreateNewHartesKriteriumAnalyse(
+  private Optional<HartesKriteriumAnalysis> testAndCreateNewHartesKriteriumAnalyse(
       Map<Teilnehmerkreis, Integer> teilnehmerCount, HashSet<Pruefung> inConflictROPruefung) {
     if (!inConflictROPruefung.isEmpty()) {
-      HartesKriteriumAnalyse hKA = new HartesKriteriumAnalyse(inConflictROPruefung,
-          this.hardRestriction, teilnehmerCount);
+      HartesKriteriumAnalysis hKA = new HartesKriteriumAnalysis(inConflictROPruefung,
+          this.kriterium, teilnehmerCount);
       return Optional.of(hKA);
     }
     return Optional.empty();

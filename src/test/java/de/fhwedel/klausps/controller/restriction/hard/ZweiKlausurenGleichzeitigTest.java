@@ -23,7 +23,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalysis;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
@@ -48,16 +48,16 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("OptionalGetWithoutIsPresent")
-class TwoKlausurenSameTimeTest {
+class ZweiKlausurenGleichzeitigTest {
 
   private DataAccessService dataAccessService;
-  private TwoKlausurenSameTime deviceUnderTest;
+  private ZweiPruefungenGleichzeitigRestriction deviceUnderTest;
   private Pruefungsperiode pruefungsperiode;
 
   @BeforeEach
   void setUp() {
     this.dataAccessService = mock(DataAccessService.class);
-    this.deviceUnderTest = new TwoKlausurenSameTime(dataAccessService);
+    this.deviceUnderTest = new ZweiPruefungenGleichzeitigRestriction(dataAccessService);
     this.pruefungsperiode = mock(Pruefungsperiode.class);
   }
 
@@ -74,11 +74,11 @@ class TwoKlausurenSameTimeTest {
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         Set.of(pruefung1, pruefung2));
     when(dataAccessService.getBlockTo(pruefung1)).thenReturn(Optional.empty());
-    TwoKlausurenSameTime deviceUnderTest = new TwoKlausurenSameTime(dataAccessService);
-    HartesKriteriumAnalyse result = deviceUnderTest.evaluateRestriction(pruefung1).get();
+    ZweiPruefungenGleichzeitigRestriction deviceUnderTest = new ZweiPruefungenGleichzeitigRestriction(dataAccessService);
+    HartesKriteriumAnalysis result = deviceUnderTest.evaluateRestriction(pruefung1).get();
 
-    assertThat(result.getTeilnehmercount()).containsOnlyKeys(bwl);
-    assertThat(result.getTeilnehmercount().values()).containsOnly(30);
+    assertThat(result.getTeilnehmerCount()).containsOnlyKeys(bwl);
+    assertThat(result.getTeilnehmerCount().values()).containsOnly(30);
     assertThat(result.getCausingPruefungen()).contains(pruefung1);
     assertThat(result.getCausingPruefungen()).contains(pruefung2);
     assertThat(result.getKriterium()).isEqualTo(HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG);
@@ -103,14 +103,14 @@ class TwoKlausurenSameTimeTest {
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         Set.of(analysis, haskell));
 
-    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluateRestriction(haskell);
+    Optional<HartesKriteriumAnalysis> analyse = deviceUnderTest.evaluateRestriction(haskell);
 
     assertTrue(analyse.isPresent());
     assertEquals(Set.of(analysis, haskell), analyse.get().getCausingPruefungen());
 
-    assertEquals(Set.of(infBachelor), analyse.get().getTeilnehmercount().keySet());
+    assertEquals(Set.of(infBachelor), analyse.get().getTeilnehmerCount().keySet());
     assertEquals(students,
-        analyse.get().getTeilnehmercount().values().stream().reduce(0, Integer::sum));
+        analyse.get().getTeilnehmerCount().values().stream().reduce(0, Integer::sum));
   }
 
 
@@ -156,13 +156,13 @@ class TwoKlausurenSameTimeTest {
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         Set.of(analysis, haskell, dm));
 
-    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluateRestriction(haskell);
+    Optional<HartesKriteriumAnalysis> analyse = deviceUnderTest.evaluateRestriction(haskell);
 
     assertThat(analyse).isPresent();
     assertThat(analyse.get().getCausingPruefungen()).containsOnly(dm, analysis, haskell);
-    assertThat(analyse.get().getTeilnehmercount()).containsOnlyKeys(infBachelor);
+    assertThat(analyse.get().getTeilnehmerCount()).containsOnlyKeys(infBachelor);
     assertThat(
-        analyse.get().getTeilnehmercount().values().stream().reduce(0, Integer::sum)).isEqualTo(
+        analyse.get().getTeilnehmerCount().values().stream().reduce(0, Integer::sum)).isEqualTo(
         students);
   }
 
@@ -193,18 +193,18 @@ class TwoKlausurenSameTimeTest {
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         Set.of(analysis, haskell, dm));
 
-    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluateRestriction(haskell);
+    Optional<HartesKriteriumAnalysis> analyse = deviceUnderTest.evaluateRestriction(haskell);
     assertThat(analyse).isPresent();
 
     assertThat(analyse.get().getCausingPruefungen()).containsOnly(dm, analysis, haskell);
-    assertThat(analyse.get().getTeilnehmercount()).containsOnlyKeys(infBachelor, bwlBachelor);
+    assertThat(analyse.get().getTeilnehmerCount()).containsOnlyKeys(infBachelor, bwlBachelor);
     assertThat(
-        analyse.get().getTeilnehmercount().values().stream().reduce(0, Integer::sum))
+        analyse.get().getTeilnehmerCount().values().stream().reduce(0, Integer::sum))
         .isEqualTo(16);
   }
 
   @Test
-  @DisplayName("HartesKriterium: TwoKlausurenSameTime in Block Parallel Überschneidung mit kürzerer Klausur")
+  @DisplayName("HartesKriterium: ZweiPruefungenGleichzeitigRestriction in Block Parallel Überschneidung mit kürzerer Klausur")
   void test_Blocke2_Parallel_successful()
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     LocalDateTime startBlock = LocalDateTime.of(2021, 8, 1, 8, 0);
@@ -309,12 +309,12 @@ class TwoKlausurenSameTimeTest {
     when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         Set.of(blockA));
 
-    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluateRestriction(cPruefung);
+    Optional<HartesKriteriumAnalysis> analyse = deviceUnderTest.evaluateRestriction(cPruefung);
     assertThat(analyse).isPresent();
     assertThat(analyse.get().getCausingPruefungen()).containsOnly(cPruefung, aPruefung);
-    assertThat(analyse.get().getTeilnehmercount()).containsOnlyKeys(infBachelor);
+    assertThat(analyse.get().getTeilnehmerCount()).containsOnlyKeys(infBachelor);
     assertThat(
-        analyse.get().getTeilnehmercount().values().stream().reduce(0, Integer::sum))
+        analyse.get().getTeilnehmerCount().values().stream().reduce(0, Integer::sum))
         .isEqualTo(students);
   }
 
@@ -350,7 +350,7 @@ class TwoKlausurenSameTimeTest {
     when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         Set.of(blockA));
 
-    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluateRestriction(cPruefung);
+    Optional<HartesKriteriumAnalysis> analyse = deviceUnderTest.evaluateRestriction(cPruefung);
     assertTrue(analyse.isEmpty());
 
   }
@@ -388,7 +388,7 @@ class TwoKlausurenSameTimeTest {
     when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         Set.of(blockA));
 
-    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluateRestriction(cPruefung);
+    Optional<HartesKriteriumAnalysis> analyse = deviceUnderTest.evaluateRestriction(cPruefung);
     assertTrue(analyse.isEmpty());
   }
 
@@ -440,13 +440,13 @@ class TwoKlausurenSameTimeTest {
 
     int affectedStudents = 16;
 
-    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluateRestriction(cPruefung2);
+    Optional<HartesKriteriumAnalysis> analyse = deviceUnderTest.evaluateRestriction(cPruefung2);
     assertThat(analyse).isPresent();
     assertThat(analyse.get().getCausingPruefungen()).containsOnly(aPruefung2, bPruefung2,
         cPruefung2, dPruefung2, ePruefung2);
-    assertThat(analyse.get().getTeilnehmercount()).containsOnlyKeys(infBachelor, bwlBachelor);
+    assertThat(analyse.get().getTeilnehmerCount()).containsOnlyKeys(infBachelor, bwlBachelor);
     assertThat(
-        analyse.get().getTeilnehmercount().values().stream().reduce(0, Integer::sum))
+        analyse.get().getTeilnehmerCount().values().stream().reduce(0, Integer::sum))
         .isEqualTo(affectedStudents);
   }
 
@@ -498,13 +498,13 @@ class TwoKlausurenSameTimeTest {
 
     int affectedStudents = 16;
 
-    Optional<HartesKriteriumAnalyse> analyse = deviceUnderTest.evaluateRestriction(cPruefung2);
+    Optional<HartesKriteriumAnalysis> analyse = deviceUnderTest.evaluateRestriction(cPruefung2);
     assertThat(analyse).isPresent();
     assertThat(analyse.get().getCausingPruefungen()).containsOnly(aPruefung2, bPruefung2,
         cPruefung2, dPruefung2, ePruefung2);
-    assertThat(analyse.get().getTeilnehmercount()).containsOnlyKeys(infBachelor, bwlBachelor);
+    assertThat(analyse.get().getTeilnehmerCount()).containsOnlyKeys(infBachelor, bwlBachelor);
     assertEquals(affectedStudents,
-        analyse.get().getTeilnehmercount().values().stream().reduce(0, Integer::sum));
+        analyse.get().getTeilnehmerCount().values().stream().reduce(0, Integer::sum));
   }
 
   @Test

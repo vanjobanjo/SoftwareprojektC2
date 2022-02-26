@@ -5,7 +5,7 @@ import static de.fhwedel.klausps.model.api.Ausbildungsgrad.AUSBILDUNG;
 import static de.fhwedel.klausps.model.api.Ausbildungsgrad.BACHELOR;
 import static de.fhwedel.klausps.model.api.Ausbildungsgrad.MASTER;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.services.DataAccessService;
@@ -18,17 +18,17 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class WocheVierFuerMaster extends WeicheRestriktion {
+public class WocheVierFuerMasterRestriction extends SoftRestriction {
 
   private static final int WEEK_FOUR = 4;
   private static final int DAYS_WEEK = 7;
 
-  public WocheVierFuerMaster() {
+  public WocheVierFuerMasterRestriction() {
     super(ServiceProvider.getDataAccessService(), WOCHE_VIER_FUER_MASTER);
   }
 
   //Mock Konstruktor
-  WocheVierFuerMaster(DataAccessService dataAccessService) {
+  WocheVierFuerMasterRestriction(DataAccessService dataAccessService) {
     super(dataAccessService, WOCHE_VIER_FUER_MASTER);
   }
 
@@ -66,7 +66,7 @@ public class WocheVierFuerMaster extends WeicheRestriktion {
    * restriction, or an empty Optional in case the Restriction was not violated.
    */
   @Override
-  public Optional<WeichesKriteriumAnalyse> evaluateRestriction(Pruefung pruefung) {
+  public Optional<WeichesKriteriumAnalysis> evaluateRestriction(Pruefung pruefung) {
 
     if (!isWeekFourContainsNotOnlyMaster(pruefung)) {
       return Optional.empty();
@@ -87,7 +87,7 @@ public class WocheVierFuerMaster extends WeicheRestriktion {
 
     int scoring = kriterium.getWert() * tkWithoutMaster.size();
 
-    return Optional.of(new WeichesKriteriumAnalyse(Set.of(pruefung), WOCHE_VIER_FUER_MASTER,
+    return Optional.of(new WeichesKriteriumAnalysis(Set.of(pruefung), WOCHE_VIER_FUER_MASTER,
         tkWithoutMaster,
         affectedWithoutMaster, scoring
     ));

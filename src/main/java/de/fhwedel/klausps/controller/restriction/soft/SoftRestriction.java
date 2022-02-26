@@ -3,11 +3,11 @@ package de.fhwedel.klausps.controller.restriction.soft;
 import static de.fhwedel.klausps.controller.util.ParameterUtil.noNullParameters;
 import static de.fhwedel.klausps.controller.util.TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
-import de.fhwedel.klausps.controller.restriction.Restriktion;
+import de.fhwedel.klausps.controller.restriction.Restriction;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
@@ -20,14 +20,14 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class WeicheRestriktion extends Restriktion {
+public abstract class SoftRestriction extends Restriction {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(WeicheRestriktion.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SoftRestriction.class);
 
   protected final DataAccessService dataAccessService;
   protected final WeichesKriterium kriterium;
 
-  protected WeicheRestriktion(DataAccessService dataAccessService, WeichesKriterium kriterium) {
+  protected SoftRestriction(DataAccessService dataAccessService, WeichesKriterium kriterium) {
     this.dataAccessService = dataAccessService;
     this.kriterium = kriterium;
   }
@@ -39,11 +39,11 @@ public abstract class WeicheRestriktion extends Restriktion {
    * @return Either an {@link Optional} containing a {@link KriteriumsAnalyse} for the violated
    * restriction, or an empty Optional in case the Restriction was not violated.
    */
-  protected abstract Optional<WeichesKriteriumAnalyse> evaluateRestriction(Pruefung pruefung)
+  protected abstract Optional<WeichesKriteriumAnalysis> evaluateRestriction(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException;
 
 
-  public Optional<WeichesKriteriumAnalyse> evaluate(Pruefung pruefung)
+  public Optional<WeichesKriteriumAnalysis> evaluate(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     LOGGER.trace("Checking restriction {}.", this.kriterium);
     noNullParameters(pruefung);
@@ -53,7 +53,7 @@ public abstract class WeicheRestriktion extends Restriktion {
     return evaluateRestriction(pruefung);
   }
 
-  protected WeichesKriteriumAnalyse buildAnalysis(Pruefung pruefung,
+  protected WeichesKriteriumAnalysis buildAnalysis(Pruefung pruefung,
       Set<Pruefung> affectedPruefungen) {
     int scoring;
     Map<Teilnehmerkreis, Integer> affectedTeilnehmerkreise = new HashMap<>();
@@ -62,7 +62,7 @@ public abstract class WeicheRestriktion extends Restriktion {
     }
     scoring = addDeltaScoring(affectedPruefungen);
 
-    return new WeichesKriteriumAnalyse(affectedPruefungen, this.kriterium,
+    return new WeichesKriteriumAnalysis(affectedPruefungen, this.kriterium,
         affectedTeilnehmerkreise.keySet(), getAffectedStudents(affectedTeilnehmerkreise), scoring);
   }
 
@@ -109,7 +109,7 @@ public abstract class WeicheRestriktion extends Restriktion {
 
   @Override
   public boolean equals(Object obj) {
-    return (obj instanceof WeicheRestriktion weicheRestriktion)
+    return (obj instanceof SoftRestriction weicheRestriktion)
         && weicheRestriktion.kriterium == this.kriterium;
   }
 

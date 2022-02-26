@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Pruefung;
@@ -23,15 +23,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 
-class UniformeZeitslotsTest {
+class UniformeZeitslotsRestrictionTest {
 
-  public UniformeZeitslots deviceUnderTest;
+  public UniformeZeitslotsRestriction deviceUnderTest;
   public DataAccessService dataAccessService;
 
   @BeforeEach
   public void setUp() {
     this.dataAccessService = mock(DataAccessService.class);
-    this.deviceUnderTest = new UniformeZeitslots(dataAccessService);
+    this.deviceUnderTest = new UniformeZeitslotsRestriction(dataAccessService);
   }
 
 
@@ -153,7 +153,7 @@ class UniformeZeitslotsTest {
   private void testKriterium(Pruefung toEvaluate, Set<Pruefung> causingPruefungen,
       Set<Teilnehmerkreis> causingTeilnehmerkreise) throws NoPruefungsPeriodeDefinedException {
 
-    Optional<WeichesKriteriumAnalyse> result = deviceUnderTest.evaluateRestriction(toEvaluate);
+    Optional<WeichesKriteriumAnalysis> result = deviceUnderTest.evaluateRestriction(toEvaluate);
     assertThat(result).isPresent();
     assertThat(result.get().getAffectedTeilnehmerKreise()).containsExactlyInAnyOrderElementsOf(
         causingTeilnehmerkreise);

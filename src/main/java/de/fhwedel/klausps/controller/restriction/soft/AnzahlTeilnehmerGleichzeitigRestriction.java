@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 
-public class AnzahlTeilnehmerGleichzeitigZuHochRestriction extends AtSameTimeRestriction {
+public class AnzahlTeilnehmerGleichzeitigRestriction extends AtSameTimeRestriction {
 
   private static final int DEFAULT_MAX_TEILNEHMER_AT_A_TIME = 200;
 
@@ -23,12 +23,12 @@ public class AnzahlTeilnehmerGleichzeitigZuHochRestriction extends AtSameTimeRes
 
   private final int scoringStepSize;
 
-  public AnzahlTeilnehmerGleichzeitigZuHochRestriction(DataAccessService dataAccessService,
+  public AnzahlTeilnehmerGleichzeitigRestriction(DataAccessService dataAccessService,
       Duration buffer, int maxTeilnehmerAtSameTime) {
     this(dataAccessService, buffer, maxTeilnehmerAtSameTime, DEFAULT_SCORING_STEP_SIZE);
   }
 
-  public AnzahlTeilnehmerGleichzeitigZuHochRestriction(DataAccessService dataAccessService,
+  public AnzahlTeilnehmerGleichzeitigRestriction(DataAccessService dataAccessService,
       Duration buffer, int maxTeilnehmerAtATime, int scoreStepSize) {
     super(dataAccessService, ANZAHL_TEILNEHMER_GLEICHZEITIG_ZU_HOCH, buffer);
     this.maxTeilnehmer = maxTeilnehmerAtATime;
@@ -38,7 +38,7 @@ public class AnzahlTeilnehmerGleichzeitigZuHochRestriction extends AtSameTimeRes
     this.scoringStepSize = scoreStepSize;
   }
 
-  public AnzahlTeilnehmerGleichzeitigZuHochRestriction() {
+  public AnzahlTeilnehmerGleichzeitigRestriction() {
     this(ServiceProvider.getDataAccessService(), DEFAULT_BUFFER_BETWEEN_PLANUNGSEINHEITEN,
         DEFAULT_MAX_TEILNEHMER_AT_A_TIME, DEFAULT_SCORING_STEP_SIZE);
   }

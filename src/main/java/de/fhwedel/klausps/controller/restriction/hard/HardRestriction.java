@@ -1,10 +1,10 @@
 package de.fhwedel.klausps.controller.restriction.hard;
 
 
-import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalysis;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
-import de.fhwedel.klausps.controller.restriction.Restriktion;
+import de.fhwedel.klausps.controller.restriction.Restriction;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
@@ -18,12 +18,12 @@ import java.util.Set;
  * Here are the standard methods for testing the hard criteria. n
  */
 
-public abstract class HarteRestriktion extends Restriktion {
+public abstract class HardRestriction extends Restriction {
 
   /**
    * this is to safe witch criterion is tested
    */
-  protected final HartesKriterium hardRestriction;
+  protected final HartesKriterium kriterium;
   /**
    * to safe the DataAccessService for getting other Pruefungen
    */
@@ -35,12 +35,12 @@ public abstract class HarteRestriktion extends Restriktion {
    * @param dataAccessService der DataAccessService, der gespeichert wird
    * @param kriterium         das Kriterium, welches getestet werden soll
    */
-  HarteRestriktion(DataAccessService dataAccessService, HartesKriterium kriterium) {
-    this.hardRestriction = kriterium;
+  HardRestriction(DataAccessService dataAccessService, HartesKriterium kriterium) {
+    this.kriterium = kriterium;
     this.dataAccessService = dataAccessService;
   }
 
-  public Optional<HartesKriteriumAnalyse> evaluate(Pruefung pruefung)
+  public Optional<HartesKriteriumAnalysis> evaluate(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     if (!pruefung.isGeplant()) {
       return Optional.empty();
@@ -59,7 +59,7 @@ public abstract class HarteRestriktion extends Restriktion {
    * eine HarteKriteriumsAnalyse, mit den Klausuren und Teilnehmerkreisen, welche gegen das
    * Kriterium verstößt
    */
-  protected abstract Optional<HartesKriteriumAnalyse> evaluateRestriction(Pruefung pruefung)
+  protected abstract Optional<HartesKriteriumAnalysis> evaluateRestriction(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException;
 
   /**
@@ -89,12 +89,12 @@ public abstract class HarteRestriktion extends Restriktion {
 
   @Override
   public boolean equals(Object obj) {
-    return (obj instanceof HarteRestriktion harteRestriktion)
-        && harteRestriktion.hardRestriction == this.hardRestriction;
+    return (obj instanceof HardRestriction harteRestriktion)
+        && harteRestriktion.kriterium == this.kriterium;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(hardRestriction, dataAccessService);
+    return Objects.hash(kriterium, dataAccessService);
   }
 }

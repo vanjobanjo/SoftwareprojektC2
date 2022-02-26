@@ -3,7 +3,7 @@ package de.fhwedel.klausps.controller.restriction.soft;
 import static de.fhwedel.klausps.controller.util.PlanungseinheitUtil.getAllPruefungen;
 import static de.fhwedel.klausps.model.api.Blocktyp.SEQUENTIAL;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
@@ -20,9 +20,9 @@ import java.util.Optional;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class AtSameTimeRestriction extends WeicheRestriktion {
+public abstract class AtSameTimeRestriction extends SoftRestriction {
 
-  // TODO refactor methods to overwrite the methods from WeicheRestriktion
+  // TODO refactor methods to overwrite the methods from SoftRestriction
 
   protected final Duration puffer;
 
@@ -34,7 +34,7 @@ public abstract class AtSameTimeRestriction extends WeicheRestriktion {
 
   @Override
   @NotNull
-  public Optional<WeichesKriteriumAnalyse> evaluateRestriction(@NotNull Pruefung pruefung)
+  public Optional<WeichesKriteriumAnalysis> evaluateRestriction(@NotNull Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     if (!pruefung.isGeplant()) {
       return Optional.empty();
@@ -76,7 +76,7 @@ public abstract class AtSameTimeRestriction extends WeicheRestriktion {
       @NotNull Pruefung toFilterFor) throws NoPruefungsPeriodeDefinedException;
 
   @NotNull
-  private Optional<WeichesKriteriumAnalyse> getAnalyseIfRestrictionViolated(
+  private Optional<WeichesKriteriumAnalysis> getAnalyseIfRestrictionViolated(
       @NotNull Set<Planungseinheit> planungseinheitenOverlappingTheOneToCheck) {
     if (!violatesRestriction(planungseinheitenOverlappingTheOneToCheck)) {
       return Optional.empty();
@@ -117,9 +117,9 @@ public abstract class AtSameTimeRestriction extends WeicheRestriktion {
   }
 
   @NotNull
-  private WeichesKriteriumAnalyse buildAnalysis(
+  private WeichesKriteriumAnalysis buildAnalysis(
       @NotNull Set<Planungseinheit> violatingPlanungseinheiten) {
-    return new WeichesKriteriumAnalyse(getAllPruefungen(violatingPlanungseinheiten), this.kriterium,
+    return new WeichesKriteriumAnalysis(getAllPruefungen(violatingPlanungseinheiten), this.kriterium,
         getAffectedTeilnehmerkreiseFrom(violatingPlanungseinheiten),
         getAffectedStudentsFrom(violatingPlanungseinheiten),
         calcScoringFor(violatingPlanungseinheiten));

@@ -2,7 +2,7 @@ package de.fhwedel.klausps.controller.restriction.soft;
 
 import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
@@ -21,8 +21,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-public class AnzahlPruefungProWoche extends WeicheRestriktion {
+@Deprecated
+public class AnzahlPruefungProWoche extends SoftRestriction {
 
   // for testing
   public static final int LIMIT_DEFAULT = 3;
@@ -55,7 +55,7 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion {
 
 
   @Override
-  public Optional<WeichesKriteriumAnalyse> evaluateRestriction(Pruefung pruefung)
+  public Optional<WeichesKriteriumAnalysis> evaluateRestriction(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     LocalDate start;
     try {
@@ -88,7 +88,7 @@ public class AnzahlPruefungProWoche extends WeicheRestriktion {
 
     int affected = numberAffectedStudents(conflictedPruefungen);
 
-    return Optional.of(new WeichesKriteriumAnalyse(conflictedPruefungen,
+    return Optional.of(new WeichesKriteriumAnalysis(conflictedPruefungen,
         ANZAHL_PRUEFUNGEN_PRO_WOCHE, conflictedTeilnehmerkreis, affected));
   }
 

@@ -2,7 +2,7 @@ package de.fhwedel.klausps.controller.restriction.soft;
 
 import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
@@ -18,7 +18,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
+public class AnzahlPruefungProWocheTeilnehmerkreisRestriction extends SoftRestriction {
 
   // for testing
   public static final int LIMIT_DEFAULT = 5;
@@ -26,7 +26,7 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
   private final int limit;
 
   //Mock Konstruktor
-  AnzahlPruefungProWocheTeilnehmerkreis(
+  AnzahlPruefungProWocheTeilnehmerkreisRestriction(
       DataAccessService dataAccessService,
       final int LIMIT_TEST) {
     super(dataAccessService, ANZAHL_PRUEFUNGEN_PRO_WOCHE);
@@ -36,7 +36,7 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
   /**
    * Public constructor
    */
-  public AnzahlPruefungProWocheTeilnehmerkreis() {
+  public AnzahlPruefungProWocheTeilnehmerkreisRestriction() {
     super(ServiceProvider.getDataAccessService(), ANZAHL_PRUEFUNGEN_PRO_WOCHE);
     limit = LIMIT_DEFAULT;
   }
@@ -72,7 +72,7 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
   }
 
   @Override
-  public Optional<WeichesKriteriumAnalyse> evaluateRestriction(Pruefung pruefung)
+  public Optional<WeichesKriteriumAnalysis> evaluateRestriction(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
 
     Map<Integer, Set<Pruefung>> weekPruefungMap;
@@ -85,7 +85,7 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
       return Optional.empty();
     }
 
-    Optional<WeichesKriteriumAnalyse> analyseForTks = Optional.empty();
+    Optional<WeichesKriteriumAnalysis> analyseForTks = Optional.empty();
     // every tk of the pruefung must be checked with all other pruefung of the same week
     // and every violation must be counted
     for (Teilnehmerkreis tk : pruefung.getTeilnehmerkreise()) {
@@ -104,8 +104,8 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
    * @param oldAnalyse could be empty
    * @return WeichesKriteriumsAnalyse
    */
-  private Optional<WeichesKriteriumAnalyse> concatAnalyse(
-      WeichesKriteriumAnalyse newAnalyse, Optional<WeichesKriteriumAnalyse> oldAnalyse) {
+  private Optional<WeichesKriteriumAnalysis> concatAnalyse(
+      WeichesKriteriumAnalysis newAnalyse, Optional<WeichesKriteriumAnalysis> oldAnalyse) {
     assert newAnalyse != null;
 
     if (oldAnalyse.isEmpty()) {
@@ -121,7 +121,7 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
     int sum = newAnalyse.getAmountAffectedStudents() + oldAnalyse.get().getAmountAffectedStudents();
     int deltaScoring = oldAnalyse.get().getDeltaScoring() + newAnalyse.getDeltaScoring();
     return Optional.of(
-        new WeichesKriteriumAnalyse(new HashSet<>(combinedPruefung), ANZAHL_PRUEFUNGEN_PRO_WOCHE,
+        new WeichesKriteriumAnalysis(new HashSet<>(combinedPruefung), ANZAHL_PRUEFUNGEN_PRO_WOCHE,
             new HashSet<>(combinedTk), sum, deltaScoring));
 
   }
@@ -136,9 +136,9 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
    * @param pruefungenSameWeek Pruefungen which are scheduled in the same week
    * @return a optional WeichesKriteriumsAnalyse when there is a violation.
    */
-  private Optional<WeichesKriteriumAnalyse> evaluateForTkConcat(Pruefung pruefung,
+  private Optional<WeichesKriteriumAnalysis> evaluateForTkConcat(Pruefung pruefung,
       Teilnehmerkreis tk,
-      Optional<WeichesKriteriumAnalyse> analyse,
+      Optional<WeichesKriteriumAnalysis> analyse,
       Set<Pruefung> pruefungenSameWeek) throws NoPruefungsPeriodeDefinedException {
     assert pruefung.getTeilnehmerkreise().contains(tk);
 
@@ -157,7 +157,7 @@ public class AnzahlPruefungProWocheTeilnehmerkreis extends WeicheRestriktion {
         .filter(pr -> pr.getTeilnehmerkreise().contains(tk)).collect(
             Collectors.toSet());
 
-    return concatAnalyse((new WeichesKriteriumAnalyse(pruefungenSameTk,
+    return concatAnalyse((new WeichesKriteriumAnalysis(pruefungenSameTk,
             ANZAHL_PRUEFUNGEN_PRO_WOCHE, Set.of(tk), pruefung.getSchaetzungen().get(tk),
             ANZAHL_PRUEFUNGEN_PRO_WOCHE.getWert())),
         analyse);

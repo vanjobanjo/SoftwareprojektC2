@@ -2,7 +2,7 @@ package de.fhwedel.klausps.controller.restriction.soft;
 
 import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.SONNTAG;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Pruefung;
@@ -10,16 +10,16 @@ import java.time.DayOfWeek;
 import java.util.Optional;
 import java.util.Set;
 
-public class KeineKlausurAmSonntag extends WeicheRestriktion {
+public class KeinePruefungAmSonntagRestriction extends SoftRestriction {
 
   private static final DayOfWeek SUNDAY = DayOfWeek.SUNDAY;
 
   //Mock Konstruktor
-  KeineKlausurAmSonntag(DataAccessService dataAccessService) {
+  KeinePruefungAmSonntagRestriction(DataAccessService dataAccessService) {
     super(dataAccessService, SONNTAG);
   }
 
-  public KeineKlausurAmSonntag() {
+  public KeinePruefungAmSonntagRestriction() {
     super(ServiceProvider.getDataAccessService(), SONNTAG);
   }
 
@@ -45,7 +45,7 @@ public class KeineKlausurAmSonntag extends WeicheRestriktion {
   }
 
   @Override
-  public Optional<WeichesKriteriumAnalyse> evaluateRestriction(Pruefung pruefung) {
+  public Optional<WeichesKriteriumAnalysis> evaluateRestriction(Pruefung pruefung) {
 
     if (!isScheduledOnSunday(pruefung)) {
       return Optional.empty();

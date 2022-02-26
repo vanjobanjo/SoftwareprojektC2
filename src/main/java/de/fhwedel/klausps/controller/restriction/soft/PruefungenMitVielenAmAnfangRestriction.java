@@ -5,7 +5,7 @@ import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.PRUEFUNGE
 import static de.fhwedel.klausps.controller.services.ServiceProvider.getDataAccessService;
 import static de.fhwedel.klausps.controller.util.ParameterUtil.noNullParameters;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Pruefung;
@@ -13,7 +13,7 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.Set;
 
-public class PruefungenMitVielenAmAnfangRestriction extends WeicheRestriktion {
+public class PruefungenMitVielenAmAnfangRestriction extends SoftRestriction {
 
 
   private static final int DEFAULT_AMOUNT_MANY_STUDENTS = 100;
@@ -42,7 +42,7 @@ public class PruefungenMitVielenAmAnfangRestriction extends WeicheRestriktion {
 
 
   @Override
-  public Optional<WeichesKriteriumAnalyse> evaluateRestriction(Pruefung pruefung)
+  public Optional<WeichesKriteriumAnalysis> evaluateRestriction(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung);
     if (!pruefung.isGeplant()) {
@@ -54,7 +54,7 @@ public class PruefungenMitVielenAmAnfangRestriction extends WeicheRestriktion {
     }
 
     if (pruefung.schaetzung() >= amountManyStudents) {
-      return Optional.of(new WeichesKriteriumAnalyse(Set.of(pruefung), this.kriterium,
+      return Optional.of(new WeichesKriteriumAnalysis(Set.of(pruefung), this.kriterium,
           pruefung.getTeilnehmerkreise(), pruefung.schaetzung(),
           this.kriterium.getWert()));
     }

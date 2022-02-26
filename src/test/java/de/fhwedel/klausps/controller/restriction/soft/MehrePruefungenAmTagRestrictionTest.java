@@ -7,7 +7,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
@@ -25,7 +25,7 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class MehrePruefungenAmTagTest {
+class MehrePruefungenAmTagRestrictionTest {
 
 
   private DataAccessService dataAccessService;
@@ -39,7 +39,7 @@ class MehrePruefungenAmTagTest {
   @Test
   void klausurSameDay() throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
 
-    MehrePruefungenAmTag mehrePruefungenAmTag = new MehrePruefungenAmTag(dataAccessService);
+    MehrePruefungenAmTagRestriction mehrePruefungenAmTagRestriction = new MehrePruefungenAmTagRestriction(dataAccessService);
 
     Pruefung analysisPL = mock(Pruefung.class);
     Pruefung haskelPL = mock(Pruefung.class);
@@ -98,7 +98,7 @@ class MehrePruefungenAmTagTest {
     when(haskel.getDauer()).thenReturn(duration);
     when(haskel.isGeplant()).thenReturn(true);
 
-    Optional<WeichesKriteriumAnalyse> analyse = mehrePruefungenAmTag.evaluateRestriction(haskel);
+    Optional<WeichesKriteriumAnalysis> analyse = mehrePruefungenAmTagRestriction.evaluateRestriction(haskel);
     assertTrue(analyse.isPresent());
     assertThat(analyse.get().getCausingPruefungen()).containsAll(setOfConflictPruefunge);
     assertEquals(setOfConflictTeilnehmerkreis, analyse.get().getAffectedTeilnehmerKreise());
@@ -117,7 +117,7 @@ class MehrePruefungenAmTagTest {
   void klausurSameDay_TestWithBloeck()
       throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
 
-    MehrePruefungenAmTag mehrePruefungenAmTag = new MehrePruefungenAmTag(dataAccessService);
+    MehrePruefungenAmTagRestriction mehrePruefungenAmTagRestriction = new MehrePruefungenAmTagRestriction(dataAccessService);
 
     Planungseinheit analysisPL = mock(Pruefung.class);
     Planungseinheit haskelPL = mock(Pruefung.class);
@@ -214,7 +214,7 @@ class MehrePruefungenAmTagTest {
     when(haskel.getDauer()).thenReturn(duration);
     when(haskel.isGeplant()).thenReturn(true);
 
-    Optional<WeichesKriteriumAnalyse> analyse = mehrePruefungenAmTag.evaluateRestriction(haskel);
+    Optional<WeichesKriteriumAnalysis> analyse = mehrePruefungenAmTagRestriction.evaluateRestriction(haskel);
 
     assertTrue(analyse.isPresent());
     assertThat(analyse.get().getCausingPruefungen()).containsAll(setOfConflictPruefunge);

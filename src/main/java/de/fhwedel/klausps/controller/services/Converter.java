@@ -1,8 +1,8 @@
 package de.fhwedel.klausps.controller.services;
 
 
-import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalyse;
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalysis;
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
 import de.fhwedel.klausps.controller.api.BlockDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
@@ -200,7 +200,7 @@ public class Converter {
   }
 
   /**
-   * Converts a List of internally used {@link WeichesKriteriumAnalyse} into a List of {@link
+   * Converts a List of internally used {@link WeichesKriteriumAnalysis} into a List of {@link
    * KriteriumsAnalyse}.
    *
    * @param analysen the List to convert
@@ -209,17 +209,17 @@ public class Converter {
    *                                            Pruefungsperiode} is defined
    */
   public List<KriteriumsAnalyse> convertAnalyseList(
-      List<WeichesKriteriumAnalyse> analysen) throws NoPruefungsPeriodeDefinedException {
+      List<WeichesKriteriumAnalysis> analysen) throws NoPruefungsPeriodeDefinedException {
 
     List<KriteriumsAnalyse> result = new LinkedList<>();
-    for (WeichesKriteriumAnalyse a : analysen) {
+    for (WeichesKriteriumAnalysis a : analysen) {
       result.add(convertAnalyse(a));
     }
     return result;
   }
 
   /**
-   * Converts a single internally used {@link WeichesKriteriumAnalyse} into a {@link
+   * Converts a single internally used {@link WeichesKriteriumAnalysis} into a {@link
    * KriteriumsAnalyse}.
    *
    * @param analyse the analysis to convert
@@ -227,7 +227,7 @@ public class Converter {
    * @throws NoPruefungsPeriodeDefinedException {@link de.fhwedel.klausps.model.api.Pruefungsperiode
    *                                            Pruefungsperiode} is defined
    */
-  public KriteriumsAnalyse convertAnalyse(WeichesKriteriumAnalyse analyse)
+  public KriteriumsAnalyse convertAnalyse(WeichesKriteriumAnalysis analyse)
       throws NoPruefungsPeriodeDefinedException {
     return new KriteriumsAnalyse(
         new HashSet<>(convertToROPruefungSet(analyse.getCausingPruefungen())),
@@ -236,15 +236,15 @@ public class Converter {
   }
 
   /**
-   * Converts a List of internally used {@link HartesKriteriumAnalyse} into an externally used
+   * Converts a List of internally used {@link HartesKriteriumAnalysis} into an externally used
    * {@link HartesKriteriumException}.
    *
-   * @param hard List of HartesKriteriumAnalyse to convert
+   * @param hard List of HartesKriteriumAnalysis to convert
    * @return a HartesKriteriumException
    * @throws NoPruefungsPeriodeDefinedException {@link de.fhwedel.klausps.model.api.Pruefungsperiode
    *                                            Pruefungsperiode} is defined
    */
-  public HartesKriteriumException convertHardException(List<HartesKriteriumAnalyse> hard)
+  public HartesKriteriumException convertHardException(List<HartesKriteriumAnalysis> hard)
       throws NoPruefungsPeriodeDefinedException {
 
     Set<ReadOnlyPruefung> conflictPruefung = new HashSet<>();
@@ -252,13 +252,13 @@ public class Converter {
     int amountStudents = 0;
     Map<Teilnehmerkreis, Integer> teilnehmerCount = new HashMap<>();
 
-    for (HartesKriteriumAnalyse hKA : hard) {
+    for (HartesKriteriumAnalysis hKA : hard) {
 
       for (Pruefung pruefung : hKA.getCausingPruefungen()) {
         conflictPruefung.add(convertToReadOnlyPruefung(pruefung));
       }
 
-      TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung(teilnehmerCount, hKA.getTeilnehmercount());
+      TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung(teilnehmerCount, hKA.getTeilnehmerCount());
     }
 
     for (Integer count : teilnehmerCount.values()) {

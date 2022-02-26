@@ -2,7 +2,7 @@ package de.fhwedel.klausps.controller.restriction.soft;
 
 import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.MEHRERE_PRUEFUNGEN_AM_TAG;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalyse;
+import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
@@ -21,18 +21,18 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-public class MehrePruefungenAmTag extends WeicheRestriktion {
+public class MehrePruefungenAmTagRestriction extends SoftRestriction {
 
-  protected MehrePruefungenAmTag(DataAccessService dataAccessService) {
+  protected MehrePruefungenAmTagRestriction(DataAccessService dataAccessService) {
     super(dataAccessService, MEHRERE_PRUEFUNGEN_AM_TAG);
   }
 
-  public MehrePruefungenAmTag() {
+  public MehrePruefungenAmTagRestriction() {
     this(ServiceProvider.getDataAccessService());
   }
 
   @Override
-  public Optional<WeichesKriteriumAnalyse> evaluateRestriction(Pruefung pruefung)
+  public Optional<WeichesKriteriumAnalysis> evaluateRestriction(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
 
     Set<Pruefung> setPruefung = new HashSet<>();
@@ -113,7 +113,7 @@ public class MehrePruefungenAmTag extends WeicheRestriktion {
    * @param mapTeilnehmerkreis die Teilnehmerkreise mit ihrer Anzahl
    * @return die WeicheKriterumsAnalyse, wenn diese vorhanden ist, sonst Optional.empty()
    */
-  private Optional<WeichesKriteriumAnalyse> getWeichesKriteriumAnalyse(Set<Pruefung> pruefungen,
+  private Optional<WeichesKriteriumAnalysis> getWeichesKriteriumAnalyse(Set<Pruefung> pruefungen,
       Map<Teilnehmerkreis, Integer> mapTeilnehmerkreis) {
 
     if (!pruefungen.isEmpty()) {
@@ -122,7 +122,7 @@ public class MehrePruefungenAmTag extends WeicheRestriktion {
       for (Integer students : mapTeilnehmerkreis.values()) {
         countStudents += students;
       }
-      WeichesKriteriumAnalyse wKA = new WeichesKriteriumAnalyse(pruefungen,
+      WeichesKriteriumAnalysis wKA = new WeichesKriteriumAnalysis(pruefungen,
           MEHRERE_PRUEFUNGEN_AM_TAG, mapTeilnehmerkreis.keySet(), countStudents, scoring);
       return Optional.of(wKA);
     } else {

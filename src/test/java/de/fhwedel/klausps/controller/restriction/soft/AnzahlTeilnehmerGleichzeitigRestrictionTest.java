@@ -33,9 +33,9 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 @SuppressWarnings("OptionalGetWithoutIsPresent")
-class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
+class AnzahlTeilnehmerGleichzeitigRestrictionTest {
 
-  public AnzahlTeilnehmerGleichzeitigZuHochRestriction deviceUnderTest;
+  public AnzahlTeilnehmerGleichzeitigRestriction deviceUnderTest;
   public DataAccessService dataAccessService;
 
   // TODO implement usage of start & end time of sequential blocks
@@ -44,7 +44,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
   public void setUp() {
     int maxTeilnehmerAtSameTime = 200;
     this.dataAccessService = mock(DataAccessService.class);
-    this.deviceUnderTest = new AnzahlTeilnehmerGleichzeitigZuHochRestriction(this.dataAccessService,
+    this.deviceUnderTest = new AnzahlTeilnehmerGleichzeitigRestriction(this.dataAccessService,
         Duration.ZERO, maxTeilnehmerAtSameTime);
   }
 
@@ -286,7 +286,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
   @Test
   void evaluate_scoringForMinimalViolation_nonDefaultScoringSteps()
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
-    this.deviceUnderTest = new AnzahlTeilnehmerGleichzeitigZuHochRestriction(this.dataAccessService,
+    this.deviceUnderTest = new AnzahlTeilnehmerGleichzeitigRestriction(this.dataAccessService,
         Duration.ZERO, 50, 3);
     List<Pruefung> pruefungen = get3PruefungenWithTotal51Students();
 
@@ -316,7 +316,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
   @Test
   void evaluate_scoringForMinimalViolation_nonDefaultScoringSteps_highScoring()
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
-    this.deviceUnderTest = new AnzahlTeilnehmerGleichzeitigZuHochRestriction(this.dataAccessService,
+    this.deviceUnderTest = new AnzahlTeilnehmerGleichzeitigRestriction(this.dataAccessService,
         Duration.ZERO, 10, 3);
     List<Pruefung> pruefungen = get3PruefungenWithTotal51Students();
 
@@ -334,7 +334,7 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
   @Test
   void evaluate_secondLowestScoring()
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
-    this.deviceUnderTest = new AnzahlTeilnehmerGleichzeitigZuHochRestriction(this.dataAccessService,
+    this.deviceUnderTest = new AnzahlTeilnehmerGleichzeitigRestriction(this.dataAccessService,
         Duration.ZERO, 200, 10);
     List<Pruefung> pruefungen = get3PruefungenWithTotal211Students();
 
@@ -364,14 +364,14 @@ class AnzahlTeilnehmerGleichzeitigZuHochRestrictionTest {
   @Test
   void nonPositiveStepSizeNotAllowed_zero() {
     assertThrows(IllegalArgumentException.class,
-        () -> this.deviceUnderTest = new AnzahlTeilnehmerGleichzeitigZuHochRestriction(
+        () -> this.deviceUnderTest = new AnzahlTeilnehmerGleichzeitigRestriction(
             this.dataAccessService, Duration.ZERO, 200, 0));
   }
 
   @Test
   void nonPositiveStepSizeNotAllowed_negative() {
     assertThrows(IllegalArgumentException.class,
-        () -> this.deviceUnderTest = new AnzahlTeilnehmerGleichzeitigZuHochRestriction(
+        () -> this.deviceUnderTest = new AnzahlTeilnehmerGleichzeitigRestriction(
             this.dataAccessService, Duration.ZERO, 200, -1));
   }
 
