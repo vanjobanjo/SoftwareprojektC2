@@ -270,7 +270,7 @@ Funktionalität: Als Planende*r moechte ich eine Pruefung einplanen koennen.
     Dann ist die Pruefung "Analysis" am 07.02.2022 um 8 Uhr eingeplant
     Und die Pruefung "Analysis" hat das WeicheKriterium "PRUEFUNGEN_MIT_VIELEN_AN_ANFANG"
 
-  Szenario: Ich plane erfolgreich eine Pruefung ein WeicheKriterium PRUEFUNGEN_MIT_VIELEN_AN_ANFANG 99 gleichzeitig löst nicht aus
+  Szenario: Ich plane erfolgreich eine Pruefung ein WeicheKriterium PRUEFUNGEN_MIT_VIELEN_AN_ANFANG 100 gleichzeitig löst nicht aus
     Angenommen es existiert eine Pruefungsperiode von 31.01.2022 - 28.02.2022
     Und es existiert die ungeplante Pruefung "Analysis" mit den Teilnehmerkreis "inf" im 1 semster "BACHELOR" und 99 Teilnehmer
     Wenn ich "Analysis" am 07.02.2022 um 8 Uhr einplanen moechte
@@ -280,14 +280,14 @@ Funktionalität: Als Planende*r moechte ich eine Pruefung einplanen koennen.
 
   Szenario: Ich plane erfolgreich eine Pruefung ein WeicheKriterium PRUEFUNGEN_MIT_VIELEN_AN_ANFANG 100 gleichzeitig löst aus
     Angenommen es existiert eine Pruefungsperiode von 31.01.2022 - 28.02.2022
-    Und es existiert die ungeplante Pruefung "Analysis" mit den Teilnehmerkreis "inf" im 1 semster "BACHELOR" und 99 Teilnehmer
-    Wenn ich "Analysis" am 07.02.2022 um 8 Uhr einplanen moechte
-    Dann ist die Pruefung "Analysis" am 07.02.2022 um 8 Uhr eingeplant
+    Und es existiert die ungeplante Pruefung "Analysis" mit den Teilnehmerkreis "inf" im 1 semster "BACHELOR" und 100 Teilnehmer
+    Wenn ich "Analysis" am 06.02.2022 um 8 Uhr einplanen moechte
+    Dann ist die Pruefung "Analysis" am 06.02.2022 um 8 Uhr eingeplant
     Und die Pruefung "Analysis" hat nicht das WeicheKriterium "PRUEFUNGEN_MIT_VIELEN_AN_ANFANG"
 
   Szenario: Ich plane erfolgreich eine Pruefung ein WeicheKriterium PRUEFUNGEN_MIT_VIELEN_AN_ANFANG 100 gleichzeitig löst nicht  aus
     Angenommen es existiert eine Pruefungsperiode
-    Und es existiert die ungeplante Pruefung "Analysis" mit den Teilnehmerkreis "inf" im 1 semster "BACHELOR" und 100 Teilnehmer
+    Und es existiert die ungeplante Pruefung "Analysis" mit den Teilnehmerkreis "inf" im 1 semster "BACHELOR" und 99 Teilnehmer
     Wenn ich "Analysis" am 06.02.2022 um 8 Uhr einplanen moechte
     Dann ist die Pruefung "Analysis" am 06.02.2022 um 8 Uhr eingeplant
     Und die Pruefung "Analysis" hat nicht das WeicheKriterium "PRUEFUNGEN_MIT_VIELEN_AN_ANFANG"
