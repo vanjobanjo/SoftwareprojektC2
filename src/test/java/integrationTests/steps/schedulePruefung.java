@@ -161,4 +161,26 @@ public class schedulePruefung extends BaseSteps {
     ReadOnlyPruefung roPruefung = getOrCreate(pruefung, teilnehmerkreis, semster, "BACHELOR", count);
     state.controller.schedulePruefung(roPruefung,newTermin);
   }
+
+  @Und("es existiert die ungeplante Pruefung {string} mit den Teilnehmerkreis {string} im {int} semster und Dauer von {int} Minuten")
+  public void esExistiertDieUngeplantePruefungMitDenTeilnehmerkreisImSemsterUndDauerVonMinuten(
+      String pruefung, String teilnehmerkreis, int semster, int dauer)
+      throws NoPruefungsPeriodeDefinedException {
+    getOrCreate(pruefung, teilnehmerkreis, semster, dauer);
+  }
+
+  @Und("es existiert die geplante Pruefung {string} mit den Teilnehmerkreis {string} im {int} semster und Dauer von {int} Minuten am {localDateTime}")
+  public void esExistiertDieGeplantePruefungMitDenTeilnehmerkreisImSemsterUndDauerVonMinutenAm(
+      String pruefung, String teilnehmerkreis, int semster, int dauer, LocalDateTime termin)
+      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung roPruefung = getOrCreate(pruefung, teilnehmerkreis, semster, dauer);
+    state.controller.schedulePruefung(roPruefung,termin);
+  }
+
+  @Und("ist die Dauer der Pruefung {string} {int} Minuten")
+  public void istDieDauerDerPruefungMinuten(String pruefung, int duration)
+      throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung roPruefung = getPruefungFromModel(pruefung);
+    assertThat(roPruefung.getDauer()).hasMinutes(duration);
+  }
 }

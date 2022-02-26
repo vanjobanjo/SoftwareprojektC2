@@ -207,6 +207,36 @@ public class BaseSteps {
 
   }
 
+  /**
+   * Gets a pruefung from model if existent or else creates it.
+   *
+   * @param pruefungName          The name of the requested pruefung.
+   * @param teilnehmerkreisString name of the Teilnehmerkreises
+   * @param semster               witch semster the Teilnehmerkreis is
+   * @param duration                 the duration in Minutes for the pruefung.
+   * @return The requested pruefung.
+   * @throws NoPruefungsPeriodeDefinedException In case there is no Pruefungsperiode.
+   */
+  protected ReadOnlyPruefung getOrCreate(String pruefungName, String teilnehmerkreisString,
+      int semster,  int duration)
+      throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung pruefung;
+    if (existsPruefungWith(pruefungName)) {
+      pruefung = getPruefungFromModel(pruefungName);
+    } else {
+      Map<Teilnehmerkreis, Integer> teilnehmerMap = new HashMap<>();
+      Ausbildungsgrad aG  = Ausbildungsgrad.BACHELOR;
+
+      Teilnehmerkreis teilnehmerkreis = state.controller.createTeilnehmerkreis(
+          aG, teilnehmerkreisString, teilnehmerkreisString, semster);
+      teilnehmerMap.put(teilnehmerkreis, 10);
+      pruefung = state.controller.createPruefung(pruefungName, pruefungName,
+          pruefungName, emptySet(), Duration.ofMinutes(duration), teilnehmerMap);
+    }
+    return pruefung;
+
+  }
+
 
   /**
    * Check whether a pruefung with a specific name exists in the model.

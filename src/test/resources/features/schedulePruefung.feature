@@ -294,8 +294,66 @@ Funktionalität: Als Planende*r moechte ich eine Pruefung einplanen koennen.
 
 
 
+  Szenario: Ich plane erfolgreich eine Pruefung ein WeichesKriterium UNIFORME_ZEITSLOTS nicht
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert die ungeplante Pruefung "Analysis" mit den Teilnehmerkreis "inf" im 1 semster und Dauer von 60 Minuten
+    Und es existiert die geplante Pruefung "BWL" mit den Teilnehmerkreis "bwl" im 1 semster und Dauer von 60 Minuten am 14.02.2022
+    Wenn ich "Analysis" am 14.02.2022 einplanen moechte
+    Dann ist die Pruefung "Analysis" am 14.02.2022 eingeplant
+    Und ist die Pruefung "BWL" am 14.02.2022 eingeplant
+    Und ist die Dauer der Pruefung "Analysis" 60 Minuten
+    Und ist die Dauer der Pruefung "BWL" 60 Minuten
+    Und die Pruefung "Analysis" hat nicht das WeicheKriterium "UNIFORME_ZEITSLOTS"
+    Und die Pruefung "BWL" hat nicht das WeicheKriterium "UNIFORME_ZEITSLOTS"
 
 
+  Szenario: Ich plane erfolgreich eine Pruefung ein WeichesKriterium UNIFORME_ZEITSLOTS
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert die ungeplante Pruefung "Analysis" mit den Teilnehmerkreis "inf" im 1 semster und Dauer von 60 Minuten
+    Und es existiert die geplante Pruefung "BWL" mit den Teilnehmerkreis "bwl" im 1 semster und Dauer von 120 Minuten am 14.02.2022
+    Wenn ich "Analysis" am 14.02.2022 einplanen moechte
+    Dann ist die Pruefung "Analysis" am 14.02.2022 eingeplant
+    Und ist die Pruefung "BWL" am 14.02.2022 eingeplant
+    Und ist die Dauer der Pruefung "Analysis" 60 Minuten
+    Und ist die Dauer der Pruefung "BWL" 120 Minuten
+    Und die Pruefung "Analysis" hat das WeicheKriterium "UNIFORME_ZEITSLOTS"
+    Und die Pruefung "BWL" hat das WeicheKriterium "UNIFORME_ZEITSLOTS"
+
+  Szenario: Ich plane erfolgreich eine Pruefung ein WeichesKriterium UNIFORME_ZEITSLOTS
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert die ungeplante Pruefung "Analysis" mit den Teilnehmerkreis "inf" im 1 semster und Dauer von 60 Minuten
+    Und es existiert die geplante Pruefung "BWL" mit den Teilnehmerkreis "bwl" im 1 semster und Dauer von 61 Minuten am 14.02.2022
+    Wenn ich "Analysis" am 14.02.2022 einplanen moechte
+    Dann ist die Pruefung "Analysis" am 14.02.2022 eingeplant
+    Und ist die Pruefung "BWL" am 14.02.2022 eingeplant
+    Und ist die Dauer der Pruefung "Analysis" 60 Minuten
+    Und ist die Dauer der Pruefung "BWL" 61 Minuten
+    Und die Pruefung "Analysis" hat das WeicheKriterium "UNIFORME_ZEITSLOTS"
+    Und die Pruefung "BWL" hat das WeicheKriterium "UNIFORME_ZEITSLOTS"
+
+  Szenario: Ich plane erfolgreich eine Pruefung ein WeichesKriterium UNIFORME_ZEITSLOTS
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert die ungeplante Pruefung "Analysis" mit den Teilnehmerkreis "inf" im 1 semster und Dauer von 60 Minuten
+    Und es existiert die geplante Pruefung "BWL" mit den Teilnehmerkreis "bwl" im 1 semster und Dauer von 59 Minuten am 14.02.2022
+    Wenn ich "Analysis" am 14.02.2022 einplanen moechte
+    Dann ist die Pruefung "Analysis" am 14.02.2022 eingeplant
+    Und ist die Pruefung "BWL" am 14.02.2022 eingeplant
+    Und ist die Dauer der Pruefung "Analysis" 60 Minuten
+    Und ist die Dauer der Pruefung "BWL" 59 Minuten
+    Und die Pruefung "Analysis" hat das WeicheKriterium "UNIFORME_ZEITSLOTS"
+    Und die Pruefung "BWL" hat das WeicheKriterium "UNIFORME_ZEITSLOTS"
+
+  Szenario: Ich plane erfolgreich eine Pruefung ein WeichesKriterium UNIFORME_ZEITSLOTS
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert die ungeplante Pruefung "Analysis" mit den Teilnehmerkreis "inf" im 1 semster und Dauer von 61 Minuten
+    Und es existiert die geplante Pruefung "BWL" mit den Teilnehmerkreis "bwl" im 1 semster und Dauer von 59 Minuten am 14.02.2022
+    Wenn ich "Analysis" am 14.02.2022 einplanen moechte
+    Dann ist die Pruefung "Analysis" am 14.02.2022 eingeplant
+    Und ist die Pruefung "BWL" am 14.02.2022 eingeplant
+    Und ist die Dauer der Pruefung "Analysis" 61 Minuten
+    Und ist die Dauer der Pruefung "BWL" 59 Minuten
+    Und die Pruefung "Analysis" hat das WeicheKriterium "UNIFORME_ZEITSLOTS"
+    Und die Pruefung "BWL" hat das WeicheKriterium "UNIFORME_ZEITSLOTS"
 
 
 
