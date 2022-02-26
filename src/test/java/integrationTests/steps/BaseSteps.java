@@ -150,7 +150,9 @@ public class BaseSteps {
   /**
    * Gets a pruefung from model if existent or else creates it.
    *
-   * @param pruefungName The name of the requested pruefung.
+   * @param pruefungName          The name of the requested pruefung.
+   * @param teilnehmerkreisString name of the Teilnehmerkreises
+   * @param semster               witch semster the Teilnehmerkreis is
    * @return The requested pruefung.
    * @throws NoPruefungsPeriodeDefinedException In case there is no Pruefungsperiode.
    */
@@ -165,6 +167,39 @@ public class BaseSteps {
       Teilnehmerkreis teilnehmerkreis = state.controller.createTeilnehmerkreis(
           Ausbildungsgrad.BACHELOR, teilnehmerkreisString, teilnehmerkreisString, semster);
       teilnehmerMap.put(teilnehmerkreis, 10);
+      pruefung = state.controller.createPruefung(pruefungName, pruefungName,
+          pruefungName, emptySet(), Duration.ofHours(1), teilnehmerMap);
+    }
+    return pruefung;
+
+  }
+
+  /**
+   * Gets a pruefung from model if existent or else creates it.
+   *
+   * @param pruefungName          The name of the requested pruefung.
+   * @param teilnehmerkreisString name of the Teilnehmerkreises
+   * @param semster               witch semster the Teilnehmerkreis is
+   * @param count                 the count of the students in this Teilnehmerkreis
+   * @return The requested pruefung.
+   * @throws NoPruefungsPeriodeDefinedException In case there is no Pruefungsperiode.
+   */
+  protected ReadOnlyPruefung getOrCreate(String pruefungName, String teilnehmerkreisString,
+      int semster, String ausbildunggrade,  int count)
+      throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung pruefung;
+    if (existsPruefungWith(pruefungName)) {
+      pruefung = getPruefungFromModel(pruefungName);
+    } else {
+      Map<Teilnehmerkreis, Integer> teilnehmerMap = new HashMap<>();
+      Ausbildungsgrad aG  = Ausbildungsgrad.BACHELOR;
+      try {
+        aG=  Ausbildungsgrad.valueOf(ausbildunggrade);
+      }catch(IllegalArgumentException ignored){
+      }
+      Teilnehmerkreis teilnehmerkreis = state.controller.createTeilnehmerkreis(
+         aG, teilnehmerkreisString, teilnehmerkreisString, semster);
+      teilnehmerMap.put(teilnehmerkreis, count);
       pruefung = state.controller.createPruefung(pruefungName, pruefungName,
           pruefungName, emptySet(), Duration.ofHours(1), teilnehmerMap);
     }

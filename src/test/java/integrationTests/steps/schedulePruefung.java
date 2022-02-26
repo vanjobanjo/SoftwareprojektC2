@@ -10,6 +10,7 @@ import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
+import de.fhwedel.klausps.model.api.Ausbildungsgrad;
 import io.cucumber.java.de.Dann;
 import io.cucumber.java.de.Und;
 import io.cucumber.java.de.Wenn;
@@ -141,5 +142,23 @@ public class schedulePruefung extends BaseSteps {
     }
     assertFalse(finde);
 
+  }
+
+  @Und("es existiert die ungeplante Pruefung {string} mit den Teilnehmerkreis {string} im {int} semster {string} und {int} Teilnehmer")
+  public void esExistiertDieUngeplantePruefungMitDenTeilnehmerkreisImSemsterUndTeilnehmer(
+      String pruefung, String teilnehmerkreis, int semster,String ausbildunggrade,  int anzahl)
+      throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung roPruefung = getOrCreate(pruefung, teilnehmerkreis, semster,ausbildunggrade, anzahl);
+
+  }
+
+  @Und("es existiert die geplante Pruefung {string} mit den Teilnehmerkreis {string} im {int} semster und {int} Teilnehmer am {localDateTime} um {int} Uhr")
+  public void esExistiertDieGeplantePruefungMitDenTeilnehmerkreisImSemsterUndTeilnehmerAmUmUhr(
+      String pruefung, String teilnehmerkreis, int semster, int count , LocalDateTime termin,  int time)
+      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
+
+    LocalDateTime newTermin = changeTime(termin, time);
+    ReadOnlyPruefung roPruefung = getOrCreate(pruefung, teilnehmerkreis, semster, "BACHELOR", count);
+    state.controller.schedulePruefung(roPruefung,newTermin);
   }
 }

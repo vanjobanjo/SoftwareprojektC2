@@ -113,6 +113,20 @@ Funktionalität: Als Planende*r moechte ich eine Pruefung einplanen koennen.
     Dann ist die Pruefung "Analysis" am 26.02.2022 eingeplant
     Und die Pruefung "Analysis" hat das WeicheKriterium "WOCHE_VIER_FUER_MASTER"
 
+  Szenario: Ich plane erfolgreich eine Pruefung ein WeichesKriterium WOCHE_VIER_FUER_MASTER
+    Angenommen es existiert eine Pruefungsperiode von 24.01.2022 - 27.02.2022
+    Und  es existiert die ungeplante Pruefung "Analysis" mit den Teilnehmerkreis "inf" im 1 semster
+    Wenn ich "Analysis" am 19.02.2022 einplanen moechte
+    Dann ist die Pruefung "Analysis" am 19.02.2022 eingeplant
+    Und die Pruefung "Analysis" hat nicht das WeicheKriterium "WOCHE_VIER_FUER_MASTER"
+
+  Szenario: Ich plane erfolgreich eine Pruefung ein WeichesKriterium WOCHE_VIER_FUER_MASTER
+    Angenommen es existiert eine Pruefungsperiode von 24.01.2022 - 27.02.2022
+    Und  es existiert die ungeplante Pruefung "Analysis" mit den Teilnehmerkreis "inf" im 1 semster "MASTER" und 100 Teilnehmer
+    Wenn ich "Analysis" am 26.02.2022 einplanen moechte
+    Dann ist die Pruefung "Analysis" am 26.02.2022 eingeplant
+    Und die Pruefung "Analysis" hat nicht das WeicheKriterium "WOCHE_VIER_FUER_MASTER"
+
     # WOCHE_VIER_FUER_MASTER
 
   Szenario: Ich plane erfolgreich eine Pruefung ein WeicheKriterium ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH 6 gleichzeitig löst nicht aus
@@ -123,7 +137,7 @@ Funktionalität: Als Planende*r moechte ich eine Pruefung einplanen koennen.
     Und es existiert die geplante Pruefung "Diskrete Mathematik" mit den Teilnehmerkreis "minf" im 1 semster am 14.02.2022 um 8 Uhr
     Und es existiert die geplante Pruefung "Datenbanken" mit den Teilnehmerkreis "winf" im 1 semster am 14.02.2022 um 8 Uhr
     Und es existiert die geplante Pruefung "Klausurzuviel" mit den Teilnehmerkreis "Zinf" im 1 semster am 14.02.2022 um 8 Uhr
-     Wenn ich "Analysis" am 14.02.2022 um 8 Uhr einplanen moechte
+    Wenn ich "Analysis" am 14.02.2022 um 8 Uhr einplanen moechte
     Dann ist die Pruefung "Analysis" am 14.02.2022 um 8 Uhr eingeplant
     Und ist die Pruefung "BWL" am 14.02.2022 um 8 Uhr eingeplant
     Und ist die Pruefung "Haskel" am 14.02.2022 um 8 Uhr eingeplant
@@ -190,7 +204,31 @@ Funktionalität: Als Planende*r moechte ich eine Pruefung einplanen koennen.
     Und die Pruefung "Klausurzuviel1" hat das WeicheKriterium "ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH"
     Und die Pruefung "Klausurzuviel2" hat das WeicheKriterium "ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH"
 
-    # PRUEFUNGEN_MIT_VIELEN_AN_ANFANG
+
     # ANZAHL_TEILNEHMER_GLEICHZEITIG_ZU_HOCH
 
+  Szenario: Ich plane erfolgreich eine Pruefung ein WeicheKriterium ANZAHL_TEILNEHMER_GLEICHZEITIG_ZU_HOCH 200 gleichzeitig löst nicht aus
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert die ungeplante Pruefung "Analysis" mit den Teilnehmerkreis "inf" im 1 semster "BACHELOR" und 100 Teilnehmer
+    Und es existiert die geplante Pruefung "BWL" mit den Teilnehmerkreis "bwl" im 1 semster und 100 Teilnehmer am 14.02.2022 um 8 Uhr
+    Wenn ich "Analysis" am 14.02.2022 um 8 Uhr einplanen moechte
+    Dann ist die Pruefung "Analysis" am 14.02.2022 um 8 Uhr eingeplant
+    Und ist die Pruefung "BWL" am 14.02.2022 um 8 Uhr eingeplant
+    Und die Pruefung "BWL" hat nicht das WeicheKriterium "ANZAHL_TEILNEHMER_GLEICHZEITIG_ZU_HOCH"
+    Und die Pruefung "Analysis" hat nicht das WeicheKriterium "ANZAHL_TEILNEHMER_GLEICHZEITIG_ZU_HOCH"
+
+  Szenario: Ich plane erfolgreich eine Pruefung ein WeicheKriterium ANZAHL_TEILNEHMER_GLEICHZEITIG_ZU_HOCH 201 gleichzeitig löst nicht aus
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert die ungeplante Pruefung "Analysis" mit den Teilnehmerkreis "inf" im 1 semster "BACHELOR" und 100 Teilnehmer
+    Und es existiert die geplante Pruefung "BWL" mit den Teilnehmerkreis "bwl" im 1 semster und 101 Teilnehmer am 14.02.2022 um 8 Uhr
+    Wenn ich "Analysis" am 14.02.2022 um 8 Uhr einplanen moechte
+    Dann ist die Pruefung "Analysis" am 14.02.2022 um 8 Uhr eingeplant
+    Und ist die Pruefung "BWL" am 14.02.2022 um 8 Uhr eingeplant
+    Und die Pruefung "BWL" hat das WeicheKriterium "ANZAHL_TEILNEHMER_GLEICHZEITIG_ZU_HOCH"
+    Und die Pruefung "Analysis" hat das WeicheKriterium "ANZAHL_TEILNEHMER_GLEICHZEITIG_ZU_HOCH"
+
+
+
+
     # UNIFORME_ZEITSLOTS
+    # PRUEFUNGEN_MIT_VIELEN_AN_ANFANG
