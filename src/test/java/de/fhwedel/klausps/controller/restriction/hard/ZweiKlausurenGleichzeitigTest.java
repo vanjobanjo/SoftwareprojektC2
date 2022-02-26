@@ -23,7 +23,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalysis;
+import de.fhwedel.klausps.controller.analysis.HardRestrictionAnalysis;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
@@ -75,7 +75,7 @@ class ZweiKlausurenGleichzeitigTest {
         Set.of(pruefung1, pruefung2));
     when(dataAccessService.getBlockTo(pruefung1)).thenReturn(Optional.empty());
     ZweiPruefungenGleichzeitigRestriction deviceUnderTest = new ZweiPruefungenGleichzeitigRestriction(dataAccessService);
-    HartesKriteriumAnalysis result = deviceUnderTest.evaluateRestriction(pruefung1).get();
+    HardRestrictionAnalysis result = deviceUnderTest.evaluateRestriction(pruefung1).get();
 
     assertThat(result.getTeilnehmerCount()).containsOnlyKeys(bwl);
     assertThat(result.getTeilnehmerCount().values()).containsOnly(30);
@@ -103,7 +103,7 @@ class ZweiKlausurenGleichzeitigTest {
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         Set.of(analysis, haskell));
 
-    Optional<HartesKriteriumAnalysis> analyse = deviceUnderTest.evaluateRestriction(haskell);
+    Optional<HardRestrictionAnalysis> analyse = deviceUnderTest.evaluateRestriction(haskell);
 
     assertTrue(analyse.isPresent());
     assertEquals(Set.of(analysis, haskell), analyse.get().getCausingPruefungen());
@@ -156,7 +156,7 @@ class ZweiKlausurenGleichzeitigTest {
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         Set.of(analysis, haskell, dm));
 
-    Optional<HartesKriteriumAnalysis> analyse = deviceUnderTest.evaluateRestriction(haskell);
+    Optional<HardRestrictionAnalysis> analyse = deviceUnderTest.evaluateRestriction(haskell);
 
     assertThat(analyse).isPresent();
     assertThat(analyse.get().getCausingPruefungen()).containsOnly(dm, analysis, haskell);
@@ -193,7 +193,7 @@ class ZweiKlausurenGleichzeitigTest {
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         Set.of(analysis, haskell, dm));
 
-    Optional<HartesKriteriumAnalysis> analyse = deviceUnderTest.evaluateRestriction(haskell);
+    Optional<HardRestrictionAnalysis> analyse = deviceUnderTest.evaluateRestriction(haskell);
     assertThat(analyse).isPresent();
 
     assertThat(analyse.get().getCausingPruefungen()).containsOnly(dm, analysis, haskell);
@@ -309,7 +309,7 @@ class ZweiKlausurenGleichzeitigTest {
     when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         Set.of(blockA));
 
-    Optional<HartesKriteriumAnalysis> analyse = deviceUnderTest.evaluateRestriction(cPruefung);
+    Optional<HardRestrictionAnalysis> analyse = deviceUnderTest.evaluateRestriction(cPruefung);
     assertThat(analyse).isPresent();
     assertThat(analyse.get().getCausingPruefungen()).containsOnly(cPruefung, aPruefung);
     assertThat(analyse.get().getTeilnehmerCount()).containsOnlyKeys(infBachelor);
@@ -350,7 +350,7 @@ class ZweiKlausurenGleichzeitigTest {
     when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         Set.of(blockA));
 
-    Optional<HartesKriteriumAnalysis> analyse = deviceUnderTest.evaluateRestriction(cPruefung);
+    Optional<HardRestrictionAnalysis> analyse = deviceUnderTest.evaluateRestriction(cPruefung);
     assertTrue(analyse.isEmpty());
 
   }
@@ -388,7 +388,7 @@ class ZweiKlausurenGleichzeitigTest {
     when(this.dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         Set.of(blockA));
 
-    Optional<HartesKriteriumAnalysis> analyse = deviceUnderTest.evaluateRestriction(cPruefung);
+    Optional<HardRestrictionAnalysis> analyse = deviceUnderTest.evaluateRestriction(cPruefung);
     assertTrue(analyse.isEmpty());
   }
 
@@ -440,7 +440,7 @@ class ZweiKlausurenGleichzeitigTest {
 
     int affectedStudents = 16;
 
-    Optional<HartesKriteriumAnalysis> analyse = deviceUnderTest.evaluateRestriction(cPruefung2);
+    Optional<HardRestrictionAnalysis> analyse = deviceUnderTest.evaluateRestriction(cPruefung2);
     assertThat(analyse).isPresent();
     assertThat(analyse.get().getCausingPruefungen()).containsOnly(aPruefung2, bPruefung2,
         cPruefung2, dPruefung2, ePruefung2);
@@ -498,7 +498,7 @@ class ZweiKlausurenGleichzeitigTest {
 
     int affectedStudents = 16;
 
-    Optional<HartesKriteriumAnalysis> analyse = deviceUnderTest.evaluateRestriction(cPruefung2);
+    Optional<HardRestrictionAnalysis> analyse = deviceUnderTest.evaluateRestriction(cPruefung2);
     assertThat(analyse).isPresent();
     assertThat(analyse.get().getCausingPruefungen()).containsOnly(aPruefung2, bPruefung2,
         cPruefung2, dPruefung2, ePruefung2);

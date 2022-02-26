@@ -5,7 +5,7 @@ import static de.fhwedel.klausps.model.api.Ausbildungsgrad.AUSBILDUNG;
 import static de.fhwedel.klausps.model.api.Ausbildungsgrad.BACHELOR;
 import static de.fhwedel.klausps.model.api.Ausbildungsgrad.MASTER;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
+import de.fhwedel.klausps.controller.analysis.SoftRestrictionAnalysis;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.services.DataAccessService;
@@ -66,7 +66,7 @@ public class WocheVierFuerMasterRestriction extends SoftRestriction {
    * restriction, or an empty Optional in case the Restriction was not violated.
    */
   @Override
-  public Optional<WeichesKriteriumAnalysis> evaluateRestriction(Pruefung pruefung) {
+  public Optional<SoftRestrictionAnalysis> evaluateRestriction(Pruefung pruefung) {
 
     if (!isWeekFourContainsNotOnlyMaster(pruefung)) {
       return Optional.empty();
@@ -87,7 +87,7 @@ public class WocheVierFuerMasterRestriction extends SoftRestriction {
 
     int scoring = kriterium.getWert() * tkWithoutMaster.size();
 
-    return Optional.of(new WeichesKriteriumAnalysis(Set.of(pruefung), WOCHE_VIER_FUER_MASTER,
+    return Optional.of(new SoftRestrictionAnalysis(Set.of(pruefung), WOCHE_VIER_FUER_MASTER,
         tkWithoutMaster,
         affectedWithoutMaster, scoring
     ));

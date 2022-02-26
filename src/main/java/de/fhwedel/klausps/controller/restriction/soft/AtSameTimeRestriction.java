@@ -3,7 +3,7 @@ package de.fhwedel.klausps.controller.restriction.soft;
 import static de.fhwedel.klausps.controller.util.PlanungseinheitUtil.getAllPruefungen;
 import static de.fhwedel.klausps.model.api.Blocktyp.SEQUENTIAL;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
+import de.fhwedel.klausps.controller.analysis.SoftRestrictionAnalysis;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
@@ -34,7 +34,7 @@ public abstract class AtSameTimeRestriction extends SoftRestriction {
 
   @Override
   @NotNull
-  public Optional<WeichesKriteriumAnalysis> evaluateRestriction(@NotNull Pruefung pruefung)
+  public Optional<SoftRestrictionAnalysis> evaluateRestriction(@NotNull Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     if (!pruefung.isGeplant()) {
       return Optional.empty();
@@ -76,7 +76,7 @@ public abstract class AtSameTimeRestriction extends SoftRestriction {
       @NotNull Pruefung toFilterFor) throws NoPruefungsPeriodeDefinedException;
 
   @NotNull
-  private Optional<WeichesKriteriumAnalysis> getAnalyseIfRestrictionViolated(
+  private Optional<SoftRestrictionAnalysis> getAnalyseIfRestrictionViolated(
       @NotNull Set<Planungseinheit> planungseinheitenOverlappingTheOneToCheck) {
     if (!violatesRestriction(planungseinheitenOverlappingTheOneToCheck)) {
       return Optional.empty();
@@ -117,9 +117,9 @@ public abstract class AtSameTimeRestriction extends SoftRestriction {
   }
 
   @NotNull
-  private WeichesKriteriumAnalysis buildAnalysis(
+  private SoftRestrictionAnalysis buildAnalysis(
       @NotNull Set<Planungseinheit> violatingPlanungseinheiten) {
-    return new WeichesKriteriumAnalysis(getAllPruefungen(violatingPlanungseinheiten), this.kriterium,
+    return new SoftRestrictionAnalysis(getAllPruefungen(violatingPlanungseinheiten), this.kriterium,
         getAffectedTeilnehmerkreiseFrom(violatingPlanungseinheiten),
         getAffectedStudentsFrom(violatingPlanungseinheiten),
         calcScoringFor(violatingPlanungseinheiten));

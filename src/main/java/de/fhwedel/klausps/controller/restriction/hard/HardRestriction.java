@@ -1,7 +1,7 @@
 package de.fhwedel.klausps.controller.restriction.hard;
 
 
-import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalysis;
+import de.fhwedel.klausps.controller.analysis.HardRestrictionAnalysis;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
 import de.fhwedel.klausps.controller.restriction.Restriction;
@@ -40,7 +40,7 @@ public abstract class HardRestriction extends Restriction {
     this.dataAccessService = dataAccessService;
   }
 
-  public Optional<HartesKriteriumAnalysis> evaluate(Pruefung pruefung)
+  public Optional<HardRestrictionAnalysis> evaluate(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     if (!pruefung.isGeplant()) {
       return Optional.empty();
@@ -59,7 +59,7 @@ public abstract class HardRestriction extends Restriction {
    * eine HarteKriteriumsAnalyse, mit den Klausuren und Teilnehmerkreisen, welche gegen das
    * Kriterium verstößt
    */
-  protected abstract Optional<HartesKriteriumAnalysis> evaluateRestriction(Pruefung pruefung)
+  protected abstract Optional<HardRestrictionAnalysis> evaluateRestriction(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException;
 
   /**

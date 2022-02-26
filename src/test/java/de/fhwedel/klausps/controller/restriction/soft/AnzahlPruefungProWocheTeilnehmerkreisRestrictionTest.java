@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
+import de.fhwedel.klausps.controller.analysis.SoftRestrictionAnalysis;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
@@ -80,7 +80,7 @@ class AnzahlPruefungProWocheTeilnehmerkreisRestrictionTest {
 
     //mock must be configured before constructor call
     this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreisRestriction(accessService, LIMIT_PER_WEEK);
-    WeichesKriteriumAnalysis ev = deviceUnderTest.evaluateRestriction(mathe_0).get();
+    SoftRestrictionAnalysis ev = deviceUnderTest.evaluateRestriction(mathe_0).get();
     assertThat(ev.getCausingPruefungen()).containsOnly(mathe_0, dm_0);
   }
 
@@ -105,7 +105,7 @@ class AnzahlPruefungProWocheTeilnehmerkreisRestrictionTest {
 
     //mock must be configured before constructor call
     this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreisRestriction(accessService, LIMIT_PER_WEEK);
-    WeichesKriteriumAnalysis ev = deviceUnderTest.evaluateRestriction(mathe_0).get();
+    SoftRestrictionAnalysis ev = deviceUnderTest.evaluateRestriction(mathe_0).get();
     assertThat(ev.getCausingPruefungen()).containsOnly(mathe_0, dm_0);
     assertThat(ev.getAffectedTeilnehmerKreise()).containsOnly(bwl, inf);
     assertThat(ev.getDeltaScoring().intValue()).isEqualTo(

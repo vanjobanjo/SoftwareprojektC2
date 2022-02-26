@@ -2,7 +2,7 @@ package de.fhwedel.klausps.controller.restriction.soft;
 
 import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
+import de.fhwedel.klausps.controller.analysis.SoftRestrictionAnalysis;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
@@ -72,7 +72,7 @@ public class AnzahlPruefungProWocheTeilnehmerkreisRestriction extends SoftRestri
   }
 
   @Override
-  public Optional<WeichesKriteriumAnalysis> evaluateRestriction(Pruefung pruefung)
+  public Optional<SoftRestrictionAnalysis> evaluateRestriction(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
 
     Map<Integer, Set<Pruefung>> weekPruefungMap;
@@ -85,7 +85,7 @@ public class AnzahlPruefungProWocheTeilnehmerkreisRestriction extends SoftRestri
       return Optional.empty();
     }
 
-    Optional<WeichesKriteriumAnalysis> analyseForTks = Optional.empty();
+    Optional<SoftRestrictionAnalysis> analyseForTks = Optional.empty();
     // every tk of the pruefung must be checked with all other pruefung of the same week
     // and every violation must be counted
     for (Teilnehmerkreis tk : pruefung.getTeilnehmerkreise()) {
@@ -104,8 +104,8 @@ public class AnzahlPruefungProWocheTeilnehmerkreisRestriction extends SoftRestri
    * @param oldAnalyse could be empty
    * @return WeichesKriteriumsAnalyse
    */
-  private Optional<WeichesKriteriumAnalysis> concatAnalyse(
-      WeichesKriteriumAnalysis newAnalyse, Optional<WeichesKriteriumAnalysis> oldAnalyse) {
+  private Optional<SoftRestrictionAnalysis> concatAnalyse(
+      SoftRestrictionAnalysis newAnalyse, Optional<SoftRestrictionAnalysis> oldAnalyse) {
     assert newAnalyse != null;
 
     if (oldAnalyse.isEmpty()) {
@@ -121,7 +121,7 @@ public class AnzahlPruefungProWocheTeilnehmerkreisRestriction extends SoftRestri
     int sum = newAnalyse.getAmountAffectedStudents() + oldAnalyse.get().getAmountAffectedStudents();
     int deltaScoring = oldAnalyse.get().getDeltaScoring() + newAnalyse.getDeltaScoring();
     return Optional.of(
-        new WeichesKriteriumAnalysis(new HashSet<>(combinedPruefung), ANZAHL_PRUEFUNGEN_PRO_WOCHE,
+        new SoftRestrictionAnalysis(new HashSet<>(combinedPruefung), ANZAHL_PRUEFUNGEN_PRO_WOCHE,
             new HashSet<>(combinedTk), sum, deltaScoring));
 
   }
@@ -136,9 +136,9 @@ public class AnzahlPruefungProWocheTeilnehmerkreisRestriction extends SoftRestri
    * @param pruefungenSameWeek Pruefungen which are scheduled in the same week
    * @return a optional WeichesKriteriumsAnalyse when there is a violation.
    */
-  private Optional<WeichesKriteriumAnalysis> evaluateForTkConcat(Pruefung pruefung,
+  private Optional<SoftRestrictionAnalysis> evaluateForTkConcat(Pruefung pruefung,
       Teilnehmerkreis tk,
-      Optional<WeichesKriteriumAnalysis> analyse,
+      Optional<SoftRestrictionAnalysis> analyse,
       Set<Pruefung> pruefungenSameWeek) throws NoPruefungsPeriodeDefinedException {
     assert pruefung.getTeilnehmerkreise().contains(tk);
 
@@ -157,7 +157,7 @@ public class AnzahlPruefungProWocheTeilnehmerkreisRestriction extends SoftRestri
         .filter(pr -> pr.getTeilnehmerkreise().contains(tk)).collect(
             Collectors.toSet());
 
-    return concatAnalyse((new WeichesKriteriumAnalysis(pruefungenSameTk,
+    return concatAnalyse((new SoftRestrictionAnalysis(pruefungenSameTk,
             ANZAHL_PRUEFUNGEN_PRO_WOCHE, Set.of(tk), pruefung.getSchaetzungen().get(tk),
             ANZAHL_PRUEFUNGEN_PRO_WOCHE.getWert())),
         analyse);

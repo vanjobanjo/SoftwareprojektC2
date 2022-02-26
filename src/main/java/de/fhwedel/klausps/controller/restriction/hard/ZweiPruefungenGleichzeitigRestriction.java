@@ -3,7 +3,7 @@ package de.fhwedel.klausps.controller.restriction.hard;
 import static de.fhwedel.klausps.controller.kriterium.HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG;
 import static de.fhwedel.klausps.controller.util.ParameterUtil.noNullParameters;
 
-import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalysis;
+import de.fhwedel.klausps.controller.analysis.HardRestrictionAnalysis;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
@@ -58,7 +58,7 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
   }
 
   @Override
-  public Optional<HartesKriteriumAnalysis> evaluateRestriction(Pruefung pruefung)
+  public Optional<HardRestrictionAnalysis> evaluateRestriction(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     if (pruefung.isGeplant()) {
       //Setzen von den start und end Termin, wo das Kriterium verletzt werden könnte
@@ -67,7 +67,7 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
       // Anm.: Liste muss kopiert werden, da Model nur unmodifiable Lists zurückgibt
       List<Planungseinheit> testList = new ArrayList<>(
           tryToGetAllPlanungseinheitenBetween(start, end));
-      Optional<HartesKriteriumAnalysis> hKA = checkForPlanungseinheitenHartesKriterium(
+      Optional<HardRestrictionAnalysis> hKA = checkForPlanungseinheitenHartesKriterium(
           pruefung, start, end, testList);
       if (hKA.isPresent()) {
         return hKA;
@@ -97,16 +97,16 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
    * @param end      der Endtermin bis wohin die Überprüfung durchgeführt werden sol (Nur für Blöcke
    *                 relevant)
    * @param testList die Liste mit Planungseinheiten, die zu dem Startzeitpunkt stattfinden
-   * @return Entweder eine HartesKriteriumAnalysis, wo die Pruefungen, das Kriterium und die
+   * @return Entweder eine HardRestrictionAnalysis, wo die Pruefungen, das Kriterium und die
    * Teilnehmer mit ihrer Anzahl drin steht oder ein leeres Optional
    */
-  private Optional<HartesKriteriumAnalysis> checkForPlanungseinheitenHartesKriterium(
+  private Optional<HardRestrictionAnalysis> checkForPlanungseinheitenHartesKriterium(
       Pruefung pruefung, LocalDateTime start, LocalDateTime end, List<Planungseinheit> testList) {
 
     //Zum Sammeln der Teilnehmerkreise und die Pruefungen, die einen harten Konflikt verursachen
     Map<Teilnehmerkreis, Integer> teilnehmerCount = new HashMap<>();
     HashSet<Pruefung> inConflictROPruefung = new HashSet<>();
-    Optional<HartesKriteriumAnalysis> hKA = Optional.empty();
+    Optional<HardRestrictionAnalysis> hKA = Optional.empty();
     if (testList != null) {
       testList.remove(pruefung);
 
@@ -136,10 +136,10 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
    * @return Entweder die HarteKriteriumsAnalyse mit den in Konflikt stehenden Pruefungen und
    * Teilnehmerkreisen oder ein leeres Optional
    */
-  private Optional<HartesKriteriumAnalysis> testAndCreateNewHartesKriteriumAnalyse(
+  private Optional<HardRestrictionAnalysis> testAndCreateNewHartesKriteriumAnalyse(
       Map<Teilnehmerkreis, Integer> teilnehmerCount, HashSet<Pruefung> inConflictROPruefung) {
     if (!inConflictROPruefung.isEmpty()) {
-      HartesKriteriumAnalysis hKA = new HartesKriteriumAnalysis(inConflictROPruefung,
+      HardRestrictionAnalysis hKA = new HardRestrictionAnalysis(inConflictROPruefung,
           this.kriterium, teilnehmerCount);
       return Optional.of(hKA);
     }

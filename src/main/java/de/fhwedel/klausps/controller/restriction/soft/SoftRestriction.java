@@ -3,7 +3,7 @@ package de.fhwedel.klausps.controller.restriction.soft;
 import static de.fhwedel.klausps.controller.util.ParameterUtil.noNullParameters;
 import static de.fhwedel.klausps.controller.util.TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
+import de.fhwedel.klausps.controller.analysis.SoftRestrictionAnalysis;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
@@ -39,11 +39,11 @@ public abstract class SoftRestriction extends Restriction {
    * @return Either an {@link Optional} containing a {@link KriteriumsAnalyse} for the violated
    * restriction, or an empty Optional in case the Restriction was not violated.
    */
-  protected abstract Optional<WeichesKriteriumAnalysis> evaluateRestriction(Pruefung pruefung)
+  protected abstract Optional<SoftRestrictionAnalysis> evaluateRestriction(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException;
 
 
-  public Optional<WeichesKriteriumAnalysis> evaluate(Pruefung pruefung)
+  public Optional<SoftRestrictionAnalysis> evaluate(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     LOGGER.trace("Checking restriction {}.", this.kriterium);
     noNullParameters(pruefung);
@@ -53,7 +53,7 @@ public abstract class SoftRestriction extends Restriction {
     return evaluateRestriction(pruefung);
   }
 
-  protected WeichesKriteriumAnalysis buildAnalysis(Pruefung pruefung,
+  protected SoftRestrictionAnalysis buildAnalysis(Pruefung pruefung,
       Set<Pruefung> affectedPruefungen) {
     int scoring;
     Map<Teilnehmerkreis, Integer> affectedTeilnehmerkreise = new HashMap<>();
@@ -62,7 +62,7 @@ public abstract class SoftRestriction extends Restriction {
     }
     scoring = addDeltaScoring(affectedPruefungen);
 
-    return new WeichesKriteriumAnalysis(affectedPruefungen, this.kriterium,
+    return new SoftRestrictionAnalysis(affectedPruefungen, this.kriterium,
         affectedTeilnehmerkreise.keySet(), getAffectedStudents(affectedTeilnehmerkreise), scoring);
   }
 

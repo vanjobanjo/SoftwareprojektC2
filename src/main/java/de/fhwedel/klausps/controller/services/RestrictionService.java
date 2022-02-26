@@ -2,8 +2,8 @@ package de.fhwedel.klausps.controller.services;
 
 import static de.fhwedel.klausps.controller.util.ParameterUtil.noNullParameters;
 
-import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalysis;
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
+import de.fhwedel.klausps.controller.analysis.HardRestrictionAnalysis;
+import de.fhwedel.klausps.controller.analysis.SoftRestrictionAnalysis;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.restriction.hard.HardRestriction;
 import de.fhwedel.klausps.controller.restriction.soft.SoftRestriction;
@@ -81,7 +81,7 @@ public class RestrictionService {
   public Set<Pruefung> getPruefungenAffectedBy(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     Set<Pruefung> result = new HashSet<>();
-    for (WeichesKriteriumAnalysis w : checkWeicheKriterien(pruefung)) {
+    for (SoftRestrictionAnalysis w : checkWeicheKriterien(pruefung)) {
       result.addAll(w.getCausingPruefungen());
     }
     result.add(pruefung);
@@ -94,9 +94,9 @@ public class RestrictionService {
    * @param pruefung Pruefung to check criteria
    * @return WeichesKriteriumAnalysen
    */
-  public List<WeichesKriteriumAnalysis> checkWeicheKriterien(Pruefung pruefung)
+  public List<SoftRestrictionAnalysis> checkWeicheKriterien(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
-    List<WeichesKriteriumAnalysis> result = new LinkedList<>();
+    List<SoftRestrictionAnalysis> result = new LinkedList<>();
     for (SoftRestriction soft : softRestrictions) {
       soft.evaluate(pruefung).ifPresent(result::add);
     }
@@ -109,9 +109,9 @@ public class RestrictionService {
    * @return List of HartesKriteriumsAnalysen
    * @throws NoPruefungsPeriodeDefinedException when no period is currently defined
    */
-  public List<HartesKriteriumAnalysis> checkHarteKriterienAll(Set<Pruefung> pruefungenToCheck)
+  public List<HardRestrictionAnalysis> checkHarteKriterienAll(Set<Pruefung> pruefungenToCheck)
       throws NoPruefungsPeriodeDefinedException {
-    List<HartesKriteriumAnalysis> result = new LinkedList<>();
+    List<HardRestrictionAnalysis> result = new LinkedList<>();
     for (Pruefung currentToCheck : pruefungenToCheck) {
       result.addAll(checkHarteKriterien(currentToCheck));
     }
@@ -124,9 +124,9 @@ public class RestrictionService {
    * @param pruefung Pruefung to check criteria
    * @return HartesKriteriumAnalysen
    */
-  public List<HartesKriteriumAnalysis> checkHarteKriterien(Pruefung pruefung)
+  public List<HardRestrictionAnalysis> checkHarteKriterien(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
-    List<HartesKriteriumAnalysis> result = new LinkedList<>();
+    List<HardRestrictionAnalysis> result = new LinkedList<>();
     for (HardRestriction hard : hardRestrictions) {
       hard.evaluate(pruefung).ifPresent(result::add);
     }

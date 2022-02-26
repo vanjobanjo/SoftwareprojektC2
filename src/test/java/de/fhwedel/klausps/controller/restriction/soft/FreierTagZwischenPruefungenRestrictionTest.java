@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
+import de.fhwedel.klausps.controller.analysis.SoftRestrictionAnalysis;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Block;
@@ -790,7 +790,7 @@ class FreierTagZwischenPruefungenRestrictionTest {
       Set<Teilnehmerkreis> causingTeilnehmerkreise, int affected)
       throws NoPruefungsPeriodeDefinedException {
 
-    Optional<WeichesKriteriumAnalysis> result = deviceUnderTest.evaluateRestriction(toEvaluate);
+    Optional<SoftRestrictionAnalysis> result = deviceUnderTest.evaluateRestriction(toEvaluate);
     assertThat(result).isPresent();
     assertThat(result.get().getAffectedTeilnehmerKreise()).containsExactlyInAnyOrderElementsOf(
         causingTeilnehmerkreise);

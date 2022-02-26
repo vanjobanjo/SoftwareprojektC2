@@ -5,7 +5,7 @@ import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.PRUEFUNGE
 import static de.fhwedel.klausps.controller.services.ServiceProvider.getDataAccessService;
 import static de.fhwedel.klausps.controller.util.ParameterUtil.noNullParameters;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
+import de.fhwedel.klausps.controller.analysis.SoftRestrictionAnalysis;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Pruefung;
@@ -42,7 +42,7 @@ public class PruefungenMitVielenAmAnfangRestriction extends SoftRestriction {
 
 
   @Override
-  public Optional<WeichesKriteriumAnalysis> evaluateRestriction(Pruefung pruefung)
+  public Optional<SoftRestrictionAnalysis> evaluateRestriction(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung);
     if (!pruefung.isGeplant()) {
@@ -54,7 +54,7 @@ public class PruefungenMitVielenAmAnfangRestriction extends SoftRestriction {
     }
 
     if (pruefung.schaetzung() >= amountManyStudents) {
-      return Optional.of(new WeichesKriteriumAnalysis(Set.of(pruefung), this.kriterium,
+      return Optional.of(new SoftRestrictionAnalysis(Set.of(pruefung), this.kriterium,
           pruefung.getTeilnehmerkreise(), pruefung.schaetzung(),
           this.kriterium.getWert()));
     }

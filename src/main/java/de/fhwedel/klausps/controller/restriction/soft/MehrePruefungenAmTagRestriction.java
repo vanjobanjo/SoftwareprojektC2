@@ -2,7 +2,7 @@ package de.fhwedel.klausps.controller.restriction.soft;
 
 import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.MEHRERE_PRUEFUNGEN_AM_TAG;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
+import de.fhwedel.klausps.controller.analysis.SoftRestrictionAnalysis;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
@@ -32,7 +32,7 @@ public class MehrePruefungenAmTagRestriction extends SoftRestriction {
   }
 
   @Override
-  public Optional<WeichesKriteriumAnalysis> evaluateRestriction(Pruefung pruefung)
+  public Optional<SoftRestrictionAnalysis> evaluateRestriction(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
 
     Set<Pruefung> setPruefung = new HashSet<>();
@@ -113,7 +113,7 @@ public class MehrePruefungenAmTagRestriction extends SoftRestriction {
    * @param mapTeilnehmerkreis die Teilnehmerkreise mit ihrer Anzahl
    * @return die WeicheKriterumsAnalyse, wenn diese vorhanden ist, sonst Optional.empty()
    */
-  private Optional<WeichesKriteriumAnalysis> getWeichesKriteriumAnalyse(Set<Pruefung> pruefungen,
+  private Optional<SoftRestrictionAnalysis> getWeichesKriteriumAnalyse(Set<Pruefung> pruefungen,
       Map<Teilnehmerkreis, Integer> mapTeilnehmerkreis) {
 
     if (!pruefungen.isEmpty()) {
@@ -122,7 +122,7 @@ public class MehrePruefungenAmTagRestriction extends SoftRestriction {
       for (Integer students : mapTeilnehmerkreis.values()) {
         countStudents += students;
       }
-      WeichesKriteriumAnalysis wKA = new WeichesKriteriumAnalysis(pruefungen,
+      SoftRestrictionAnalysis wKA = new SoftRestrictionAnalysis(pruefungen,
           MEHRERE_PRUEFUNGEN_AM_TAG, mapTeilnehmerkreis.keySet(), countStudents, scoring);
       return Optional.of(wKA);
     } else {

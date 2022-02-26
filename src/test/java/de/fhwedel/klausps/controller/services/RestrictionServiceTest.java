@@ -11,7 +11,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalysis;
+import de.fhwedel.klausps.controller.analysis.HardRestrictionAnalysis;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
 import de.fhwedel.klausps.controller.restriction.hard.HardRestriction;
@@ -107,12 +107,12 @@ class RestrictionServiceTest {
     return restriktion;
   }
 
-  private HartesKriteriumAnalysis hartesKriteriumAnalyseWith(Collection<Pruefung> pruefungen) {
+  private HardRestrictionAnalysis hartesKriteriumAnalyseWith(Collection<Pruefung> pruefungen) {
     Map<Teilnehmerkreis, Integer> teilnehmerMap = new HashMap<>();
     for (Pruefung p : pruefungen) {
       teilnehmerMap.putAll(p.getSchaetzungen());
     }
-    return new HartesKriteriumAnalysis(new HashSet<>(pruefungen),
+    return new HardRestrictionAnalysis(new HashSet<>(pruefungen),
         HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG, teilnehmerMap);
   }
 

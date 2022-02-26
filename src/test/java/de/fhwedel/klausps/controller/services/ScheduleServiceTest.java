@@ -36,8 +36,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import de.fhwedel.klausps.controller.analysis.HartesKriteriumAnalysis;
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
+import de.fhwedel.klausps.controller.analysis.HardRestrictionAnalysis;
+import de.fhwedel.klausps.controller.analysis.SoftRestrictionAnalysis;
 import de.fhwedel.klausps.controller.api.BlockDTO;
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
@@ -348,10 +348,10 @@ class ScheduleServiceTest {
     conflictedPruefung.add(haskell);
     conflictedPruefung.add(dm);
 
-    HartesKriteriumAnalysis hKA = new HartesKriteriumAnalysis(conflictedPruefung,
+    HardRestrictionAnalysis hKA = new HardRestrictionAnalysis(conflictedPruefung,
         ZWEI_KLAUSUREN_GLEICHZEITIG, teilnehmerCount);
 
-    List<HartesKriteriumAnalysis> listHard = new ArrayList<>();
+    List<HardRestrictionAnalysis> listHard = new ArrayList<>();
     listHard.add(hKA);
     when(restrictionService.checkHarteKriterien(haskell)).thenReturn(listHard);
     when(restrictionService.getPruefungenAffectedBy(haskell)).thenReturn(conflictedPruefung);
@@ -698,12 +698,12 @@ class ScheduleServiceTest {
     return result;
   }
 
-  private HartesKriteriumAnalysis getNewHartesKriteriumAnalyse() {
+  private HardRestrictionAnalysis getNewHartesKriteriumAnalyse() {
     Random random = new Random(1L);
     int next = random.nextInt();
     Map<Teilnehmerkreis, Integer> teilnehmercount = new HashMap<>();
     teilnehmercount.put(getRandomTeilnehmerkreis(1L), next);
-    return new HartesKriteriumAnalysis(
+    return new HardRestrictionAnalysis(
         Set.of(getPruefungOfReadOnlyPruefung(getRandomUnplannedROPruefung(1L)))
         , ZWEI_KLAUSUREN_GLEICHZEITIG,
         teilnehmercount);
@@ -902,7 +902,7 @@ class ScheduleServiceTest {
 
     Map<Teilnehmerkreis, Integer> teilnehmerCount = new HashMap<>();
     teilnehmerCount.put(infBachelor, 8);
-    HartesKriteriumAnalysis hka = new HartesKriteriumAnalysis(Set.of(analysis, dm),
+    HardRestrictionAnalysis hka = new HardRestrictionAnalysis(Set.of(analysis, dm),
         ZWEI_KLAUSUREN_GLEICHZEITIG, teilnehmerCount);
     when(restrictionService.checkHarteKriterien(any())).thenReturn(List.of(hka));
 
@@ -943,11 +943,11 @@ class ScheduleServiceTest {
   void analyseScoring_restrictions_violated() throws NoPruefungsPeriodeDefinedException {
     Pruefung dm = getPruefungOfReadOnlyPruefung(RO_DM_UNPLANNED);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    WeichesKriteriumAnalysis weichesKriteriumAnalysis = new WeichesKriteriumAnalysis(Set.of(analysis),
+    SoftRestrictionAnalysis softRestrictionAnalysis = new SoftRestrictionAnalysis(Set.of(analysis),
         UNIFORME_ZEITSLOTS,
         Set.of(infBachelor), 10, 100);
     when(dataAccessService.getPruefung(RO_DM_UNPLANNED)).thenReturn(dm);
-    when(restrictionService.checkWeicheKriterien(dm)).thenReturn(List.of(weichesKriteriumAnalysis));
+    when(restrictionService.checkWeicheKriterien(dm)).thenReturn(List.of(softRestrictionAnalysis));
 
     List<KriteriumsAnalyse> result = deviceUnderTest.analyseScoring(RO_DM_UNPLANNED);
     assertThat(result).isNotEmpty();
@@ -1162,10 +1162,10 @@ class ScheduleServiceTest {
     block.setTyp(PARALLEL);
     ReadOnlyBlock roBlock = converter.convertToROBlock(block);
     when(dataAccessService.getBlock(roBlock)).thenReturn(block);
-    List<HartesKriteriumAnalysis> hardKriterien = new LinkedList<>();
+    List<HardRestrictionAnalysis> hardKriterien = new LinkedList<>();
 
     Map<Teilnehmerkreis, Integer> teilnehmerCount = new HashMap<>();
-    hardKriterien.add(new HartesKriteriumAnalysis(Collections.emptySet(),
+    hardKriterien.add(new HardRestrictionAnalysis(Collections.emptySet(),
         ZWEI_KLAUSUREN_GLEICHZEITIG, teilnehmerCount));
     when(restrictionService.checkHarteKriterienAll(Set.of(analysis, haskell))).thenReturn(
         hardKriterien);
@@ -1257,11 +1257,11 @@ class ScheduleServiceTest {
     block.setTyp(SEQUENTIAL);
     ReadOnlyBlock roBlock = converter.convertToROBlock(block);
     when(dataAccessService.getBlock(roBlock)).thenReturn(block);
-    List<HartesKriteriumAnalysis> hardKriterien = new LinkedList<>();
+    List<HardRestrictionAnalysis> hardKriterien = new LinkedList<>();
 
     Map<Teilnehmerkreis, Integer> teilnehmerCount = new HashMap<>();
 
-    hardKriterien.add(new HartesKriteriumAnalysis(Collections.emptySet(),
+    hardKriterien.add(new HardRestrictionAnalysis(Collections.emptySet(),
         ZWEI_KLAUSUREN_GLEICHZEITIG, teilnehmerCount));
     when(restrictionService.checkHarteKriterienAll(Set.of(analysis, haskell))).thenReturn(
         hardKriterien);
@@ -1340,7 +1340,7 @@ class ScheduleServiceTest {
     when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(analysis, dm));
     when(dataAccessService.getGeplanteBloecke()).thenReturn(Collections.emptySet());
     when(restrictionService.checkHarteKriterien(analysis)).thenReturn(
-        List.of(mock(HartesKriteriumAnalysis.class)));
+        List.of(mock(HardRestrictionAnalysis.class)));
 
     assertThrows(IllegalArgumentException.class,
         () -> deviceUnderTest.createNewPeriodeWithData(ioService, semester, start, end, ankerTag,
@@ -1370,7 +1370,7 @@ class ScheduleServiceTest {
     when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(analysis, dm));
     when(dataAccessService.getGeplanteBloecke()).thenReturn(Collections.emptySet());
     when(restrictionService.checkHarteKriterien(analysis)).thenReturn(
-        List.of(mock(HartesKriteriumAnalysis.class)));
+        List.of(mock(HardRestrictionAnalysis.class)));
 
     assertThrows(IllegalTimeSpanException.class,
         () -> deviceUnderTest.createNewPeriodeWithData(ioService, semester, start, end, ankerTag,
@@ -1399,7 +1399,7 @@ class ScheduleServiceTest {
     when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(analysis, dm));
     when(dataAccessService.getGeplanteBloecke()).thenReturn(Collections.emptySet());
     when(restrictionService.checkHarteKriterien(analysis)).thenReturn(
-        List.of(mock(HartesKriteriumAnalysis.class)));
+        List.of(mock(HardRestrictionAnalysis.class)));
 
     assertThrows(IllegalTimeSpanException.class,
         () -> deviceUnderTest.createNewPeriodeWithData(ioService, semester, start, end, ankerTag,
@@ -1428,7 +1428,7 @@ class ScheduleServiceTest {
     when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(analysis, dm));
     when(dataAccessService.getGeplanteBloecke()).thenReturn(Collections.emptySet());
     when(restrictionService.checkHarteKriterien(analysis)).thenReturn(
-        List.of(mock(HartesKriteriumAnalysis.class)));
+        List.of(mock(HardRestrictionAnalysis.class)));
 
     assertThrows(IllegalTimeSpanException.class,
         () -> deviceUnderTest.createNewPeriodeWithData(ioService, semester, start, end, ankerTag,
@@ -1462,7 +1462,7 @@ class ScheduleServiceTest {
     when(dataAccessService.getPlannedPruefungen()).thenReturn(Set.of(analysis, dm));
     when(dataAccessService.getGeplanteBloecke()).thenReturn(Collections.emptySet());
     when(restrictionService.checkHarteKriterien(dm)).thenReturn(
-        List.of(mock(HartesKriteriumAnalysis.class)));
+        List.of(mock(HardRestrictionAnalysis.class)));
 
     try {
       deviceUnderTest.createNewPeriodeWithData(ioService, semester, start, end, ankerTag,

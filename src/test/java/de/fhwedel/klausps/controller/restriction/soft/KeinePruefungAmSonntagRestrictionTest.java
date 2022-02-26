@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
+import de.fhwedel.klausps.controller.analysis.SoftRestrictionAnalysis;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
@@ -82,7 +82,7 @@ class KeinePruefungAmSonntagRestrictionTest {
     model_pruefung_so.addTeilnehmerkreis(TestFactory.bwlBachelor, 30);
     model_pruefung_so.addTeilnehmerkreis(TestFactory.infBachelor, 50);
     TestFactory.configureMock_getPruefungFromPeriode(mocked_periode, model_pruefung_so);
-    WeichesKriteriumAnalysis result = deviceUnderTest.evaluateRestriction(model_pruefung_so)
+    SoftRestrictionAnalysis result = deviceUnderTest.evaluateRestriction(model_pruefung_so)
         .orElseThrow(IllegalArgumentException::new
         );
     assertThat(result.getCausingPruefungen()).containsOnly(model_pruefung_so);

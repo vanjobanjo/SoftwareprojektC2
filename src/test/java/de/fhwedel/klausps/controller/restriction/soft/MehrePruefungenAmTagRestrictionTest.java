@@ -7,7 +7,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
+import de.fhwedel.klausps.controller.analysis.SoftRestrictionAnalysis;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
@@ -98,7 +98,7 @@ class MehrePruefungenAmTagRestrictionTest {
     when(haskel.getDauer()).thenReturn(duration);
     when(haskel.isGeplant()).thenReturn(true);
 
-    Optional<WeichesKriteriumAnalysis> analyse = mehrePruefungenAmTagRestriction.evaluateRestriction(haskel);
+    Optional<SoftRestrictionAnalysis> analyse = mehrePruefungenAmTagRestriction.evaluateRestriction(haskel);
     assertTrue(analyse.isPresent());
     assertThat(analyse.get().getCausingPruefungen()).containsAll(setOfConflictPruefunge);
     assertEquals(setOfConflictTeilnehmerkreis, analyse.get().getAffectedTeilnehmerKreise());
@@ -214,7 +214,7 @@ class MehrePruefungenAmTagRestrictionTest {
     when(haskel.getDauer()).thenReturn(duration);
     when(haskel.isGeplant()).thenReturn(true);
 
-    Optional<WeichesKriteriumAnalysis> analyse = mehrePruefungenAmTagRestriction.evaluateRestriction(haskel);
+    Optional<SoftRestrictionAnalysis> analyse = mehrePruefungenAmTagRestriction.evaluateRestriction(haskel);
 
     assertTrue(analyse.isPresent());
     assertThat(analyse.get().getCausingPruefungen()).containsAll(setOfConflictPruefunge);

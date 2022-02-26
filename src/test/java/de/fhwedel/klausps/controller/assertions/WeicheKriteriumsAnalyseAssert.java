@@ -1,18 +1,18 @@
 package de.fhwedel.klausps.controller.assertions;
 
-import de.fhwedel.klausps.controller.analysis.WeichesKriteriumAnalysis;
+import de.fhwedel.klausps.controller.analysis.SoftRestrictionAnalysis;
 import de.fhwedel.klausps.controller.util.TestUtils;
 import java.util.Set;
 import org.assertj.core.api.AbstractAssert;
 
 public class WeicheKriteriumsAnalyseAssert extends
-    AbstractAssert<WeicheKriteriumsAnalyseAssert, WeichesKriteriumAnalysis> {
+    AbstractAssert<WeicheKriteriumsAnalyseAssert, SoftRestrictionAnalysis> {
 
-  public WeicheKriteriumsAnalyseAssert(WeichesKriteriumAnalysis actual) {
+  public WeicheKriteriumsAnalyseAssert(SoftRestrictionAnalysis actual) {
     super(actual, WeicheKriteriumsAnalyseAssert.class);
   }
 
-  public static WeicheKriteriumsAnalyseAssert assertThat(WeichesKriteriumAnalysis actual) {
+  public static WeicheKriteriumsAnalyseAssert assertThat(SoftRestrictionAnalysis actual) {
     return new WeicheKriteriumsAnalyseAssert(actual);
   }
 

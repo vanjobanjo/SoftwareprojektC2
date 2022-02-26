@@ -6,7 +6,7 @@ import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.util.Map;
 import java.util.Set;
 
-public class HartesKriteriumAnalysis {
+public class HardRestrictionAnalysis {
 
   Set<Pruefung> causingPruefungen;
 
@@ -14,7 +14,7 @@ public class HartesKriteriumAnalysis {
   HartesKriterium kriterium;
 
   Map<Teilnehmerkreis, Integer>  teilnehmerCount ;
-  public HartesKriteriumAnalysis(
+  public HardRestrictionAnalysis(
       Set<Pruefung> causingPruefungen,
       HartesKriterium kriterium, Map<Teilnehmerkreis, Integer> teilnehmerCount) {
     this.causingPruefungen = causingPruefungen;
