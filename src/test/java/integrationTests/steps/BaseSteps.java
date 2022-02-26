@@ -12,7 +12,9 @@ import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
+import de.fhwedel.klausps.model.api.Ausbildungsgrad;
 import de.fhwedel.klausps.model.api.Semester;
+import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.SemesterImpl;
 import integrationTests.state.State;
 import io.cucumber.java.de.Angenommen;
@@ -22,6 +24,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Year;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -142,6 +145,33 @@ public class BaseSteps {
     }
     return pruefung;
   }
+
+
+  /**
+   * Gets a pruefung from model if existent or else creates it.
+   *
+   * @param pruefungName The name of the requested pruefung.
+   * @return The requested pruefung.
+   * @throws NoPruefungsPeriodeDefinedException In case there is no Pruefungsperiode.
+   */
+  protected ReadOnlyPruefung getOrCreate(String pruefungName, String teilnehmerkreisString,
+      int semster)
+      throws NoPruefungsPeriodeDefinedException {
+    ReadOnlyPruefung pruefung;
+    if (existsPruefungWith(pruefungName)) {
+      pruefung = getPruefungFromModel(pruefungName);
+    } else {
+      Map<Teilnehmerkreis, Integer> teilnehmerMap = new HashMap<>();
+      Teilnehmerkreis teilnehmerkreis = state.controller.createTeilnehmerkreis(
+          Ausbildungsgrad.BACHELOR, teilnehmerkreisString, teilnehmerkreisString, semster);
+      teilnehmerMap.put(teilnehmerkreis, 10);
+      pruefung = state.controller.createPruefung(pruefungName, pruefungName,
+          pruefungName, emptySet(), Duration.ofHours(1), teilnehmerMap);
+    }
+    return pruefung;
+
+  }
+
 
   /**
    * Check whether a pruefung with a specific name exists in the model.

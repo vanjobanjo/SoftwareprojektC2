@@ -707,4 +707,36 @@ class TwoKlausurenSameTimeTest {
         timeToCheck.plus(pruefungToCheck.getDauer()));
   }
 
+  @Test
+  void testIfWeCheckSemster() throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
+
+    LocalDateTime timeToCheck = getRandomTime(1L);
+    Teilnehmerkreis teilnehmerkreisOne = mock(Teilnehmerkreis.class);
+    when(teilnehmerkreisOne.getAusbildungsgrad()).thenReturn(Ausbildungsgrad.BACHELOR);
+    when(teilnehmerkreisOne.getFachsemester()).thenReturn(1);
+    when(teilnehmerkreisOne.getStudiengang()).thenReturn("INF");
+    when(teilnehmerkreisOne.getPruefungsordnung()).thenReturn("INF");
+
+    Teilnehmerkreis teilnehmerkreisTwo = mock(Teilnehmerkreis.class);
+    when(teilnehmerkreisTwo.getAusbildungsgrad()).thenReturn(Ausbildungsgrad.BACHELOR);
+    when(teilnehmerkreisTwo.getFachsemester()).thenReturn(3);
+    when(teilnehmerkreisTwo.getStudiengang()).thenReturn("INF");
+    when(teilnehmerkreisTwo.getPruefungsordnung()).thenReturn("INF");
+
+
+    Pruefung pruefungToCheck = getRandomPruefungWith(2L, teilnehmerkreisOne);
+    Pruefung other = getRandomPruefungWith(3L, teilnehmerkreisTwo);
+
+    pruefungToCheck.setStartzeitpunkt(timeToCheck);
+    other.setStartzeitpunkt(timeToCheck);
+
+
+    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
+        Set.of(other));
+    deviceUnderTest.wouldBeHardConflictAt(timeToCheck, pruefungToCheck);
+
+
+    assertThat(deviceUnderTest.evaluateRestriction(pruefungToCheck)).isEmpty();
+  }
+
 }

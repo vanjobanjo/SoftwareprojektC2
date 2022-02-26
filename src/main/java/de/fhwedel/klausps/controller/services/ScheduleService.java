@@ -121,13 +121,14 @@ public class ScheduleService {
 
   /**
    * Adds a pruefung to a block, with consistency check and scoring calculation.
-   * @param readOnlyBlock to add the passed pruefung to
+   *
+   * @param readOnlyBlock    to add the passed pruefung to
    * @param readOnlyPruefung to be added to the passed block
    * @return List of changed DTOPlanungsheiten
-   * @throws HartesKriteriumException when a hard constraint is violated
+   * @throws HartesKriteriumException           when a hard constraint is violated
    * @throws NoPruefungsPeriodeDefinedException when no period is set
-   * @throws IllegalStateException a model expcetion
-   * @throws IllegalArgumentException when the passed arguments aren't valid
+   * @throws IllegalStateException              a model expcetion
+   * @throws IllegalArgumentException           when the passed arguments aren't valid
    */
   public List<ReadOnlyPlanungseinheit> addPruefungToBlock(ReadOnlyBlock readOnlyBlock,
       ReadOnlyPruefung readOnlyPruefung)
@@ -283,12 +284,17 @@ public class ScheduleService {
     List<HartesKriteriumAnalyse> hard = restrictionService.checkHarteKriterien(pruefungModel);
 
     Optional<LocalDateTime> termin = pruefung.getTermin();
-    if (!hard.isEmpty() && termin.isPresent()) {
+    if (!hard.isEmpty()) {
       // reverse
-      dataAccessService.schedulePruefung(pruefung, termin.get());
+      if (termin.isPresent()) {
+        dataAccessService.schedulePruefung(pruefung, termin.get());
+      } else {
+        dataAccessService.unschedulePruefung(pruefungModel);
+      }
       throw converter.convertHardException(hard);
     }
   }
+
 
   @NotNull
   private Set<Planungseinheit> getAffectedPruefungenBy(Pruefung pruefung)
