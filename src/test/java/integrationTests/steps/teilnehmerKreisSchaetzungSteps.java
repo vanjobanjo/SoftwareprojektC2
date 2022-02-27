@@ -127,11 +127,7 @@ public class teilnehmerKreisSchaetzungSteps extends BaseSteps {
   }
 
   private Teilnehmerkreis createTeilnehmerkreis(String teilnehmerkreisName) {
-    Random random = new Random(teilnehmerkreisName.hashCode());
-    String studiengang = getRandomString(random, 4);
-    String pruefungsordnung = getRandomString(random, 4);
-    int fachsemester = random.nextInt(1, 12);
-    return new TeilnehmerkreisImpl(studiengang, pruefungsordnung, fachsemester,
+    return new TeilnehmerkreisImpl(teilnehmerkreisName, teilnehmerkreisName, 1,
         Ausbildungsgrad.BACHELOR);
   }
 

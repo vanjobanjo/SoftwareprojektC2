@@ -39,13 +39,14 @@ public class deleteBlockSteps extends BaseSteps {
       throws NoPruefungsPeriodeDefinedException {
     ReadOnlyPruefung expected = getPruefungFromModel(pruefungName);
     List<ReadOnlyPruefung> actual = (List<ReadOnlyPruefung>) state.results.get("pruefungen");
+    assertThat(actual).hasSize(1);
     assertThat(actual).contains(expected);
   }
 
   @Wenn("ich den unbekannten Block {string} loesche")
   public void ichDenUnbekanntenBlockLoesche(String blockName)
       throws NoPruefungsPeriodeDefinedException {
-    ReadOnlyBlock block = new BlockDTO("name", null, Duration.ofHours(1), Collections.emptySet(),
+    ReadOnlyBlock block = new BlockDTO(blockName, null, Duration.ofHours(1), Collections.emptySet(),
         1998, Blocktyp.PARALLEL);
     try {
       List<ReadOnlyPruefung> pruefungen = state.controller.deleteBlock(block);
