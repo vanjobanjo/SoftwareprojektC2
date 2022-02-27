@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.List;
 
-public class schedulePruefung extends BaseSteps {
+public class schedulePruefungSteps extends BaseSteps {
 
 
   @Wenn("ich {string} am {localDateTime} einplanen moechte")
@@ -41,20 +41,20 @@ public class schedulePruefung extends BaseSteps {
 
   }
 
-  @Und("es existiert die ungeplante Pruefung {string} mit den Teilnehmerkreis {string} im {int} semster")
-  public void esExistiertDieUngeplantePruefungMitDenTeilnehmerkreis(String pruefung,
-      String teilnehmerkreis, int semster) throws NoPruefungsPeriodeDefinedException {
+  @Und("es existiert die ungeplante Pruefung {string} mit dem Teilnehmerkreis {string} im {int} Semester")
+  public void esExistiertDieUngeplantePruefungMitDemTeilnehmerkreis(String pruefung,
+      String teilnehmerkreis, int semester) throws NoPruefungsPeriodeDefinedException {
 
-    ReadOnlyPruefung roPruefung = getOrCreate(pruefung, teilnehmerkreis, semster);
+    getOrCreate(pruefung, teilnehmerkreis, semester);
 
   }
 
-  @Und("es existiert die geplante Pruefung {string} mit den Teilnehmerkreis {string} im {int} semster am {localDateTime}")
-  public void esExistiertDieGeplantePruefungMitDenTeilnehmerkreisImSemsterAm(String pruefung,
-      String teilnehmerkeisString,
-      int semster, LocalDateTime termin)
+  @Und("es existiert die geplante Pruefung {string} mit dem Teilnehmerkreis {string} im {int} Semester am {localDateTime}")
+  public void esExistiertDieGeplantePruefungMitDemTeilnehmerkreisImSemesterAm(String pruefung,
+      String teilnehmerkreisString,
+      int semester, LocalDateTime termin)
       throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
-    ReadOnlyPruefung roPruefung = getOrCreate(pruefung, teilnehmerkeisString, semster);
+    ReadOnlyPruefung roPruefung = getOrCreate(pruefung, teilnehmerkreisString, semester);
     state.controller.schedulePruefung(roPruefung, termin);
   }
 
@@ -66,19 +66,19 @@ public class schedulePruefung extends BaseSteps {
     assertThat(exception).isInstanceOf(HartesKriteriumException.class);
   }
 
-  @Und("es existiert die geplante Pruefung {string} mit den Teilnehmerkreis {string} im {int} semster am {localDateTime} um {int} Uhr")
-  public void esExistiertDieGeplantePruefungMitDenTeilnehmerkreisImSemsterAmUm(String pruefung,
-      String teilnehmerkreis, int semster, LocalDateTime termin, int time)
+  @Und("es existiert die geplante Pruefung {string} mit dem Teilnehmerkreis {string} im {int} Semester am {localDateTime} um {int} Uhr")
+  public void esExistiertDieGeplantePruefungMitDemTeilnehmerkreisImSemesterAmUm(String pruefung,
+      String teilnehmerkreis, int semester, LocalDateTime termin, int time)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     LocalDateTime newTermin = changeTime(termin, time);
-    esExistiertDieGeplantePruefungMitDenTeilnehmerkreisImSemsterAm(pruefung, teilnehmerkreis,
-        semster, newTermin);
+    esExistiertDieGeplantePruefungMitDemTeilnehmerkreisImSemesterAm(pruefung, teilnehmerkreis,
+        semester, newTermin);
   }
 
 
   /**
-   * Hilfsmethode um aus einen Termin und einer Uhrzeit einen neuen Termin mit der neuen Uhrzeit zz
-   * machenb
+   * Hilfsmethode um aus einem Termin und einer Uhrzeit einen neuen Termin mit der neuen Uhrzeit zu
+   * machen
    *
    * @param termin Jahr, monat tag des neuen termins
    * @param time   Uhrzeit des neuen termins (als Stundenzahl)
@@ -108,15 +108,15 @@ public class schedulePruefung extends BaseSteps {
   @Und("die Pruefung {string} hat das WeicheKriterium {string}")
   public void diePruefungHatDasWeicheKriterium(String pruefung, String kriterium)
       throws NoPruefungsPeriodeDefinedException {
-    List<KriteriumsAnalyse> listWithWeicheKriteren = state.controller.analyseScoring(
+    List<KriteriumsAnalyse> listWithWeicheKriterien = state.controller.analyseScoring(
         getPruefungFromModel(pruefung));
-    assertThat(listWithWeicheKriteren).isNotEmpty();
+    assertThat(listWithWeicheKriterien).isNotEmpty();
     boolean finde = false;
-    Iterator<KriteriumsAnalyse> it = listWithWeicheKriteren.iterator();
+    Iterator<KriteriumsAnalyse> it = listWithWeicheKriterien.iterator();
     KriteriumsAnalyse kA;
-    while(!finde  && it.hasNext()){
-        kA= it.next();
-      if(kA.getKriterium().equals(WeichesKriterium.valueOf(kriterium))){
+    while (!finde && it.hasNext()) {
+      kA = it.next();
+      if (kA.getKriterium().equals(WeichesKriterium.valueOf(kriterium))) {
         finde = true;
       }
     }
@@ -127,14 +127,14 @@ public class schedulePruefung extends BaseSteps {
   @Und("die Pruefung {string} hat nicht das WeicheKriterium {string}")
   public void diePruefungHatNichtDasWeicheKriterium(String pruefung, String kriterium)
       throws NoPruefungsPeriodeDefinedException {
-    List<KriteriumsAnalyse> listWithWeicheKriteren = state.controller.analyseScoring(
+    List<KriteriumsAnalyse> listWithWeicheKriterien = state.controller.analyseScoring(
         getPruefungFromModel(pruefung));
     boolean finde = false;
-    Iterator<KriteriumsAnalyse> it = listWithWeicheKriteren.iterator();
+    Iterator<KriteriumsAnalyse> it = listWithWeicheKriterien.iterator();
     KriteriumsAnalyse kA;
-    while(!finde  && it.hasNext()){
-      kA= it.next();
-      if(kA.getKriterium().equals(WeichesKriterium.valueOf(kriterium))){
+    while (!finde && it.hasNext()) {
+      kA = it.next();
+      if (kA.getKriterium().equals(WeichesKriterium.valueOf(kriterium))) {
         finde = true;
       }
     }
@@ -142,37 +142,39 @@ public class schedulePruefung extends BaseSteps {
 
   }
 
-  @Und("es existiert die ungeplante Pruefung {string} mit den Teilnehmerkreis {string} im {int} semster {string} und {int} Teilnehmer")
-  public void esExistiertDieUngeplantePruefungMitDenTeilnehmerkreisImSemsterUndTeilnehmer(
-      String pruefung, String teilnehmerkreis, int semster,String ausbildunggrade,  int anzahl)
+  @Und("es existiert die ungeplante Pruefung {string} mit dem Teilnehmerkreis {string} im {int} Semester {string} und {int} Teilnehmer")
+  public void esExistiertDieUngeplantePruefungMitDemTeilnehmerkreisImSemesterUndTeilnehmer(
+      String pruefung, String teilnehmerkreis, int Semester, String ausbildungsGrad, int anzahl)
       throws NoPruefungsPeriodeDefinedException {
-    ReadOnlyPruefung roPruefung = getOrCreate(pruefung, teilnehmerkreis, semster,ausbildunggrade, anzahl);
+    getOrCreate(pruefung, teilnehmerkreis, Semester, ausbildungsGrad, anzahl);
 
   }
 
-  @Und("es existiert die geplante Pruefung {string} mit den Teilnehmerkreis {string} im {int} semster und {int} Teilnehmer am {localDateTime} um {int} Uhr")
-  public void esExistiertDieGeplantePruefungMitDenTeilnehmerkreisImSemsterUndTeilnehmerAmUmUhr(
-      String pruefung, String teilnehmerkreis, int semster, int count , LocalDateTime termin,  int time)
+  @Und("es existiert die geplante Pruefung {string} mit dem Teilnehmerkreis {string} im {int} Semester und {int} Teilnehmer am {localDateTime} um {int} Uhr")
+  public void esExistiertDieGeplantePruefungMitDemTeilnehmerkreisImSemesterUndTeilnehmerAmUmUhr(
+      String pruefung, String teilnehmerkreis, int Semester, int count, LocalDateTime termin,
+      int time)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
 
     LocalDateTime newTermin = changeTime(termin, time);
-    ReadOnlyPruefung roPruefung = getOrCreate(pruefung, teilnehmerkreis, semster, "BACHELOR", count);
-    state.controller.schedulePruefung(roPruefung,newTermin);
+    ReadOnlyPruefung roPruefung = getOrCreate(pruefung, teilnehmerkreis, Semester, "BACHELOR",
+        count);
+    state.controller.schedulePruefung(roPruefung, newTermin);
   }
 
-  @Und("es existiert die ungeplante Pruefung {string} mit den Teilnehmerkreis {string} im {int} semster und Dauer von {int} Minuten")
-  public void esExistiertDieUngeplantePruefungMitDenTeilnehmerkreisImSemsterUndDauerVonMinuten(
-      String pruefung, String teilnehmerkreis, int semster, int dauer)
+  @Und("es existiert die ungeplante Pruefung {string} mit dem Teilnehmerkreis {string} im {int} Semester und Dauer von {int} Minuten")
+  public void esExistiertDieUngeplantePruefungMitDemTeilnehmerkreisImSemesterUndDauerVonMinuten(
+      String pruefung, String teilnehmerkreis, int Semester, int dauer)
       throws NoPruefungsPeriodeDefinedException {
-    getOrCreate(pruefung, teilnehmerkreis, semster, dauer);
+    getOrCreate(pruefung, teilnehmerkreis, Semester, dauer);
   }
 
-  @Und("es existiert die geplante Pruefung {string} mit den Teilnehmerkreis {string} im {int} semster und Dauer von {int} Minuten am {localDateTime}")
-  public void esExistiertDieGeplantePruefungMitDenTeilnehmerkreisImSemsterUndDauerVonMinutenAm(
-      String pruefung, String teilnehmerkreis, int semster, int dauer, LocalDateTime termin)
+  @Und("es existiert die geplante Pruefung {string} mit dem Teilnehmerkreis {string} im {int} Semester und Dauer von {int} Minuten am {localDateTime}")
+  public void esExistiertDieGeplantePruefungMitDemTeilnehmerkreisImSemesterUndDauerVonMinutenAm(
+      String pruefung, String teilnehmerkreis, int Semester, int dauer, LocalDateTime termin)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
-    ReadOnlyPruefung roPruefung = getOrCreate(pruefung, teilnehmerkreis, semster, dauer);
-    state.controller.schedulePruefung(roPruefung,termin);
+    ReadOnlyPruefung roPruefung = getOrCreate(pruefung, teilnehmerkreis, Semester, dauer);
+    state.controller.schedulePruefung(roPruefung, termin);
   }
 
   @Und("ist die Dauer der Pruefung {string} {int} Minuten")

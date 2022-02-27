@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Set;
 import org.junit.AssumptionViolatedException;
 
-public class getGeplanteBloeckeIT extends BaseSteps {
+public class getGeplanteBloeckeSteps extends BaseSteps {
 
   @Und("es gibt die folgenden geplanten Bloecke:")
   public void esGibtDieBloecke(DataTable table) {
