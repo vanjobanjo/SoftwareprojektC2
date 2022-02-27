@@ -70,7 +70,7 @@ public class ScheduleService {
   /**
    * Will unschedule the passed pruefung, scoring might be changed.
    *
-   * @param pruefungToUnschedule pruefung to be unschduled
+   * @param pruefungToUnschedule pruefung to be unscheduled
    * @return DTOPlanungseinheiten, which are changed after the operation with duplicates (parents
    * and children)
    */
@@ -80,9 +80,7 @@ public class ScheduleService {
     Pruefung pruefung = dataAccessService.getPruefung(pruefungToUnschedule);
     Set<Pruefung> affectedPruefungen = restrictionService.getPruefungenAffectedBy(pruefung);
     dataAccessService.unschedulePruefung(pruefung);
-    List<ReadOnlyPlanungseinheit> result = calculateScoringForCachedAffected(affectedPruefungen);
-    result.add(converter.convertToReadOnlyPruefung(pruefung));
-    return result;
+    return calculateScoringForCachedAffected(affectedPruefungen);
   }
 
   /**
