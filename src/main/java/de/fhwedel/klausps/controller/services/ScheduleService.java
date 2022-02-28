@@ -240,11 +240,8 @@ public class ScheduleService {
     Block blockModel = dataAccessService.getBlock(block);
     checkExistenceOfPruefungenInBlock(block);
     Set<Pruefung> affected = restrictionService.getPruefungenAffectedBy(blockModel);
-    Block unscheduledBlock = dataAccessService.unscheduleBlock(block);
-    List<ReadOnlyPlanungseinheit> result = new ArrayList<>();
-    result.add(converter.convertToROBlock(unscheduledBlock));
-    result.addAll(calculateScoringForCachedAffected(affected));
-    return result;
+    dataAccessService.unscheduleBlock(block);
+    return new ArrayList<>(calculateScoringForCachedAffected(affected));
   }
 
 
