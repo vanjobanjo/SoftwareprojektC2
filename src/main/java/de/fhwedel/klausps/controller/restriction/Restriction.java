@@ -7,11 +7,6 @@ import java.time.Duration;
  * action tried by the user or a soft restriction which only affects the scoring of a Pruefung.
  */
 public abstract class Restriction {
-
-  private Restriction() {
-    // do not instantiate me
-  }
-
   /**
    * the default buffer time in between Planungseinheiten.
    */
