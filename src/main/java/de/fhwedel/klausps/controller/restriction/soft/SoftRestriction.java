@@ -20,13 +20,31 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class represents a general soft restriction. It contains some basic functionality necessary
+ * for any soft restriction.
+ */
 public abstract class SoftRestriction extends Restriction {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SoftRestriction.class);
 
+  /**
+   * the DataAccessService to communicate with the underlying data model
+   */
   protected final DataAccessService dataAccessService;
+
+  /**
+   * the criteria of the specific restriction, needed for the analysis
+   */
   protected final WeichesKriterium kriterium;
 
+  /**
+   * Constructs a SoftRestriction
+   *
+   * @param dataAccessService the {@link DataAccessService} in use
+   * @param kriterium         the {@link WeichesKriterium soft criteria} of the specific
+   *                          restriction
+   */
   protected SoftRestriction(DataAccessService dataAccessService, WeichesKriterium kriterium) {
     this.dataAccessService = dataAccessService;
     this.kriterium = kriterium;
@@ -43,6 +61,15 @@ public abstract class SoftRestriction extends Restriction {
       throws NoPruefungsPeriodeDefinedException;
 
 
+  /**
+   * Evaluates for a {@link Pruefung} in which way it violates a restriction.<br> Entry Point for
+   * all evaluations performed by the RestrictionService. This method ensures that only planned
+   * Pruefungen violate restrictions.
+   *
+   * @param pruefung The pruefung for which to check for violations of a restriction.
+   * @return Either an {@link Optional} containing a {@link KriteriumsAnalyse} for the violated
+   * restriction, or an empty Optional in case the Restriction was not violated.
+   */
   public Optional<SoftRestrictionAnalysis> evaluate(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     LOGGER.trace("Checking restriction {}.", this.kriterium);
@@ -53,12 +80,21 @@ public abstract class SoftRestriction extends Restriction {
     return evaluateRestriction(pruefung);
   }
 
+  /**
+   * Template method for building a SoftRestrictionAnalysis. The approach for the calculation of
+   * scoring and teilnehmerkreisschaetzung may differ by restriction.
+   *
+   * @param pruefung           the pruefung to build the analysis for
+   * @param affectedPruefungen the affected pruefungen
+   * @return a SoftRestrictionAnalysis for the specific restriction
+   */
   protected SoftRestrictionAnalysis buildAnalysis(Pruefung pruefung,
       Set<Pruefung> affectedPruefungen) {
     int scoring;
     Map<Teilnehmerkreis, Integer> affectedTeilnehmerkreise = new HashMap<>();
     for (Pruefung affected : affectedPruefungen) {
-      addTeilnehmerkreis(affectedTeilnehmerkreise, getRelevantSchaetzungen(pruefung, affected));
+      compareAndPutBiggerSchaetzung(affectedTeilnehmerkreise,
+          getRelevantSchaetzungen(pruefung, affected));
     }
     scoring = addDeltaScoring(affectedPruefungen);
 
@@ -66,15 +102,12 @@ public abstract class SoftRestriction extends Restriction {
         affectedTeilnehmerkreise.keySet(), getAffectedStudents(affectedTeilnehmerkreise), scoring);
   }
 
-  protected void addTeilnehmerkreis(
-      Map<Teilnehmerkreis, Integer> affectedTeilnehmerkreise,
-      Map<Teilnehmerkreis, Integer> teilnehmerkreiseToAdd) {
-
-    compareAndPutBiggerSchaetzung(affectedTeilnehmerkreise,
-        teilnehmerkreiseToAdd);
-  }
-
-
+  /**
+   * calculates the amount of affected students
+   *
+   * @param affectedTeilnehmerkreise the Teilnehmerkreise involved
+   * @return the amount of affected students
+   */
   protected int getAffectedStudents(Map<Teilnehmerkreis, Integer> affectedTeilnehmerkreise) {
     int result = 0;
     for (Integer schaetzung : affectedTeilnehmerkreise.values()) {
@@ -84,7 +117,7 @@ public abstract class SoftRestriction extends Restriction {
   }
 
   /**
-   * default approach
+   * default approach to calculate the scoring for a restriction violation
    *
    * @param affectedPruefungen pruefungen that violate restriction
    * @return the scoring

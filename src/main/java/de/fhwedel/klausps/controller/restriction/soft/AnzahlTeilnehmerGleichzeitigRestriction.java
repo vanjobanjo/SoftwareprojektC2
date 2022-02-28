@@ -72,10 +72,6 @@ public class AnzahlTeilnehmerGleichzeitigRestriction extends AtSameTimeRestricti
     return result;
   }
 
-  @Override
-  protected int addDeltaScoring(Set<Pruefung> affectedPruefungen) {
-    throw new UnsupportedOperationException("not implemented");
-  }
 
   @Override
   protected int getAffectedStudentsFrom(Collection<Planungseinheit> violatingPlanungseinheiten) {

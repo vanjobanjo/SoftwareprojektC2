@@ -40,14 +40,14 @@ public class MehrePruefungenAmTagRestriction extends SoftRestriction {
 
     if (pruefung != null && pruefung.isGeplant()) {
 
-      List<Planungseinheit> listWithPruefungenInTimeSpace = getPruefungnInTimeSpace(pruefung);
+      List<Planungseinheit> listWithPruefungenInTimeSpace = getPruefungenInTimeSpace(pruefung);
       for (Planungseinheit planungseinheit : listWithPruefungenInTimeSpace) {
         //Unterscheidung auf Block
         if (planungseinheit.isBlock()) {
-          goThrowBlock(pruefung, setPruefung, mapTeilnehmerkreis, planungseinheit.asBlock());
+          goThroughBlock(pruefung, setPruefung, mapTeilnehmerkreis, planungseinheit.asBlock());
         } else {
           setPruefung.addAll(
-              testTwoPruefungenKonftikt(pruefung, planungseinheit.asPruefung(),
+              testTwoPruefungenKonflikt(pruefung, planungseinheit.asPruefung(),
                   mapTeilnehmerkreis));
         }
       }
@@ -61,14 +61,14 @@ public class MehrePruefungenAmTagRestriction extends SoftRestriction {
   }
 
   /**
-   * Methode die durch ein Block durch iteriert und mit jeder Pruefung einzeln vergleicht
+   * Methode die durch einen Block durch iteriert und mit jeder Pruefung einzeln vergleicht
    *
    * @param pruefung           mit der verglichen werden soll
    * @param setPruefung        die Pruefungen, die ein Konflikt bilden
    * @param mapTeilnehmerkreis die Teilnehmer mit der Anzahl von studenten
-   * @param block              der Block, durch den gagangen werden soll
+   * @param block              der Block, durch den gegangen werden soll
    */
-  private void goThrowBlock(Pruefung pruefung, Set<Pruefung> setPruefung,
+  private void goThroughBlock(Pruefung pruefung, Set<Pruefung> setPruefung,
       Map<Teilnehmerkreis, Integer> mapTeilnehmerkreis, Block block) {
     Set<Pruefung> pruefungenFromBlock;
     pruefungenFromBlock = block.getPruefungen();
@@ -77,7 +77,7 @@ public class MehrePruefungenAmTagRestriction extends SoftRestriction {
       // jede Pruefung im Block überprüfen
       for (Pruefung pruefungBlock : pruefungenFromBlock) {
         setPruefung.addAll(
-            testTwoPruefungenKonftikt(pruefung, pruefungBlock, mapTeilnehmerkreis));
+            testTwoPruefungenKonflikt(pruefung, pruefungBlock, mapTeilnehmerkreis));
       }
     }
   }
@@ -85,11 +85,11 @@ public class MehrePruefungenAmTagRestriction extends SoftRestriction {
   /**
    * Methode für das bekommen, von allen Pruefungen in einer bestimmten Zeitspanne
    *
-   * @param pruefung die Pruefung, mit der die Zeitspanne ausgerchnet wird
+   * @param pruefung die Pruefung, mit der die Zeitspanne ausgerechnet wird
    * @return eine Liste, die alle Pruefungen beinhaltet, die in den berechneten Zeitraum sind
    * @throws NoPruefungsPeriodeDefinedException Wenn keine PruefungsPeriode definiert ist
    */
-  private List<Planungseinheit> getPruefungnInTimeSpace(Pruefung pruefung)
+  private List<Planungseinheit> getPruefungenInTimeSpace(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     LocalDateTime start = startDay(pruefung.getStartzeitpunkt());
     LocalDateTime end = endDay(pruefung.getStartzeitpunkt());
@@ -107,11 +107,11 @@ public class MehrePruefungenAmTagRestriction extends SoftRestriction {
   }
 
   /**
-   * Methode die die WeicheKriterumAnalyse erstellt, wenn es zu einen Konflikt kommt
+   * Methode die WeicheKriteriumAnalyse erstellt, wenn es zu einem Konflikt kommt
    *
-   * @param pruefungen         ein Set von Pruefungen, welche zu einen Konflikt führen
+   * @param pruefungen         ein Set von Pruefungen, welche zu einem Konflikt führen
    * @param mapTeilnehmerkreis die Teilnehmerkreise mit ihrer Anzahl
-   * @return die WeicheKriterumsAnalyse, wenn diese vorhanden ist, sonst Optional.empty()
+   * @return die WeicheKriteriumsAnalyse, wenn diese vorhanden ist, sonst Optional.empty()
    */
   private Optional<SoftRestrictionAnalysis> getWeichesKriteriumAnalyse(Set<Pruefung> pruefungen,
       Map<Teilnehmerkreis, Integer> mapTeilnehmerkreis) {
@@ -132,17 +132,17 @@ public class MehrePruefungenAmTagRestriction extends SoftRestriction {
 
 
   /**
-   * Methode die pruefung mit toCeck Pruefung vergleicht und falls es zu einen Konflikt führt,
-   * werden diese Pruefungen zurück gegeben. Außerdem wird die Map mit den Teilnehmerkreisen und
-   * deren Anzahl befühllt.
+   * Methode die pruefung mit toCheck Pruefung vergleicht und falls es zu einem Konflikt führt,
+   * werden diese Pruefungen zurückgegeben. Außerdem wird die Map mit den Teilnehmerkreisen und
+   * deren Anzahl befüllt.
    *
-   * @param pruefung      die Pruefung, die neu Hinzugefügt wurde und für die dieses Kriterum
-   *                      gececkt werden soll
+   * @param pruefung      die Pruefung, die neu Hinzugefügt wurde und für die dieses Kriterium
+   *                      gecheckt werden soll
    * @param toCheck       die Pruefung, die schon ein geplant war und mit der verglichen wird
    * @param mapTeilnehmer eine Map mit der Anzahl von den unterschiedlichen Teilnehmerkreisen
-   * @return ein Set von Pruefungen, die mit einander in Konflikt stehen
+   * @return ein Set von Pruefungen, die miteinander in Konflikt stehen
    */
-  private Set<Pruefung> testTwoPruefungenKonftikt(Pruefung pruefung, Pruefung toCheck,
+  private Set<Pruefung> testTwoPruefungenKonflikt(Pruefung pruefung, Pruefung toCheck,
       Map<Teilnehmerkreis, Integer> mapTeilnehmer) {
 
     Set<Pruefung> setConflictPruefung = new HashSet<>();
@@ -160,7 +160,7 @@ public class MehrePruefungenAmTagRestriction extends SoftRestriction {
   /**
    * Methode die aus einem LocalDateTime die StartZeit auf START_ZEIT setzt
    *
-   * @param time Der Tag, an den die Pruefung stattfindet, aber wo die StartZeit neu gesetztt werden
+   * @param time Der Tag, an den die Pruefung stattfindet, aber wo die StartZeit neu gesetzt werden
    *             soll
    * @return der gleiche Tag wie in time, aber mit der START_ZEIT
    */
@@ -169,9 +169,9 @@ public class MehrePruefungenAmTagRestriction extends SoftRestriction {
   }
 
   /**
-   * Methdoe die aus einem LocalDateTIme die EndZeit auf END_ZEit setzt
+   * Methode die aus einem LocalDateTIme die EndZeit auf END_ZEit setzt
    *
-   * @param time Der Tag, an den die Pruefung stattfindet, aber wo die END_ZEIT neu gesetztt werden
+   * @param time Der Tag, an den die Pruefung stattfindet, aber wo die END_ZEIT neu gesetzt werden
    *             soll
    * @return der gleiche Tag wie in time, aber mit der END_ZEIT
    */

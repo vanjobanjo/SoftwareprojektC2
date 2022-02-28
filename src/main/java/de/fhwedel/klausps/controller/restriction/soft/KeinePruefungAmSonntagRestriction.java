@@ -24,7 +24,8 @@ public class KeinePruefungAmSonntagRestriction extends SoftRestriction {
   }
 
   /**
-   * Checks the day of the passed pruefueng
+   * Checks the day of the passed pruefung
+   *
    * @param pruefung scheduled pruefungs
    * @return true when passed pruefung is on sunday
    */
@@ -37,8 +38,9 @@ public class KeinePruefungAmSonntagRestriction extends SoftRestriction {
 
   /**
    * Checks if the passed pruefung is in period
+   *
    * @param pruefung passed
-   * @return true when passed pruefuung is in period
+   * @return true when passed pruefung is in period
    */
   private boolean isInPeriod(Pruefung pruefung) {
     return dataAccessService.terminIsInPeriod(pruefung.getStartzeitpunkt());
@@ -55,8 +57,4 @@ public class KeinePruefungAmSonntagRestriction extends SoftRestriction {
   }
 
 
-  @Override
-  protected int addDeltaScoring(Set<Pruefung> affectedPruefungen) {
-    return kriterium.getWert();
-  }
 }

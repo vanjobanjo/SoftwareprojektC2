@@ -57,9 +57,9 @@ class MehrePruefungenAmTagRestrictionTest {
     when(analysis.getTeilnehmerkreise()).thenReturn(teilnehmer1);
     when(haskel.getTeilnehmerkreise()).thenReturn(teilnehmer1);
 
-    Set<Pruefung> setOfConflictPruefunge = new HashSet<>();
-    setOfConflictPruefunge.add(analysis);
-    setOfConflictPruefunge.add(haskel);
+    Set<Pruefung> setOfConflictPruefungen = new HashSet<>();
+    setOfConflictPruefungen.add(analysis);
+    setOfConflictPruefungen.add(haskel);
 
     Set<Teilnehmerkreis> setOfConflictTeilnehmerkreis = new HashSet<>();
     setOfConflictTeilnehmerkreis.add(informatik);
@@ -70,7 +70,7 @@ class MehrePruefungenAmTagRestrictionTest {
     Set<Teilnehmerkreis> analysisTeilnehmer1 = new HashSet<>();
     analysisTeilnehmer1.add(informatik);
 
-    int studends = 8;
+    int students = 8;
 
     Map<Teilnehmerkreis, Integer> teilnehmerCount1 = new HashMap<>();
     teilnehmerCount1.put(informatik, 8);
@@ -100,21 +100,21 @@ class MehrePruefungenAmTagRestrictionTest {
 
     Optional<SoftRestrictionAnalysis> analyse = mehrePruefungenAmTagRestriction.evaluateRestriction(haskel);
     assertTrue(analyse.isPresent());
-    assertThat(analyse.get().getCausingPruefungen()).containsAll(setOfConflictPruefunge);
+    assertThat(analyse.get().getCausingPruefungen()).containsAll(setOfConflictPruefungen);
     assertEquals(setOfConflictTeilnehmerkreis, analyse.get().getAffectedTeilnehmerKreise());
-    assertEquals(studends, analyse.get().getAmountAffectedStudents());
+    assertEquals(students, analyse.get().getAmountAffectedStudents());
 
     assertThat(analyse.get().getAffectedTeilnehmerKreise()).containsAll(
         setOfConflictTeilnehmerkreis);
-    assertThat(analyse.get().getCausingPruefungen()).containsAll(setOfConflictPruefunge);
-    assertThat(analyse.get().getAmountAffectedStudents()).isEqualTo(studends);
+    assertThat(analyse.get().getCausingPruefungen()).containsAll(setOfConflictPruefungen);
+    assertThat(analyse.get().getAmountAffectedStudents()).isEqualTo(students);
 
 
   }
 
 
   @Test
-  void klausurSameDay_TestWithBloeck()
+  void klausurSameDay_TestWithBlock()
       throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
 
     MehrePruefungenAmTagRestriction mehrePruefungenAmTagRestriction = new MehrePruefungenAmTagRestriction(dataAccessService);
@@ -162,7 +162,7 @@ class MehrePruefungenAmTagRestrictionTest {
     Set<Teilnehmerkreis> analysisTeilnehmer1 = new HashSet<>();
     analysisTeilnehmer1.add(informatik);
 
-    int studends = 8;
+    int students = 8;
 
     Map<Teilnehmerkreis, Integer> teilnehmerCount1 = new HashMap<>();
     teilnehmerCount1.put(informatik, 8);
@@ -194,13 +194,13 @@ class MehrePruefungenAmTagRestrictionTest {
 
     when(blockPL.getTeilnehmerkreise()).thenReturn(blockTeilnehmerKreise);
 
-    Set<Pruefung> blockPrufungen = new HashSet<>();
-    blockPrufungen.add(dm);
-    blockPrufungen.add(analysis);
+    Set<Pruefung> blockPruefungen = new HashSet<>();
+    blockPruefungen.add(dm);
+    blockPruefungen.add(analysis);
 
     Block block = mock(Block.class);
     when(block.getTeilnehmerkreise()).thenReturn(blockTeilnehmerKreise);
-    when(block.getPruefungen()).thenReturn(blockPrufungen);
+    when(block.getPruefungen()).thenReturn(blockPruefungen);
     when(blockPL.isBlock()).thenReturn(true);
 
     when(blockPL.asBlock()).thenReturn(block);
@@ -219,12 +219,12 @@ class MehrePruefungenAmTagRestrictionTest {
     assertTrue(analyse.isPresent());
     assertThat(analyse.get().getCausingPruefungen()).containsAll(setOfConflictPruefunge);
     assertEquals(setOfConflictTeilnehmerkreis, analyse.get().getAffectedTeilnehmerKreise());
-    assertEquals(studends, analyse.get().getAmountAffectedStudents());
+    assertEquals(students, analyse.get().getAmountAffectedStudents());
 
     assertThat(analyse.get().getAffectedTeilnehmerKreise()).containsAll(
         setOfConflictTeilnehmerkreis);
     assertThat(analyse.get().getCausingPruefungen()).containsAll(setOfConflictPruefunge);
-    assertThat(analyse.get().getAmountAffectedStudents()).isEqualTo(studends);
+    assertThat(analyse.get().getAmountAffectedStudents()).isEqualTo(students);
 
 
   }

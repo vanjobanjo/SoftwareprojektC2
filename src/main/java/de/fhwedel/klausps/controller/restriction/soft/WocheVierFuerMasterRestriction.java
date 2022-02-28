@@ -37,6 +37,7 @@ public class WocheVierFuerMasterRestriction extends SoftRestriction {
 
   /**
    * Check if the passed pruefung is scheduled on week four
+   *
    * @param pruefung passed
    * @return when is week four and contains not only master then true
    */
@@ -98,9 +99,10 @@ public class WocheVierFuerMasterRestriction extends SoftRestriction {
   }
 
   /**
-   * Give the week distancs between start and scheduled time
+   * Give the week distance between start and scheduled time
+   *
    * @param startPeriode start of periode
-   * @param termin specific termin
+   * @param termin       specific termin
    * @return week distance between start and termin
    */
   private int getWeek(LocalDate startPeriode, LocalDate termin) {

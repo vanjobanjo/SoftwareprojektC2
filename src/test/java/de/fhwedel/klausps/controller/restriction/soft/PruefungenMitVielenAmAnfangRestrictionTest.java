@@ -71,7 +71,7 @@ class PruefungenMitVielenAmAnfangRestrictionTest {
       throws NoPruefungsPeriodeDefinedException {
     Pruefung pruefung = mock(Pruefung.class);
     when(pruefung.isGeplant()).thenReturn(false);
-    assertThat(deviceUnderTest.evaluateRestriction(pruefung)).isEmpty();
+    assertThat(deviceUnderTest.evaluate(pruefung)).isEmpty();
   }
 
 
