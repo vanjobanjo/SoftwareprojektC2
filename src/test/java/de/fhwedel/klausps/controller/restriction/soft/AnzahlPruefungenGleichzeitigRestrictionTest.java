@@ -677,7 +677,7 @@ todo test schlägt fehl
   void getAffectedStudentsFrom_noTeilnehmerkreisDuplicated() {
     List<Planungseinheit> planungseinheiten = getPlanungseinheitenWith22DistinctStudents();
     int expectedAmount = 22;
-    assertThat(deviceUnderTest.getAffectedStudentsFrom(planungseinheiten)).isEqualTo(
+    assertThat(deviceUnderTest.getAmountOfAttendingStudents(planungseinheiten)).isEqualTo(
         expectedAmount);
   }
 
@@ -704,7 +704,7 @@ todo test schlägt fehl
   void getAffectedStudentsFrom_duplicatedTeilnehmerkreis_useHigherAmount() {
     List<Planungseinheit> planungseinheiten = get2PlanungseinheitenWithSameTeilnehmerkreisWithMax12Teilnehmer();
     int expectedAmount = 12;
-    assertThat(deviceUnderTest.getAffectedStudentsFrom(planungseinheiten)).isEqualTo(
+    assertThat(deviceUnderTest.getAmountOfAttendingStudents(planungseinheiten)).isEqualTo(
         expectedAmount);
   }
 

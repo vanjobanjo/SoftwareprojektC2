@@ -20,12 +20,26 @@ import java.util.Optional;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * A generic Restriction on a multitude of {@link Pruefung} and {@link Block} that are planned at
+ * overlapping times.
+ */
 public abstract class AtSameTimeRestriction extends SoftRestriction {
 
-  // TODO refactor methods to overwrite the methods from SoftRestriction
-
+  /**
+   * The time buffer before and after a Pruefung which should be evaluated as part of the Pruefung
+   * to allow for preparation and follow-up tasks.
+   */
   protected final Duration puffer;
 
+  /**
+   * Create a AtSameTimeRestriction.
+   *
+   * @param dataAccessService The service to use for data access.
+   * @param kriterium         The type of {@link WeichesKriterium} resembled by this class.
+   * @param puffer            The time buffer before and after a Pruefung which should be evaluated
+   *                          as part of the Pruefung to allow for preparation and follow-up tasks.
+   */
   protected AtSameTimeRestriction(DataAccessService dataAccessService, WeichesKriterium kriterium,
       Duration puffer) {
     super(dataAccessService, kriterium);
@@ -52,6 +66,13 @@ public abstract class AtSameTimeRestriction extends SoftRestriction {
     return getAnalyseIfRestrictionViolated(planungseinheitenOverlappingTheOneToCheck);
   }
 
+  /**
+   * Get the block a Pruefung is in if it is of type SEQUENTIAL, or the Pruefung itself otherwise.
+   *
+   * @param pruefung The Pruefung to get the block for.
+   * @return Either the block associated with the Pruefung ot the Pruefung itself.
+   * @throws NoPruefungsPeriodeDefinedException In case that no Pruefungsperiode is set.
+   */
   protected final Planungseinheit getSequentialBlockOrSelf(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     Optional<Block> block = dataAccessService.getBlockTo(pruefung);
@@ -61,6 +82,14 @@ public abstract class AtSameTimeRestriction extends SoftRestriction {
     return pruefung;
   }
 
+  /**
+   * Get all {@link Planungseinheit}en in a defined timespan.
+   *
+   * @param from The start of the timespan - inclusive.
+   * @param to   The end of the timespan - exclusive.
+   * @return All Planungseinheiten that happen to overlap the described timespan.
+   * @throws NoPruefungsPeriodeDefinedException In case that no Pruefungsperiode is set.
+   */
   @NotNull
   private Set<Planungseinheit> tryToGetAllPlanungseinheitenBetween(@NotNull LocalDateTime from,
       @NotNull LocalDateTime to) throws NoPruefungsPeriodeDefinedException {
@@ -72,9 +101,26 @@ public abstract class AtSameTimeRestriction extends SoftRestriction {
     }
   }
 
+  /**
+   * Remove {@link Planungseinheit}en that should be ignored while checking the restriction.
+   *
+   * @param planungseinheiten The planungseinheiten to filter from.
+   * @param toFilterFor       The Planungseinheit for which the restriction is beeing checked.
+   * @throws NoPruefungsPeriodeDefinedException In case that no Pruefungsperiode is set.
+   */
   protected abstract void ignorePruefungenOf(@NotNull Set<Planungseinheit> planungseinheiten,
       @NotNull Pruefung toFilterFor) throws NoPruefungsPeriodeDefinedException;
 
+  /**
+   * Get an {@link SoftRestrictionAnalysis} corresponding to this restriction in case it is
+   * violated.
+   *
+   * @param planungseinheitenOverlappingTheOneToCheck The Planungseinheiten that overlap the
+   *                                                  timespan in which the Pruefung the check is
+   *                                                  for is planned.
+   * @return Either an empty {@link Optional} in case the restriction is not violated or one
+   * containing an analysis describing the violation.
+   */
   @NotNull
   private Optional<SoftRestrictionAnalysis> getAnalyseIfRestrictionViolated(
       @NotNull Set<Planungseinheit> planungseinheitenOverlappingTheOneToCheck) {
@@ -90,8 +136,21 @@ public abstract class AtSameTimeRestriction extends SoftRestriction {
     return Optional.empty();
   }
 
+  /**
+   * Check whether a set of {@link Planungseinheit}en violates the restriction.
+   *
+   * @param planungseinheiten The planungseinheiten to check.
+   * @return True in case the Planungseinheiten violate the restriction, otherwise False.
+   */
   protected abstract boolean violatesRestriction(Collection<Planungseinheit> planungseinheiten);
 
+  /**
+   * Find which {@link Planungseinheit}en from a set are in conflict with each other in terms of
+   * this restriction.
+   *
+   * @param planungseinheiten The planungseinheiten to check for conflicts in.
+   * @return All Planungseinheiten in conflict with each other in terms of this restriction.
+   */
   @NotNull
   private Set<Planungseinheit> findConflictingPlanungseinheiten(
       @NotNull Set<Planungseinheit> planungseinheiten) {
@@ -116,15 +175,30 @@ public abstract class AtSameTimeRestriction extends SoftRestriction {
     return conflictingPlanungseinheiten;
   }
 
+  /**
+   * Build a new Analysis of the restriction violation considering certain {@link
+   * Planungseinheit}en.
+   *
+   * @param violatingPlanungseinheiten The planungseinheiten causing a violation of this
+   *                                   restriction.
+   * @return A new Analysis of the restriction violation.
+   */
   @NotNull
   private SoftRestrictionAnalysis buildAnalysis(
       @NotNull Set<Planungseinheit> violatingPlanungseinheiten) {
     return new SoftRestrictionAnalysis(getAllPruefungen(violatingPlanungseinheiten), this.kriterium,
         getAffectedTeilnehmerkreiseFrom(violatingPlanungseinheiten),
-        getAffectedStudentsFrom(violatingPlanungseinheiten),
+        getAmountOfAttendingStudents(violatingPlanungseinheiten),
         calcScoringFor(violatingPlanungseinheiten));
   }
 
+  /**
+   * Select all {@link Planungseinheit}en that cover a certain moment.
+   *
+   * @param time              The time covered be the desired Planungseinheiten.
+   * @param planungseinheiten The planungseinheiten to search through.
+   * @return All Planungseinheiten that cover a certain moment.
+   */
   @NotNull
   private Collection<Planungseinheit> selectAllPlanungseinheitenContaining(
       @NotNull LocalDateTime time, @NotNull Iterable<Planungseinheit> planungseinheiten) {
@@ -139,13 +213,32 @@ public abstract class AtSameTimeRestriction extends SoftRestriction {
     return result;
   }
 
+  /**
+   * Get all {@link Teilnehmerkreis}e involved in a set of {@link Planungseinheit}en.
+   *
+   * @param violatingPlanungseinheiten The Planungseinheiten to search through.
+   * @return All Teilnehmerkreise involved.
+   */
   @NotNull
   protected abstract Set<Teilnehmerkreis> getAffectedTeilnehmerkreiseFrom(
       Set<Planungseinheit> violatingPlanungseinheiten);
 
-  protected abstract int getAffectedStudentsFrom(
-      Collection<Planungseinheit> violatingPlanungseinheiten);
+  /**
+   * Get the amount of students attending certain {@link Planungseinheit}en.
+   *
+   * @param planungseinheiten The planungseinheiten tu count the attending students for.
+   * @return The amount of students attending the Planungseinheiten.
+   */
+  protected abstract int getAmountOfAttendingStudents(
+      Collection<Planungseinheit> planungseinheiten);
 
+  /**
+   * Calculate the scoring for a violation of this restriction based on involved {@link
+   * Planungseinheit}en.
+   *
+   * @param violatingPlanungseinheiten The planungseinheiten causing the violation.
+   * @return The scoring based on the causing Planungseinheiten.
+   */
   protected abstract int calcScoringFor(Collection<Planungseinheit> violatingPlanungseinheiten);
 
 }

@@ -74,9 +74,9 @@ public class AnzahlTeilnehmerGleichzeitigRestriction extends AtSameTimeRestricti
 
 
   @Override
-  protected int getAffectedStudentsFrom(Collection<Planungseinheit> violatingPlanungseinheiten) {
+  protected int getAmountOfAttendingStudents(Collection<Planungseinheit> planungseinheiten) {
     int amount = 0;
-    for (Planungseinheit planungseinheit : violatingPlanungseinheiten) {
+    for (Planungseinheit planungseinheit : planungseinheiten) {
       amount += planungseinheit.schaetzung();
     }
     return amount;
@@ -84,7 +84,7 @@ public class AnzahlTeilnehmerGleichzeitigRestriction extends AtSameTimeRestricti
 
   @Override
   protected int calcScoringFor(Collection<Planungseinheit> violatingPlanungseinheiten) {
-    int students = getAffectedStudentsFrom(violatingPlanungseinheiten);
+    int students = getAmountOfAttendingStudents(violatingPlanungseinheiten);
     return getScoringFactor(students) * this.kriterium.getWert();
   }
 
