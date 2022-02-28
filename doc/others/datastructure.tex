@@ -1,13 +1,13 @@
-\subsection{Datentypen}
+\subsection{Datentypen}\label{subsec:datentypen}
 Im Rahmen der Verarbeitung von Daten und zum Berechnen des Scorings, verwendet der Controller zwei unterschiedliche Datentypen.
-Intern zur Weitergabe der Daten wie z.B. in der Berechnung des Scorings, werden die definierten Datentypen des Models beansprucht.
-Die Objekte der Modelklassen sind nach dem Erstellen weiterhin veränderbar.
+Intern zur Weitergabe der Daten wie z.B.\ in der Berechnung des Scorings, werden die definierten Datentypen des Models beansprucht.
+Die Objekte der Model-Klassen sind nach dem Erstellen weiterhin veränderbar.
 Der Controller gibt nach Außen zur View nicht veränderbare DTO Objekte zurück.
 Die View hat zu keinem Zeitpunkt die Möglichkeit die Objekte des Models zu verändern.
 DTO Objekte können nach der Erstellung, von keinem Modul verändert werden.
 Somit wird gewährleistet,
 dass immer alle Operationen mit Nebenwirkungen über den Controller laufen müssen und so kann der Controller
-die Konsistenzbedingungen sicher stellen.
+die Konsistenzbedingungen sicherstellen.
 Ein weiterer Vorteil ist,
 dass bei Veränderungen einer Schnittstelle
 zwangsläufig die andere Schnittstelle auch verändert werden muss,
