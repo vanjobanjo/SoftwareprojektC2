@@ -8,38 +8,47 @@ import de.fhwedel.klausps.controller.restriction.Restriction;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
+import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
 /**
- * This abstract class is for the hard criteria.
- * Here are the standard methods for testing the hard criteria. n
+ * This class represents a general hard restriction. It contains some basic functionality necessary
+ * for any hard restriction.
  */
-
 public abstract class HardRestriction extends Restriction {
 
   /**
-   * this is to safe witch criterion is tested
+   * The criteria describing the specific type of restriction.
    */
   protected final HartesKriterium kriterium;
+
   /**
-   * to safe the DataAccessService for getting other Pruefungen
+   * The service to access the data layer.
    */
   protected DataAccessService dataAccessService;
 
   /**
-   * Super Konstruktor
+   * Create a HardRestriction.
    *
-   * @param dataAccessService der DataAccessService, der gespeichert wird
-   * @param kriterium         das Kriterium, welches getestet werden soll
+   * @param dataAccessService The service to access the data layer.
+   * @param kriterium         The criteria describing the specific type of restriction.
    */
   HardRestriction(DataAccessService dataAccessService, HartesKriterium kriterium) {
     this.kriterium = kriterium;
     this.dataAccessService = dataAccessService;
   }
 
+  /**
+   * Evaluate the restriction for a {@link Pruefung}.
+   *
+   * @param pruefung The pruefung to evaluate for.
+   * @return Either an empty optional if the restriction is not violated, otherwise an optional
+   * containing a corresponding analysis.
+   * @throws NoPruefungsPeriodeDefinedException In case no {@link Pruefungsperiode} is set.
+   */
   public Optional<HardRestrictionAnalysis> evaluate(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     if (!pruefung.isGeplant()) {
@@ -48,44 +57,43 @@ public abstract class HardRestriction extends Restriction {
     return evaluateRestriction(pruefung);
   }
 
-
   /**
-   * Diese Methode wertet zu der übergebenen Pruefung das HarteKriterium aus. Und gibt ein Optional
-   * von einer harten KriteriumsAnalyse zurück.
+   * Evaluates the restriction for a specific {@link Pruefung}.
    *
-   * @param pruefung die Pruefung die neu hinzugekommen ist, und mit der das HarteKriterium getestet
-   *                 werden soll
-   * @return ein Optional, welches entweder leer ist, wenn das HarteKriterium nicht zutrifft, oder
-   * eine HarteKriteriumsAnalyse, mit den Klausuren und Teilnehmerkreisen, welche gegen das
-   * Kriterium verstößt
+   * @param pruefung The Pruefung to check the restriction for.
+   * @return Either an empty optional if the restriction is not violated, otherwise an optional
+   * containing a corresponding analysis.
    */
   protected abstract Optional<HardRestrictionAnalysis> evaluateRestriction(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException;
 
   /**
-   * //TODO nochmal gucken, ob dieser Kommentar stimmt Methode, um alle Pruefungen, zu bekommen, an
-   * der die übergebene Planungseinheit, nicht stattfinden soll
+   * Get all {@link Planungseinheit}en that are in conflict with a handed {@link Pruefung}.
    *
-   * @param planungseinheitToCheckFor die Planungseinheit, welche zu testen ist, wo sie nicht
-   *                                  stattfinden darf
-   * @return ein Set von Pruefungen, wo die Planungseinheit nicht stattfinden darf
+   * @param planungseinheit The Planungseinheit to check for conflicts for.
+   * @return The Pruefungen in conflict with the handed one.
    */
   public abstract Set<Pruefung> getAllPotentialConflictingPruefungenWith(
-      Planungseinheit planungseinheitToCheckFor) throws NoPruefungsPeriodeDefinedException;
+      Planungseinheit planungseinheit) throws NoPruefungsPeriodeDefinedException;
 
   /**
-   * Methode, die testet, ob der übergebene Zeitpunkt und mit der Planungseinheit das HarteKriterium
-   * missachtet
+   * Test whether a {@link Planungseinheit} would cause a violation of the restriction if planned at
+   * a specific time.
    *
-   * @param startTime       der Zeitpunkt der mit der Planungseinheit getestet werden soll
-   * @param planungseinheit die Planungseinheit, für die getestet werden soll
-   * @return true, wenn die Planungseinheit, an den übergebenen Zeitpunkt stattfinden darf
-   * @throws NoPruefungsPeriodeDefinedException, wenn keine Pruefungsperiode definiert ist
+   * @param startTime       The time to check the Planungseinehit for.
+   * @param planungseinheit The Planungseinheit to check for.
+   * @return True in case the Planungseinheit would cause an exception at the specified time,
+   * otherwise False.
+   * @throws NoPruefungsPeriodeDefinedException In case no {@link Pruefungsperiode} is set.
    */
   public abstract boolean wouldBeHardConflictAt(LocalDateTime startTime,
       Planungseinheit planungseinheit)
       throws NoPruefungsPeriodeDefinedException;
 
+  @Override
+  public int hashCode() {
+    return Objects.hash(kriterium, dataAccessService);
+  }
 
   @Override
   public boolean equals(Object obj) {
@@ -93,8 +101,4 @@ public abstract class HardRestriction extends Restriction {
         && harteRestriktion.kriterium == this.kriterium;
   }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(kriterium, dataAccessService);
-  }
 }

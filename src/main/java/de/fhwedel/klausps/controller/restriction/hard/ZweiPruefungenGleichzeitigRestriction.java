@@ -248,13 +248,13 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
 
   @Override
   public Set<Pruefung> getAllPotentialConflictingPruefungenWith(
-      Planungseinheit planungseinheitToCheckFor) throws NoPruefungsPeriodeDefinedException {
+      Planungseinheit planungseinheit) throws NoPruefungsPeriodeDefinedException {
 
     Set<Pruefung> geplantePruefungen = new HashSet<>(dataAccessService.getPlannedPruefungen());
     geplantePruefungen.removeIf(
-        (Pruefung pruefung) -> notSameTeilnehmerkreis(pruefung, planungseinheitToCheckFor));
+        (Pruefung pruefung) -> notSameTeilnehmerkreis(pruefung, planungseinheit));
     LOGGER.trace("Found {} conflicting with {} because of common Teilnehmerkreise.",
-        geplantePruefungen, planungseinheitToCheckFor);
+        geplantePruefungen, planungseinheit);
     return geplantePruefungen;
   }
 
