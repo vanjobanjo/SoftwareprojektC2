@@ -29,12 +29,12 @@ public abstract class SoftRestriction extends Restriction {
   private static final Logger LOGGER = LoggerFactory.getLogger(SoftRestriction.class);
 
   /**
-   * the DataAccessService to communicate with the underlying data model
+   * The DataAccessService to communicate with the underlying data model
    */
   protected final DataAccessService dataAccessService;
 
   /**
-   * the criteria of the specific restriction, needed for the analysis
+   * The criteria of the specific restriction, needed for the analysis
    */
   protected final WeichesKriterium kriterium;
 
@@ -49,17 +49,6 @@ public abstract class SoftRestriction extends Restriction {
     this.dataAccessService = dataAccessService;
     this.kriterium = kriterium;
   }
-
-  /**
-   * Evaluates for a {@link Pruefung} in which way it violates a restriction.
-   *
-   * @param pruefung The pruefung for which to check for violations of a restriction.
-   * @return Either an {@link Optional} containing a {@link KriteriumsAnalyse} for the violated
-   * restriction, or an empty Optional in case the Restriction was not violated.
-   */
-  protected abstract Optional<SoftRestrictionAnalysis> evaluateRestriction(Pruefung pruefung)
-      throws NoPruefungsPeriodeDefinedException;
-
 
   /**
    * Evaluates for a {@link Pruefung} in which way it violates a restriction.<br> Entry Point for
@@ -79,6 +68,16 @@ public abstract class SoftRestriction extends Restriction {
     }
     return evaluateRestriction(pruefung);
   }
+
+  /**
+   * Evaluates for a {@link Pruefung} in which way it violates a restriction.
+   *
+   * @param pruefung The pruefung for which to check for violations of a restriction.
+   * @return Either an {@link Optional} containing a {@link KriteriumsAnalyse} for the violated
+   * restriction, or an empty Optional in case the Restriction was not violated.
+   */
+  protected abstract Optional<SoftRestrictionAnalysis> evaluateRestriction(Pruefung pruefung)
+      throws NoPruefungsPeriodeDefinedException;
 
   /**
    * Template method for building a SoftRestrictionAnalysis. The approach for the calculation of
@@ -103,6 +102,28 @@ public abstract class SoftRestriction extends Restriction {
   }
 
   /**
+   * default approach <br> collects all relevant Teilnehmerkreisschätzungen <br>
+   *
+   * @param pruefung for which the restriction gets tested
+   * @param affected an affected pruefung
+   * @return the relevant Teilnehmerkreisschätzungen
+   */
+  protected Map<Teilnehmerkreis, Integer> getRelevantSchaetzungen(@Nullable Pruefung pruefung,
+      Pruefung affected) {
+    return affected.getSchaetzungen();
+  }
+
+  /**
+   * default approach to calculate the scoring for a restriction violation
+   *
+   * @param affectedPruefungen pruefungen that violate restriction
+   * @return the scoring
+   */
+  protected int addDeltaScoring(Set<Pruefung> affectedPruefungen) {
+    return affectedPruefungen.size() * this.kriterium.getWert();
+  }
+
+  /**
    * calculates the amount of affected students
    *
    * @param affectedTeilnehmerkreise the Teilnehmerkreise involved
@@ -116,38 +137,14 @@ public abstract class SoftRestriction extends Restriction {
     return result;
   }
 
-  /**
-   * default approach to calculate the scoring for a restriction violation
-   *
-   * @param affectedPruefungen pruefungen that violate restriction
-   * @return the scoring
-   */
-  protected int addDeltaScoring(Set<Pruefung> affectedPruefungen) {
-    return affectedPruefungen.size() * this.kriterium.getWert();
+  @Override
+  public int hashCode() {
+    return Objects.hash(dataAccessService, kriterium);
   }
-
-
-  /**
-   * default approach <br> collects all relevant Teilnehmerkreisschätzungen <br>
-   *
-   * @param pruefung for which the restriction gets tested
-   * @param affected an affected pruefung
-   * @return the relevant Teilnehmerkreisschätzungen
-   */
-  protected Map<Teilnehmerkreis, Integer> getRelevantSchaetzungen(@Nullable Pruefung pruefung,
-      Pruefung affected) {
-    return affected.getSchaetzungen();
-  }
-
 
   @Override
   public boolean equals(Object obj) {
     return (obj instanceof SoftRestriction weicheRestriktion)
         && weicheRestriktion.kriterium == this.kriterium;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(dataAccessService, kriterium);
   }
 }
