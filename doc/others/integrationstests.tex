@@ -1,0 +1,31 @@
+\subsection{Integrationstests}\label{subsec:integrationstests}
+Um das korrekte Zusammenwirken aller Komponenten und ein Einhalten der,
+durch das Controller-Interface definierten, Zusagen an Nutzer des Moduls sicherzustellen,
+existiert eine Reihe von Integrationstests.
+
+Bei der Umsetzung dieser Integrationstests wird ein besonderer Fokus auf eine intuitive
+Nachvollziehbarkeit der Funktionen gesetzt indem das Framework \enquote{Cucumber} eingesetzt wird.
+Cucumber bietet die Möglichkeit Tests im BDD (Behaviour Driven Development) Stil zu erstellen und
+damit eine so genannte \enquote{specification by example} zu bieten.
+Dies äußert sich konkret an der Nutzung der Sprache \enquote{Gherkin}, welche sich dadurch auszeichnet
+programmatische Logik hinter ausdrucksstarken, natürlichen Sätze zu abstrahieren.
+Das bedeutet, dass ein Testfall zunächst in einfachen Sätzen, welche nicht nur für Programmierer,
+sondern auch für Domänenexperten verständlich sind erstellt wird und im Hintergrund zu den
+jeweiligen Sätzen eine Implementierung in Form von Code folgt.
+
+Dabei wird mit dem BDD typischen muster \enquote{Given, When, Then} (zu deutsch: \enquote{Angenommen, Wenn, Dann})
+gearbeitet.
+Der Punkt \enquote{Angenommen} bildet dabei den ersten Schritt, er beschreibt den Zustand in dem sich
+das zu testende System befindet, bevor das gewünschte Verhalten getestet wird.
+Darauf folgt der \enquote{Wenn} Teil, darin wird die Aktion beschrieben, welche Gegenstand des Tests ist.
+Abschließend folgt der \enquote{Dann} Teil, dieser beschreibt das Resultat, welches nach der zuvor beschriebenen
+Aktion im beschriebenen Zustand erwartet wird.
+
+Der Zusammenschluss dieser Schritte beschreibt also ein Testszenario, ein Beispiel dafür, wie sich
+das System verhalten Soll.
+Mehrere dieser Szenarien werden wiederum zu Funktionalitäten zusammengeschlossen und in einer
+gemeinsamen Datei abgelegt, welche eine \enquote{.feature} Endung aufweist.
+
+Der dahinter liegende Code (so genannte Schritt-Definitionen) wird in dedizierten Java Klassen,
+nach Funktionalität gruppiert, abgelegt und eine Vebindung zwischen den Dateien über
+framework speziefische Annotationen in den Schritt-Definitionen realisiert.
