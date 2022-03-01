@@ -227,9 +227,15 @@ public class ScheduleService {
     for (Pruefung p : modelBlock.getPruefungen()) {
       list.addAll(restrictionService.checkHarteKriterien(p));
     }
+
     Optional<LocalDateTime> termin = roBlock.getTermin();
-    if (!list.isEmpty() && termin.isPresent()) {
-      dataAccessService.scheduleBlock(roBlock, termin.get());
+    Block blockOfPruefung = dataAccessService.getBlock(roBlock);
+    if (!list.isEmpty() && blockOfPruefung.isGeplant()) {
+      if (termin.isPresent()) {
+        dataAccessService.scheduleBlock(roBlock, termin.get());
+      } else {
+        dataAccessService.unscheduleBlock(roBlock);
+      }
       throw converter.convertHardException(list);
     }
   }

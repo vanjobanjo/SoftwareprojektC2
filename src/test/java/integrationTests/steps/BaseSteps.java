@@ -8,7 +8,6 @@ import de.fhwedel.klausps.controller.Controller;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
-import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
@@ -16,8 +15,9 @@ import de.fhwedel.klausps.model.api.Ausbildungsgrad;
 import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.SemesterImpl;
+import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
 import integrationTests.state.State;
-import io.cucumber.java.de.Angenommen;
+import io.cucumber.java.ParameterType;
 import java.lang.reflect.Field;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -26,7 +26,6 @@ import java.time.LocalTime;
 import java.time.Year;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -55,20 +54,8 @@ public class BaseSteps {
     state.controller.createEmptyPeriode(semester, start, end, ankertag, 400);
   }
 
-  protected LocalDate parseDate(String dateTxt) {
-    String[] tmp = dateTxt.split("\\.");
-    int day = Integer.parseInt(tmp[0]);
-    int month = Integer.parseInt(tmp[1]);
-    int year = Integer.parseInt(tmp[2]);
-    return LocalDate.of(year, month, day);
-  }
 
-  protected LocalTime parseTime(String timeTxt) {
-    String[] tmp = timeTxt.split(":");
-    int hours = Integer.parseInt(tmp[0]);
-    int minutes = Integer.parseInt(tmp[1]);
-    return LocalTime.of(hours, minutes);
-  }
+
 
   protected void putExceptionInResult(Exception exception) {
     state.results.put(EXCEPTION, exception);
@@ -185,20 +172,20 @@ public class BaseSteps {
    * @throws NoPruefungsPeriodeDefinedException In case there is no Pruefungsperiode.
    */
   protected ReadOnlyPruefung getOrCreate(String pruefungName, String teilnehmerkreisString,
-      int semster, String ausbildunggrade,  int count)
+      int semster, String ausbildunggrade, int count)
       throws NoPruefungsPeriodeDefinedException {
     ReadOnlyPruefung pruefung;
     if (existsPruefungWith(pruefungName)) {
       pruefung = getPruefungFromModel(pruefungName);
     } else {
       Map<Teilnehmerkreis, Integer> teilnehmerMap = new HashMap<>();
-      Ausbildungsgrad aG  = Ausbildungsgrad.BACHELOR;
+      Ausbildungsgrad aG = Ausbildungsgrad.BACHELOR;
       try {
-        aG=  Ausbildungsgrad.valueOf(ausbildunggrade);
-      }catch(IllegalArgumentException ignored){
+        aG = Ausbildungsgrad.valueOf(ausbildunggrade);
+      } catch (IllegalArgumentException ignored) {
       }
       Teilnehmerkreis teilnehmerkreis = state.controller.createTeilnehmerkreis(
-         aG, teilnehmerkreisString, teilnehmerkreisString, semster);
+          aG, teilnehmerkreisString, teilnehmerkreisString, semster);
       teilnehmerMap.put(teilnehmerkreis, count);
       pruefung = state.controller.createPruefung(pruefungName, pruefungName,
           pruefungName, emptySet(), Duration.ofHours(1), teilnehmerMap);
@@ -213,19 +200,19 @@ public class BaseSteps {
    * @param pruefungName          The name of the requested pruefung.
    * @param teilnehmerkreisString name of the Teilnehmerkreises
    * @param semster               witch semster the Teilnehmerkreis is
-   * @param duration                 the duration in Minutes for the pruefung.
+   * @param duration              the duration in Minutes for the pruefung.
    * @return The requested pruefung.
    * @throws NoPruefungsPeriodeDefinedException In case there is no Pruefungsperiode.
    */
   protected ReadOnlyPruefung getOrCreate(String pruefungName, String teilnehmerkreisString,
-      int semster,  int duration)
+      int semster, int duration)
       throws NoPruefungsPeriodeDefinedException {
     ReadOnlyPruefung pruefung;
     if (existsPruefungWith(pruefungName)) {
       pruefung = getPruefungFromModel(pruefungName);
     } else {
       Map<Teilnehmerkreis, Integer> teilnehmerMap = new HashMap<>();
-      Ausbildungsgrad aG  = Ausbildungsgrad.BACHELOR;
+      Ausbildungsgrad aG = Ausbildungsgrad.BACHELOR;
 
       Teilnehmerkreis teilnehmerkreis = state.controller.createTeilnehmerkreis(
           aG, teilnehmerkreisString, teilnehmerkreisString, semster);
@@ -276,5 +263,10 @@ public class BaseSteps {
     }
 
     state.controller = new Controller();
+  }
+
+  protected Teilnehmerkreis createTeilnehmerkreis(String teilnehmerkreisName) {
+    return new TeilnehmerkreisImpl(teilnehmerkreisName, teilnehmerkreisName, 1,
+        Ausbildungsgrad.BACHELOR);
   }
 }

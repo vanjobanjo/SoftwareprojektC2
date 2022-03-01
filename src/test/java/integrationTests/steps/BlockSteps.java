@@ -1,5 +1,8 @@
 package integrationTests.steps;
 
+import static integrationTests.DataTypes.parseDate;
+import static integrationTests.DataTypes.parseTime;
+
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;

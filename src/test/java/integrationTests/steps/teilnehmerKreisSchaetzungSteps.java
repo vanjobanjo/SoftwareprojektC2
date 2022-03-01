@@ -126,10 +126,7 @@ public class teilnehmerKreisSchaetzungSteps extends BaseSteps {
     state.results.put("planungseinheiten", results);
   }
 
-  private Teilnehmerkreis createTeilnehmerkreis(String teilnehmerkreisName) {
-    return new TeilnehmerkreisImpl(teilnehmerkreisName, teilnehmerkreisName, 1,
-        Ausbildungsgrad.BACHELOR);
-  }
+
 
   private String getRandomString(Random random, int length) {
     int leftLimit = 48; // numeral '0'
@@ -188,8 +185,7 @@ public class teilnehmerKreisSchaetzungSteps extends BaseSteps {
     Teilnehmerkreis teilnehmerkreis = createTeilnehmerkreis(teilnehmerkreisName);
     ReadOnlyPruefung pruefung = getPruefungFromModel(pruefungName);
     assertThat(pruefung.getTeilnehmerkreise()).contains(teilnehmerkreis);
-    assertThat(pruefung.getTeilnehmerKreisSchaetzung().get(teilnehmerkreis)).isEqualTo(
-        amountStudenten);
+    assertThat(pruefung.getTeilnehmerKreisSchaetzung()).containsEntry(teilnehmerkreis, amountStudenten);
   }
 
   @Wenn("ich den Teilnehmerkreis {string} zu einer unbekannten Pruefung {string} hinzufuege")

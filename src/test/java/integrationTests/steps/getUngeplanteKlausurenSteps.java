@@ -1,6 +1,8 @@
 package integrationTests.steps;
 
 import static de.fhwedel.klausps.model.api.Semestertyp.WINTERSEMESTER;
+import static integrationTests.DataTypes.parseDate;
+import static integrationTests.DataTypes.parseTime;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;

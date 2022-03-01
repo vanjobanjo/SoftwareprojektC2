@@ -1,5 +1,7 @@
 package integrationTests.steps;
 
+import static integrationTests.DataTypes.parseDate;
+import static integrationTests.DataTypes.parseTime;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -64,7 +66,7 @@ public class getAllKlausurenFromPrueferSteps extends BaseSteps {
     }
 
     if (state.results.get("pruefungen") instanceof Set<?> result) {
-      assertThat((result).size()).isEqualTo(pruefungsNums.size());
+      assertThat(result).hasSameSizeAs(pruefungsNums);
       for (ReadOnlyPruefung pruefung : (Set<ReadOnlyPruefung>) result) {
         assertThat(pruefungsNums).contains(Integer.valueOf(pruefung.getPruefungsnummer()));
       }

@@ -13,7 +13,7 @@ import de.fhwedel.klausps.model.api.Semester;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.SemesterImpl;
 import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
-import integrationTests.state.State;
+import integrationTests.DataTypes;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.ParameterType;
 import io.cucumber.java.de.Angenommen;
@@ -26,24 +26,27 @@ import java.util.List;
 
 public class setTerminSteps extends BaseSteps {
 
+
   /**
-   * Wandelt ein String in Format dd.mm.yyyy in eine LocalDateTime mit der Uhrzeit 09:00
+   * Wandelt ein String in Format dd.mm.yyyy um hh:mm Uhr in eine LocalDateTime mit der Uhrzeit
+   * 09:00
    *
-   * @param datum das Datum fuer die neue LocalDateTime
+   * @param dateAndTime das Datum und Zeit fuer die neue LocalDateTime
    * @return den String als LocalDateTime
    */
-  @ParameterType("(\\d\\d\\.\\d\\d\\.\\d\\d\\d\\d)?")
-  public LocalDateTime localDateTime(String datum) {
+  @ParameterType("(\\d\\d\\.\\d\\d\\.\\d\\d\\d\\d( um \\d\\d:\\d\\d Uhr)?)?")
+  public static LocalDateTime localDateTime(String dateAndTime) {
+    DataTypes dataTypes = new DataTypes();
 
-    if (datum != null) {
-      String[] split = datum.split("\\.");
-
-      String str = split[2] + "-" + split[1] + "-" + split[0] + "T09:00:00";
-      return LocalDateTime.parse(str);
-    } else {
-      return null;
-    }
+    return dataTypes.parseLocalDateTime(dateAndTime);
   }
+
+
+/*  private LocalDate parseDate(String datum) {
+    String[] split = datum.split("\\.");
+    String str = split[2] + "-" + split[1] + "-" + split[0];
+    return LocalDate.parse(str);
+  }*/
 
   @Angenommen("die Pruefung {string} hat den Termin {localDateTime} und die Pruefungsperiode von {localDateTime} - {localDateTime} und es gibt noch keine Pruefungen")
   public void pruefungHatTerminAberKeineAnderePruefungVorhanden(String pruefung,

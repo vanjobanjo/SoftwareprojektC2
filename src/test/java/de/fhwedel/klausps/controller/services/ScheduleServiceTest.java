@@ -36,6 +36,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import de.fhwedel.klausps.controller.Controller;
 import de.fhwedel.klausps.controller.analysis.HardRestrictionAnalysis;
 import de.fhwedel.klausps.controller.analysis.SoftRestrictionAnalysis;
 import de.fhwedel.klausps.controller.api.BlockDTO;
@@ -55,6 +56,7 @@ import de.fhwedel.klausps.model.api.Blocktyp;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
 import de.fhwedel.klausps.model.api.Semester;
+import de.fhwedel.klausps.model.api.Semestertyp;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.api.importer.ImportException;
 import de.fhwedel.klausps.model.impl.BlockImpl;
@@ -805,7 +807,7 @@ class ScheduleServiceTest {
 
   }
 
-@Test
+  @Test
   void removePruefungFromBlock_BlockDoesNotExist()
       throws NoPruefungsPeriodeDefinedException {
     Pruefung haskell = getPruefungOfReadOnlyPruefung(RO_HASKELL_UNPLANNED);
@@ -814,7 +816,6 @@ class ScheduleServiceTest {
     when(dataAccessService.getBlock(roBlock)).thenThrow(IllegalStateException.class);
     when(dataAccessService.getPruefung(RO_HASKELL_UNPLANNED)).thenReturn(haskell);
     when(dataAccessService.getBlockTo(haskell)).thenReturn(Optional.empty());
-
 
     assertThrows(IllegalStateException.class, () -> deviceUnderTest.removePruefungFromBlock(roBlock,
         RO_HASKELL_UNPLANNED));
@@ -950,8 +951,7 @@ class ScheduleServiceTest {
     when(restrictionService.checkWeicheKriterien(dm)).thenReturn(List.of(softRestrictionAnalysis));
 
     List<KriteriumsAnalyse> result = deviceUnderTest.analyseScoring(RO_DM_UNPLANNED);
-    assertThat(result).isNotEmpty();
-    assertThat(result.size()).isEqualTo(1);
+    assertThat(result).isNotEmpty().hasSize(1);
     assertThat(result.get(0)).isNotNull();
     KriteriumsAnalyse resultAnalyse = result.get(0);
     assertThat(resultAnalyse.getBetroffenePruefungen()).containsOnly(RO_ANALYSIS_UNPLANNED);
@@ -963,7 +963,8 @@ class ScheduleServiceTest {
   @Test
   void analyseScoring_pruefungDoesNotExist() throws NoPruefungsPeriodeDefinedException {
     when(dataAccessService.getPruefung(any())).thenThrow(IllegalStateException.class);
-    assertThrows(IllegalStateException.class, () -> deviceUnderTest.analyseScoring(RO_ANALYSIS_UNPLANNED));
+    assertThrows(IllegalStateException.class,
+        () -> deviceUnderTest.analyseScoring(RO_ANALYSIS_UNPLANNED));
   }
 
   @Test
@@ -1376,6 +1377,7 @@ class ScheduleServiceTest {
         () -> deviceUnderTest.createNewPeriodeWithData(ioService, semester, start, end, ankerTag,
             kapazitaet, path, path2));
   }
+
   @Test
   void createNewPeriodeWithDataTest_ankertagMustBeAfterStart()
       throws NoPruefungsPeriodeDefinedException {
@@ -1405,6 +1407,7 @@ class ScheduleServiceTest {
         () -> deviceUnderTest.createNewPeriodeWithData(ioService, semester, start, end, ankerTag,
             kapazitaet, path, path2));
   }
+
   @Test
   void createNewPeriodeWithDataTest_ankertagMustBeforeEnd()
       throws NoPruefungsPeriodeDefinedException {
@@ -1742,5 +1745,111 @@ class ScheduleServiceTest {
         () -> deviceUnderTest.setDatumPeriode(start, end));
   }
 
+  @Test
+  void scheduleBlockWithOnePruefungAtSameTime() {
+    // test hard restriction because of integration test fail (this test is really an integration test)
+
+    // controller preparation
+    Semester semester = new SemesterImpl(Semestertyp.WINTERSEMESTER, Year.of(2022));
+    LocalDate start = LocalDate.of(2022, 1, 1);
+    LocalDate end = LocalDate.of(2022, 4, 1);
+    LocalDate anker = LocalDate.of(2022, 2, 1);
+    Pruefungsperiode pruefungsperiode = new PruefungsperiodeImpl(semester, start, end, anker, 400);
+    dataAccessService = ServiceProvider.getDataAccessService();
+    dataAccessService.setPruefungsperiode(pruefungsperiode);
+    RestrictionService restrictionService = new RestrictionService();
+    Converter converter = new Converter();
+    ScheduleService scheduleService = new ScheduleService(dataAccessService, restrictionService,
+        converter);
+    converter.setScheduleService(scheduleService);
+    IOService ioService = new IOService(dataAccessService);
+
+    Controller controller = new Controller(dataAccessService, ioService, scheduleService,
+        converter);
+
+    // test preparation
+    String pruefungString = "pruefung";
+    String pruefung2String = "pruefung2";
+    String blockString = "block";
+    TeilnehmerkreisImpl t1 = new TeilnehmerkreisImpl("test", "test", 1, Ausbildungsgrad.BACHELOR);
+    TeilnehmerkreisImpl t2 = new TeilnehmerkreisImpl("test", "test", 1, Ausbildungsgrad.BACHELOR);
+    ReadOnlyBlock block;
+    try {
+      // scheduled pruefung
+      ReadOnlyPruefung scheduledPruefung = controller.createPruefung(pruefungString, pruefungString,
+          pruefungString,
+          emptySet(), Duration.ofMinutes(90), Map.of(t1, 3));
+      controller.schedulePruefung(scheduledPruefung, LocalDateTime.of(2022, 3, 20, 8, 0));
+
+      // not scheduled pruefung
+      ReadOnlyPruefung notScheduledPruefung = controller.createPruefung(pruefung2String,
+          pruefung2String, pruefung2String, emptySet(), Duration.ofMinutes(90), Map.of(t2, 10));
+
+      // create Block
+      block = controller.createBlock(blockString, PARALLEL, notScheduledPruefung);
+
+    } catch (NoPruefungsPeriodeDefinedException e) {
+      throw new AssertionError("keine Pruefungsperiode");
+
+    } catch (HartesKriteriumException f) {
+      throw new AssertionError("hard criteria");
+    }
+
+    // test restriction
+    assertThat(block).isNotNull();
+
+    assertThrows(HartesKriteriumException.class,
+        () -> controller.scheduleBlock(block, LocalDateTime.of(2022, 3, 20, 8, 0)));
+
+  }
+
+  @Test
+  void schedulePruefungWithOnePruefungAtSameTime() {
+    // test hard restriction because of integration test fail (this test is really an integration test)
+    Semester semester = new SemesterImpl(Semestertyp.WINTERSEMESTER, Year.of(2022));
+    LocalDate start = LocalDate.of(2022, 1, 1);
+    LocalDate end = LocalDate.of(2022, 4, 1);
+    LocalDate anker = LocalDate.of(2022, 2, 1);
+    Pruefungsperiode pruefungsperiode = new PruefungsperiodeImpl(semester, start, end, anker, 400);
+    dataAccessService = ServiceProvider.getDataAccessService();
+    dataAccessService.setPruefungsperiode(pruefungsperiode);
+    RestrictionService restrictionService = new RestrictionService();
+    Converter converter = new Converter();
+    ScheduleService scheduleService = new ScheduleService(dataAccessService, restrictionService,
+        converter);
+    converter.setScheduleService(scheduleService);
+    IOService ioService = new IOService(dataAccessService);
+
+    Controller controller = new Controller(dataAccessService, ioService, scheduleService,
+        converter);
+    String pruefungString = "pruefung";
+    String pruefung2String = "pruefung2";
+
+    TeilnehmerkreisImpl t1 = new TeilnehmerkreisImpl("test", "test", 1, Ausbildungsgrad.BACHELOR);
+    TeilnehmerkreisImpl t2 = new TeilnehmerkreisImpl("test", "test", 1, Ausbildungsgrad.BACHELOR);
+    ReadOnlyPruefung pruefungToTest;
+    try {
+      ReadOnlyPruefung scheduledPruefung = controller.createPruefung(pruefungString, pruefungString,
+          pruefungString,
+          emptySet(), Duration.ofMinutes(90), Map.of(t1, 3));
+      controller.schedulePruefung(scheduledPruefung, LocalDateTime.of(2022, 3, 20, 8, 0));
+
+      pruefungToTest = controller.createPruefung(pruefung2String,
+          pruefung2String, pruefung2String, emptySet(), Duration.ofMinutes(90), Map.of(t2, 10));
+
+
+    } catch (NoPruefungsPeriodeDefinedException e) {
+      throw new AssertionError("keine Pruefungsperiode");
+
+    } catch (HartesKriteriumException f) {
+      throw new AssertionError("hard criteria");
+    }
+
+    assertThat(pruefungToTest).isNotNull();
+
+    assertThrows(HartesKriteriumException.class,
+        () -> controller.schedulePruefung(pruefungToTest, LocalDateTime.of(2022, 3, 20, 8, 0)));
+
+  }
 
 }
