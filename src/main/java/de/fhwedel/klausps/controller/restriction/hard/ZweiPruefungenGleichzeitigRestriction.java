@@ -253,6 +253,9 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
     Set<Pruefung> geplantePruefungen = new HashSet<>(dataAccessService.getPlannedPruefungen());
     geplantePruefungen.removeIf(
         (Pruefung pruefung) -> notSameTeilnehmerkreis(pruefung, planungseinheit));
+    if (!planungseinheit.isBlock()) {
+      geplantePruefungen.remove(planungseinheit.asPruefung());
+    }
     LOGGER.trace("Found {} conflicting with {} because of common Teilnehmerkreise.",
         geplantePruefungen, planungseinheit);
     return geplantePruefungen;

@@ -11,6 +11,7 @@ import de.fhwedel.klausps.model.api.Blocktyp;
 import io.cucumber.java.de.Dann;
 import io.cucumber.java.de.Wenn;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -30,7 +31,8 @@ public class deleteBlockSteps extends BaseSteps {
 
   @Dann("erhalte ich keine Pruefungen")
   public void erhalteIchKeinePruefungen() {
-    List<ReadOnlyPruefung> pruefungen = (List<ReadOnlyPruefung>) state.results.get("pruefungen");
+    Collection<ReadOnlyPruefung> pruefungen = (Collection<ReadOnlyPruefung>) state.results.get(
+        "pruefungen");
     assertThat(pruefungen).isEmpty();
   }
 

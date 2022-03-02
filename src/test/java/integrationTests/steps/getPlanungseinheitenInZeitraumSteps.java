@@ -64,7 +64,7 @@ public class getPlanungseinheitenInZeitraumSteps extends BaseSteps {
     assertThat((Set<ReadOnlyPlanungseinheit>) state.results.get("planungseinheiten")).isEmpty();
   }
 
-  @Dann("erhalte ich die Pruefungen {string}")
+  @Dann("erhalte ich die Planungseinheiten {string}")
   public void erhalteIchDiePruefungen(String pruefungen) {
     List<String> splitPruefungen = List.of(pruefungen.split(", "));
     assertThat(getExceptionFromResult()).isNull();
@@ -76,6 +76,20 @@ public class getPlanungseinheitenInZeitraumSteps extends BaseSteps {
         assertThat(splitPruefungen).contains(plan.asPruefung().getName());
       }
       assertThat(result.size()).isEqualTo(splitPruefungen.size());
+    }
+  }
+
+  @Dann("erhalte ich die Pruefungen {stringList}")
+  public void erhalteIchDiePruefungen(List<String> pruefungen) {
+    assertThat(getExceptionFromResult()).isNull();
+    assertThat(state.results.get("pruefungen")).isNotNull();
+
+    if (state.results.get("pruefungen") instanceof Set<?> result) {
+      for (ReadOnlyPlanungseinheit plan : (Set<ReadOnlyPlanungseinheit>) result) {
+        assertThat(plan.isBlock()).isFalse();
+        assertThat(pruefungen).contains(plan.asPruefung().getName());
+      }
+      assertThat(result.size()).isEqualTo(pruefungen.size());
     }
   }
 }

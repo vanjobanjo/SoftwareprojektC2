@@ -11,7 +11,7 @@ Funktionalität: Als Planender moechte ich bei einer Pruefung einen Pruefer hinz
     Angenommen es existiert eine Pruefungsperiode
     Angenommen die Pruefung "Informationstechnik" hat "Prof. Dr. Dennis Saering" als Pruefer
     Wenn ich der Pruefung "Informationstechnik" den Pruefer "Birger Wolter" hinzufuege
-    Dann hat die Pruefung "Informationstechnik" die Pruefer Prof. Dr. Dennis Saering, Birger Wolter
+    Dann hat die Pruefung "Informationstechnik" die Pruefer "Prof. Dr. Dennis Saering", "Birger Wolter"
 
   Szenario: Eine Pruefung hat schon einen Pruefer und ich probiere den gleichen Pruefer hinzu zufuegen.
     Angenommen es existiert eine Pruefungsperiode

@@ -43,7 +43,7 @@ Szenario: Ich frage einen Zeitraum ab, der die Pruefungsperiode einschliesst
       | Block   | Datum      | StartZeit | Pruefungen  |
       | block 1 | 09.03.2022 | 08:30     | Datascience |
     Wenn ich alle Planungseinheiten im Zeitraum 15.01.2022 - 01.03.2022 anfrage
-    Dann erhalte ich die Pruefungen "DM, AuD"
+    Dann erhalte ich die Planungseinheiten "DM, AuD"
 
 
   Szenario: Ich frage einen Zeitraum vor der Pruefungsperiode ab

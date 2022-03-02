@@ -10,6 +10,7 @@ import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedExcepti
 import io.cucumber.java.de.Dann;
 import io.cucumber.java.de.Wenn;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -36,11 +37,11 @@ public class unschedulePruefung extends BaseSteps {
 
   @Dann("enthaelt das Ergebnis als einzige Pruefungen {stringList}")
   public void enthaeltDasErgebnisDiePruefungenAnalysisBWL(List<String> pruefungNames) {
-    List<ReadOnlyPlanungseinheit> actual = (List<ReadOnlyPlanungseinheit>) state.results.get(
+    Collection<ReadOnlyPlanungseinheit> actual = (Collection<ReadOnlyPlanungseinheit>) state.results.get(
         "pruefungen");
     List<ReadOnlyPruefung> pruefungen =
         actual.stream().filter(x -> !x.isBlock()).map(ReadOnlyPlanungseinheit::asPruefung).toList();
-    assertThat(pruefungen).hasSize(2);
+    assertThat(pruefungen).hasSize(pruefungNames.size());
     assertThat(pruefungen).allMatch((pruefung) -> pruefungNames.contains(pruefung.getName()));
   }
 

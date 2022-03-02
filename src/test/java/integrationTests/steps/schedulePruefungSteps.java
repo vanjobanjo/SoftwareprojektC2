@@ -44,9 +44,7 @@ public class schedulePruefungSteps extends BaseSteps {
   @Und("es existiert die ungeplante Pruefung {string} mit dem Teilnehmerkreis {string} im {int} Semester")
   public void esExistiertDieUngeplantePruefungMitDemTeilnehmerkreis(String pruefung,
       String teilnehmerkreis, int semester) throws NoPruefungsPeriodeDefinedException {
-
     getOrCreate(pruefung, teilnehmerkreis, semester);
-
   }
 
   @Und("es existiert die geplante Pruefung {string} mit dem Teilnehmerkreis {string} im {int} Semester am {localDateTime}")

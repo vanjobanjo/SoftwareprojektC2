@@ -30,7 +30,7 @@ Funktionalität: Als Planender moechte ich eine Pruefung ausplanen koennen.
     Und es existiert die geplante Pruefung "Analysis" mit dem Teilnehmerkreis "bwl" im 1 Semester am 14.02.2022
     Und es existiert die geplante Pruefung "BWL" mit dem Teilnehmerkreis "bwl" im 1 Semester am 15.02.2022
     Wenn ich die Pruefung "Analysis" ausplanen moechte
-    Dann enthaelt das Ergebnis als einzige Pruefungen Analysis, BWL
+    Dann enthaelt das Ergebnis als einzige Pruefungen "Analysis", "BWL"
 
   Szenario: Eine beeinflusste Pruefung ist im Ergebnis enthalten
     Angenommen es existiert eine Pruefungsperiode
@@ -38,7 +38,7 @@ Funktionalität: Als Planender moechte ich eine Pruefung ausplanen koennen.
     Und es existiert der geplante Block "B1" mit der Pruefung "BWL" direkt nach "Analysis"
     Und die Pruefung "BWL" hat einen Teilnehmerkreis "bwl" mit 10 Studenten
     Wenn ich die Pruefung "Analysis" ausplanen moechte
-    Dann enthaelt das Ergebnis als einzige Pruefungen Analysis, BWL
+    Dann enthaelt das Ergebnis als einzige Pruefungen "Analysis", "BWL"
 
   Szenario: Der Block einer beeinflussten Pruefung ist im Ergebnis enthalten
     Angenommen es existiert eine Pruefungsperiode
