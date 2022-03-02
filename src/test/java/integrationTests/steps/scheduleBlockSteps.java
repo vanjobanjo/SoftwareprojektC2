@@ -170,7 +170,7 @@ public class scheduleBlockSteps extends BaseSteps {
   @Und("es existiert ein geplanter Block {string} mit der Pruefung {string} und dem Teilnehmerkreis {string} am {localDateTime}")
   public void esExistiertEinGeplanterBlockMitDerPruefungUndDemTeilnehmerkreisAmUmUhr(
       String blockName,
-      String pruefungName, String teilnehmerkreis,  LocalDateTime localDateTime) {
+      String pruefungName, String teilnehmerkreis, LocalDateTime localDateTime) {
     try {
       Teilnehmerkreis tk = createTeilnehmerkreis(teilnehmerkreis);
       ReadOnlyPruefung pruefung = state.controller.createPruefung(pruefungName, pruefungName,
