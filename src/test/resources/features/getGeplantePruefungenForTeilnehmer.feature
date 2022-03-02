@@ -1,10 +1,6 @@
 # language: de
 Funktionalität: Als Planender moechte ich abfragen koennen welche Pruefungen fur einen Teilnehmerkreis eigeplant sind.
 
-#  alle geplanten / keine ungeplanten
-#  Pruefungen in Bloecken auch
-#  keine Periode
-
   Szenario: Es werden nur Pruefungen fuer den gesuchten Teilnehmerkreis geliefert
     Angenommen es existiert eine Pruefungsperiode
     Und es existiert die geplante Pruefung "Analysis" mit dem Teilnehmerkreis "Inf" im 2 Semester am 01.02.2022
