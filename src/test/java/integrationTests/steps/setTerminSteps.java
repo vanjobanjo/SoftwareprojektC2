@@ -41,13 +41,6 @@ public class setTerminSteps extends BaseSteps {
     return dataTypes.parseLocalDateTime(dateAndTime);
   }
 
-
-/*  private LocalDate parseDate(String datum) {
-    String[] split = datum.split("\\.");
-    String str = split[2] + "-" + split[1] + "-" + split[0];
-    return LocalDate.parse(str);
-  }*/
-
   @Angenommen("die Pruefung {string} hat den Termin {localDateTime} und die Pruefungsperiode von {localDateTime} - {localDateTime} und es gibt noch keine Pruefungen")
   public void pruefungHatTerminAberKeineAnderePruefungVorhanden(String pruefung,
       LocalDateTime termin, LocalDateTime pruefStart, LocalDateTime pruefEnd)
