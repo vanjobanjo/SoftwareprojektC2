@@ -28,8 +28,8 @@ Funktionalität: Als Pruefer*in moechte ich den Namen von Pruefungen anpassen ko
     Wenn ich versuche den Namen der Pruefung auf "Pruefung 42" zu aendern
     Dann erhalte ich einen Fehler
 
-  Szenario: Ich versuche den Namen einer Pruefung zu aendern, den es nicht gibt
+  Szenario: Ich versuche den Namen einer Pruefung auf einen leeren String zu aendern
     Angenommen es existiert eine Pruefungsperiode
-    Und es existiert keine Pruefung mit dem Namen "pruefung"
+    Und es existiert die ungeplante Pruefung "pruefung"
     Wenn ich versuche den Namen der Pruefung auf "" zu aendern
     Dann erhalte ich einen Fehler
