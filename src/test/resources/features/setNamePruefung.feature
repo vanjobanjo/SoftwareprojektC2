@@ -27,3 +27,9 @@ Funktionalität: Als Pruefer*in moechte ich den Namen von Pruefungen anpassen ko
     Und es existiert keine Pruefung mit dem Namen "pruefung"
     Wenn ich versuche den Namen der Pruefung auf "Pruefung 42" zu aendern
     Dann erhalte ich einen Fehler
+
+  Szenario: Ich versuche den Namen einer Pruefung zu aendern, den es nicht gibt
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert keine Pruefung mit dem Namen "pruefung"
+    Wenn ich versuche den Namen der Pruefung auf "" zu aendern
+    Dann erhalte ich einen Fehler

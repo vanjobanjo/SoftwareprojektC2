@@ -78,11 +78,13 @@ public class setNamePruefungSteps extends BaseSteps {
   @Wenn("ich versuche den Namen der Pruefung auf {string} zu aendern")
   public void ichVersucheDenNamenDerPruefungAufZuAendern(String pruefungName)
       throws NoPruefungsPeriodeDefinedException {
-    ReadOnlyPruefung pruefung = new PruefungDTOBuilder().withPruefungsNummer(pruefungName)
-        .withPruefungsNummer(pruefungName).build();
+
+    ReadOnlyPruefung pruefung = new PruefungDTOBuilder().withPruefungsNummer("pruefung")
+        .withPruefungsNummer("pruefung").build();
+
     try {
       state.controller.setName(pruefung, pruefungName);
-    } catch (IllegalStateException e) {
+    } catch (IllegalStateException | IllegalArgumentException e) {
       putExceptionInResult(e);
     }
   }
