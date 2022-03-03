@@ -282,9 +282,11 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
       @NotNull Planungseinheit planungseinheit)
       throws NoPruefungsPeriodeDefinedException {
     Set<Planungseinheit> result = new HashSet<>();
+    LocalDateTime endTime = startTime.plus(planungseinheit.getDauer())
+        .plus(bufferBetweenPlanungseinheiten);
+    startTime = startTime.minus(bufferBetweenPlanungseinheiten);
     try {
-      result.addAll(dataAccessService.getAllPlanungseinheitenBetween(startTime, startTime.plus(
-          planungseinheit.getDauer())));
+      result.addAll(dataAccessService.getAllPlanungseinheitenBetween(startTime, endTime));
     } catch (IllegalTimeSpanException e) {
       e.printStackTrace();
       // can never happen as a planungseinheit by definition has to have a positive duration

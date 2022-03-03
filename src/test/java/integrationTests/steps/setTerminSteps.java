@@ -15,7 +15,6 @@ import de.fhwedel.klausps.model.impl.SemesterImpl;
 import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
 import integrationTests.DataTypes;
 import io.cucumber.datatable.DataTable;
-import io.cucumber.java.ParameterType;
 import io.cucumber.java.de.Angenommen;
 import io.cucumber.java.de.Dann;
 import io.cucumber.java.de.Und;
@@ -25,21 +24,6 @@ import java.time.Year;
 import java.util.List;
 
 public class setTerminSteps extends BaseSteps {
-
-
-  /**
-   * Wandelt ein String in Format dd.mm.yyyy um hh:mm Uhr in eine LocalDateTime mit der Uhrzeit
-   * 09:00
-   *
-   * @param dateAndTime das Datum und Zeit fuer die neue LocalDateTime
-   * @return den String als LocalDateTime
-   */
-  @ParameterType("(\\d\\d\\.\\d\\d\\.\\d\\d\\d\\d( um \\d\\d:\\d\\d Uhr)?)?")
-  public static LocalDateTime localDateTime(String dateAndTime) {
-    DataTypes dataTypes = new DataTypes();
-
-    return dataTypes.parseLocalDateTime(dateAndTime);
-  }
 
   @Angenommen("die Pruefung {string} hat den Termin {localDateTime} und die Pruefungsperiode von {localDateTime} - {localDateTime} und es gibt noch keine Pruefungen")
   public void pruefungHatTerminAberKeineAnderePruefungVorhanden(String pruefung,
@@ -110,7 +94,7 @@ public class setTerminSteps extends BaseSteps {
         ReadOnlyPruefung r = getOrCreate(l.get(0));
         Teilnehmerkreis t = new TeilnehmerkreisImpl("Informatik", "1", 1, Ausbildungsgrad.BACHELOR);
         state.controller.addTeilnehmerkreis(r, t, 5);
-        state.controller.schedulePruefung(r, localDateTime((l.get(1))));
+        state.controller.schedulePruefung(r, DataTypes.localDateTime((l.get(1))));
       }
     }
   }

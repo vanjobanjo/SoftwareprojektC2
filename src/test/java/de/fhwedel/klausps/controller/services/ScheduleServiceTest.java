@@ -13,7 +13,6 @@ import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedPruef
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPlannedROPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomPruefungWith;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTeilnehmerkreis;
-import static de.fhwedel.klausps.controller.util.TestUtils.getRandomTime;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedPruefung;
 import static de.fhwedel.klausps.controller.util.TestUtils.getRandomUnplannedROPruefung;
 import static de.fhwedel.klausps.model.api.Blocktyp.PARALLEL;
@@ -1015,11 +1014,14 @@ class ScheduleServiceTest {
   void getHardConflictedTimes_checkHardCriteriaForEachTimeToCheck_oneTime()
       throws NoPruefungsPeriodeDefinedException {
     Pruefung pruefungToCheckFor = getRandomPlannedPruefung(1L);
+    LocalDateTime start = LocalDateTime.of(2022, 3, 4, 12, 12);
 
     when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
     when(dataAccessService.getPruefung(any())).thenReturn(pruefungToCheckFor);
+    when(dataAccessService.getStartOfPeriode()).thenReturn(LocalDate.of(2022, 3, 3));
+    when(dataAccessService.getEndOfPeriode()).thenReturn(LocalDate.of(2022, 3, 10));
 
-    deviceUnderTest.getHardConflictedTimes(Set.of(getRandomTime(1L)),
+    deviceUnderTest.getHardConflictedTimes(Set.of(start),
         converter.convertToReadOnlyPruefung(pruefungToCheckFor));
     verify(restrictionService, times(1)).wouldBeHardConflictIfStartedAt(any(), any());
   }
@@ -1028,11 +1030,14 @@ class ScheduleServiceTest {
   void getHardConflictedTimes_checkHardCriteriaForEachTimeToCheck_multipleTimesToCheck()
       throws NoPruefungsPeriodeDefinedException {
     Pruefung pruefungToCheckFor = getRandomPlannedPruefung(1L);
+    LocalDateTime start = LocalDateTime.of(2022, 3, 4, 12, 12);
 
     when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
     when(dataAccessService.getPruefung(any())).thenReturn(pruefungToCheckFor);
+    when(dataAccessService.getStartOfPeriode()).thenReturn(LocalDate.of(2022, 3, 3));
+    when(dataAccessService.getEndOfPeriode()).thenReturn(LocalDate.of(2022, 3, 10));
 
-    deviceUnderTest.getHardConflictedTimes(Set.of(getRandomTime(1L), getRandomTime(2L)),
+    deviceUnderTest.getHardConflictedTimes(Set.of(start, start.plusDays(1)),
         converter.convertToReadOnlyPruefung(pruefungToCheckFor));
     verify(restrictionService, times(2)).wouldBeHardConflictIfStartedAt(any(), any());
   }
@@ -1053,13 +1058,16 @@ class ScheduleServiceTest {
   void getHardConflictedTimes_resultContainsAsManyEntriesAsConflicts_none()
       throws NoPruefungsPeriodeDefinedException {
     Pruefung pruefungToCheckFor = getRandomPlannedPruefung(1L);
+    LocalDateTime start = LocalDateTime.of(2022, 3, 4, 12, 12);
 
     when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
     when(dataAccessService.getPruefung(any())).thenReturn(pruefungToCheckFor);
     when(restrictionService.wouldBeHardConflictIfStartedAt(any(), any())).thenReturn(false);
+    when(dataAccessService.getStartOfPeriode()).thenReturn(LocalDate.of(2022, 3, 3));
+    when(dataAccessService.getEndOfPeriode()).thenReturn(LocalDate.of(2022, 3, 10));
 
     assertThat(deviceUnderTest.getHardConflictedTimes(
-        Set.of(getRandomTime(1L), getRandomTime(2L), getRandomTime(3L)),
+        Set.of(start, start.plusDays(1), start.plusDays(2)),
         converter.convertToReadOnlyPruefung(pruefungToCheckFor))).isEmpty();
   }
 
@@ -1067,14 +1075,17 @@ class ScheduleServiceTest {
   void getHardConflictedTimes_resultContainsAsManyEntriesAsConflicts_one()
       throws NoPruefungsPeriodeDefinedException {
     Pruefung pruefungToCheckFor = getRandomPlannedPruefung(1L);
+    LocalDateTime start = LocalDateTime.of(2022, 3, 4, 12, 12);
 
     when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
     when(dataAccessService.getPruefung(any())).thenReturn(pruefungToCheckFor);
     when(restrictionService.wouldBeHardConflictIfStartedAt(any(), any())).thenReturn(false, true,
         false);
+    when(dataAccessService.getStartOfPeriode()).thenReturn(LocalDate.of(2022, 3, 3));
+    when(dataAccessService.getEndOfPeriode()).thenReturn(LocalDate.of(2022, 3, 10));
 
     assertThat(deviceUnderTest.getHardConflictedTimes(
-        Set.of(getRandomTime(1L), getRandomTime(2L), getRandomTime(3L)),
+        Set.of(start, start.plusDays(1), start.plusDays(2)),
         converter.convertToReadOnlyPruefung(pruefungToCheckFor))).hasSize(1);
   }
 
@@ -1082,14 +1093,17 @@ class ScheduleServiceTest {
   void getHardConflictedTimes_resultContainsAsManyEntriesAsConflicts_multiple()
       throws NoPruefungsPeriodeDefinedException {
     Pruefung pruefungToCheckFor = getRandomPlannedPruefung(1L);
+    LocalDateTime start = LocalDateTime.of(2022, 3, 4, 12, 12);
 
     when(dataAccessService.existsPruefungWith(any())).thenReturn(true);
     when(dataAccessService.getPruefung(any())).thenReturn(pruefungToCheckFor);
     when(restrictionService.wouldBeHardConflictIfStartedAt(any(), any())).thenReturn(true, true,
         true);
+    when(dataAccessService.getStartOfPeriode()).thenReturn(LocalDate.of(2022, 3, 3));
+    when(dataAccessService.getEndOfPeriode()).thenReturn(LocalDate.of(2022, 3, 10));
 
     assertThat(deviceUnderTest.getHardConflictedTimes(
-        Set.of(getRandomTime(1L), getRandomTime(2L), getRandomTime(3L)),
+        Set.of(start, start.plusDays(1), start.plusDays(2)),
         converter.convertToReadOnlyPruefung(pruefungToCheckFor))).hasSize(3);
   }
 

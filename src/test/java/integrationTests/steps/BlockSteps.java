@@ -28,7 +28,7 @@ public class BlockSteps extends BaseSteps {
         termin = parseDate(date).atTime(parseTime(time));
       }
       ReadOnlyPruefung[] pruefungen = state.controller.getUngeplantePruefungen().stream()
-          .filter(x -> block.get("Pruefungen").contains(x.getName()))
+          .filter((ReadOnlyPruefung x) -> block.get("Pruefungen").contains(x.getName()))
           .toArray(ReadOnlyPruefung[]::new);
       ReadOnlyBlock result = state.controller.createBlock(name, Blocktyp.PARALLEL, pruefungen);
       if (termin != null) {

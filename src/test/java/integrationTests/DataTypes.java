@@ -14,6 +14,20 @@ public class DataTypes {
    * @param dateAndTime das Datum und Zeit fuer die neue LocalDateTime
    * @return den String als LocalDateTime
    */
+  @ParameterType("(\\d\\d\\.\\d\\d\\.\\d\\d\\d\\d( um \\d\\d:\\d\\d Uhr)?)?")
+  public static LocalDateTime localDateTime(String dateAndTime) {
+    DataTypes dataTypes = new DataTypes();
+
+    return dataTypes.parseLocalDateTime(dateAndTime);
+  }
+
+  /**
+   * Wandelt ein String in Format dd.mm.yyyy um hh:mm Uhr in eine LocalDateTime mit der Uhrzeit
+   * 09:00
+   *
+   * @param dateAndTime das Datum und Zeit fuer die neue LocalDateTime
+   * @return den String als LocalDateTime
+   */
   public LocalDateTime parseLocalDateTime(String dateAndTime) {
     if (dateAndTime != null) {
       String[] splitDateAndTime = dateAndTime.split(" ");

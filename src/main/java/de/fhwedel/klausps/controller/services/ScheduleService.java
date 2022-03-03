@@ -448,6 +448,7 @@ public class ScheduleService {
   @NotNull
   private Set<LocalDateTime> calcHardConflictingTimes(@NotNull Set<LocalDateTime> timesToCheck,
       @NotNull Planungseinheit planungseinheit) throws NoPruefungsPeriodeDefinedException {
+    assertTimestampsInPeriod(timesToCheck);
     Set<LocalDateTime> result = new HashSet<>();
     for (LocalDateTime startTimeToCheck : timesToCheck) {
       if (restrictionService.wouldBeHardConflictIfStartedAt(startTimeToCheck, planungseinheit)) {
@@ -455,6 +456,25 @@ public class ScheduleService {
       }
     }
     return result;
+  }
+
+  /**
+   * Checks that all timestamps are inside the Pruefungsperiode.
+   *
+   * @param timestamps The timestamps to check.
+   * @throws IllegalArgumentException In case a timestamp is outside the Pruefungsperiode.
+   */
+  private void assertTimestampsInPeriod(Iterable<LocalDateTime> timestamps)
+      throws NoPruefungsPeriodeDefinedException {
+    for (LocalDateTime timestamp : timestamps) {
+      if (timestamp.toLocalDate().isBefore(dataAccessService.getStartOfPeriode())
+          || timestamp.toLocalDate().isAfter(dataAccessService.getEndOfPeriode())) {
+        String message = String.format(
+            "%s was illegally called with %s outside of Pruefungsperiode.",
+            Thread.currentThread().getStackTrace()[1].getMethodName(), timestamp);
+        throw new IllegalArgumentException(message);
+      }
+    }
   }
 
   public List<ReadOnlyPlanungseinheit> setBlockType(ReadOnlyBlock block, Blocktyp changeTo)

@@ -20,7 +20,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.fhwedel.klausps.controller.analysis.HardRestrictionAnalysis;
@@ -28,25 +27,17 @@ import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.HartesKriterium;
 import de.fhwedel.klausps.controller.services.DataAccessService;
-import de.fhwedel.klausps.controller.services.RestrictionService;
-import de.fhwedel.klausps.controller.services.ScheduleService;
 import de.fhwedel.klausps.model.api.Ausbildungsgrad;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Pruefungsperiode;
-import de.fhwedel.klausps.model.api.Semester;
-import de.fhwedel.klausps.model.api.Semestertyp;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import de.fhwedel.klausps.model.impl.BlockImpl;
 import de.fhwedel.klausps.model.impl.PruefungImpl;
-import de.fhwedel.klausps.model.impl.PruefungsperiodeImpl;
-import de.fhwedel.klausps.model.impl.SemesterImpl;
 import de.fhwedel.klausps.model.impl.TeilnehmerkreisImpl;
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Year;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -695,24 +686,6 @@ class ZweiKlausurenGleichzeitigTest {
 
     assertThat(deviceUnderTest.wouldBeHardConflictAt(getRandomTime(1L),
         getRandomPruefungWith(2L, conflictingTeilnehmerkreis))).isFalse();
-  }
-
-  @Test
-  void wouldBeHardConflictAt_checkTimespanOfPruefungBeginningAtSpecifiedTime()
-      throws NoPruefungsPeriodeDefinedException, IllegalTimeSpanException {
-    LocalDateTime timeToCheck = getRandomTime(1L);
-    Teilnehmerkreis conflictingTeilnehmerkreis = getRandomTeilnehmerkreis(1L);
-    Pruefung pruefungToCheck = getRandomPruefungWith(2L, conflictingTeilnehmerkreis);
-    Pruefung other = getRandomPruefungWith(3L, conflictingTeilnehmerkreis);
-    other.setStartzeitpunkt(pruefungToCheck.getStartzeitpunkt().minusHours(2));
-    other.setDauer(Duration.ofHours(2));
-
-    when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
-        Set.of(other));
-    deviceUnderTest.wouldBeHardConflictAt(timeToCheck, pruefungToCheck);
-
-    verify(dataAccessService).getAllPlanungseinheitenBetween(timeToCheck,
-        timeToCheck.plus(pruefungToCheck.getDauer()));
   }
 
   @Test
