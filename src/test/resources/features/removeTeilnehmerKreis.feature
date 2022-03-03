@@ -2,30 +2,37 @@
 Funktionalität: Als Planender moechte ich zu einer Klausur einen Teilnehmerkreis und die dazugehoerige
   geschaetze Anzahl an Teilnehmer entfernen
 
-  Szenario: Die Klausur hat keinen TeilnehmerKreis + Schaetzung und entferne einen Teilnehmerkreis
-    Angenommen die Pruefung "Analysis" hat als Teilnehmerkreisschaetzung: ""
-    Wenn ich den Studiengang "B_BWL" Fachsemester 1 mit Ordnung "10.0" und 60 schaetze und entferne
-    Dann erhalte ich eine Fehlermeldung
+  Szenario: Die ungeplante Klausur hat einen Teilnehmerkreis und ich als Planer möchte den entfernen
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert die ungeplante Pruefung "Analysis" mit dem Teilnehmerkreis "inf" im 1 Semester und "inf" im 2 Semster
+    Wenn ich der Pruefung "Analysis" den Teilnehmerkreis "inf" Fachsemester 1 entfernen moechte
+    Dann hat die Pruefung "Analysis" nicht den Teilnehmerkreis "inf" im Fachsemster 1
+    Und die Pruefung "Analysis" hat den Teilnehmerkreis "inf" im Fachsemster 2
 
-  Szenario: Die Klausur hat bereits einen Teilnehmerkreis + Schaetzung und entferne einen
-    Angenommen die Pruefung "Analysis" hat als Teilnehmerkreisschaetzung: B_BWL 1 10.0 50
-    Wenn ich den Studiengang "B_BWL" Fachsemester 1 mit Ordnung "10.0" und 50 schaetze und entferne
-    Dann hat die Pruefung "Analysis" die Teilnehmerkreischaetzungen: ""
 
-  Szenario: Die Klausur hat bereits einen Teilnehmerkreis + Schaetzung, entferne TK mit negative Schaetzzahl. Invalider TK
-    Angenommen die Pruefung "Analysis" hat als Teilnehmerkreisschaetzung: B_BWL 1 10.0 50, B_WING 1 11.0 100
-    Wenn ich den Studiengang "B_WING" Fachsemester 2 mit Ordnung "11.0" und -1 schaetze und entferne
-    Dann erhalte ich eine Fehlermeldung
+  Szenario: Die ungeplante  Klausur hat  zwei Teilnehmerkreise und ich als Planer möchte den entfernen
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert die ungeplante Pruefung "Analysis" mit dem Teilnehmerkreis "inf" im 1 Semester und "bwl" im 1 Semster
+    Wenn ich der Pruefung "Analysis" den Teilnehmerkreis "inf" Fachsemester 1 entfernen moechte
+    Dann hat die Pruefung "Analysis" nicht den Teilnehmerkreis "inf" im Fachsemster 1
+    Und die Pruefung "Analysis" hat den Teilnehmerkreis "bwl" im Fachsemster 1
 
-  Szenario: Die Klausur hat zugewiesene Teilnehmerkreise + Schaetzung, entferne eine Schaetzung
-  das Scoring wird veraendert und eine Liste von Klausuren werden zurueckgegeben
-    #TODO: das Scoring muss veraendert werden, wie genau wird noch später definiert
-    #TODO: wenn das Scoring definiert ist, werden neue Testfaelle definiert?
+  Szenario: Die geplante Klausur hat einen Teilnehmerkreis und ich als Planer möchte den entfernen
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert die geplante Pruefung "Analysis" mit dem Teilnehmerkreis "inf" im 1 Semester am 02.02.2022
+    Wenn ich der Pruefung "Analysis" den Teilnehmerkreis "inf" Fachsemester 1 entfernen moechte
+    Dann hat die Pruefung "Analysis" nicht den Teilnehmerkreis "inf" im Fachsemster 1
 
-  Szenario: Die Klausur hat zugewiesene Teilnehmerkreise + Schaetzung, entferne einen Teilnehmerkreis
-    #TODO: das Scoring muss veraendert werden, wie genau wird noch später definiert
-    #TODO: wenn das Scoring definiert ist, werden neue Testfaelle definiert.
+    Szenario: Die ungeplante Klausur hat nicht den Teilnehmerkreis den ich entfernen möchte
+      Angenommen es existiert eine Pruefungsperiode
+      Und es existiert die geplante Pruefung "Analysis" mit dem Teilnehmerkreis "inf" im 2 Semester am 02.02.2022
+      Wenn ich der Pruefung "Analysis" den Teilnehmerkreis "inf" Fachsemester 1 entfernen moechte
+      Dann hat die Pruefung "Analysis" nicht den Teilnehmerkreis "inf" im Fachsemster 1
+      Und die Pruefung "Analysis" hat den Teilnehmerkreis "inf" im Fachsemster 2
 
-  Szenario: Der Klausur werden Teilnehmerkreise entfernt, die eigentlich von TK geschrieben werden muss
-    #TODO: Was soll hier geschehen? Ist es moeglich, dass der Kunde beliebige TK entfernen kann?
+    Szenario: Fehlermeldung IllegalStateException verursachen
+      Angenommen es existiert eine Pruefungsperiode
+      Wenn ich einer Pruefung einen Teilnehmerkreis enfernen möchte
+      Dann bekomme ich eine Fehlermeldung IllegalStateException
+
 
