@@ -38,8 +38,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class is the only one who change the data in the model.
- * And provide the Data from the model.
+ * This class is the only one who change the data in the model. And provide the Data from the
+ * model.
  */
 public class DataAccessService {
 
@@ -287,14 +287,19 @@ public class DataAccessService {
    * @throws IllegalArgumentException           when the pruefung doesn't exist
    */
   public Planungseinheit changeNameOf(ReadOnlyPruefung toChange, String name)
-      throws NoPruefungsPeriodeDefinedException, IllegalArgumentException {
+      throws NoPruefungsPeriodeDefinedException, IllegalStateException {
     noNullParameters(toChange, name);
     noEmptyStrings(name);
 
     Pruefung pruefung = getPruefung(toChange);
     LOGGER.debug("Change name for {} in Model from {} to {}.", pruefung, pruefung.getName(), name);
+    Optional<Block> blockToPruefung = getBlockTo(pruefung);
     pruefung.setName(name);
-    return pruefung;
+    if (blockToPruefung.isEmpty()) {
+      return pruefung;
+    } else {
+      return blockToPruefung.get();
+    }
   }
 
   /**

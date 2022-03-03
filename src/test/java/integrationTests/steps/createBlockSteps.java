@@ -11,6 +11,7 @@ import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedExcepti
 import de.fhwedel.klausps.model.api.Blocktyp;
 import io.cucumber.java.de.Angenommen;
 import io.cucumber.java.de.Dann;
+import io.cucumber.java.de.Und;
 import io.cucumber.java.de.Wenn;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -104,7 +105,7 @@ public class createBlockSteps {
         .anyMatch(pruefung -> pruefung.getName().equals(pruefung1))).isTrue();
   }
 
-  @Angenommen("es existiert die geplante Pruefung {string}")
+  @Und("es existiert die geplante Pruefung {string}")
   public void esExistiertDieGeplantePruefung(String pruefung1)
       throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
     ReadOnlyPruefung rp1 = state.controller.createPruefung(pruefung1, pruefung1, pruefung1,
