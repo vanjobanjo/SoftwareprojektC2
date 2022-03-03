@@ -30,7 +30,16 @@ Funktionalität: Als Planender moechte ich zu einer Klausur einen Teilnehmerkrei
       Dann hat die Pruefung "Analysis" nicht den Teilnehmerkreis "inf" im Fachsemster 1
       Und die Pruefung "Analysis" hat den Teilnehmerkreis "inf" im Fachsemster 2
 
-    Szenario: Fehlermeldung IllegalStateException verursachen
+  Szenario: Weiche Restiction testen, beim removen von Teilnehmerkreis
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert die geplante Pruefung "Analysis" mit dem Teilnehmerkreis "inf" im 2 Semester am 02.02.2022 um 09:00 Uhr
+    Und es existiert die geplante Pruefung "BWL" mit dem Teilnehmerkreis "inf" im 2 Semester am 02.02.2022 um 16:00 Uhr
+    Wenn ich der Pruefung "Analysis" den Teilnehmerkreis "inf" Fachsemester 2 entfernen moechte
+    Dann hat die Pruefung "Analysis" nicht den Teilnehmerkreis "inf" im Fachsemster 2
+    Und die Pruefung "Analysis" hat nicht das WeicheKriterium "MEHRERE_PRUEFUNGEN_AM_TAG"
+
+
+  Szenario: Fehlermeldung IllegalStateException verursachen
       Angenommen es existiert eine Pruefungsperiode
       Wenn ich einer Pruefung einen Teilnehmerkreis enfernen möchte
       Dann bekomme ich eine Fehlermeldung IllegalStateException
