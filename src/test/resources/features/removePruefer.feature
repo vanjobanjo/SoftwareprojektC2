@@ -69,7 +69,7 @@ Funktionalität: Als Planender maechte ich einen Pruefer von einer Pruefung entf
     Angenommen es existiert keine Pruefungsperiode
     Und es soll probiert werden eine Pruefer von einer Pruefung entfernt
     Wenn ich ein Pruefer "PrueferEins" von einer Pruefung "Analysis" entfernen möchte
-    Dann bekomme ich eine Fehlermeldung NoPRuefungsPeriodeDefinedException
+    Dann bekomme ich eine Fehlermeldung NoPruefungsPeriodeDefinedException
 
   Szenario:  eine unbekannte Pruefung soll ein Pruefer entfernt werden
     Angenommen es existiert eine Pruefungsperiode
@@ -81,6 +81,6 @@ Funktionalität: Als Planender maechte ich einen Pruefer von einer Pruefung entf
   Angenommen es existiert eine Pruefungsperiode
     Und es soll eine Pruefer von einer Pruefung "Informationstechnik" entfernt werden
   Wenn ich einen leeren Pruefer "" von einer Pruefung "Informationstechnik" entfernen möchte
-  Dann bekomme ich eine Fehlermeldung IlligaleArgumentException
+  Dann bekomme ich eine Fehlermeldung fuer eine IllegalArgumentException
 
  # IllegalArgumentException – Wenn Prüfer blank.

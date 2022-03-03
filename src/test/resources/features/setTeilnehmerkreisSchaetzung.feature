@@ -3,7 +3,7 @@ Funktionalität: Als Planender möchte ich die Schätzung von Studierenden, die 
 
   Szenario: Die Schätzung der Studierenden, die an einer Prüfung teilnehmen werden, erfolgreich geändert
     Angenommen es existiert eine Pruefungsperiode
-   Und die Prüfung "Analysis" hat den Teilnehmerkreis "inf" und die Schätzung 100
+    Und die Prüfung "Analysis" hat den Teilnehmerkreis "inf" und die Schätzung 100
     Wenn ich die Schätzung von "Analysis" mit den Teilnehmerkreis "inf" zu 200 ändere
     Dann ist die Schätzung von "Analysis" mit den Teilnehmerkreis "inf" den Wert 200
 
@@ -12,7 +12,7 @@ Funktionalität: Als Planender möchte ich die Schätzung von Studierenden, die 
     Und die Prüfung "Analysis" hat den Teilnehmerkreis "inf" und die Schätzung 100
     Wenn ich die Schätzung von "Analysis" mit den Teilnehmerkreis "inf" zu -1 ändere
     Dann ist die Schätzung von "Analysis" mit den Teilnehmerkreis "inf" den Wert 100
-    Und bekomme ich eine Fehlermeldung IlligaleArgumentException
+    Und bekomme ich eine Fehlermeldung fuer eine IllegalArgumentException
 
   Szenario: Die Schätzung der Studierenden, die an einer Prüfung teilnehmen werden, erfolgreich zu 0 geändert
     Angenommen es existiert eine Pruefungsperiode
@@ -47,14 +47,14 @@ Funktionalität: Als Planender möchte ich die Schätzung von Studierenden, die 
     Und die Prüfung "Analysis" hat den Teilnehmerkreis "inf" und die Schätzung 100
     Wenn ich die Schätzung von "Analysis" mit den Teilnehmerkreis "inf" zu -1 ändere
     Dann ist die Schätzung von "Analysis" mit den Teilnehmerkreis "inf" den Wert 100
-    Und bekomme ich eine Fehlermeldung IlligaleArgumentException
+    Und bekomme ich eine Fehlermeldung fuer eine IllegalArgumentException
 
             #IllegalArgumentException – Wenn der Teilnehmerkreis der Prüfung noch nicht zugeordnet wurde.
   Szenario: Die Schätzung der Studierenden, die an einer Prüfung teilnehmen werden, nicht erfolgreich geändert da
     Angenommen es existiert eine Pruefungsperiode
     Und die Prüfung "Analysis" noch keinen Teilnehmerkreis mit Schätzung
     Wenn ich die Schätzung von "Analysis" mit den Teilnehmerkreis "inf" zu 6 ändere
-    Dann bekomme ich eine Fehlermeldung IlligaleArgumentException
+    Und bekomme ich eine Fehlermeldung fuer eine IllegalArgumentException
 
     #IllegalStateException – Wenn die übergebene Prüfung nicht der Prüfungsperiode zugeordnet ist.
   Szenario: Die Pruefung nicht in der Pruefungsperiode existiert

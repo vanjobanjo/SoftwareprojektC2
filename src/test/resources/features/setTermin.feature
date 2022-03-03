@@ -68,7 +68,7 @@ Funktionalität: Als Planender moechte ich den Termin von einer Pruefung aendern
     Angenommen es existiert keine Pruefungsperiode
     Und die Pruefung "Analysis" soll eingeplant werden
     Wenn ich der Pruefung "Analysis" einen Termin gebe
-    Dann bekomme ich eine Fehlermeldung NoPRuefungsPeriodeDefinedException
+    Dann bekomme ich eine Fehlermeldung NoPruefungsPeriodeDefinedException
 
 
   Szenario: Ich will einer Pruefung einen neuen starttermin geben, wenn diese sich schon in einen Block befindet
@@ -77,7 +77,7 @@ Funktionalität: Als Planender moechte ich den Termin von einer Pruefung aendern
     Und die Pruefung "Informationstechnik" ist im Block "tollerBlock"
 
     Wenn ich der Pruefung "Informationstechnik" einen Termin gebe
-    Dann bekomme ich eine Fehlermeldung IlligaleArgumentException
+    Dann bekomme ich eine Fehlermeldung fuer eine IllegalArgumentException
 
 
   Szenario:  eine unbekannte Pruefung soll ein Termin zugeordnet werden

@@ -84,16 +84,6 @@ public class setNameBlockSteps extends BaseSteps {
     assertThat(flag).isZero();
   }
 
-  @Angenommen("es existieren die Bloecke {string} und {string}")
-  public void esExistierenDieBloeckeUnd(String blockName1, String blockName2) {
-    throw new AssumptionViolatedException("Not implemented yet!");
-  }
-
-  @Wenn("ich den Namen von {string} auf {string} aendere")
-  public void ichDenNamenVonAufAendere(String blockName1, String blockName2) {
-    throw new AssumptionViolatedException("Not implemented yet!");
-  }
-
   @Wenn("ich versuche den Namen des Blocks auf {string} zu aendern")
   public void ichVersucheDenNamenDesBlocksAufZuAendern(String blockName)
       throws NoPruefungsPeriodeDefinedException {

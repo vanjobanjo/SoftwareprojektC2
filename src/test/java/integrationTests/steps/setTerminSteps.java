@@ -132,8 +132,8 @@ public class setTerminSteps extends BaseSteps {
 
   }
 
-  @Dann("bekomme ich eine Fehlermeldung NoPRuefungsPeriodeDefinedException")
-  public void bekommeIchEineFehlermeldungNoPRuefungsPeriodeDefinedException() {
+  @Dann("bekomme ich eine Fehlermeldung NoPruefungsPeriodeDefinedException")
+  public void bekommeIchEineFehlermeldungNoPruefungsPeriodeDefinedException() {
     Object exception = state.results.get("exception");
     assertThat(exception).isNotNull();
     assertThat(exception).isInstanceOf(NoPruefungsPeriodeDefinedException.class);
@@ -151,8 +151,8 @@ public class setTerminSteps extends BaseSteps {
     }
   }
 
-  @Dann("bekomme ich eine Fehlermeldung IlligaleArgumentException")
-  public void bekommeIchEineFehlermeldungIlligaleArgumentExceptionDaSieInEinBlockLiegt() {
+  @Dann("bekomme ich eine Fehlermeldung fuer eine IllegalArgumentException")
+  public void bekommeIchEineFehlermeldungIllegalArgumentExceptionDaSieInEinBlockLiegt() {
     Object exception = state.results.get("exception");
     assertThat(exception).isNotNull();
     assertThat(exception).isInstanceOf(IllegalArgumentException.class);

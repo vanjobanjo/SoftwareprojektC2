@@ -42,7 +42,7 @@ Funktionalität: Als Planender moechte ich gerne Pruefungen von einem Block entf
   Szenariogrundriss: Es wird eine Klausur aus einem ungeplanten Block entfernt obwohl sie nicht im Block ist
     Angenommen <Klausuren> sind Teil des geplanten Block "ABC"
     Wenn die Pruefung "Deutsch 1" aus dem Block "ABC" entfernt wird
-    Dann erhalte ich eine Fehlermeldung
+    Dann erhalte ich einen Fehler
     Beispiele:
       | Klausuren                         |
       | "Analysis", "Diskrete Mathematik" |
@@ -50,4 +50,4 @@ Funktionalität: Als Planender moechte ich gerne Pruefungen von einem Block entf
   Szenario: Es wird eine Klausur aus einem geplanten Block entfernt obwohl sie nicht im Block ist
     Angenommen "Analysis", "Diskrete Mathematik" sind Teil des ungeplanten Block "ABC"
     Wenn die Pruefung "Deutsch 1" aus dem Block "ABC" entfernt wird
-    Dann erhalte ich eine Fehlermeldung
+    Dann erhalte ich einen Fehler
