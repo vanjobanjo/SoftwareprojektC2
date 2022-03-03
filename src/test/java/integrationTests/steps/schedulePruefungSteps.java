@@ -9,12 +9,16 @@ import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.kriterium.KriteriumsAnalyse;
 import de.fhwedel.klausps.controller.kriterium.WeichesKriterium;
+import de.fhwedel.klausps.model.api.Ausbildungsgrad;
+import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import io.cucumber.java.de.Dann;
 import io.cucumber.java.de.Und;
 import io.cucumber.java.de.Wenn;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class schedulePruefungSteps extends BaseSteps {
 
@@ -180,5 +184,17 @@ public class schedulePruefungSteps extends BaseSteps {
       throws NoPruefungsPeriodeDefinedException {
     ReadOnlyPruefung roPruefung = getPruefungFromModel(pruefung);
     assertThat(roPruefung.getDauer()).hasMinutes(duration);
+  }
+
+  @Und("es existiert die ungeplante Pruefung {string} mit dem Teilnehmerkreis {string} und {string} im {int} Semester")
+  public void esExistiertDieUngeplantePruefungMitDemTeilnehmerkreisUndImSemester(String pruefung,
+      String teilnehmerkreis1, String teilnehmerkreis2, int semester)
+      throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
+    getOrCreate(pruefung, teilnehmerkreis1, semester);
+   ReadOnlyPruefung roPruefung =  getPruefungFromModel(pruefung);
+    Teilnehmerkreis teilnehmerkreis = state.controller.createTeilnehmerkreis(
+        Ausbildungsgrad.BACHELOR, teilnehmerkreis2, teilnehmerkreis2, semester);
+
+   state.controller.addTeilnehmerkreis(roPruefung,teilnehmerkreis,10);
   }
 }

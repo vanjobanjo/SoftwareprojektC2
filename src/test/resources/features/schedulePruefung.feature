@@ -359,3 +359,76 @@ Funktionalität: Als Planende*r moechte ich eine Pruefung einplanen koennen.
 
 
      # UNIFORME_ZEITSLOTS
+
+
+
+
+
+
+
+
+
+
+  #Massentest
+
+  Szenario: Ich plane erfoglreich eine Pruefung ein, MassenTest
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert die ungeplante Pruefung "Analysis" mit dem Teilnehmerkreis "inf" und "bwl" im 1 Semester
+    Und es existiert die geplante Pruefung "BWL" mit dem Teilnehmerkreis "inf" im 1 Semester am 14.02.2022 um 8 Uhr
+    Und es existiert die geplante Pruefung "Haskel" mit dem Teilnehmerkreis "inf" im 1 Semester am 15.02.2022 um 8 Uhr
+    Und es existiert die geplante Pruefung "Diskrete Mathematik" mit dem Teilnehmerkreis "inf" im 1 Semester am 16.02.2022 um 8 Uhr
+    Und es existiert die geplante Pruefung "Datenbanken" mit dem Teilnehmerkreis "inf" im 1 Semester am 17.02.2022 um 8 Uhr
+    Und es existiert die geplante Pruefung "infKlausur1" mit dem Teilnehmerkreis "inf" im 1 Semester am 18.02.2022 um 8 Uhr
+    Und es existiert die geplante Pruefung "infKlausur2" mit dem Teilnehmerkreis "inf" im 1 Semester am 18.02.2022 um 16 Uhr
+    Und es existiert die geplante Pruefung "infKlausur3" mit dem Teilnehmerkreis "inf" im 1 Semester am 20.02.2022 um 8 Uhr
+
+    Und es existiert die geplante Pruefung "BWLbwl" mit dem Teilnehmerkreis "bwl" im 1 Semester am 14.02.2022 um 8 Uhr
+    Und es existiert die geplante Pruefung "Haskelbwl" mit dem Teilnehmerkreis "bwl" im 1 Semester am 15.02.2022 um 8 Uhr
+    Und es existiert die geplante Pruefung "Diskrete Mathematikbwl" mit dem Teilnehmerkreis "bwl" im 1 Semester am 16.02.2022 um 8 Uhr
+    Und es existiert die geplante Pruefung "Datenbankenbwl" mit dem Teilnehmerkreis "bwl" im 1 Semester am 17.02.2022 um 8 Uhr
+    Und es existiert die geplante Pruefung "infKlausur1bwl" mit dem Teilnehmerkreis "bwl" im 1 Semester am 18.02.2022 um 8 Uhr
+    Und es existiert die geplante Pruefung "infKlausur2bwl" mit dem Teilnehmerkreis "bwl" im 1 Semester am 18.02.2022 um 16 Uhr
+    Und es existiert die geplante Pruefung "infKlausur3bwl" mit dem Teilnehmerkreis "bwl" im 1 Semester am 20.02.2022 um 8 Uhr
+    Wenn ich "Analysis" am 14.02.2022 um 16 Uhr einplanen moechte
+    Dann ist die Pruefung "Analysis" am 14.02.2022 um 16 Uhr eingeplant
+    Und ist die Pruefung "BWL" am 14.02.2022 um 8 Uhr eingeplant
+    Und ist die Pruefung "Haskel" am 15.02.2022 um 8 Uhr eingeplant
+    Und ist die Pruefung "Diskrete Mathematik" am 16.02.2022 um 8 Uhr eingeplant
+    Und ist die Pruefung "Datenbanken" am 17.02.2022 um 8 Uhr eingeplant
+    Und ist die Pruefung "infKlausur1" am 18.02.2022 um 8 Uhr eingeplant
+    Und ist die Pruefung "infKlausur2" am 18.02.2022 um 16 Uhr eingeplant
+    Und ist die Pruefung "infKlausur3" am 20.02.2022 um 8 Uhr eingeplant
+    Und ist die Pruefung "BWLbwl" am 14.02.2022 um 8 Uhr eingeplant
+    Und ist die Pruefung "Haskelbwl" am 15.02.2022 um 8 Uhr eingeplant
+    Und ist die Pruefung "Diskrete Mathematikbwl" am 16.02.2022 um 8 Uhr eingeplant
+    Und ist die Pruefung "Datenbankenbwl" am 17.02.2022 um 8 Uhr eingeplant
+    Und ist die Pruefung "infKlausur1bwl" am 18.02.2022 um 8 Uhr eingeplant
+    Und ist die Pruefung "infKlausur2bwl" am 18.02.2022 um 16 Uhr eingeplant
+    Und ist die Pruefung "infKlausur3bwl" am 20.02.2022 um 8 Uhr eingeplant
+    Und die Pruefung "BWL" hat das WeicheKriterium "MEHRERE_PRUEFUNGEN_AM_TAG"
+    Und die Pruefung "Analysis" hat das WeicheKriterium "MEHRERE_PRUEFUNGEN_AM_TAG"
+    Und die Pruefung "infKlausur3" hat das WeicheKriterium "SONNTAG"
+    Und die Pruefung "infKlausur2" hat das WeicheKriterium "MEHRERE_PRUEFUNGEN_AM_TAG"
+    Und die Pruefung "infKlausur1" hat das WeicheKriterium "MEHRERE_PRUEFUNGEN_AM_TAG"
+    Und die Pruefung "Analysis" hat das WeicheKriterium "FREIER_TAG_ZWISCHEN_PRUEFUNGEN"
+    Und die Pruefung "BWL" hat das WeicheKriterium "FREIER_TAG_ZWISCHEN_PRUEFUNGEN"
+    Und die Pruefung "Haskel" hat das WeicheKriterium "FREIER_TAG_ZWISCHEN_PRUEFUNGEN"
+    Und die Pruefung "Diskrete Mathematik" hat das WeicheKriterium "FREIER_TAG_ZWISCHEN_PRUEFUNGEN"
+    Und die Pruefung "Datenbanken" hat das WeicheKriterium "FREIER_TAG_ZWISCHEN_PRUEFUNGEN"
+    Und die Pruefung "infKlausur1" hat das WeicheKriterium "FREIER_TAG_ZWISCHEN_PRUEFUNGEN"
+    Und die Pruefung "infKlausur2" hat das WeicheKriterium "FREIER_TAG_ZWISCHEN_PRUEFUNGEN"
+  #bwl
+    Und die Pruefung "BWLbwl" hat das WeicheKriterium "MEHRERE_PRUEFUNGEN_AM_TAG"
+    Und die Pruefung "Analysis" hat das WeicheKriterium "MEHRERE_PRUEFUNGEN_AM_TAG"
+    Und die Pruefung "infKlausur3bwl" hat das WeicheKriterium "SONNTAG"
+    Und die Pruefung "infKlausur2bwl" hat das WeicheKriterium "MEHRERE_PRUEFUNGEN_AM_TAG"
+    Und die Pruefung "infKlausur1bwl" hat das WeicheKriterium "MEHRERE_PRUEFUNGEN_AM_TAG"
+    Und die Pruefung "Analysis" hat das WeicheKriterium "FREIER_TAG_ZWISCHEN_PRUEFUNGEN"
+    Und die Pruefung "BWLbwl" hat das WeicheKriterium "FREIER_TAG_ZWISCHEN_PRUEFUNGEN"
+    Und die Pruefung "Haskelbwl" hat das WeicheKriterium "FREIER_TAG_ZWISCHEN_PRUEFUNGEN"
+    Und die Pruefung "Diskrete Mathematikbwl" hat das WeicheKriterium "FREIER_TAG_ZWISCHEN_PRUEFUNGEN"
+    Und die Pruefung "Datenbankenbwl" hat das WeicheKriterium "FREIER_TAG_ZWISCHEN_PRUEFUNGEN"
+    Und die Pruefung "infKlausur1bwl" hat das WeicheKriterium "FREIER_TAG_ZWISCHEN_PRUEFUNGEN"
+    Und die Pruefung "infKlausur2bwl" hat das WeicheKriterium "FREIER_TAG_ZWISCHEN_PRUEFUNGEN"
+
+
