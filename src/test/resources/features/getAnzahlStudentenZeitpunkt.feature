@@ -30,3 +30,62 @@ Funktionalität: Als Planende*r moechte ich die Anzahl an Studenten, die zu eine
     Und es existiert die geplante Pruefung "pruefung2" am 11.02.2022 um 12:10 Uhr mit 10 Teilnehmern
     Wenn ich die Anzahl an Studenten die am 12.02.2022 um 12:30 Uhr eine Pruefung schreiben anfrage
     Dann erhalte ich die Anzahl 0
+
+  Szenario: Es ist ein paralleler Block geplant und ich frage die Anzahl der Studenten dessen Anfang ab
+    Angenommen es existiert eine Pruefungsperiode von 01.08.2022 - 14.09.2022 mit dem Ankertag 29.08.2022
+    Und es existiert der am 30.08.2022 um 12:00 Uhr geplante "parallele" Block "block" mit den Pruefungen
+      | Pruefung | Teilnehmeranzahl | Dauer |
+      | Analysis | 2                | 1:30  |
+      | DM       | 10               | 2:00  |
+      | SP       | 3                | 1:00  |
+      | AuD      | 5                | 3:00  |
+    Wenn ich die Anzahl an Studenten die am 30.08.2022 um 12:00 Uhr eine Pruefung schreiben anfrage
+    Dann erhalte ich die Anzahl 20
+
+  Szenario: Es ist ein sequentieller Block geplant und ich frage die Anzahl der Studenten dessen Anfang ab
+    Angenommen es existiert eine Pruefungsperiode von 01.08.2022 - 14.09.2022 mit dem Ankertag 29.08.2022
+    Und es existiert der am 30.08.2022 um 12:00 Uhr geplante "sequentielle" Block "block" mit den Pruefungen
+      | Pruefung | Teilnehmeranzahl | Dauer |
+      | Analysis | 2                | 1:30  |
+      | DM       | 10               | 2:00  |
+      | SP       | 3                | 1:00  |
+      | AuD      | 5                | 3:00  |
+    Wenn ich die Anzahl an Studenten die am 30.08.2022 um 12:00 Uhr eine Pruefung schreiben anfrage
+    Dann erhalte ich die Anzahl 20
+
+
+  Szenario: Es ist ein paralleler Block geplant und ich frage die Anzahl der Studenten
+  zu einem Zeitpunkt ab, ab dem manche Pruefungen schon vorbei sind
+    Angenommen es existiert eine Pruefungsperiode von 01.08.2022 - 14.09.2022 mit dem Ankertag 29.08.2022
+    Und es existiert der am 30.08.2022 um 12:00 Uhr geplante "parallele" Block "block" mit den Pruefungen
+      | Pruefung | Teilnehmeranzahl | Dauer |
+      | Analysis | 2                | 1:30  |
+      | DM       | 10               | 2:00  |
+      | SP       | 3                | 1:00  |
+      | AuD      | 5                | 3:00  |
+    Wenn ich die Anzahl an Studenten die am 30.08.2022 um 14:59 Uhr eine Pruefung schreiben anfrage
+    Dann erhalte ich die Anzahl 5
+
+  Szenario: Es sind ein paralleler Block und eine Pruefung geplant und ich frage die Anzahl der Studenten
+  zu einem Zeitpunkt ab
+    Angenommen es existiert eine Pruefungsperiode von 01.08.2022 - 14.09.2022 mit dem Ankertag 29.08.2022
+    Und es existiert der am 30.08.2022 um 12:00 Uhr geplante "parallele" Block "block" mit den Pruefungen
+      | Pruefung | Teilnehmeranzahl | Dauer |
+      | Analysis | 2                | 1:30  |
+      | DM       | 10               | 2:00  |
+      | SP       | 3                | 1:00  |
+      | AuD      | 5                | 3:00  |
+    Und es existiert die geplante Pruefung "pruefung" am 30.08.2022 um 14:30 Uhr mit 10 Teilnehmern
+    Wenn ich die Anzahl an Studenten die am 30.08.2022 um 14:59 Uhr eine Pruefung schreiben anfrage
+    Dann erhalte ich die Anzahl 15
+
+  Szenario: Es ist ein sequentieller Block geplant und ich frage die Anzahl der Studenten dessen Anfang ab
+    Angenommen es existiert eine Pruefungsperiode von 01.08.2022 - 14.09.2022 mit dem Ankertag 29.08.2022
+    Und es existiert der am 30.08.2022 um 12:00 Uhr geplante "sequentielle" Block "block" mit den Pruefungen
+      | Pruefung | Teilnehmeranzahl | Dauer |
+      | Analysis | 2                | 1:30  |
+      | DM       | 10               | 2:00  |
+      | SP       | 3                | 1:00  |
+      | AuD      | 5                | 3:00  |
+    Wenn ich die Anzahl an Studenten die am 30.08.2022 um 14:00 Uhr eine Pruefung schreiben anfrage
+    Dann erhalte ich die Anzahl 15
