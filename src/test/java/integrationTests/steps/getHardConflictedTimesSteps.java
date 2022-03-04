@@ -1,5 +1,6 @@
 package integrationTests.steps;
 
+import static de.fhwedel.klausps.model.api.Ausbildungsgrad.BACHELOR;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,9 +21,11 @@ import io.cucumber.java.de.Wenn;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public class getHardConflictedTimesSteps extends BaseSteps {
@@ -95,14 +98,24 @@ public class getHardConflictedTimesSteps extends BaseSteps {
     Set<ReadOnlyPruefung> result = new HashSet<>();
     input = input.subList(1, input.size());
     for (List<String> pruefungInput : input) {
-      Teilnehmerkreis teilnehmerkreis = new TeilnehmerkreisImpl(pruefungInput.get(1),
-          pruefungInput.get(1), Integer.parseInt(pruefungInput.get(2)), Ausbildungsgrad.BACHELOR);
+      Optional<Teilnehmerkreis> teilnehmerkreis = createTeilnehmerkreis(pruefungInput);
+      Map<Teilnehmerkreis, Integer> teilnehmerkreise = new HashMap<>();
+      teilnehmerkreis.ifPresent(t -> teilnehmerkreise.put(t, 10));
       ReadOnlyPruefung pruefung = state.controller.createPruefung(pruefungInput.get(0),
           pruefungInput.get(0), pruefungInput.get(0), emptySet(), Duration.ofHours(1),
-          Map.of(teilnehmerkreis, 10));
+          teilnehmerkreise);
       result.add(pruefung);
     }
     return result;
+  }
+
+  private Optional<Teilnehmerkreis> createTeilnehmerkreis(List<String> pruefungInput) {
+    if (pruefungInput.size() < 3) {
+      return Optional.empty();
+    }
+    Teilnehmerkreis teilnehmerkreis = new TeilnehmerkreisImpl(pruefungInput.get(1),
+        pruefungInput.get(1), Integer.parseInt(pruefungInput.get(2)), Ausbildungsgrad.BACHELOR);
+    return Optional.of(teilnehmerkreis);
   }
 
 }
