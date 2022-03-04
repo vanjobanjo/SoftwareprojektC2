@@ -89,3 +89,13 @@ Funktionalität: Als Planende*r moechte ich die Anzahl an Studenten, die zu eine
       | AuD      | 5                | 3:00  |
     Wenn ich die Anzahl an Studenten die am 30.08.2022 um 14:00 Uhr eine Pruefung schreiben anfrage
     Dann erhalte ich die Anzahl 15
+
+  Szenario: Ich frage einen Termin vor der Pruefungsperiode ab
+    Angenommen es existiert eine Pruefungsperiode von 01.08.2022 - 14.09.2022 mit dem Ankertag 29.08.2022
+    Wenn ich die Anzahl an Studenten die am 31.07.2022 um 08:00 Uhr eine Pruefung schreiben anfrage
+    Dann erhalte ich die Anzahl 0
+
+  Szenario: Ich frage einen Termin nach der Pruefungsperiode ab
+    Angenommen es existiert eine Pruefungsperiode von 01.08.2022 - 14.09.2022 mit dem Ankertag 29.08.2022
+    Wenn ich die Anzahl an Studenten die am 30.08.2022 um 08:00 Uhr eine Pruefung schreiben anfrage
+    Dann erhalte ich die Anzahl 0
