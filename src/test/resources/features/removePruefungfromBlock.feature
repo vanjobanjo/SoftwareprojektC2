@@ -1,54 +1,81 @@
 # language: de
 Funktionalität: Als Planender moechte ich gerne Pruefungen von einem Block entfernen.
 
-#  Szenariogrundriss: Eine Klausur wird aus einem geplanten Block entfernt
-#    Angenommen die <Klausuren> sind Teil des geplanten Block "ABC"
-#    Wenn die erste der <Klausuren> aus dem Block "ABC" entfernt wird
-#    Dann ist die erste der <Klausuren> ungeplant
-#    Und die erste der <Klausuren> ist nicht mehr im Block "ABC"
-#    Und der Block "ABC" ist noch geplant
-#    Und es sind 1 Klausuren im Block "ABC"
-#    Und das Entfernen hat Auswirkungen auf das Scoring
-#    #TODO bitte hier eine vernuenftige dann Bedingung
-#    Beispiele:
-#      | Klausuren                               |
-#      | "Analysis", "Diskrete Mathematik"       |
-#      | "Medienrecht", "Wirtschaftsprivatrecht" |
-#      | "Deutsch 1", "Englisch 2"               |
 
-  Szenario: Aus einem geplanten Block wird die einzige Klausur entfernt
+  Szenario: Aus einem ungeplante Block wird eine Klausur entfernt
     Angenommen es existiert eine Pruefungsperiode
-    Und der geplante Block "ABC" hat die Pruefung "Analysis"
-    Wenn "Analysis" aus dem Block "ABC" entfernt wird
-    Dann ist "Analysis" ungeplant
-    Und der Block "ABC" ist noch geplant
-    Und es sind 0 Klausuren im Block "ABC"
-    Und das Entfernen hat Auswirkungen auf das Scoring
-    #TODO bitte hier eine vernuenftige dann Bedingung
+    Und der ungeplante Block "blockA" "PARALLEL" enthaelt "BWL", "Mathe1"
+    Wenn "BWL" aus dem Block "blockA" entfernt wird
+    Dann ist die Pruefung "BWL" ungeplant
+    Und der Block "blockA" enthaelt die Pruefung "BWL" nicht
+    Und der Block "blockA" enthaelt die Pruefung "Mathe1"
 
-#  Szenariogrundriss: Es wird eine Klausur aus einem ungeplanten Block entfernt
-#    Angenommen die <Klausuren> sind Teil des ungeplanten Block "ABC"
-#    Wenn die erste der <Klausuren> aus dem Block "ABC" entfernt wird
-#    Dann ist die erste der <Klausuren> ungeplant
-#    Und die erste der <Klausuren> ist nicht mehr im Block "ABC"
-#    Und der Block "ABC" ist immer noch ungeplant
-#    Und es sind 1 Klausuren im Block "ABC"
-#    Und das Entfernen hat keine Auswirkungen auf das Scoring
-#    Beispiele:
-#      | Klausuren                           |
-#      | "Analysis", "Diskrete Mathematik"       |
-#      | "Medienrecht", "Wirtschaftsprivatrecht" |
-#      | "Deutsch 1", "Englisch 2"               |
+  Szenario: Aus einem ungeplante Block wird eine Klausur entfernt
+    Angenommen es existiert eine Pruefungsperiode
+    Und der ungeplante Block "blockA" "SEQUENTIAL" enthaelt "BWL", "Mathe1"
+    Wenn "BWL" aus dem Block "blockA" entfernt wird
+    Dann ist die Pruefung "BWL" ungeplant
+    Und der Block "blockA" enthaelt die Pruefung "BWL" nicht
+    Und der Block "blockA" enthaelt die Pruefung "Mathe1"
 
-  Szenariogrundriss: Es wird eine Klausur aus einem ungeplanten Block entfernt obwohl sie nicht im Block ist
-    Angenommen <Klausuren> sind Teil des geplanten Block "ABC"
-    Wenn die Pruefung "Deutsch 1" aus dem Block "ABC" entfernt wird
-    Dann erhalte ich einen Fehler
-    Beispiele:
-      | Klausuren                         |
-      | "Analysis", "Diskrete Mathematik" |
 
-  Szenario: Es wird eine Klausur aus einem geplanten Block entfernt obwohl sie nicht im Block ist
-    Angenommen "Analysis", "Diskrete Mathematik" sind Teil des ungeplanten Block "ABC"
-    Wenn die Pruefung "Deutsch 1" aus dem Block "ABC" entfernt wird
-    Dann erhalte ich einen Fehler
+  Szenario: Aus einem ungeplante Block wird die einzige Klausur entfernt
+    Angenommen es existiert eine Pruefungsperiode
+    Und der ungeplante Block "blockA" "PARALLEL" enthaelt "BWL"
+    Wenn "BWL" aus dem Block "blockA" entfernt wird
+    Dann ist die Pruefung "BWL" ungeplant
+    Und der Block "blockA" enthaelt die Pruefung "BWL" nicht
+
+  Szenario: Aus einem ungeplante Block wird die einzige Klausur entfernt
+    Angenommen es existiert eine Pruefungsperiode
+    Und der ungeplante Block "blockA" "SEQUENTIAL" enthaelt "BWL"
+    Wenn "BWL" aus dem Block "blockA" entfernt wird
+    Dann ist die Pruefung "BWL" ungeplant
+    Und der Block "blockA" enthaelt die Pruefung "BWL" nicht
+
+
+  Szenario: Aus einem ungeplante Block wird die einzige Klausur entfernt
+    Angenommen es existiert eine Pruefungsperiode
+    Und der geplante Block "blockA" "PARALLEL" 02.02.2022 enthaelt "BWL", "Mathe1"
+    Wenn "BWL" aus dem Block "blockA" entfernt wird
+    Dann ist die Pruefung "BWL" ungeplant
+    Und der Block "blockA" enthaelt die Pruefung "BWL" nicht
+    Und der Block "blockA" enthaelt die Pruefung "Mathe1"
+    Und ist die Pruefung "Mathe1" geplant
+
+  Szenario: Aus einem ungeplante Block wird die einzige Klausur entfernt
+    Angenommen es existiert eine Pruefungsperiode
+    Und der geplante Block "blockA" "SEQUENTIAL" 02.02.2022 enthaelt "BWL", "Mathe1"
+    Wenn "BWL" aus dem Block "blockA" entfernt wird
+    Dann ist die Pruefung "BWL" ungeplant
+    Und der Block "blockA" enthaelt die Pruefung "BWL" nicht
+    Und der Block "blockA" enthaelt die Pruefung "Mathe1"
+    Und ist die Pruefung "Mathe1" geplant
+
+  Szenario: Aus einem ungeplante Block wird eine Klausur entfernt mit mehrerenBlocken
+    Angenommen es existiert eine Pruefungsperiode
+    Und der ungeplante Block "blockA" "PARALLEL" enthaelt "BWL", "Mathe1"
+    Und der ungeplante Block "blockB" "PARALLEL" enthaelt "BWL1", "Mathe11"
+    Wenn "BWL" aus dem Block "blockA" entfernt wird
+    Dann ist die Pruefung "BWL" ungeplant
+    Und der Block "blockA" enthaelt die Pruefung "BWL" nicht
+    Und der Block "blockA" enthaelt die Pruefung "Mathe1"
+
+  Szenario: Aus einem ungeplante Block wird eine Klausur entfernt mehrerenBlocken
+    Angenommen es existiert eine Pruefungsperiode
+    Und der ungeplante Block "blockA" "SEQUENTIAL" enthaelt "BWL", "Mathe1"
+    Und der ungeplante Block "blockB" "SEQUENTIAL" enthaelt "BWL1", "Mathe11"
+    Wenn "BWL" aus dem Block "blockA" entfernt wird
+    Dann ist die Pruefung "BWL" ungeplant
+    Und der Block "blockA" enthaelt die Pruefung "BWL" nicht
+    Und der Block "blockA" enthaelt die Pruefung "Mathe1"
+
+
+  Szenario: remove Pruefung from Block with fehlermeldung
+    Angenommen es existiert eine Pruefungsperiode
+    Und der ungeplante Block "blockA" "SEQUENTIAL" enthaelt "BWL", "Mathe1"
+    Wenn wenn ich eine Unbekannte Pruefung aus einen Block "blockA" entfernen moechte
+    Dann bekomme ich eine Fehlermeldung IllegalStateException
+
+
+
