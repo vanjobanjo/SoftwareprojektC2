@@ -17,7 +17,8 @@ Funktionalität: Als Planender moechte ich gerne Pruefungen von einem Block entf
 #      | "Deutsch 1", "Englisch 2"               |
 
   Szenario: Aus einem geplanten Block wird die einzige Klausur entfernt
-    Angenommen der geplante Block "ABC" hat die Pruefung "Analysis"
+    Angenommen es existiert eine Pruefungsperiode
+    Und der geplante Block "ABC" hat die Pruefung "Analysis"
     Wenn "Analysis" aus dem Block "ABC" entfernt wird
     Dann ist "Analysis" ungeplant
     Und der Block "ABC" ist noch geplant

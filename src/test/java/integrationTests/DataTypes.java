@@ -4,6 +4,9 @@ import io.cucumber.java.ParameterType;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class DataTypes {
 
@@ -41,6 +44,19 @@ public class DataTypes {
     } else {
       return null;
     }
+  }
+
+  @ParameterType("(\\\"[^\\\"]*\\\"(, \\\"[^\\\"]+\\\")*)")
+  public List<String> stringList(String strings) {
+    return Arrays.stream(strings.split(", ")).map(this::removeQuotation)
+        .collect(Collectors.toList());
+  }
+
+  private String removeQuotation(String input) {
+    if (input.length() > 2) {
+      return input.substring(1, input.length() - 1);
+    }
+    return input;
   }
 
 

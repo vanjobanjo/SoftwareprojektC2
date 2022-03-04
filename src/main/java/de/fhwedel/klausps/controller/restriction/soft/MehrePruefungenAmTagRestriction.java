@@ -21,6 +21,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ *  A Restriction describing that the amount of {@link Pruefung}en on the same day with the same {@link Teilnehmerkreis}
+ */
 public class MehrePruefungenAmTagRestriction extends SoftRestriction {
 
   protected MehrePruefungenAmTagRestriction(DataAccessService dataAccessService) {
@@ -40,9 +43,10 @@ public class MehrePruefungenAmTagRestriction extends SoftRestriction {
 
     if (pruefung != null && pruefung.isGeplant()) {
 
+
       List<Planungseinheit> listWithPruefungenInTimeSpace = getPruefungenInTimeSpace(pruefung);
       for (Planungseinheit planungseinheit : listWithPruefungenInTimeSpace) {
-        //Unterscheidung auf Block
+        //difference between Block and Pruefung
         if (planungseinheit.isBlock()) {
           goThroughBlock(pruefung, setPruefung, mapTeilnehmerkreis, planungseinheit.asBlock());
         } else {
@@ -158,22 +162,20 @@ public class MehrePruefungenAmTagRestriction extends SoftRestriction {
   }
 
   /**
-   * Methode die aus einem LocalDateTime die StartZeit auf START_ZEIT setzt
+   * This method will give you the start of the day as LocalDateTime
    *
-   * @param time Der Tag, an den die Pruefung stattfindet, aber wo die StartZeit neu gesetzt werden
-   *             soll
-   * @return der gleiche Tag wie in time, aber mit der START_ZEIT
+   * @param time with this parameter you get the day of the new LocalDateTime
+   * @return time with the start time of the day
    */
   private LocalDateTime startDay(LocalDateTime time) {
     return time.toLocalDate().atStartOfDay();
   }
 
   /**
-   * Methode die aus einem LocalDateTIme die EndZeit auf END_ZEit setzt
+   * This method will give you the end of the day as LocalDateTime
    *
-   * @param time Der Tag, an den die Pruefung stattfindet, aber wo die END_ZEIT neu gesetzt werden
-   *             soll
-   * @return der gleiche Tag wie in time, aber mit der END_ZEIT
+   * @param time with this parameter you get the day of the new LocalDateTime
+   * @return time with the end time of the day
    */
   private LocalDateTime endDay(LocalDateTime time) {
     return time.toLocalDate().plusDays(1).atStartOfDay();

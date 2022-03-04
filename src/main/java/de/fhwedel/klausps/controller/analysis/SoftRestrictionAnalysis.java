@@ -6,6 +6,11 @@ import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.util.Set;
 
+/**
+ * This class give the opportunity for collecting from all SoftRestrictions the Analysis
+ * And then transform  a SoftRestrictionAnalysis into a KriteriumsAnalyse for the view.
+ * //TODO hier nochmal bitte lesen
+ */
 public class SoftRestrictionAnalysis {
 
 

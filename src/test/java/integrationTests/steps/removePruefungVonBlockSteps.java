@@ -13,18 +13,9 @@ import org.junit.AssumptionViolatedException;
 
 public class removePruefungVonBlockSteps {
 
-    @ParameterType("(\\\"[^\\\"]*\\\"(, \\\"[^\\\"]+\\\")*)")
-    public List<String> stringList(String strings) {
-        return Arrays.stream(strings.split(", ")).map(this::removeQuotation)
-            .collect(Collectors.toList());
-    }
 
-    private String removeQuotation(String input) {
-        if (input.length() > 2) {
-            return input.substring(1, input.length() - 1);
-        }
-        return input;
-    }
+
+
 
     //TODO das muss evtl geaendert werden
     @Und("das Entfernen hat Auswirkungen auf das Scoring")
