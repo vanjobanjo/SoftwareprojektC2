@@ -557,7 +557,8 @@ public class DataAccessService {
    * Deletes the passed pruefung and returns maybe a block, when pruefung was inside a block
    *
    * @param roPruefung pruefung to delete
-   * @return a maybe block when the pruefung was inside one
+   * @return Either an optional containing the block containing the deleted Pruefung or an empty
+   * one.
    * @throws IllegalStateException              exception from the model
    * @throws NoPruefungsPeriodeDefinedException when no periode is set
    * @throws IllegalArgumentException           when the passed pruefung is planned
@@ -569,10 +570,12 @@ public class DataAccessService {
       throw new IllegalArgumentException("Geplante Pruefungen dürfen nicht gelöscht werden.");
     }
     Optional<Block> block = getBlockTo(pruefung);
-    pruefungsperiode.removePlanungseinheit(pruefung);
     if (block.isPresent()) {
-      LOGGER.debug("Deleting {} from Model.", pruefung);
+      block.get().removePruefung(pruefung);
+      pruefung = pruefungsperiode.pruefung(roPruefung.getPruefungsnummer());
     }
+    LOGGER.debug("Deleting {} from Model.", pruefung);
+    pruefungsperiode.removePlanungseinheit(pruefung);
     return block;
   }
 

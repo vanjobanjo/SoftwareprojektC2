@@ -1,10 +1,6 @@
 # language: de
 Funktionalität: Als Planender moechte ich einen neuen Teilnehmerkrs erstellen können.
 
-# funktioniert
-# leere Argumente
-# Semester <= 0
-
   Szenariogrundriss: Ein Teilnehmerkreis wird korrekt erstellt.
     Wenn ich einen Bachelor Teilnehmerkreis erstelle mit <Studiengang>, <Studienordnung> und <Semester> erstelle
     Dann erhalte ich einen Bachelor Teilnehmerkreis mit <Studiengang>, <Studienordnung> und <Semester>

@@ -11,6 +11,7 @@ import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedExcepti
 import io.cucumber.java.de.Dann;
 import io.cucumber.java.de.Wenn;
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 
 public class deletePruefungSteps extends BaseSteps {
@@ -56,5 +57,17 @@ public class deletePruefungSteps extends BaseSteps {
     } catch (IllegalArgumentException | IllegalStateException exception) {
       state.results.put("exception", exception);
     }
+  }
+
+  @Dann("enthaelt das Ergebnis den Block {string} mit genau den Pruefungen {stringList}")
+  public void enthaeltDasErgebnisDenBlockMitGenauDenPruefungen(String blockName,
+      List<String> pruefungNames) {
+    Optional<ReadOnlyBlock> optional = (Optional<ReadOnlyBlock>) state.results.get("result");
+    assertThat(optional).isPresent();
+    ReadOnlyBlock block = optional.get();
+    assertThat(block.getName()).isEqualTo(blockName);
+    assertThat(block.getROPruefungen()).hasSameSizeAs(pruefungNames);
+    assertThat(block.getROPruefungen()).allMatch(
+        pruefung -> pruefungNames.contains(pruefung.getName()));
   }
 }

@@ -21,9 +21,15 @@ Funktionalität: Als Planender moechte ich eine neue Pruefung löschen koennen.
 
   Szenario: Das Loeschen einer Pruefung liefert den Block in der sie sich befand.
     Angenommen es existiert eine Pruefungsperiode
-    Und es existiert der Block "block 1" mit der Pruefung "ComputerGrafik"
+    Und es existieren die folgenden Klausuren:
+      | Name           | Datum | StartZeit | Dauer |
+      | KI             |       |           | 03:00 |
+      | ComputerGrafik |       |           | 03:00 |
+    Und es existieren die folgenden Bloecke:
+      | Block  | Datum | StartZeit | Pruefungen         |
+      | Blocky |       |           | KI, ComputerGrafik |
     Wenn ich die Pruefung "ComputerGrafik" loesche
-    Dann enthaelt das Ergebnis den Block "block 1"
+    Dann enthaelt das Ergebnis den Block "Blocky" mit genau den Pruefungen "KI"
 
   Szenario: Eine unbekannte Pruefung kann nicht geloescht werden.
     Angenommen es existiert eine Pruefungsperiode
