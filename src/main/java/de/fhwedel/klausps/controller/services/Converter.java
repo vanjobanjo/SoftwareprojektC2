@@ -258,12 +258,16 @@ public class Converter {
       for (Pruefung pruefung : hKA.getCausingPruefungen()) {
         conflictPruefung.add(convertToReadOnlyPruefung(pruefung));
       }
+      for(Teilnehmerkreis teilnehmerkreis: hKA.getTeilnehmerCount().keySet()){
+        conflictTeilnehmer.add(teilnehmerkreis);
+      }
 
       TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung(teilnehmerCount, hKA.getTeilnehmerCount());
     }
 
     for (Integer count : teilnehmerCount.values()) {
       amountStudents += count;
+
     }
 
     return new HartesKriteriumException(conflictPruefung, conflictTeilnehmer, amountStudents);
