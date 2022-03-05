@@ -54,7 +54,6 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
   }
 
 
-
   @Override
   public Optional<HardRestrictionAnalysis> evaluateRestriction(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
@@ -63,10 +62,10 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
       LocalDateTime start = pruefung.getStartzeitpunkt().minus(bufferBetweenPlanungseinheiten);
       LocalDateTime end = getEndTime(pruefung);
       // Anm.: Liste muss kopiert werden, da Model nur unmodifiable Lists zurückgibt
-      List<Planungseinheit> testList = new ArrayList<>(
+      List<Planungseinheit> listWithPlanungseinheitenInTimeSpan = new ArrayList<>(
           tryToGetAllPlanungseinheitenBetween(start, end));
       Optional<HardRestrictionAnalysis> hKA = checkForPlanungseinheitenHartesKriterium(
-          pruefung, start, end, testList);
+          pruefung, start, end, listWithPlanungseinheitenInTimeSpan);
       if (hKA.isPresent()) {
         return hKA;
       }
@@ -76,8 +75,9 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
 
   /**
    * This methode will provide a Set of Planungseinheiten witch are planed between start and end
+   *
    * @param start the beginning of the time, where it should be searched
-   * @param end the end of the time, where it should be searched
+   * @param end   the end of the time, where it should be searched
    * @return a Set of Planungseinheiten witch are planed in the time spane between start and end
    * @throws NoPruefungsPeriodeDefinedException if no Pruefungsperiode is Defined
    */
@@ -96,28 +96,31 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
    * Methode die durch alle Planungseinheiten in der übergebenen Liste geht und die für die
    * Planungseinheit zuständige Methode aufruft
    *
-   * @param pruefung die Pruefung die neu Hinzugefügt wurde und für die das Kriterium getestet wird
-   * @param start    der Starttermin ab wo die Überprüfung durchgeführt werden soll (Nur für Blöcke
-   *                 relevant)
-   * @param end      der Endtermin bis wohin die Überprüfung durchgeführt werden sol (Nur für Blöcke
-   *                 relevant)
-   * @param testList die Liste mit Planungseinheiten, die zu dem Startzeitpunkt stattfinden
+   * @param pruefung                            die Pruefung die neu Hinzugefügt wurde und für die
+   *                                            das Kriterium getestet wird
+   * @param start                               der Starttermin ab wo die Überprüfung durchgeführt
+   *                                            werden soll (Nur für Blöcke relevant)
+   * @param end                                 der Endtermin bis wohin die Überprüfung durchgeführt
+   *                                            werden sol (Nur für Blöcke relevant)
+   * @param listInTimeSpan die Liste mit Planungseinheiten, die zu dem
+   *                                            Startzeitpunkt stattfinden
    * @return Entweder eine HardRestrictionAnalysis, wo die Pruefungen, das Kriterium und die
    * Teilnehmer mit ihrer Anzahl drin steht oder ein leeres Optional
    */
   private Optional<HardRestrictionAnalysis> checkForPlanungseinheitenHartesKriterium(
-      Pruefung pruefung, LocalDateTime start, LocalDateTime end, List<Planungseinheit> testList) {
+      Pruefung pruefung, LocalDateTime start, LocalDateTime end,
+      List<Planungseinheit> listInTimeSpan) {
 
     //Zum Sammeln der Teilnehmerkreise und die Pruefungen, die einen harten Konflikt verursachen
     Map<Teilnehmerkreis, Integer> teilnehmerCount = new HashMap<>();
     HashSet<Pruefung> inConflictROPruefung = new HashSet<>();
     Optional<HardRestrictionAnalysis> hKA = Optional.empty();
-    if (testList != null) {
+    if (listInTimeSpan != null) {
       //remove Pruefung that it there will be no conflict with itself
-      testList.remove(pruefung);
+      listInTimeSpan.remove(pruefung);
 
       //Durchgehen der Liste von Planungseinheiten und unterscheiden von unterschiedlichem Typ
-      for (Planungseinheit planungseinheit : testList) {
+      for (Planungseinheit planungseinheit : listInTimeSpan) {
         if (planungseinheit.isBlock()) {
           testForBlockHard(pruefung, planungseinheit.asBlock(), start, end, inConflictROPruefung,
               teilnehmerCount);
@@ -342,12 +345,16 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
   }
 
   /**
-   * Diese Methode ist dafür da, um zu überprüfen ob eine Pruefung und eine Planungseinheit einen gemeinsamen Teilnehmerkreis besitzt
-   * @param pruefung die Pruefung mit der nach einen Übereinstimmenden Teilnehmerkreis gesucht wird
+   * Diese Methode ist dafür da, um zu überprüfen ob eine Pruefung und eine Planungseinheit einen
+   * gemeinsamen Teilnehmerkreis besitzt
+   *
+   * @param pruefung                  die Pruefung mit der nach einen Übereinstimmenden
+   *                                  Teilnehmerkreis gesucht wird
    * @param planungseinheitToCheckFor die Planungseinheit mit der ein Teilnehmer überprüft wird
    * @return ob die Pruefung und die Planungseinheit einen gemeinsamen Teilnehmerkreis besitzt
    */
-  private boolean notSameTeilnehmerkreis(Pruefung pruefung, Planungseinheit planungseinheitToCheckFor) {
+  private boolean notSameTeilnehmerkreis(Pruefung pruefung,
+      Planungseinheit planungseinheitToCheckFor) {
     for (Teilnehmerkreis teilnehmerkreis : pruefung.getTeilnehmerkreise()) {
       if (planungseinheitToCheckFor.getTeilnehmerkreise().contains(teilnehmerkreis)) {
         return false;

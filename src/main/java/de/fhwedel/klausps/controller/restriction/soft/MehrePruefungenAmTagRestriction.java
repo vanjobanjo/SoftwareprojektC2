@@ -38,7 +38,8 @@ public class MehrePruefungenAmTagRestriction extends SoftRestriction {
   public Optional<SoftRestrictionAnalysis> evaluateRestriction(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
 
-    Set<Pruefung> setPruefung = new HashSet<>();
+
+    Set<Pruefung> setPruefungenInConflict = new HashSet<>();
     Map<Teilnehmerkreis, Integer> mapTeilnehmerkreis = new HashMap<>();
 
     if (pruefung != null && pruefung.isGeplant()) {
@@ -48,20 +49,20 @@ public class MehrePruefungenAmTagRestriction extends SoftRestriction {
       for (Planungseinheit planungseinheit : listWithPruefungenInTimeSpace) {
         //difference between Block and Pruefung
         if (planungseinheit.isBlock()) {
-          goThroughBlock(pruefung, setPruefung, mapTeilnehmerkreis, planungseinheit.asBlock());
+          goThroughBlock(pruefung, setPruefungenInConflict, mapTeilnehmerkreis, planungseinheit.asBlock());
         } else {
-          setPruefung.addAll(
+          setPruefungenInConflict.addAll(
               testTwoPruefungenKonflikt(pruefung, planungseinheit.asPruefung(),
                   mapTeilnehmerkreis));
         }
       }
-      if (setPruefung.contains(pruefung)) {
+      if (setPruefungenInConflict.contains(pruefung)) {
         TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung(mapTeilnehmerkreis,
             pruefung.getSchaetzungen());
       }
     }
 
-    return getWeichesKriteriumAnalyse(setPruefung, mapTeilnehmerkreis);
+    return getWeichesKriteriumAnalyse(setPruefungenInConflict, mapTeilnehmerkreis);
   }
 
   /**
@@ -150,9 +151,9 @@ public class MehrePruefungenAmTagRestriction extends SoftRestriction {
       Map<Teilnehmerkreis, Integer> mapTeilnehmer) {
 
     Set<Pruefung> setConflictPruefung = new HashSet<>();
-    Set<Teilnehmerkreis> teilnehmer = pruefung.getTeilnehmerkreise();
+    Set<Teilnehmerkreis> teilnehmerSet = pruefung.getTeilnehmerkreise();
     for (Teilnehmerkreis teilnehmerkreis : toCheck.getTeilnehmerkreise()) {
-      if (teilnehmer.contains(teilnehmerkreis)) {
+      if (teilnehmerSet.contains(teilnehmerkreis)) {
         TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung(mapTeilnehmer, toCheck.getSchaetzungen());
         setConflictPruefung.add(toCheck);
       }
