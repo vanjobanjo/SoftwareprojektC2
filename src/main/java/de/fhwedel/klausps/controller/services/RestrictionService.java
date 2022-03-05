@@ -1,6 +1,7 @@
 package de.fhwedel.klausps.controller.services;
 
 import static de.fhwedel.klausps.controller.util.ParameterUtil.noNullParameters;
+import static de.fhwedel.klausps.model.api.Blocktyp.SEQUENTIAL;
 
 import de.fhwedel.klausps.controller.analysis.HardRestrictionAnalysis;
 import de.fhwedel.klausps.controller.analysis.SoftRestrictionAnalysis;
@@ -10,6 +11,7 @@ import de.fhwedel.klausps.controller.restriction.soft.SoftRestriction;
 import de.fhwedel.klausps.model.api.Block;
 import de.fhwedel.klausps.model.api.Planungseinheit;
 import de.fhwedel.klausps.model.api.Pruefung;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -57,17 +59,42 @@ public class RestrictionService {
     hardRestrictions.addAll(restrictions);
   }
 
+
   /**
-   * Get all the affected pruefungen by the passed block
+   * Get all the affected pruefungen by the passed block.
+   *
    * @param block passed block to check
    * @return Set of affected pruefungen
-   * @throws NoPruefungsPeriodeDefinedException when no period is defiined
+   * @throws NoPruefungsPeriodeDefinedException In case no period is defined.
    */
-  public Set<Pruefung> getPruefungenAffectedBy(Block block)
+  public Set<Pruefung> getPruefungenAffectedByAnyBlock(Block block)
       throws NoPruefungsPeriodeDefinedException {
     Set<Pruefung> result = new HashSet<>();
+    if (block.getTyp().equals(SEQUENTIAL)) {
+      result.addAll(getPruefungenAffectedBySequentialBlock(block));
+    } else {
+      for (Pruefung pruefung : block.getPruefungen()) {
+        result.addAll(getPruefungenAffectedBy(pruefung));
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Checks which planned Pruefungen a sequential block affects.
+   * @param block The block to check for.
+   * @return All affected Pruefungen by the block.
+   * @throws NoPruefungsPeriodeDefinedException In case no period is defined.
+   */
+  private Set<Pruefung> getPruefungenAffectedBySequentialBlock(Block block)
+      throws NoPruefungsPeriodeDefinedException {
+    assert block.getTyp().equals(SEQUENTIAL);
+    Set<Pruefung> result = new HashSet<>();
     for (Pruefung pruefung : block.getPruefungen()) {
+      Duration prevDuration = pruefung.getDauer();
+      pruefung.setDauer(block.getDauer());
       result.addAll(getPruefungenAffectedBy(pruefung));
+      pruefung.setDauer(prevDuration);
     }
     return result;
   }

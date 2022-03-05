@@ -239,7 +239,7 @@ class ScheduleServiceTest {
 
     when(dataAccessService.unscheduleBlock(any())).thenReturn(blockWithAnalysisDM);
     when(dataAccessService.getBlock(any())).thenReturn(blockWithAnalysisDM);
-    when(restrictionService.getPruefungenAffectedBy(any(Block.class))).thenReturn(
+    when(restrictionService.getPruefungenAffectedByAnyBlock(any(Block.class))).thenReturn(
         Set.of(model_analysis, model_dm));
 
     List<ReadOnlyPlanungseinheit> result = deviceUnderTest.unscheduleBlock(block);
@@ -1184,7 +1184,7 @@ class ScheduleServiceTest {
         ZWEI_KLAUSUREN_GLEICHZEITIG, teilnehmerCount));
     when(restrictionService.checkHarteKriterienAll(Set.of(analysis, haskell))).thenReturn(
         hardKriterien);
-    when(restrictionService.getPruefungenAffectedBy(any(Block.class))).thenReturn(
+    when(restrictionService.getPruefungenAffectedByAnyBlock(any(Block.class))).thenReturn(
         Set.of(analysis, haskell));
     assertThrows(HartesKriteriumException.class,
         () -> deviceUnderTest.setBlockType(roBlock, SEQUENTIAL));
@@ -1200,7 +1200,7 @@ class ScheduleServiceTest {
     block.setTyp(PARALLEL);
     ReadOnlyBlock roBlock = converter.convertToROBlock(block);
     when(dataAccessService.getBlock(roBlock)).thenReturn(block);
-    when(restrictionService.getPruefungenAffectedBy(any(Block.class))).thenReturn(
+    when(restrictionService.getPruefungenAffectedByAnyBlock(any(Block.class))).thenReturn(
         Collections.emptySet());
     when(restrictionService.checkHarteKriterienAll(Set.of(analysis, haskell))).thenReturn(
         Collections.emptyList());
@@ -1218,7 +1218,7 @@ class ScheduleServiceTest {
     block.setTyp(PARALLEL);
     ReadOnlyBlock roBlock = converter.convertToROBlock(block);
     when(dataAccessService.getBlock(roBlock)).thenReturn(block);
-    when(restrictionService.getPruefungenAffectedBy(any(Block.class))).thenReturn(
+    when(restrictionService.getPruefungenAffectedByAnyBlock(any(Block.class))).thenReturn(
         Set.of(analysis));
     when(restrictionService.checkHarteKriterienAll(Set.of(analysis, haskell))).thenReturn(
         Collections.emptyList());
@@ -1280,7 +1280,7 @@ class ScheduleServiceTest {
         ZWEI_KLAUSUREN_GLEICHZEITIG, teilnehmerCount));
     when(restrictionService.checkHarteKriterienAll(Set.of(analysis, haskell))).thenReturn(
         hardKriterien);
-    when(restrictionService.getPruefungenAffectedBy(any(Block.class))).thenReturn(
+    when(restrictionService.getPruefungenAffectedByAnyBlock(any(Block.class))).thenReturn(
         Set.of(analysis, haskell));
     assertThrows(HartesKriteriumException.class,
         () -> deviceUnderTest.setBlockType(roBlock, PARALLEL));
@@ -1296,7 +1296,7 @@ class ScheduleServiceTest {
     block.setTyp(SEQUENTIAL);
     ReadOnlyBlock roBlock = converter.convertToROBlock(block);
     when(dataAccessService.getBlock(roBlock)).thenReturn(block);
-    when(restrictionService.getPruefungenAffectedBy(any(Block.class))).thenReturn(
+    when(restrictionService.getPruefungenAffectedByAnyBlock(any(Block.class))).thenReturn(
         Collections.emptySet());
     when(restrictionService.checkHarteKriterienAll(Set.of(analysis, haskell))).thenReturn(
         Collections.emptyList());
@@ -1314,7 +1314,7 @@ class ScheduleServiceTest {
     block.setTyp(SEQUENTIAL);
     ReadOnlyBlock roBlock = converter.convertToROBlock(block);
     when(dataAccessService.getBlock(roBlock)).thenReturn(block);
-    when(restrictionService.getPruefungenAffectedBy(any(Block.class))).thenReturn(
+    when(restrictionService.getPruefungenAffectedByAnyBlock(any(Block.class))).thenReturn(
         Set.of(analysis));
     when(restrictionService.checkHarteKriterienAll(Set.of(analysis, haskell))).thenReturn(
         Collections.emptyList());

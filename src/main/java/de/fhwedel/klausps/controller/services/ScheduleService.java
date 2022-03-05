@@ -245,7 +245,7 @@ public class ScheduleService {
     noNullParameters(block);
     Block blockModel = dataAccessService.getBlock(block);
     checkExistenceOfPruefungenInBlock(block);
-    Set<Pruefung> affected = restrictionService.getPruefungenAffectedBy(blockModel);
+    Set<Pruefung> affected = restrictionService.getPruefungenAffectedByAnyBlock(blockModel);
     dataAccessService.unscheduleBlock(block);
     return new ArrayList<>(calculateScoringForCachedAffected(affected));
   }
@@ -490,7 +490,7 @@ public class ScheduleService {
       modelBlock.setTyp(changeTo);
       return List.of(converter.convertToROBlock(modelBlock));
     }
-    Set<Pruefung> affected = restrictionService.getPruefungenAffectedBy(modelBlock);
+    Set<Pruefung> affected = restrictionService.getPruefungenAffectedByAnyBlock(modelBlock);
     modelBlock.setTyp(changeTo);
 
     List<HardRestrictionAnalysis> hard = restrictionService.checkHarteKriterienAll(

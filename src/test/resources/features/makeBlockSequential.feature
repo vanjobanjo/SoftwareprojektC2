@@ -26,4 +26,4 @@ Funktionalität: Als Planende*r moechte ich Bloecke sequentiell machen koennen
         | CG       | Inf         | 1        |
       Und es existiert die geplante Pruefung "pruefung" am 03.02.2022 um 16:30 Uhr mit dem Teilnehmerkreis "Inf" und dem Semester 1
       Wenn ich den Block "Bloeckchen" auf sequentiell stelle
-      Dann erhalte ich einen Fehler
+      Dann bekomme ich eine Fehlermeldung HartesKriteriumException

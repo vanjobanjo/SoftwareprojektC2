@@ -30,7 +30,7 @@ public class makeBlockParallelStep extends BaseSteps {
   @Wenn("ich den Block {string} auf parallel stelle")
   public void ichDenBlockAufParallelStelle(String blockName)
       throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
-    List<ReadOnlyPlanungseinheit> result = state.controller.makeBlockSequential(
+    List<ReadOnlyPlanungseinheit> result = state.controller.makeBlockParallel(
         getBlockFromModel(blockName));
 
   }

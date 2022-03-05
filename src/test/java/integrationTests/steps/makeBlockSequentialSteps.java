@@ -1,5 +1,6 @@
 package integrationTests.steps;
 
+import static de.fhwedel.klausps.model.api.Blocktyp.PARALLEL;
 import static de.fhwedel.klausps.model.api.Blocktyp.SEQUENTIAL;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
@@ -34,7 +35,7 @@ public class makeBlockSequentialSteps extends BaseSteps {
       List<List<String>> pruefungenInput)
       throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
     Set<ReadOnlyPruefung> pruefungen = createPruefungen(pruefungenInput);
-    ReadOnlyBlock block = state.controller.createBlock(blockName, SEQUENTIAL,
+    ReadOnlyBlock block = state.controller.createBlock(blockName, PARALLEL,
         pruefungen.toArray(new ReadOnlyPruefung[]{}));
     state.controller.scheduleBlock(block, schedule);
   }
@@ -72,7 +73,8 @@ public class makeBlockSequentialSteps extends BaseSteps {
         getBlockFromModel(blockName));
 
     } catch (HartesKriteriumException e) {
-      putExceptionInResult(e);
+    //  putExceptionInResult(e);
+      state.results.put("exception", e);
     }
 
 
@@ -81,7 +83,7 @@ public class makeBlockSequentialSteps extends BaseSteps {
   @Dann("ist der Block {string} sequentiell")
   public void istDerBlockSequential(String blockName) throws NoPruefungsPeriodeDefinedException {
     ReadOnlyBlock block = getBlockFromModel(blockName);
-    assertThat(block.getTyp()).isEqualTo(Blocktyp.PARALLEL);
+    assertThat(block.getTyp()).isEqualTo(SEQUENTIAL);
   }
 
   @Und("es existiert die geplante Pruefung {string} am {localDateTime} mit dem Teilnehmerkreis {string} und dem Semester {int}")
@@ -92,9 +94,16 @@ public class makeBlockSequentialSteps extends BaseSteps {
     Optional<Teilnehmerkreis> tk = createTeilnehmerkreis(List.of(tkName, String.valueOf(semester)));
     Map<Teilnehmerkreis, Integer> schaetzung = tk.map(
         teilnehmerkreis -> Map.of(teilnehmerkreis, 102)).orElse(emptyMap());
+
+
+    Teilnehmerkreis tk1 = new TeilnehmerkreisImpl(tkName, tkName,semester, Ausbildungsgrad.BACHELOR);
+    Map<Teilnehmerkreis,Integer> newTeilnehmerMap = new HashMap<>();
+    newTeilnehmerMap.put(tk1, 102);
+
+
     ReadOnlyPruefung pruefung = state.controller.createPruefung(pruefungName, pruefungName,
         pruefungName, emptySet(),
-        Duration.ofHours(2), schaetzung);
+        Duration.ofHours(2), newTeilnehmerMap);
     state.controller.schedulePruefung(pruefung, localDateTime);
   }
 }

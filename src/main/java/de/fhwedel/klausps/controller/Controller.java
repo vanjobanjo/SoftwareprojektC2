@@ -401,7 +401,7 @@ public class Controller implements InterfaceController {
     LOGGER.debug("Call to makeBlockSequential({}).", block);
     noNullParameters(block);
     ensureAvailabilityOfPruefungsperiode();
-    return scheduleService.setBlockType(block, PARALLEL);
+    return scheduleService.setBlockType(block, SEQUENTIAL);
   }
 
   @Override
@@ -410,7 +410,7 @@ public class Controller implements InterfaceController {
     LOGGER.debug("Call to makeBlockParallel({}).", block);
     noNullParameters(block);
     ensureAvailabilityOfPruefungsperiode();
-    return scheduleService.setBlockType(block, SEQUENTIAL);
+    return scheduleService.setBlockType(block, PARALLEL);
   }
 
   @Override
