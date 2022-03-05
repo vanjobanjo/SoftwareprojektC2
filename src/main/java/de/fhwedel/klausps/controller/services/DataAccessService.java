@@ -640,14 +640,13 @@ public class DataAccessService {
       throws NoPruefungsPeriodeDefinedException, IllegalArgumentException, IllegalStateException {
     noNullParameters(block);
     checkForPruefungsperiode();
-    Block model = getBlock(block);
-    if (model.isGeplant()) {
+    Block modelBlock = getBlock(block);
+    if (modelBlock.isGeplant()) {
       throw new IllegalArgumentException("Nur für ungeplante Blöcke möglich!");
     }
-    // check if Pruefungen in Block exist
-    getPruefungenOf(block);
-    LOGGER.debug("Deleting {} in Model.", model);
-    pruefungsperiode.removePlanungseinheit(model);
+
+    LOGGER.debug("Deleting {} in Model.", modelBlock);
+    pruefungsperiode.removePlanungseinheit(modelBlock);
     return new LinkedList<>(getPruefungenOf(block));
   }
 
@@ -662,9 +661,9 @@ public class DataAccessService {
   private List<Pruefung> getPruefungenOf(ReadOnlyBlock block)
       throws NoPruefungsPeriodeDefinedException {
     List<Pruefung> pruefungen = new ArrayList<>(block.getROPruefungen().size());
-    for (ReadOnlyPruefung pruefung : block.getROPruefungen()) {
-      pruefungen.add(getPruefung(pruefung));
-    }
+      for (ReadOnlyPruefung pruefung : block.getROPruefungen()) {
+        pruefungen.add(getPruefung(pruefung));
+      }
     return pruefungen;
   }
 
