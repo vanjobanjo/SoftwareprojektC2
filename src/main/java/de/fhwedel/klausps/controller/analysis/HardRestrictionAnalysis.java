@@ -18,7 +18,7 @@ public class HardRestrictionAnalysis {
   Set<Pruefung> conflictingPruefungen;
 
   /**
-   * The criterion this analysis was contructed by.
+   * The criterion this analysis was constructed by.
    */
   HartesKriterium kriterium;
 

@@ -258,7 +258,7 @@ public class Converter {
       for (Pruefung pruefung : hKA.getConflictingPruefungen()) {
         conflictPruefung.add(convertToReadOnlyPruefung(pruefung));
       }
-      for(Teilnehmerkreis teilnehmerkreis: hKA.getTeilnehmerCount().keySet()){
+      for (Teilnehmerkreis teilnehmerkreis : hKA.getParticipants().keySet()) {
         conflictTeilnehmer.add(teilnehmerkreis);
       }
 
