@@ -38,8 +38,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class is the only one who change the data in the model. And provide the Data from the
- * model.
+ * The DataAccessService is responsible for handling the communication with the Pruefungsperiode.
+ * All changes to the Pruefungsperiode are done by this class.
  */
 public class DataAccessService {
 
@@ -56,7 +56,7 @@ public class DataAccessService {
   }
 
   /**
-   * Sets the kapazität of the periode with the passed kapazitaet
+   * Sets the kapazität of the Pruefungsperiode to the passed kapazitaet.
    *
    * @param kapazitaet to set
    * @throws IllegalArgumentException           when the passed number is negative
@@ -74,7 +74,7 @@ public class DataAccessService {
   }
 
   /**
-   * Creates a pruefung inside the periode which is set
+   * Creates a Pruefung inside the periode which is set.
    *
    * @param name             name of the pruefung
    * @param pruefungsNr      number of the pruefung
@@ -84,7 +84,7 @@ public class DataAccessService {
    * @param teilnehmerkreise teilnehmerkreise with schaetzung as a map
    * @return the created pruefung is ungeplant
    * @throws NoPruefungsPeriodeDefinedException when no periode is set
-   * @throws IllegalArgumentException           when duplicated pruefungsnummern
+   * @throws IllegalArgumentException           when a duplicated Pruefungsnummer occurs
    */
   public Pruefung createPruefung(String name, String pruefungsNr, String refVWS,
       Set<String> pruefer,
@@ -117,7 +117,7 @@ public class DataAccessService {
   }
 
   /**
-   * Creates a pruefung with only one pruefer
+   * Creates a pruefung with only one pruefer.
    *
    * @param name             name of the pruefung
    * @param pruefungsNr      number of the pruefung
@@ -136,7 +136,7 @@ public class DataAccessService {
   }
 
   /**
-   * Checks if periode is set
+   * Checks if periode is set.
    *
    * @throws NoPruefungsPeriodeDefinedException when no periode is set
    */
@@ -148,7 +148,7 @@ public class DataAccessService {
   }
 
   /**
-   * Checks if a pruefung with the passed number is set
+   * Checks if a Pruefung with the passed Pruefungsnummer exists in the Pruefungsperiode.
    *
    * @param pruefungsNummer passed number
    * @return true when a pruefung with the passed number is set
@@ -158,7 +158,7 @@ public class DataAccessService {
   }
 
   /**
-   * Adds the passed teilnehmerkreisschaetzung to the passed pruefung
+   * Adds a Teilnehmerkreisschaetzung to a Pruefung.
    *
    * @param pruefung         to add the teilnehmerkreis to
    * @param teilnehmerkreise passed teilnehmerkreisschaetzung to be added to the passed pruefung
@@ -171,7 +171,7 @@ public class DataAccessService {
   }
 
   /**
-   * Checks if a periode is set
+   * Checks if a Pruefungsperiode is set in this DataAccessService.
    *
    * @return true when it is set otherwise false
    */
@@ -180,7 +180,7 @@ public class DataAccessService {
   }
 
   /**
-   * Schedules a pruefung without any consistency checks.
+   * Schedules a pruefung. A Pruefung can only be scheduled if it is not contained in Block.
    *
    * @param pruefung    The pruefung to schedule.
    * @param startTermin The time to schedule the pruefung to.
@@ -200,8 +200,7 @@ public class DataAccessService {
   }
 
   /**
-   * Ensures that the passed termin with the passed duration is in the periode of the periode which
-   * is set
+   * Ensures that the passed date and time is inside the Pruefungsperiode.
    *
    * @param startTermin start termin of the pruefung to ensure
    * @param duration    duration of the pruefung to ensure
@@ -219,7 +218,7 @@ public class DataAccessService {
   }
 
   /**
-   * Gets the model pruefung to the passed DTO pruefung
+   * Gets the model equivalent to the passed DTO pruefung.
    *
    * @param readOnlyPruefung DTOPruefung to get the model pruefung
    * @return model pruefung
@@ -240,8 +239,7 @@ public class DataAccessService {
   }
 
   /**
-   * Schedules a block without any consistency checks. The passed block is consistent and has
-   * pruefungen inside.
+   * Schedules a block at a passed date and time. A block must contain Pruefungen to be scheduled.
    *
    * @param block  The block to schedule
    * @param termin The time to schedule the pruefung to.
@@ -262,14 +260,21 @@ public class DataAccessService {
 
 
   /**
-   * Checks the consistency of a ReadOnlyBlock
+   * Checks if a BLock is contained in the Pruefungsperiode.
    *
-   * @param block Block to check with the model data
+   * @param block Block to check for
    */
   boolean exists(ReadOnlyBlock block) {
     return pruefungsperiode.block(block.getBlockId()) != null;
   }
 
+  /**
+   * Unschedules a block from the Pruefungsperiode
+   *
+   * @param block the block to unschedule
+   * @return the unscheduled Block
+   * @throws NoPruefungsPeriodeDefinedException if no Pruefungsperiode is set.
+   */
   public Block unscheduleBlock(ReadOnlyBlock block) throws NoPruefungsPeriodeDefinedException {
     Block modelBlock = getBlock(block);
     LOGGER.debug("Unscheduling {} from Model.", modelBlock);
@@ -278,7 +283,7 @@ public class DataAccessService {
   }
 
   /**
-   * Changes the name of the passed pruefung to passed name
+   * Changes the name of the passed Pruefung to the passed name.
    *
    * @param toChange DTOPruefung to change the name
    * @param name     the new name
@@ -309,7 +314,7 @@ public class DataAccessService {
    * @param start start
    * @param end   end
    * @return set of planungseinheiten without duplicates
-   * @throws IllegalTimeSpanException           when start is after end or inversly
+   * @throws IllegalTimeSpanException           when start is after end or vice versa
    * @throws NoPruefungsPeriodeDefinedException when no periode is set
    */
   public Set<Planungseinheit> getAllPlanungseinheitenBetween(LocalDateTime start,
@@ -317,17 +322,27 @@ public class DataAccessService {
     noNullParameters(start, end);
     checkForPruefungsperiode();
     if (start.isAfter(end)) {
-      throw new IllegalTimeSpanException("Der Start liegt nach dem Ende des Zeitslots");
+      throw new IllegalTimeSpanException("Der Start liegt nach dem Ende des Zeitslots.");
     }
     LOGGER.debug("Request Planungseinheiten between {} and {} from Model: {}.", start, end,
         pruefungsperiode.planungseinheitenBetween(start, end));
     return new HashSet<>(this.getPruefungsperiode().planungseinheitenBetween(start, end));
   }
 
+  /**
+   * Gets the current Pruefungsperiode.
+   *
+   * @return the Pruefungsperiode
+   */
   public Pruefungsperiode getPruefungsperiode() {
     return pruefungsperiode;
   }
 
+  /**
+   * Set the Pruefungsperiode for this DataAccessService.
+   *
+   * @param pruefungsperiode the Pruefungsperiode
+   */
   public void setPruefungsperiode(Pruefungsperiode pruefungsperiode) {
     LOGGER.debug("Setting the pruefungsperiode in Model to: {}.", pruefungsperiode);
     this.pruefungsperiode = pruefungsperiode;
@@ -340,7 +355,7 @@ public class DataAccessService {
    * @param start start
    * @param end   end
    * @return set of pruefungen, also the one which are inside a block
-   * @throws IllegalTimeSpanException           when start is after end or inversly
+   * @throws IllegalTimeSpanException           when start is after end or vice versa
    * @throws NoPruefungsPeriodeDefinedException when no periode is set
    */
   @NotNull
@@ -372,7 +387,7 @@ public class DataAccessService {
   }
 
   /**
-   * Gets all unplanned pruefungen of the periode
+   * Gets all unplanned Pruefungen of the Pruefungsperiode.
    *
    * @return set of pruefungen which are unplanned, also the ones which are inside a block
    * @throws NoPruefungsPeriodeDefinedException when no periode is set
@@ -386,7 +401,7 @@ public class DataAccessService {
   }
 
   /**
-   * Gets all planned blocks of the periode
+   * Gets all planned Blocks of the Pruefungsperiode.
    *
    * @return set of blocks which are planned
    * @throws NoPruefungsPeriodeDefinedException when no periode is set
@@ -399,7 +414,7 @@ public class DataAccessService {
   }
 
   /**
-   * Gets all unplanned blocks of the periode
+   * Gets all unplanned Blocks of the Pruefungsperiode.
    *
    * @return set of blocks which are unplanned
    * @throws NoPruefungsPeriodeDefinedException when no periode is set
@@ -412,7 +427,7 @@ public class DataAccessService {
   }
 
   /**
-   * Gets unplannend pruefungen filtered by the passed teilnehmerkreis
+   * Gets unplanned pruefungen filtered by the passed teilnehmerkreis.
    *
    * @param teilnehmerkreis pruefungen with teilnehmerkreis to consider
    * @return set of unplanned pruefungen which contain the passed teilnehmerkreis
@@ -448,7 +463,7 @@ public class DataAccessService {
   }
 
   /**
-   * Gets plannend pruefungen filtered by the passed teilnehmerkreis
+   * Gets planned pruefungen filtered by the passed teilnehmerkreis
    *
    * @param teilnehmerkreis pruefungen with teilnehmerkreis to consider
    * @return set of planned pruefungen which contain the passed teilnehmerkreis
@@ -465,7 +480,7 @@ public class DataAccessService {
   }
 
   /**
-   * Adds a pruefer to passed pruefung
+   * Adds a pruefer to passed Pruefung.
    *
    * @param pruefung DTOPruefung
    * @param pruefer  pruefer which should be added
@@ -490,7 +505,7 @@ public class DataAccessService {
   }
 
   /**
-   * Gets the block to pruefung when the pruefung is inside one
+   * Gets the block to Pruefung when the Pruefung is inside one.
    *
    * @param pruefung get the block to the passed pruefung
    * @return empty when pruefung was not in a block, or the block
@@ -505,14 +520,14 @@ public class DataAccessService {
   }
 
   /**
-   * Removes the pruefer from the passed pruefung
+   * Removes the pruefer from the passed Pruefung.
    *
    * @param pruefung pruefung to remove the pruefer from
    * @param pruefer  to remove from the pruefung
    * @return a block when the passed pruefung was inside one or a pruefung
    * @throws NoPruefungsPeriodeDefinedException when no periode is set
    * @throws IllegalStateException              an exception from the block
-   * @throws IllegalArgumentException           when the passsed pruefer is is an empty string
+   * @throws IllegalArgumentException           when the passed pruefer is an empty string
    */
   public Planungseinheit removePruefer(ReadOnlyPruefung pruefung, String pruefer)
       throws NoPruefungsPeriodeDefinedException, IllegalStateException, IllegalArgumentException {
@@ -524,11 +539,11 @@ public class DataAccessService {
   }
 
   /**
-   * Sets the pruefungsnummer of the pruefung.
+   * Sets the Pruefungsnummer of a Pruefung.
    *
    * @param pruefung        pruefung
    * @param pruefungsnummer nummer
-   * @return modelpruefung a pruefung or the block, when the pruefung was inside one
+   * @return a pruefung or the block, when the pruefung was inside one
    * @throws NoPruefungsPeriodeDefinedException when no periode is set
    * @throws IllegalStateException              an exception from the model
    */
@@ -554,7 +569,8 @@ public class DataAccessService {
   }
 
   /**
-   * Deletes the passed pruefung and returns maybe a block, when pruefung was inside a block
+   * Deletes a Pruefung from the Pruefungsperiode. If the Pruefung was inside a Block, the changed
+   * Block will be returned.
    *
    * @param roPruefung pruefung to delete
    * @return Either an optional containing the block containing the deleted Pruefung or an empty
@@ -580,7 +596,7 @@ public class DataAccessService {
   }
 
   /**
-   * Unschedules a pruefung without any consistency checks.
+   * Unschedules a Pruefung.
    *
    * @param pruefung The pruefung to schedule.
    */
@@ -599,7 +615,7 @@ public class DataAccessService {
   }
 
   /**
-   * Checks the passed termin with endtermin and starttermin of the periode
+   * Checks if a date is inside the Pruefungsperiode.
    *
    * @param termin passed termin to check
    * @return true when the passed termin is in the period
@@ -609,10 +625,10 @@ public class DataAccessService {
   }
 
   /**
-   * Checks the passed termin with startermin of the periode
+   * Determines if the passed date is after the beginning of the Pruefungsperiode.
    *
    * @param termin passed termin to check
-   * @return true when the passed termin is te same day or after the periodendtermin
+   * @return true when the passed termin is te same day or after the end date
    */
   private boolean terminIsSameDayOrAfterPeriodStart(LocalDateTime termin) {
     LocalDate start = pruefungsperiode.getStartdatum();
@@ -620,10 +636,10 @@ public class DataAccessService {
   }
 
   /**
-   * Checks the passed termin with endtermin of periode
+   * Determines if the passed date is before the end of the Pruefungsperiode.
    *
    * @param termin passed termin to check
-   * @return true when the passed termin is te same day or before the periodendtermin
+   * @return true when the passed termin is te same day or before the end of the pruefungsperiode
    */
   private boolean terminIsSameDayOrBeforePeriodEnd(LocalDateTime termin) {
     LocalDate end = pruefungsperiode.getEnddatum();
@@ -631,7 +647,7 @@ public class DataAccessService {
   }
 
   /**
-   * Deletes the passed block inside the model
+   * Deletes the passed block inside the model.
    *
    * @param block block to delete
    * @return exams that are inside the passed block but model pruefung
@@ -654,7 +670,7 @@ public class DataAccessService {
   }
 
   /**
-   * Get the pruefungen associated with the model representation of a block.
+   * Get the Pruefungen associated with the model representation of a Block.
    *
    * @param block The blk to get the pruefungen for.
    * @return The pruefungen associated with the model representation of a block.
@@ -664,14 +680,15 @@ public class DataAccessService {
   private List<Pruefung> getPruefungenOf(ReadOnlyBlock block)
       throws NoPruefungsPeriodeDefinedException {
     List<Pruefung> pruefungen = new ArrayList<>(block.getROPruefungen().size());
-      for (ReadOnlyPruefung pruefung : block.getROPruefungen()) {
-        pruefungen.add(getPruefung(pruefung));
-      }
+    for (ReadOnlyPruefung pruefung : block.getROPruefungen()) {
+      pruefungen.add(getPruefung(pruefung));
+    }
     return pruefungen;
   }
 
   /**
-   * Creates a block in the pruefungsperiode
+   * Creates a block in the Pruefungsperiode. The Block is part of the unscheduled Planungseinheiten
+   * afterwards.
    *
    * @param name       name of the block
    * @param type       type of the block
@@ -713,7 +730,7 @@ public class DataAccessService {
   }
 
   /**
-   * Is on the passed pruefungen in a block?
+   * Checks if pruefung is contained in a Block.
    *
    * @param pruefungen collection of pruefungen to check if one is a block
    * @return true when any is in a block
@@ -724,7 +741,7 @@ public class DataAccessService {
   }
 
   /**
-   * Checks for duplicates in the passed array
+   * Checks for duplicates in an array of Pruefungen.
    *
    * @param pruefungen array of pruefungen
    * @return when there are duplicated inside the array
@@ -734,7 +751,7 @@ public class DataAccessService {
   }
 
   /**
-   * Checks if the passed number of a pruefung is inside a block
+   * Checks if a Pruefung contained in a Block, by looking at the Pruefungsnummer.
    *
    * @param pruefungsNummer number of the pruefung to check
    * @return true when the pruefung is inside a block otherwise false
@@ -749,11 +766,11 @@ public class DataAccessService {
   }
 
   /**
-   * Removes the passed pruefung from the passed block. No consistency checks.
+   * Removes the passed Pruefung from the passed Block.
    *
-   * @param block    block to remove the passed pruefung from
+   * @param block    block to remove the pruefung from
    * @param pruefung to be removed from the passed block
-   * @return the block with the removed pruefung from, pruefung is not inside the block anymore
+   * @return the block with the removed pruefung from, pruefung is not inside the block any more
    * @throws NoPruefungsPeriodeDefinedException when no periode is set
    */
   public Block removePruefungFromBlock(ReadOnlyBlock block,
@@ -771,11 +788,11 @@ public class DataAccessService {
   }
 
   /**
-   * Adds the passed pruefung to the passed block. No consistency checks.
+   * Adds a Pruefung to a Block.
    *
-   * @param block    block to add the passed pruefung
-   * @param pruefung to be added to the passed block
-   * @return block with the added pruefung
+   * @param block    Block to add the passed Pruefung.
+   * @param pruefung to be added to the passed Block
+   * @return block with the added Pruefung
    * @throws NoPruefungsPeriodeDefinedException when no periode is set
    */
   public Block addPruefungToBlock(ReadOnlyBlock block, ReadOnlyPruefung pruefung)
@@ -788,7 +805,7 @@ public class DataAccessService {
   }
 
   /**
-   * Gets the start date of the current periode
+   * Gets the start date of the current Pruefungsperiode.
    *
    * @return start date
    * @throws NoPruefungsPeriodeDefinedException when no period is set
@@ -801,7 +818,7 @@ public class DataAccessService {
   }
 
   /**
-   * Gets the end date of the current periode
+   * Gets the end date of the current Pruefungsperiode.
    *
    * @return end date
    * @throws NoPruefungsPeriodeDefinedException when no period is set
@@ -814,7 +831,7 @@ public class DataAccessService {
   }
 
   /**
-   * Gets the capacity of the current periode
+   * Gets the capacity of the current Pruefungsperiode.
    *
    * @return capacity
    * @throws NoPruefungsPeriodeDefinedException when no period is set
@@ -826,7 +843,7 @@ public class DataAccessService {
   }
 
   /**
-   * Gets the semester of the current period
+   * Gets the semester of the current Pruefungsperiode.
    *
    * @return semester
    * @throws NoPruefungsPeriodeDefinedException when no period is set
@@ -838,7 +855,7 @@ public class DataAccessService {
   }
 
   /**
-   * Gets the block to passed DTOPruefung
+   * Gets the block to the passed Pruefung.
    *
    * @param pruefungToGetBlockFor get the block of
    * @return empty when the passed pruefung is not inside a block, otherwise the block
@@ -855,8 +872,8 @@ public class DataAccessService {
   }
 
   /**
-   * Get all Teilnehmerkreise, by getting planned and unplanned Pruefungen, extract the
-   * Teilnehmerkreise
+   * Collects all Teilnehmerkreise contained in the current Pruefungsperiode, by extracting them
+   * from all planned and unplanned Pruefungen.
    *
    * @return all Teilnehmerkreise
    * @throws NoPruefungsPeriodeDefinedException when no period is defined
@@ -878,11 +895,11 @@ public class DataAccessService {
   }
 
   /**
-   * Removes the passed teilnehmerkreis from the passed pruefung
+   * Removes the passed Teilnehmerkreis from the passed Pruefung.
    *
-   * @param pruefung        to remove the teilnehmerkreis from
-   * @param teilnehmerkreis to be removed from the passed pruefung
-   * @return true when it's succeeded otherwise false
+   * @param pruefung        to remove the Teilnehmerkreis from
+   * @param teilnehmerkreis to be removed from the passed Pruefung
+   * @return true when it succeeded otherwise false
    */
   public boolean removeTeilnehmerkreis(Pruefung pruefung,
       Teilnehmerkreis teilnehmerkreis) {
@@ -891,10 +908,10 @@ public class DataAccessService {
   }
 
   /**
-   * Sets the passed teilnehmerkreis with the passed the estimated number of students to the passed
-   * pruefung
+   * Add a Teilnehmerkreis to a Pruefung, if the Teilnehmerkreis is already contained in the
+   * Pruefung, only the Teilnehmerkreisschaetzung is updated.
    *
-   * @param pruefung        pruefung from model
+   * @param pruefung        Pruefung from model
    * @param teilnehmerkreis to set the new estimated number for
    * @param schaetzung      estimated participants
    * @return true when it was successful
@@ -915,11 +932,11 @@ public class DataAccessService {
   }
 
   /**
-   * Sets the new name of the passed block
+   * Sets a new name for a passed Block.
    *
-   * @param block block to change the name
+   * @param block Block to change the name
    * @param name  to be set
-   * @return model block with the new name
+   * @return model Block with the new name
    * @throws NoPruefungsPeriodeDefinedException when no period is set
    * @throws IllegalArgumentException           when the passed string is empty
    * @throws IllegalStateException              a model exception
@@ -937,7 +954,7 @@ public class DataAccessService {
   }
 
   /**
-   * Gets all pruefungen from a specific pruefer
+   * Gets all Pruefungen from a specific pruefer.
    *
    * @param pruefer pruefer
    * @return pruefungen from a specific pruefer
@@ -985,7 +1002,7 @@ public class DataAccessService {
   }
 
   /**
-   * Gets the anker tag of the periode
+   * Gets the Ankertag of the Pruefungsperiode.
    *
    * @return anker tag of the periode which is set
    * @throws NoPruefungsPeriodeDefinedException when no period is set
@@ -998,7 +1015,7 @@ public class DataAccessService {
   }
 
   /**
-   * Sets the ankertag to the periode which is set
+   * Sets the Ankertag for the current Pruefungsperiode.
    *
    * @param newAnkerTag the new ankertag to set
    * @throws NoPruefungsPeriodeDefinedException when no periode is set
@@ -1016,7 +1033,7 @@ public class DataAccessService {
   }
 
   /**
-   * Ensures if the ankertag is not after the end
+   * Determines if the Ankertag is after the end of the Pruefungsperiode.
    *
    * @param newAnkerTag ankertag to check
    * @throws IllegalTimeSpanException when the passed ankertag is after the end
@@ -1030,9 +1047,9 @@ public class DataAccessService {
   }
 
   /**
-   * Ensures if the ankertag is not before the start
+   * Determines if the Ankertag is not before the start.
    *
-   * @param newAnkerTag ankertag to check
+   * @param newAnkerTag Ankertag to check
    * @throws IllegalTimeSpanException when the passed ankertag is before start
    */
   private void ensureNotAfterPruefungsperiode(LocalDate newAnkerTag)
@@ -1044,7 +1061,7 @@ public class DataAccessService {
   }
 
   /**
-   * Get the number of students which are writing an exam at the passed time
+   * Get the number of students which are writing an exam at the passed time.
    *
    * @param zeitpunkt passed time
    * @return number of students
@@ -1065,11 +1082,11 @@ public class DataAccessService {
   }
 
   /**
-   * Gets the planned pruefungen its time period (start - end) cross the passed time. Also, the
-   * pruefungen inside a block.
+   * Collect all planned Pruefungen that are scheduled at the passed date and time. Pruefungen
+   * contained in a block will also be considered.
    *
-   * @param moment passed time
-   * @return set of pruefungen
+   * @param moment the date and time to check for
+   * @return set of Pruefungen scheduled at the passed date and time
    */
   private Set<Pruefung> getPruefungenAt(LocalDateTime moment) {
     Set<Pruefung> result = new HashSet<>();
@@ -1085,7 +1102,8 @@ public class DataAccessService {
   }
 
   /**
-   * Gets the max. of teilnehmerkreisschätzung of the passed pruefungen
+   * Collects the Teilnehmerkreisschaetzungen of all passed Pruefungen. When two or more Pruefungen
+   * have the same Teilnehmerkreis, the biggest schaetzung will be put in the result.
    *
    * @param pruefungen pruefungen to get the merged teilnehmerkreisschaetzung (merge: max)
    * @return teilnehmerkreisschätzung with max of schaetzung
@@ -1096,6 +1114,7 @@ public class DataAccessService {
     HashMap<Teilnehmerkreis, Integer> schaetzungen = new HashMap<>();
     for (Pruefung pruefung : pruefungen) {
       for (Map.Entry<Teilnehmerkreis, Integer> entry : pruefung.getSchaetzungen().entrySet()) {
+        // if it is already contained, take the bigger value
         if (schaetzungen.containsKey(entry.getKey())) {
           schaetzungen.merge(entry.getKey(), entry.getValue(), Integer::max);
         } else {
@@ -1122,9 +1141,9 @@ public class DataAccessService {
   }
 
   /**
-   * Gets the model block to the passed dtoblock
+   * Gets the model Block to the passed Block.
    *
-   * @param block dtoblock to get the modelblock of
+   * @param block Block to get the Block from model for
    * @return model block
    * @throws NoPruefungsPeriodeDefinedException when no periode is set
    */
@@ -1139,7 +1158,7 @@ public class DataAccessService {
   }
 
   /**
-   * Checks if a block with the passed id exists
+   * Checks if a block with the passed id exists.
    *
    * @param blockId passed id
    * @return true when there is a block with the passed id, otherwise false
@@ -1151,10 +1170,10 @@ public class DataAccessService {
   }
 
   /**
-   * Gets the planned planungseinheiten its time period (start - end) cross the passed time
+   * Get all Planungseinheiten that are scheduled at the passed date and time.
    *
    * @param time passed time
-   * @return set of planungsheiten
+   * @return set of planungseinheiten
    * @throws NoPruefungsPeriodeDefinedException when no periode is set
    */
   @NotNull
@@ -1168,7 +1187,7 @@ public class DataAccessService {
   }
 
   /**
-   * Unschedules the planungseinheiten after adoption, when they are not in the period.
+   * Unschedules the planungseinheiten after adoption, when they are not in the Pruefungsperiode.
    */
   public void unschedulePlanungseinheitenOutsideOfPeriode()
       throws NoPruefungsPeriodeDefinedException {
@@ -1178,7 +1197,7 @@ public class DataAccessService {
   }
 
   /**
-   * Unschedules the blocks after adoption, when they are not in the period.
+   * Unschedules the blocks after adoption, when they are not in the Pruefungsperiode.
    */
   private void unscheduleAdoptedBloeckeOutsideOfPeriode() {
     for (Block block : pruefungsperiode.geplanteBloecke()) {
@@ -1190,7 +1209,7 @@ public class DataAccessService {
   }
 
   /**
-   * Unschedules the pruefungen after adoption, when they are not in the period.
+   * Unschedules the pruefungen after adoption, when they are outside the Pruefungsperiode.
    */
   private void unscheduleAdoptedPruefungenOutsideOfPeriode() {
     for (Pruefung pruefung : pruefungsperiode.geplantePruefungen()) {
@@ -1202,6 +1221,8 @@ public class DataAccessService {
   }
 
   /**
+   * Checks if the passed date is before the start of the current Pruefungsperiode.
+   *
    * @param plannedDate passed date to check
    * @return true when the passed date is before the start of the period otherwise false
    */
@@ -1210,6 +1231,8 @@ public class DataAccessService {
   }
 
   /**
+   * Checks if a date is after the end of the current Pruefungsperiode.
+   *
    * @param plannedDate passed date to check
    * @return true when the passed date is after the end of the set period otherwise false
    */
@@ -1218,7 +1241,7 @@ public class DataAccessService {
   }
 
   /**
-   * Sets the passed dates to the periode which is set
+   * Sets the start and end for the current Pruefungsperiode.
    *
    * @param startDatum start
    * @param endDatum   end

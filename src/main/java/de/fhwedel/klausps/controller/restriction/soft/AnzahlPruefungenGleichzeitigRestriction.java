@@ -26,7 +26,7 @@ import org.jetbrains.annotations.NotNull;
 public class AnzahlPruefungenGleichzeitigRestriction extends AtSameTimeRestriction {
 
   /**
-   * By default the maximal amount of Planungseinheiten that should be planned at the same time.
+   * By default, the maximal amount of Planungseinheiten that should be planned at the same time.
    */
   protected static final int DEFAULT_MAX_PRUEFUNGEN_AT_A_TIME = 6;
 

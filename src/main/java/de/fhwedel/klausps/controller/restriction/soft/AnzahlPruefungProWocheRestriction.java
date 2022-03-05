@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * This restriciton checks if a Teilnehmerkreis don't have so many Pruefungen in a week
+ * This restriction checks if a Teilnehmerkreis don't have so many Pruefungen in a week
  */
 public class AnzahlPruefungProWocheRestriction extends SoftRestriction {
 
@@ -214,7 +214,7 @@ public class AnzahlPruefungProWocheRestriction extends SoftRestriction {
    * a block the returned Set contains the block of the pruefung and not the exam itself.
    *
    * @param pruefungen Pruefungen.
-   * @return Accumlated Planungseinheiten.
+   * @return Accumulated Planungseinheiten.
    */
   private Set<Planungseinheit> getAccumulatedPlanungseinheiten(Set<Pruefung> pruefungen)
       throws NoPruefungsPeriodeDefinedException {

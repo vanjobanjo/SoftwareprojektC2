@@ -9,6 +9,8 @@ import java.util.Set;
 /**
  * This class give the opportunity for collecting from all SoftRestrictions the Analysis
  * And then transform  a SoftRestrictionAnalysis into a KriteriumsAnalyse for the view.
+ *
+ * The SoftRestrictionAnalysis an internally used container for ana
  * //TODO hier nochmal bitte lesen
  */
 public class SoftRestrictionAnalysis {
@@ -50,9 +52,6 @@ public class SoftRestrictionAnalysis {
   }
 
   public Integer getDeltaScoring() {
-    if (deltaScoring == null) {
-      throw new UnsupportedOperationException("Es wurde wahrscheinlich der alte Konstruktor benutzt!");
-    }
     return deltaScoring;
   }
 }
