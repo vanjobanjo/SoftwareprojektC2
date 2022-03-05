@@ -74,6 +74,13 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
     return Optional.empty();
   }
 
+  /**
+   * This methode will provide a Set of Planungseinheiten witch are planed between start and end
+   * @param start the beginning of the time, where it should be searched
+   * @param end the end of the time, where it should be searched
+   * @return a Set of Planungseinheiten witch are planed in the time spane between start and end
+   * @throws NoPruefungsPeriodeDefinedException if no Pruefungsperiode is Defined
+   */
   private Set<Planungseinheit> tryToGetAllPlanungseinheitenBetween(LocalDateTime start,
       LocalDateTime end) throws NoPruefungsPeriodeDefinedException {
     try {
@@ -106,6 +113,7 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
     HashSet<Pruefung> inConflictROPruefung = new HashSet<>();
     Optional<HardRestrictionAnalysis> hKA = Optional.empty();
     if (testList != null) {
+      //remove Pruefung that it there will be no conflict with itself
       testList.remove(pruefung);
 
       //Durchgehen der Liste von Planungseinheiten und unterscheiden von unterschiedlichem Typ
@@ -158,10 +166,12 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
   private void testForBlockHard(Pruefung pruefung, Block block, LocalDateTime start,
       LocalDateTime end, HashSet<Pruefung> inConflictROPruefung,
       Map<Teilnehmerkreis, Integer> teilnehmerCount) {
-    Set<Pruefung> pruefungenFromBlock;
-    pruefungenFromBlock = block.getPruefungen();
+
+    Set<Pruefung> pruefungenFromBlock = block.getPruefungen();
+
     if (!pruefungenFromBlock.contains(pruefung)
         && (uebereinstimmendeTeilnehmerkreise(block, pruefung))) {
+      //the different Blocktypes will be handled different
       if (block.getTyp() == Blocktyp.SEQUENTIAL) {
         testForSequentialBlock(pruefung, pruefungenFromBlock, inConflictROPruefung,
             teilnehmerCount);
@@ -186,6 +196,7 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
       LocalDateTime start, LocalDateTime end,
       Map<Teilnehmerkreis, Integer> teilnehmerCount, HashSet<Pruefung> inConflictROPruefung) {
     for (Pruefung pruefungBlock : pruefungenFromBlock) {
+      //check if the Pruefung from the Block and the pruefungtoCheck have the same Teilnehmerkreis
       if ((uebereinstimmendeTeilnehmerkreise(pruefungBlock, pruefung))
           && !outOfRange(start, end, pruefungBlock)) {
         getTeilnehmerkreisFromPruefung(pruefung, pruefungBlock,

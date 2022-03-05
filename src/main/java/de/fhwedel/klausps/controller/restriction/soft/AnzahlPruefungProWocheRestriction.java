@@ -18,7 +18,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class AnzahlPruefungProWocheTeilnehmerkreisRestriction extends SoftRestriction {
+/**
+ * This restriciton checks if a Teilnehmerkreis don't have so many Pruefungen in a week
+ */
+public class AnzahlPruefungProWocheRestriction extends SoftRestriction {
 
   // for testing
   public static final int LIMIT_DEFAULT = 5;
@@ -26,7 +29,7 @@ public class AnzahlPruefungProWocheTeilnehmerkreisRestriction extends SoftRestri
   private final int limit;
 
   //Mock Konstruktor
-  AnzahlPruefungProWocheTeilnehmerkreisRestriction(
+  AnzahlPruefungProWocheRestriction(
       DataAccessService dataAccessService,
       final int LIMIT_TEST) {
     super(dataAccessService, ANZAHL_PRUEFUNGEN_PRO_WOCHE);
@@ -36,7 +39,7 @@ public class AnzahlPruefungProWocheTeilnehmerkreisRestriction extends SoftRestri
   /**
    * Public constructor
    */
-  public AnzahlPruefungProWocheTeilnehmerkreisRestriction() {
+  public AnzahlPruefungProWocheRestriction() {
     super(ServiceProvider.getDataAccessService(), ANZAHL_PRUEFUNGEN_PRO_WOCHE);
     limit = LIMIT_DEFAULT;
   }
@@ -78,12 +81,8 @@ public class AnzahlPruefungProWocheTeilnehmerkreisRestriction extends SoftRestri
     Map<Integer, Set<Pruefung>> weekPruefungMap;
     LocalDate start;
 
-    try {
-      start = dataAccessService.getStartOfPeriode();
-      weekPruefungMap = weekMapOfPruefung(dataAccessService.getPlannedPruefungen(), start);
-    } catch (NoPruefungsPeriodeDefinedException e) {
-      return Optional.empty();
-    }
+    start = dataAccessService.getStartOfPeriode();
+    weekPruefungMap = weekMapOfPruefung(dataAccessService.getPlannedPruefungen(), start);
 
     Optional<SoftRestrictionAnalysis> analyseForTks = Optional.empty();
     // every tk of the pruefung must be checked with all other pruefung of the same week

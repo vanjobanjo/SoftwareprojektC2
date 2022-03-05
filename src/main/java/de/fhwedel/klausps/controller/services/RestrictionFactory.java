@@ -3,7 +3,7 @@ package de.fhwedel.klausps.controller.services;
 
 import de.fhwedel.klausps.controller.restriction.hard.HardRestriction;
 import de.fhwedel.klausps.controller.restriction.hard.ZweiPruefungenGleichzeitigRestriction;
-import de.fhwedel.klausps.controller.restriction.soft.AnzahlPruefungProWocheTeilnehmerkreisRestriction;
+import de.fhwedel.klausps.controller.restriction.soft.AnzahlPruefungProWocheRestriction;
 import de.fhwedel.klausps.controller.restriction.soft.AnzahlPruefungenGleichzeitigRestriction;
 import de.fhwedel.klausps.controller.restriction.soft.AnzahlTeilnehmerGleichzeitigRestriction;
 import de.fhwedel.klausps.controller.restriction.soft.FreierTagZwischenPruefungenRestriction;
@@ -54,7 +54,7 @@ public class RestrictionFactory {
   private static void registerSoftCriteria(RestrictionService service) {
     if (softRestrictions.isEmpty()) {
       softRestrictions.addAll(Set.of(
-          new AnzahlPruefungProWocheTeilnehmerkreisRestriction(),
+          new AnzahlPruefungProWocheRestriction(),
           new AnzahlPruefungenGleichzeitigRestriction(),
           new AnzahlTeilnehmerGleichzeitigRestriction(),
           new FreierTagZwischenPruefungenRestriction(),

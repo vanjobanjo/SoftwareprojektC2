@@ -22,10 +22,10 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class AnzahlPruefungProWocheTeilnehmerkreisRestrictionTest {
+class AnzahlPruefungProWocheRestrictionTest {
 
   private Pruefungsperiode mocked_periode;
-  private AnzahlPruefungProWocheTeilnehmerkreisRestriction deviceUnderTest;
+  private AnzahlPruefungProWocheRestriction deviceUnderTest;
   private DataAccessService accessService;
   private final LocalDate START_PERIODE = LocalDate.of(2021, 1, 1);
   private final LocalDate END_PERIODE = LocalDate.of(2021, 12, 31);
@@ -57,7 +57,7 @@ class AnzahlPruefungProWocheTeilnehmerkreisRestrictionTest {
         Set.of(mathe_0, dm_0));
 
     //mock must be configured before constructor call
-    this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreisRestriction(accessService, LIMIT_PER_WEEK);
+    this.deviceUnderTest = new AnzahlPruefungProWocheRestriction(accessService, LIMIT_PER_WEEK);
 
     assertThat(deviceUnderTest.evaluateRestriction(mathe_0)).isPresent();
   }
@@ -79,7 +79,7 @@ class AnzahlPruefungProWocheTeilnehmerkreisRestrictionTest {
         Set.of(mathe_0, dm_0));
 
     //mock must be configured before constructor call
-    this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreisRestriction(accessService, LIMIT_PER_WEEK);
+    this.deviceUnderTest = new AnzahlPruefungProWocheRestriction(accessService, LIMIT_PER_WEEK);
     SoftRestrictionAnalysis ev = deviceUnderTest.evaluateRestriction(mathe_0).get();
     assertThat(ev.getAffectedPruefungen()).containsOnly(mathe_0, dm_0);
   }
@@ -104,7 +104,7 @@ class AnzahlPruefungProWocheTeilnehmerkreisRestrictionTest {
         Set.of(mathe_0, dm_0));
 
     //mock must be configured before constructor call
-    this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreisRestriction(accessService, LIMIT_PER_WEEK);
+    this.deviceUnderTest = new AnzahlPruefungProWocheRestriction(accessService, LIMIT_PER_WEEK);
     SoftRestrictionAnalysis ev = deviceUnderTest.evaluateRestriction(mathe_0).get();
     assertThat(ev.getAffectedPruefungen()).containsOnly(mathe_0, dm_0);
     assertThat(ev.getAffectedTeilnehmerKreise()).containsOnly(bwl, inf);
@@ -139,7 +139,7 @@ class AnzahlPruefungProWocheTeilnehmerkreisRestrictionTest {
         Set.of(mathe_0, dm_0));
 
     //mock must be configured before constructor call
-    this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreisRestriction(accessService, 2);
+    this.deviceUnderTest = new AnzahlPruefungProWocheRestriction(accessService, 2);
     assertThat(deviceUnderTest.evaluateRestriction(mathe_0)).isEmpty();
     assertThat(deviceUnderTest.evaluateRestriction(dm_0)).isEmpty();
   }
@@ -174,7 +174,7 @@ class AnzahlPruefungProWocheTeilnehmerkreisRestrictionTest {
         Set.of(mathe_0, dm_0, haskell_0));
 
     //mock must be configured before constructor call
-    this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreisRestriction(accessService, LIMIT_PER_WEEK);
+    this.deviceUnderTest = new AnzahlPruefungProWocheRestriction(accessService, LIMIT_PER_WEEK);
     assertThat(deviceUnderTest.evaluateRestriction(mathe_0)).isPresent();
     assertThat(deviceUnderTest.evaluateRestriction(mathe_0).get().getAffectedPruefungen()).containsOnly(mathe_0,
         haskell_0);

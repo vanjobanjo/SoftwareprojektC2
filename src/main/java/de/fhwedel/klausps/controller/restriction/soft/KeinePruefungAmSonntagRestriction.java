@@ -12,6 +12,9 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * This restriciton checks if a Pruefung is on Sunday planed
+ */
 public class KeinePruefungAmSonntagRestriction extends SoftRestriction {
 
   private static final DayOfWeek SUNDAY = DayOfWeek.SUNDAY;
