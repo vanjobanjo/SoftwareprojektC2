@@ -180,12 +180,6 @@ public class MehrePruefungenAmTagRestriction extends SoftRestriction {
     return time.toLocalDate().plusDays(1).atStartOfDay();
   }
 
-  @Override
-  protected int addDeltaScoring(Set<Pruefung> affectedPruefungen) {
-    int scoring = 0;
-    scoring +=
-        MEHRERE_PRUEFUNGEN_AM_TAG.getWert() * (affectedPruefungen.size() - 2 + 1);
-    return scoring;
-  }
+
 
 }
