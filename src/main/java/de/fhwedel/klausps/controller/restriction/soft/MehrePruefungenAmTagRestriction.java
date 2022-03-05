@@ -155,7 +155,6 @@ public class MehrePruefungenAmTagRestriction extends SoftRestriction {
       if (teilnehmer.contains(teilnehmerkreis)) {
         TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung(mapTeilnehmer, toCheck.getSchaetzungen());
         setConflictPruefung.add(toCheck);
-        setConflictPruefung.add(pruefung);
       }
     }
     return setConflictPruefung;
