@@ -91,9 +91,6 @@ public class makeBlockSequentialSteps extends BaseSteps {
       String pruefungName, LocalDateTime localDateTime,
       String tkName, int semester)
       throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
-    Optional<Teilnehmerkreis> tk = createTeilnehmerkreis(List.of(tkName, String.valueOf(semester)));
-    Map<Teilnehmerkreis, Integer> schaetzung = tk.map(
-        teilnehmerkreis -> Map.of(teilnehmerkreis, 102)).orElse(emptyMap());
 
 
     Teilnehmerkreis tk1 = new TeilnehmerkreisImpl(tkName, tkName,semester, Ausbildungsgrad.BACHELOR);
