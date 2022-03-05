@@ -45,16 +45,15 @@ public class unschedulePruefung extends BaseSteps {
     assertThat(pruefungen).allMatch((pruefung) -> pruefungNames.contains(pruefung.getName()));
   }
 
-  @Dann("enthaelt das Ergebnis als einzigen Block {string}")
-  public void enthaeltDasErgebnisAlsEinzigenBlock(String blockName) {
+  @Dann("enthaelt das Ergebnis als einzige Bloecke {stringList}")
+  public void enthaeltDasErgebnisAlsEinzigenBlock(List<String> blockNames) {
     List<ReadOnlyPlanungseinheit> actual = (List<ReadOnlyPlanungseinheit>) state.results.get(
         "pruefungen");
-    List<ReadOnlyBlock> bloecke =
-        actual.stream()
-            .filter(ReadOnlyPlanungseinheit::isBlock)
-            .map(ReadOnlyPlanungseinheit::asBlock).toList();
-    assertThat(bloecke).hasSize(1);
-    assertThat(bloecke).allMatch((pruefung) -> blockName.equals((pruefung.getName())));
+    List<ReadOnlyBlock> bloecke = actual.stream()
+        .filter(ReadOnlyPlanungseinheit::isBlock)
+        .map(ReadOnlyPlanungseinheit::asBlock).toList();
+    assertThat(bloecke).hasSameSizeAs(blockNames);
+    assertThat(bloecke).allMatch((pruefung) -> blockNames.contains(pruefung.getName()));
   }
 
   @Wenn("ich die unbekannte Pruefung {string} ausplane")

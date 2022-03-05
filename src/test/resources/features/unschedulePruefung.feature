@@ -46,7 +46,7 @@ Funktionalität: Als Planender moechte ich eine Pruefung ausplanen koennen.
     Und es existiert der geplante Block "B1" mit der Pruefung "BWL" direkt nach "Analysis"
     Und die Pruefung "BWL" hat einen Teilnehmerkreis "bwl" mit 10 Studenten
     Wenn ich die Pruefung "Analysis" ausplanen moechte
-    Dann enthaelt das Ergebnis als einzigen Block "B1"
+    Dann enthaelt das Ergebnis als einzige Bloecke "B1"
 
   Szenario: Eine unbekannte Pruefung kann nicht ungeplant werden
     Angenommen es existiert eine Pruefungsperiode

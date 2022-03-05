@@ -45,6 +45,7 @@ public class RestrictionService {
 
   /**
    * Registers all soft criteria
+   *
    * @param restrictions set of restrictions
    */
   void registerSoftCriteria(Set<SoftRestriction> restrictions) {
@@ -53,6 +54,7 @@ public class RestrictionService {
 
   /**
    * registers all hard criteria
+   *
    * @param restrictions set of hard restrictions
    */
   void registerHardCriteria(Set<HardRestriction> restrictions) {
@@ -100,16 +102,18 @@ public class RestrictionService {
   }
 
   /**
-   * Checks all the soft restrictions of the passed pruefung, and extracts the caused pruefungen
-   * @param pruefung pruefung to check
-   * @return Set of affected pruefungen
-   * @throws NoPruefungsPeriodeDefinedException when no period is defined
+   * Checks all the soft restrictions of the passed pruefung, and collects all Pruefungen causing
+   * these.
+   *
+   * @param pruefung The pruefung to check.
+   * @return Set of affected pruefungen.
+   * @throws NoPruefungsPeriodeDefinedException In case period is defined.
    */
   public Set<Pruefung> getPruefungenAffectedBy(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     Set<Pruefung> result = new HashSet<>();
-    for (SoftRestrictionAnalysis w : checkWeicheKriterien(pruefung)) {
-      result.addAll(w.getCausingPruefungen());
+    for (SoftRestrictionAnalysis analysis : checkWeicheKriterien(pruefung)) {
+      result.addAll(analysis.getCausingPruefungen());
     }
     result.add(pruefung);
     return result;
@@ -132,6 +136,7 @@ public class RestrictionService {
 
   /**
    * Evaluates als hard restriction for the passed pruefunge
+   *
    * @param pruefungenToCheck Set of pruefungen to check
    * @return List of HartesKriteriumsAnalysen
    * @throws NoPruefungsPeriodeDefinedException when no period is currently defined
@@ -162,6 +167,7 @@ public class RestrictionService {
 
   /**
    * Get the scoring of the pruefung, by checking the analysen and accumulate the delta scoring.
+   *
    * @param pruefung Pruefung to check the scoring for
    * @return the scoring of the passed pruefung
    * @throws NoPruefungsPeriodeDefinedException when there is no Periode defined
