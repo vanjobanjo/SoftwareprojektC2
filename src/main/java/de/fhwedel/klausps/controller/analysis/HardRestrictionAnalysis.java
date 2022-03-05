@@ -7,35 +7,65 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * This class is for the temp Save of an HardRestrictrion.
- * That we can test first all HardRestrictions and then collect the data from all HardRestrictionAnalysis
- * and then throw one HardRestrictionException with the data.
- * TODO nochmal queer lesen, ob das hier so stehen kann
+ * An analysis describing the result of checking hard restrictions ant meant for internal data
+ * transfer.
  */
 public class HardRestrictionAnalysis {
 
-  Set<Pruefung> causingPruefungen;
+  /**
+   * The pruefungen in conflict causing the hard restriction to be violated.
+   */
+  Set<Pruefung> conflictingPruefungen;
 
-
+  /**
+   * The criterion this analysis was contructed by.
+   */
   HartesKriterium kriterium;
 
-  Map<Teilnehmerkreis, Integer>  teilnehmerCount ;
+  /**
+   * The participants affected by the restriction violation described by this analysis.
+   */
+  Map<Teilnehmerkreis, Integer> participants;
+
+  /**
+   * Create a new analysis.
+   *
+   * @param conflictingPruefungen The {@link Pruefung}en being in conflict.
+   * @param kriterium             The criterion by which the alanysis was created.
+   * @param participants          The participants affected by the restriction violation.
+   */
   public HardRestrictionAnalysis(
-      Set<Pruefung> causingPruefungen,
-      HartesKriterium kriterium, Map<Teilnehmerkreis, Integer> teilnehmerCount) {
-    this.causingPruefungen = causingPruefungen;
+      Set<Pruefung> conflictingPruefungen,
+      HartesKriterium kriterium, Map<Teilnehmerkreis, Integer> participants) {
+    this.conflictingPruefungen = conflictingPruefungen;
     this.kriterium = kriterium;
-    this.teilnehmerCount = teilnehmerCount;
+    this.participants = participants;
   }
 
-  public Set<Pruefung> getCausingPruefungen() {
-    return this.causingPruefungen;
+  /**
+   * Get the {@link Pruefung}en being in conflict.
+   *
+   * @return The Pruefungen being in conflict.
+   */
+  public Set<Pruefung> getConflictingPruefungen() {
+    return this.conflictingPruefungen;
   }
 
+  /**
+   * Get the criterion this analysis was made for.
+   *
+   * @return The Pruefungen being in conflict.
+   */
   public HartesKriterium getKriterium() {
     return this.kriterium;
   }
-  public Map<Teilnehmerkreis, Integer> getTeilnehmerCount(){
-    return teilnehmerCount;
+
+  /**
+   * Get the affected participants.
+   *
+   * @return The affected participants.
+   */
+  public Map<Teilnehmerkreis, Integer> getParticipants() {
+    return participants;
   }
 }

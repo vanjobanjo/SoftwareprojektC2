@@ -255,14 +255,14 @@ public class Converter {
 
     for (HardRestrictionAnalysis hKA : hard) {
 
-      for (Pruefung pruefung : hKA.getCausingPruefungen()) {
+      for (Pruefung pruefung : hKA.getConflictingPruefungen()) {
         conflictPruefung.add(convertToReadOnlyPruefung(pruefung));
       }
       for(Teilnehmerkreis teilnehmerkreis: hKA.getTeilnehmerCount().keySet()){
         conflictTeilnehmer.add(teilnehmerkreis);
       }
 
-      TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung(teilnehmerCount, hKA.getTeilnehmerCount());
+      TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung(teilnehmerCount, hKA.getParticipants());
     }
 
     for (Integer count : teilnehmerCount.values()) {

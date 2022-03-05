@@ -73,13 +73,14 @@ class ZweiKlausurenGleichzeitigTest {
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         Set.of(pruefung1, pruefung2));
     when(dataAccessService.getBlockTo(pruefung1)).thenReturn(Optional.empty());
-    ZweiPruefungenGleichzeitigRestriction deviceUnderTest = new ZweiPruefungenGleichzeitigRestriction(dataAccessService);
+    ZweiPruefungenGleichzeitigRestriction deviceUnderTest = new ZweiPruefungenGleichzeitigRestriction(
+        dataAccessService);
     HardRestrictionAnalysis result = deviceUnderTest.evaluateRestriction(pruefung1).get();
 
-    assertThat(result.getTeilnehmerCount()).containsOnlyKeys(bwl);
-    assertThat(result.getTeilnehmerCount().values()).containsOnly(30);
-    assertThat(result.getCausingPruefungen()).contains(pruefung1);
-    assertThat(result.getCausingPruefungen()).contains(pruefung2);
+    assertThat(result.getParticipants()).containsOnlyKeys(bwl);
+    assertThat(result.getParticipants().values()).containsOnly(30);
+    assertThat(result.getConflictingPruefungen()).contains(pruefung1);
+    assertThat(result.getConflictingPruefungen()).contains(pruefung2);
     assertThat(result.getKriterium()).isEqualTo(HartesKriterium.ZWEI_KLAUSUREN_GLEICHZEITIG);
   }
 
@@ -105,11 +106,11 @@ class ZweiKlausurenGleichzeitigTest {
     Optional<HardRestrictionAnalysis> analyse = deviceUnderTest.evaluateRestriction(haskell);
 
     assertTrue(analyse.isPresent());
-    assertEquals(Set.of(analysis, haskell), analyse.get().getCausingPruefungen());
+    assertEquals(Set.of(analysis, haskell), analyse.get().getConflictingPruefungen());
 
-    assertEquals(Set.of(infBachelor), analyse.get().getTeilnehmerCount().keySet());
+    assertEquals(Set.of(infBachelor), analyse.get().getParticipants().keySet());
     assertEquals(students,
-        analyse.get().getTeilnehmerCount().values().stream().reduce(0, Integer::sum));
+        analyse.get().getParticipants().values().stream().reduce(0, Integer::sum));
   }
 
 
@@ -158,10 +159,10 @@ class ZweiKlausurenGleichzeitigTest {
     Optional<HardRestrictionAnalysis> analyse = deviceUnderTest.evaluateRestriction(haskell);
 
     assertThat(analyse).isPresent();
-    assertThat(analyse.get().getCausingPruefungen()).containsOnly(dm, analysis, haskell);
-    assertThat(analyse.get().getTeilnehmerCount()).containsOnlyKeys(infBachelor);
+    assertThat(analyse.get().getConflictingPruefungen()).containsOnly(dm, analysis, haskell);
+    assertThat(analyse.get().getParticipants()).containsOnlyKeys(infBachelor);
     assertThat(
-        analyse.get().getTeilnehmerCount().values().stream().reduce(0, Integer::sum)).isEqualTo(
+        analyse.get().getParticipants().values().stream().reduce(0, Integer::sum)).isEqualTo(
         students);
   }
 
@@ -195,10 +196,10 @@ class ZweiKlausurenGleichzeitigTest {
     Optional<HardRestrictionAnalysis> analyse = deviceUnderTest.evaluateRestriction(haskell);
     assertThat(analyse).isPresent();
 
-    assertThat(analyse.get().getCausingPruefungen()).containsOnly(dm, analysis, haskell);
-    assertThat(analyse.get().getTeilnehmerCount()).containsOnlyKeys(infBachelor, bwlBachelor);
+    assertThat(analyse.get().getConflictingPruefungen()).containsOnly(dm, analysis, haskell);
+    assertThat(analyse.get().getParticipants()).containsOnlyKeys(infBachelor, bwlBachelor);
     assertThat(
-        analyse.get().getTeilnehmerCount().values().stream().reduce(0, Integer::sum))
+        analyse.get().getParticipants().values().stream().reduce(0, Integer::sum))
         .isEqualTo(16);
   }
 
@@ -310,10 +311,10 @@ class ZweiKlausurenGleichzeitigTest {
 
     Optional<HardRestrictionAnalysis> analyse = deviceUnderTest.evaluateRestriction(cPruefung);
     assertThat(analyse).isPresent();
-    assertThat(analyse.get().getCausingPruefungen()).containsOnly(cPruefung, aPruefung);
-    assertThat(analyse.get().getTeilnehmerCount()).containsOnlyKeys(infBachelor);
+    assertThat(analyse.get().getConflictingPruefungen()).containsOnly(cPruefung, aPruefung);
+    assertThat(analyse.get().getParticipants()).containsOnlyKeys(infBachelor);
     assertThat(
-        analyse.get().getTeilnehmerCount().values().stream().reduce(0, Integer::sum))
+        analyse.get().getParticipants().values().stream().reduce(0, Integer::sum))
         .isEqualTo(students);
   }
 
@@ -441,11 +442,11 @@ class ZweiKlausurenGleichzeitigTest {
 
     Optional<HardRestrictionAnalysis> analyse = deviceUnderTest.evaluateRestriction(cPruefung2);
     assertThat(analyse).isPresent();
-    assertThat(analyse.get().getCausingPruefungen()).containsOnly(aPruefung2, bPruefung2,
+    assertThat(analyse.get().getConflictingPruefungen()).containsOnly(aPruefung2, bPruefung2,
         cPruefung2, dPruefung2, ePruefung2);
-    assertThat(analyse.get().getTeilnehmerCount()).containsOnlyKeys(infBachelor, bwlBachelor);
+    assertThat(analyse.get().getParticipants()).containsOnlyKeys(infBachelor, bwlBachelor);
     assertThat(
-        analyse.get().getTeilnehmerCount().values().stream().reduce(0, Integer::sum))
+        analyse.get().getParticipants().values().stream().reduce(0, Integer::sum))
         .isEqualTo(affectedStudents);
   }
 
@@ -499,11 +500,11 @@ class ZweiKlausurenGleichzeitigTest {
 
     Optional<HardRestrictionAnalysis> analyse = deviceUnderTest.evaluateRestriction(cPruefung2);
     assertThat(analyse).isPresent();
-    assertThat(analyse.get().getCausingPruefungen()).containsOnly(aPruefung2, bPruefung2,
+    assertThat(analyse.get().getConflictingPruefungen()).containsOnly(aPruefung2, bPruefung2,
         cPruefung2, dPruefung2, ePruefung2);
-    assertThat(analyse.get().getTeilnehmerCount()).containsOnlyKeys(infBachelor, bwlBachelor);
+    assertThat(analyse.get().getParticipants()).containsOnlyKeys(infBachelor, bwlBachelor);
     assertEquals(affectedStudents,
-        analyse.get().getTeilnehmerCount().values().stream().reduce(0, Integer::sum));
+        analyse.get().getParticipants().values().stream().reduce(0, Integer::sum));
   }
 
   @Test
