@@ -70,9 +70,9 @@ class PruefungDTOBuilderTest {
 
     PruefungDTO tester =
         BUILDER
-            .withAdditionalTeilnehmerkreisSchaetzung(analysis, 0)
-            .withAdditionalTeilnehmerkreisSchaetzung(analysis, 10)
-            .withAdditionalTeilnehmerkreisSchaetzung(additional, 10)
+            .withAdditionalTeilnehmerkreis(analysis, 0)
+            .withAdditionalTeilnehmerkreis(analysis, 10)
+            .withAdditionalTeilnehmerkreis(additional, 10)
             .withPruefungsNummer("analysis")
             .build();
     assertThat(tester.getTeilnehmerKreisSchaetzung()).containsKey(analysis);
