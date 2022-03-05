@@ -113,7 +113,7 @@ public class RestrictionService {
       throws NoPruefungsPeriodeDefinedException {
     Set<Pruefung> result = new HashSet<>();
     for (SoftRestrictionAnalysis analysis : checkWeicheKriterien(pruefung)) {
-      result.addAll(analysis.getCausingPruefungen());
+      result.addAll(analysis.getAffectedPruefungen());
     }
     result.add(pruefung);
     return result;

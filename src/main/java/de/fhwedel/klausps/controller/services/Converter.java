@@ -231,7 +231,7 @@ public class Converter {
   public KriteriumsAnalyse convertAnalyse(SoftRestrictionAnalysis analyse)
       throws NoPruefungsPeriodeDefinedException {
     return new KriteriumsAnalyse(
-        new HashSet<>(convertToROPruefungSet(analyse.getCausingPruefungen())),
+        new HashSet<>(convertToROPruefungSet(analyse.getAffectedPruefungen())),
         analyse.getKriterium(), analyse.getAffectedTeilnehmerKreise(),
         analyse.getAmountAffectedStudents());
   }

@@ -139,7 +139,7 @@ class PruefungenMitVielenAmAnfangRestrictionTest {
     assertThat(result).isPresent();
     assertThat(result.get().getAmountAffectedStudents()).isEqualTo(schaetzungMore);
     assertThat(result.get().getDeltaScoring()).isEqualTo(PRUEFUNGEN_MIT_VIELEN_AN_ANFANG.getWert());
-    assertThat(result.get().getCausingPruefungen()).containsOnly(moreTeilnehmer);
+    assertThat(result.get().getAffectedPruefungen()).isEmpty();
     assertThat(result.get().getAffectedTeilnehmerKreise()).containsOnly(infBachelor);
     assertThat(result.get().getKriterium()).isEqualTo(PRUEFUNGEN_MIT_VIELEN_AN_ANFANG);
   }
@@ -213,7 +213,7 @@ class PruefungenMitVielenAmAnfangRestrictionTest {
     Optional<SoftRestrictionAnalysis> result = deviceUnderTest.evaluateRestriction(moreTeilnehmer);
     assertThat(result).isPresent();
     assertThat(result.get().getAmountAffectedStudents()).isEqualTo(schaetzungMore);
-    assertThat(result.get().getCausingPruefungen()).containsOnly(moreTeilnehmer);
+    assertThat(result.get().getAffectedPruefungen()).isEmpty();
     assertThat(result.get().getAffectedTeilnehmerKreise()).containsOnly(infBachelor);
     assertThat(result.get().getDeltaScoring()).isEqualTo(PRUEFUNGEN_MIT_VIELEN_AN_ANFANG.getWert());
     assertThat(result.get().getKriterium()).isEqualTo(PRUEFUNGEN_MIT_VIELEN_AN_ANFANG);

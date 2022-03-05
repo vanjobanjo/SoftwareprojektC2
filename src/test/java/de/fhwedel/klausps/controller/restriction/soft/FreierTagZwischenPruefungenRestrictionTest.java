@@ -75,6 +75,7 @@ import org.junit.jupiter.api.Test;
  *   <li>{@link FreierTagZwischenPruefungenRestrictionTest#more_than_one_day_before_and_after_overlap_after() mehr als einen Tag davor + danach + Überschneidung danach}</li>
  * </ol>
  */
+
 class FreierTagZwischenPruefungenRestrictionTest {
 
   public FreierTagZwischenPruefungenRestriction deviceUnderTest;
@@ -794,7 +795,7 @@ class FreierTagZwischenPruefungenRestrictionTest {
     assertThat(result).isPresent();
     assertThat(result.get().getAffectedTeilnehmerKreise()).containsExactlyInAnyOrderElementsOf(
         causingTeilnehmerkreise);
-    assertThat(result.get().getCausingPruefungen()).containsExactlyInAnyOrderElementsOf(
+    assertThat(result.get().getAffectedPruefungen()).containsExactlyInAnyOrderElementsOf(
         causingPruefungen);
     assertThat(result.get().getAmountAffectedStudents()).isEqualTo(affected);
     assertThat(result.get().getDeltaScoring()).isEqualTo(causingPruefungen.size() * SCORING);

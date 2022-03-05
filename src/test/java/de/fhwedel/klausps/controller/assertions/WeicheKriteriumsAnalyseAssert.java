@@ -19,7 +19,7 @@ public class WeicheKriteriumsAnalyseAssert extends
   public WeicheKriteriumsAnalyseAssert conflictingPruefungenAreExactly(
       Set<String> pruefungsNummern) {
     Set<String> actualPruefungsnummern = TestUtils.getPruefungsnummernFromModel(
-        actual.getCausingPruefungen());
+        actual.getAffectedPruefungen());
     if (actualPruefungsnummern.size() != pruefungsNummern.size()) {
       if (!actualPruefungsnummern.containsAll(pruefungsNummern)) {
         failWithMessage("The result is missing Pruefungen with numbers: %d",

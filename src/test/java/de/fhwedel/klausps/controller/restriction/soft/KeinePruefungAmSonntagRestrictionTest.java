@@ -85,7 +85,7 @@ class KeinePruefungAmSonntagRestrictionTest {
     SoftRestrictionAnalysis result = deviceUnderTest.evaluateRestriction(model_pruefung_so)
         .orElseThrow(IllegalArgumentException::new
         );
-    assertThat(result.getCausingPruefungen()).containsOnly(model_pruefung_so);
+    assertThat(result.getAffectedPruefungen()).isEmpty();
     assertThat(result.getAmountAffectedStudents()).isEqualTo(90);
     assertThat(result.getAffectedTeilnehmerKreise()).containsOnly(TestFactory.wingBachelor, TestFactory.infBachelor,
         TestFactory.bwlBachelor);

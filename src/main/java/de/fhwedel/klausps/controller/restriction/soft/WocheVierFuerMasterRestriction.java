@@ -4,6 +4,7 @@ import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.WOCHE_VIE
 import static de.fhwedel.klausps.model.api.Ausbildungsgrad.AUSBILDUNG;
 import static de.fhwedel.klausps.model.api.Ausbildungsgrad.BACHELOR;
 import static de.fhwedel.klausps.model.api.Ausbildungsgrad.MASTER;
+import static java.util.Collections.emptySet;
 
 import de.fhwedel.klausps.controller.analysis.SoftRestrictionAnalysis;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
@@ -13,6 +14,7 @@ import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Pruefung;
 import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
@@ -88,10 +90,9 @@ public class WocheVierFuerMasterRestriction extends SoftRestriction {
 
     int scoring = kriterium.getWert() * tkWithoutMaster.size();
 
-    return Optional.of(new SoftRestrictionAnalysis(Set.of(pruefung), WOCHE_VIER_FUER_MASTER,
+    return Optional.of(new SoftRestrictionAnalysis(emptySet(), WOCHE_VIER_FUER_MASTER,
         tkWithoutMaster,
-        affectedWithoutMaster, scoring
-    ));
+        affectedWithoutMaster, scoring));
   }
 
   private boolean isNotMaster(Teilnehmerkreis tk) {
@@ -110,9 +111,5 @@ public class WocheVierFuerMasterRestriction extends SoftRestriction {
         / DAYS_WEEK;
   }
 
-  @Override
-  protected int addDeltaScoring(Set<Pruefung> affectedPruefungen) {
-    throw new UnsupportedOperationException("not implemented");
-  }
 
 }

@@ -33,7 +33,7 @@ public class SoftRestrictionAnalysis {
     this.deltaScoring = scoring;
   }
 
-  public Set<Pruefung> getCausingPruefungen() {
+  public Set<Pruefung> getAffectedPruefungen() {
     return causingPruefungen;
   }
 

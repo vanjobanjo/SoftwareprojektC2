@@ -112,8 +112,8 @@ public class AnzahlPruefungProWocheTeilnehmerkreisRestriction extends SoftRestri
       return Optional.of(newAnalyse);
     }
     Set<Pruefung> combinedPruefung = new HashSet<>();
-    combinedPruefung.addAll(newAnalyse.getCausingPruefungen());
-    combinedPruefung.addAll(oldAnalyse.get().getCausingPruefungen());
+    combinedPruefung.addAll(newAnalyse.getAffectedPruefungen());
+    combinedPruefung.addAll(oldAnalyse.get().getAffectedPruefungen());
 
     Set<Teilnehmerkreis> combinedTk = new HashSet<>();
     combinedTk.addAll(newAnalyse.getAffectedTeilnehmerKreise());

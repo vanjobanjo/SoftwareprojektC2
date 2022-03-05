@@ -81,7 +81,7 @@ class AnzahlPruefungProWocheTeilnehmerkreisRestrictionTest {
     //mock must be configured before constructor call
     this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreisRestriction(accessService, LIMIT_PER_WEEK);
     SoftRestrictionAnalysis ev = deviceUnderTest.evaluateRestriction(mathe_0).get();
-    assertThat(ev.getCausingPruefungen()).containsOnly(mathe_0, dm_0);
+    assertThat(ev.getAffectedPruefungen()).containsOnly(mathe_0, dm_0);
   }
 
   @Test
@@ -106,7 +106,7 @@ class AnzahlPruefungProWocheTeilnehmerkreisRestrictionTest {
     //mock must be configured before constructor call
     this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreisRestriction(accessService, LIMIT_PER_WEEK);
     SoftRestrictionAnalysis ev = deviceUnderTest.evaluateRestriction(mathe_0).get();
-    assertThat(ev.getCausingPruefungen()).containsOnly(mathe_0, dm_0);
+    assertThat(ev.getAffectedPruefungen()).containsOnly(mathe_0, dm_0);
     assertThat(ev.getAffectedTeilnehmerKreise()).containsOnly(bwl, inf);
     assertThat(ev.getDeltaScoring().intValue()).isEqualTo(
         WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE.getWert() * 2);
@@ -176,12 +176,12 @@ class AnzahlPruefungProWocheTeilnehmerkreisRestrictionTest {
     //mock must be configured before constructor call
     this.deviceUnderTest = new AnzahlPruefungProWocheTeilnehmerkreisRestriction(accessService, LIMIT_PER_WEEK);
     assertThat(deviceUnderTest.evaluateRestriction(mathe_0)).isPresent();
-    assertThat(deviceUnderTest.evaluateRestriction(mathe_0).get().getCausingPruefungen()).containsOnly(mathe_0,
+    assertThat(deviceUnderTest.evaluateRestriction(mathe_0).get().getAffectedPruefungen()).containsOnly(mathe_0,
         haskell_0);
-    assertThat(deviceUnderTest.evaluateRestriction(haskell_0).get().getCausingPruefungen()).containsOnly(
+    assertThat(deviceUnderTest.evaluateRestriction(haskell_0).get().getAffectedPruefungen()).containsOnly(
         mathe_0, dm_0, haskell_0);
 
-    assertThat(deviceUnderTest.evaluateRestriction(dm_0).get().getCausingPruefungen()).containsOnly(
+    assertThat(deviceUnderTest.evaluateRestriction(dm_0).get().getAffectedPruefungen()).containsOnly(
         haskell_0, dm_0);
   }
 

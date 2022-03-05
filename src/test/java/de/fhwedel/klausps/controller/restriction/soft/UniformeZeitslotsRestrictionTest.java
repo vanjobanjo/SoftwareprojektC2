@@ -157,7 +157,7 @@ class UniformeZeitslotsRestrictionTest {
     assertThat(result).isPresent();
     assertThat(result.get().getAffectedTeilnehmerKreise()).containsExactlyInAnyOrderElementsOf(
         causingTeilnehmerkreise);
-    assertThat(result.get().getCausingPruefungen()).containsExactlyInAnyOrderElementsOf(
+    assertThat(result.get().getAffectedPruefungen()).containsExactlyInAnyOrderElementsOf(
         causingPruefungen);
     assertThat(result.get().getAmountAffectedStudents()).isEqualTo(toEvaluate.schaetzung());
     assertThat(result.get().getDeltaScoring()).isEqualTo(

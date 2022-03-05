@@ -111,7 +111,7 @@ class WocheVierFuerMasterRestrictionTest {
     modelanalysis.addTeilnehmerkreis(TestFactory.infBachelor, 20);
     Optional<SoftRestrictionAnalysis> result = deviceUnderTest.evaluateRestriction(modelanalysis);
     assertThat(result).isPresent();
-    assertThat(result.get().getCausingPruefungen()).containsOnly(modelanalysis);
+    assertThat(result.get().getAffectedPruefungen()).isEmpty();
     assertThat(result.get().getKriterium()).isEqualTo(WeichesKriterium.WOCHE_VIER_FUER_MASTER);
     assertThat(result.get().getAmountAffectedStudents()).isEqualTo(20);
     assertThat(result.get().getAffectedTeilnehmerKreise()).isEqualTo(

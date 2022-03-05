@@ -30,7 +30,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Klasse, die für das Testen da ist, wenn zwei Klausuren gleichzeitig stattfinden, mit dem gleichen Teilnehmerkreis
+ * Klasse, die für das Testen da ist, wenn zwei Klausuren gleichzeitig stattfinden, mit dem gleichen
+ * Teilnehmerkreis
  */
 public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
 
@@ -38,7 +39,8 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
       ZweiPruefungenGleichzeitigRestriction.class);
 
   /**
-   * Speichern von der Zeit, die zwischen den Pruefungen mit dem gleichen Teilnehmerkreis liegen darf
+   * Speichern von der Zeit, die zwischen den Pruefungen mit dem gleichen Teilnehmerkreis liegen
+   * darf
    */
   private final Duration bufferBetweenPlanungseinheiten;
 
@@ -255,6 +257,9 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
         (Pruefung pruefung) -> notSameTeilnehmerkreis(pruefung, planungseinheit));
     if (!planungseinheit.isBlock()) {
       geplantePruefungen.remove(planungseinheit.asPruefung());
+      Optional<Block> potentialBlock = dataAccessService.getBlockTo(planungseinheit.asPruefung());
+      potentialBlock.ifPresent(block -> geplantePruefungen.removeIf(
+          pruefung -> block.getPruefungen().contains(pruefung)));
     }
     LOGGER.trace("Found {} conflicting with {} because of common Teilnehmerkreise.",
         geplantePruefungen, planungseinheit);

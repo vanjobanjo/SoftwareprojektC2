@@ -100,13 +100,13 @@ class MehrePruefungenAmTagRestrictionTest {
 
     Optional<SoftRestrictionAnalysis> analyse = mehrePruefungenAmTagRestriction.evaluateRestriction(haskel);
     assertTrue(analyse.isPresent());
-    assertThat(analyse.get().getCausingPruefungen()).containsAll(setOfConflictPruefungen);
+    assertThat(analyse.get().getAffectedPruefungen()).containsAll(setOfConflictPruefungen);
     assertEquals(setOfConflictTeilnehmerkreis, analyse.get().getAffectedTeilnehmerKreise());
     assertEquals(students, analyse.get().getAmountAffectedStudents());
 
     assertThat(analyse.get().getAffectedTeilnehmerKreise()).containsAll(
         setOfConflictTeilnehmerkreis);
-    assertThat(analyse.get().getCausingPruefungen()).containsAll(setOfConflictPruefungen);
+    assertThat(analyse.get().getAffectedPruefungen()).containsAll(setOfConflictPruefungen);
     assertThat(analyse.get().getAmountAffectedStudents()).isEqualTo(students);
 
 
@@ -217,13 +217,13 @@ class MehrePruefungenAmTagRestrictionTest {
     Optional<SoftRestrictionAnalysis> analyse = mehrePruefungenAmTagRestriction.evaluateRestriction(haskel);
 
     assertTrue(analyse.isPresent());
-    assertThat(analyse.get().getCausingPruefungen()).containsAll(setOfConflictPruefunge);
+    assertThat(analyse.get().getAffectedPruefungen()).containsAll(setOfConflictPruefunge);
     assertEquals(setOfConflictTeilnehmerkreis, analyse.get().getAffectedTeilnehmerKreise());
     assertEquals(students, analyse.get().getAmountAffectedStudents());
 
     assertThat(analyse.get().getAffectedTeilnehmerKreise()).containsAll(
         setOfConflictTeilnehmerkreis);
-    assertThat(analyse.get().getCausingPruefungen()).containsAll(setOfConflictPruefunge);
+    assertThat(analyse.get().getAffectedPruefungen()).containsAll(setOfConflictPruefunge);
     assertThat(analyse.get().getAmountAffectedStudents()).isEqualTo(students);
 
 

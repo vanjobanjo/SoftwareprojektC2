@@ -4,6 +4,7 @@ package de.fhwedel.klausps.controller.restriction.soft;
 import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.PRUEFUNGEN_MIT_VIELEN_AN_ANFANG;
 import static de.fhwedel.klausps.controller.services.ServiceProvider.getDataAccessService;
 import static de.fhwedel.klausps.controller.util.ParameterUtil.noNullParameters;
+import static java.util.Collections.emptySet;
 
 import de.fhwedel.klausps.controller.analysis.SoftRestrictionAnalysis;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
@@ -11,7 +12,6 @@ import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.model.api.Pruefung;
 import java.time.Duration;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * This restriction ensures that Pruefungen with many students should be at the beginning of the
@@ -91,7 +91,7 @@ public class PruefungenMitVielenAmAnfangRestriction extends SoftRestriction {
     // Pruefung is not at the beginning, therefore check if it has more participants than "many"
     if (pruefung.schaetzung() >= amountManyStudents) {
       // Pruefung violates the restriction
-      return Optional.of(new SoftRestrictionAnalysis(Set.of(pruefung), this.kriterium,
+      return Optional.of(new SoftRestrictionAnalysis(emptySet(), this.kriterium,
           pruefung.getTeilnehmerkreise(), pruefung.schaetzung(),
           this.kriterium.getWert()));
     }
