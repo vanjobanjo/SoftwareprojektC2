@@ -5,6 +5,7 @@ import static de.fhwedel.klausps.model.api.Blocktyp.SEQUENTIAL;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import de.fhwedel.klausps.controller.api.BlockDTO;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyBlock;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
@@ -69,7 +70,7 @@ public class makeBlockSequentialSteps extends BaseSteps {
     try {
       List<ReadOnlyPlanungseinheit> result = state.controller.makeBlockSequential(
           getBlockFromModel(blockName));
-
+      state.results.put("pruefungen", result);
     } catch (HartesKriteriumException e) {
       //  putExceptionInResult(e);
       state.results.put("exception", e);
@@ -99,4 +100,14 @@ public class makeBlockSequentialSteps extends BaseSteps {
     state.controller.schedulePruefung(pruefung, localDateTime);
   }
 
+  @Wenn("ich einen unbekannten Block auf sequentiell stelle")
+  public void ichEinenUnbekanntenBlockAufSequentiellStelle()
+      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
+    ReadOnlyBlock block = new BlockDTO("unknown", null, Duration.ZERO, emptySet(), 0, SEQUENTIAL);
+    try {
+      state.controller.makeBlockSequential(block);
+    } catch (IllegalStateException exception) {
+      putExceptionInResult(exception);
+    }
+  }
 }

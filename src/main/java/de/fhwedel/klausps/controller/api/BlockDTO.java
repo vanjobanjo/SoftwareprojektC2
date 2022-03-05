@@ -6,6 +6,7 @@ import de.fhwedel.klausps.model.api.Blocktyp;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.StringJoiner;
 
 public class BlockDTO extends ReadOnlyBlock {
 
@@ -27,5 +28,13 @@ public class BlockDTO extends ReadOnlyBlock {
   @Override
   public int hashCode() {
     return super.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return new StringJoiner(", ", "[", "]")
+        .add(this.getName())
+        .add(Integer.toString(this.getBlockId()))
+        .toString();
   }
 }

@@ -492,7 +492,7 @@ public class ScheduleService {
     }
     Set<Pruefung> affected = restrictionService.getPruefungenAffectedByAnyBlock(modelBlock);
     modelBlock.setTyp(changeTo);
-
+    affected.addAll(restrictionService.getPruefungenAffectedByAnyBlock(modelBlock));
     List<HardRestrictionAnalysis> hard = restrictionService.checkHarteKriterienAll(
         affected);
     if (!hard.isEmpty()) {

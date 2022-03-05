@@ -1185,7 +1185,7 @@ class ScheduleServiceTest {
     when(restrictionService.checkHarteKriterienAll(Set.of(analysis, haskell))).thenReturn(
         hardKriterien);
     when(restrictionService.getPruefungenAffectedByAnyBlock(any(Block.class))).thenReturn(
-        Set.of(analysis, haskell));
+        new HashSet<>(Set.of(analysis, haskell)));
     assertThrows(HartesKriteriumException.class,
         () -> deviceUnderTest.setBlockType(roBlock, SEQUENTIAL));
   }
@@ -1219,7 +1219,7 @@ class ScheduleServiceTest {
     ReadOnlyBlock roBlock = converter.convertToROBlock(block);
     when(dataAccessService.getBlock(roBlock)).thenReturn(block);
     when(restrictionService.getPruefungenAffectedByAnyBlock(any(Block.class))).thenReturn(
-        Set.of(analysis));
+        new HashSet<>(Set.of(analysis)));
     when(restrictionService.checkHarteKriterienAll(Set.of(analysis, haskell))).thenReturn(
         Collections.emptyList());
 
@@ -1281,7 +1281,7 @@ class ScheduleServiceTest {
     when(restrictionService.checkHarteKriterienAll(Set.of(analysis, haskell))).thenReturn(
         hardKriterien);
     when(restrictionService.getPruefungenAffectedByAnyBlock(any(Block.class))).thenReturn(
-        Set.of(analysis, haskell));
+        new HashSet<>(Set.of(analysis, haskell)));
     assertThrows(HartesKriteriumException.class,
         () -> deviceUnderTest.setBlockType(roBlock, PARALLEL));
   }
@@ -1315,7 +1315,7 @@ class ScheduleServiceTest {
     ReadOnlyBlock roBlock = converter.convertToROBlock(block);
     when(dataAccessService.getBlock(roBlock)).thenReturn(block);
     when(restrictionService.getPruefungenAffectedByAnyBlock(any(Block.class))).thenReturn(
-        Set.of(analysis));
+        new HashSet<>(Set.of(analysis)));
     when(restrictionService.checkHarteKriterienAll(Set.of(analysis, haskell))).thenReturn(
         Collections.emptyList());
 

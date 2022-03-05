@@ -40,7 +40,9 @@ public class PruefungDTO extends ReadOnlyPruefung {
 
   @Override
   public String toString() {
-    return new StringJoiner(", ", PruefungDTO.class.getSimpleName() + "[" + this.getName(), "]")
+    return new StringJoiner(", ", "[", "]")
+        .add(this.getName())
+        .add(this.getPruefungsnummer())
         .toString();
   }
 }
