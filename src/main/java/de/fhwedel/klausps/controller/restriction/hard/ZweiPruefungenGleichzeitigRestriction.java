@@ -53,11 +53,7 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
     this.bufferBetweenPlanungseinheiten = DEFAULT_BUFFER_BETWEEN_PLANUNGSEINHEITEN;
   }
 
-  protected ZweiPruefungenGleichzeitigRestriction(DataAccessService dataAccessService,
-      Duration bufferBetweenPlanungseinheiten) {
-    super(dataAccessService, ZWEI_KLAUSUREN_GLEICHZEITIG);
-    this.bufferBetweenPlanungseinheiten = bufferBetweenPlanungseinheiten;
-  }
+
 
   @Override
   public Optional<HardRestrictionAnalysis> evaluateRestriction(Pruefung pruefung)
@@ -334,9 +330,14 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
     return intersection;
   }
 
-  //TODO JAVADOC
-  private boolean notSameTeilnehmerkreis(Pruefung x, Planungseinheit planungseinheitToCheckFor) {
-    for (Teilnehmerkreis teilnehmerkreis : x.getTeilnehmerkreise()) {
+  /**
+   * Diese Methode ist dafür da, um zu überprüfen ob eine Pruefung und eine Planungseinheit einen gemeinsamen Teilnehmerkreis besitzt
+   * @param pruefung die Pruefung mit der nach einen Übereinstimmenden Teilnehmerkreis gesucht wird
+   * @param planungseinheitToCheckFor die Planungseinheit mit der ein Teilnehmer überprüft wird
+   * @return ob die Pruefung und die Planungseinheit einen gemeinsamen Teilnehmerkreis besitzt
+   */
+  private boolean notSameTeilnehmerkreis(Pruefung pruefung, Planungseinheit planungseinheitToCheckFor) {
+    for (Teilnehmerkreis teilnehmerkreis : pruefung.getTeilnehmerkreise()) {
       if (planungseinheitToCheckFor.getTeilnehmerkreise().contains(teilnehmerkreis)) {
         return false;
       }
