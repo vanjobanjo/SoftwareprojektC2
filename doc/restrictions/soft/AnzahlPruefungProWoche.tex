@@ -1,18 +1,8 @@
 \subsubsection{Anzahl Prüfung pro Woche}
-Der Kunde bzw.\ die Kundin wünscht sich,
-dass eine bestimmte Anzahl von Prüfungen für einen gewissen Teilnehmerkreis
-in der Woche nicht überschritten wird.
-Hierbei wird für eine übergebene Prüfung inspiziert,
-ob diese Prüfung Teilnehmerkreise beinhaltet, dessen Anzahl der zu schreibenden Klausuren in derselben Woche,
-wie der zu überprüfenden Prüfung das Limit von 4 übersteigen.
-Zuerst werden die geplanten Prüfungen nach Wochenabstand zum Startdatum der Prüfungsperiode sortiert.
-Anschließend wird für jeden Teilnehmerkreis der übergebenen Prüfung kontrolliert,
-ob die Restriktion verletzt wird.
-Dabei wird jeder Teilnehmerkreis der zu überprüfenden Prüfung mit
-den Prüfungen verglichen, die in derselben Woche wie der zu überprüfenden Prüfung stattfinden.
-Prüfungen, die sich im selben Block wie in der zu überprüfenden Prüfung befinden,
-werden hierbei ignoriert und nicht beachtet.
-Für jede Verletzung der Restriktion durch einen Teilnehmerkreis der übergebenen Prüfung wird das Scoring der Prüfung erhöht.
+Dieses Kriterium überprüft, ob eine bestimmte Anzahl von Prüfungen für einen Teilnehmerkreis
+pro Woche überschritten wird.
+Für jede Verletzung der Restriktion durch einen Teilnehmerkreis der übergebenen Prüfung wird das
+Scoring der Prüfung erhöht.
 
 
 

@@ -1,14 +1,17 @@
 \subsection{Harte Restriktion}\label{subsec:harte_restriktion}
 
 \subsubsection{Was ist eine harte Restriktion?}
-Eine Harte Restriktion ist ein Kriterium, welches beim Einplanen, von Klausuren, testet,
-ob eine Klausur an dem übergebenen Zeitpunkt liegen darf.
-Falls eine einzuplanende Klausur nicht an dem übergebenen Zeitpunkt eingeplant werden darf,
-soll eine HartesKriteriumException geschmissen werden und die Klausur wird nicht an den übergebenen
-Zeitpunkt eingeplant.
+Eine Harte Restriktion ist ein Kriterium, welches beim Einplanen von Klausuren testet,
+ob eine Klausur an ihrem aktuellen Zeitpunkt liegen darf.
+Falls eine einzuplanende Klausur nicht eingeplant werden darf,
+wird eine HartesKriteriumException ausgelöst und die Klausur von diesem Zeitpunkt entfernt.
+War sie vor dem Testen der harten Restriktion bereits an einem anderen Zeitpunkt geplant,
+wird sie wieder an ihren alten Punkt zurückgesetzt.
+Eine vorher ungeplante Prüfung bleibt ungeplant.
 
 \subsubsection{HartesKriteriumException}
-Eine HartesKriteriumException ist eine selbsterstellte Exception.
-Diese beinhaltet die Prüfungen, die Teilnehmerkreise und die Anzahl von Studenten, die diese Restriktion auslösen lässt.
+Eine HartesKriteriumException ist eine von der Controller-Schnittstelle bereitgestellte Exception.
+Diese beinhaltet die Prüfungen, die Teilnehmerkreise und die Anzahl von Studenten, die eine harte
+Restriktion auslösen.
 \input{restrictions/hard/twoKlausurenSameTime}
 
