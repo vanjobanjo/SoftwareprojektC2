@@ -9,7 +9,8 @@ import java.util.Map;
 public class TeilnehmerkreisUtil {
 
   /**
-   * A utility class providing only static methods, should not be instantiated
+   * A utility class providing only static methods should not be instantiated. Therefor the default
+   * constructor needs to be overridden.
    */
   private TeilnehmerkreisUtil() {
 

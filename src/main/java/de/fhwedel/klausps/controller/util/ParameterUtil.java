@@ -11,7 +11,8 @@ import java.util.Objects;
 public class ParameterUtil {
 
   /**
-   * Utility classes should not be instantiated.
+   * Changes visibility of the default constructor to private because utility classes containing
+   * only static methods should not be instantiated.
    */
   private ParameterUtil() {
   }
