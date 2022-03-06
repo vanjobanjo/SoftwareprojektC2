@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The Service provides a single point of entry for the creation of all necessary services. Due to
+ * This Service provides a single point of entry for the creation of all necessary services. Due to
  * dependency structures, some services have to be registered with each other. The ServiceProvider
  * therefore ensures that all services are registered correctly and available when needed. If the
  * ServiceProvider is used for handling all services, it also ensures that only one instance of each
@@ -15,17 +15,41 @@ public class ServiceProvider {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Controller.class);
 
+  /**
+   * The {@link DataAccessService} used to communicate with the {@link
+   * de.fhwedel.klausps.model.api.Pruefungsperiode}
+   */
   private static DataAccessService dataAccessService;
 
+  /**
+   * The {@link IOService Service} used to import and export {@link de.fhwedel.klausps.model.api.Pruefungsperiode
+   * Pruefungsperioden}
+   */
   private static IOService ioService;
 
+  /**
+   * The {@link ScheduleService Service} used to (un)schedule {@link de.fhwedel.klausps.model.api.Planungseinheit
+   * Planungseinheiten}
+   */
   private static ScheduleService scheduleService;
 
+  /**
+   * The {@link RestrictionService Service} used to evaluate {@link de.fhwedel.klausps.controller.restriction.Restriction
+   * Restrictions}
+   */
   private static RestrictionService restrictionService;
 
+  /**
+   * The {@link Converter} used to convert internally used
+   */
   private static Converter converter;
 
+  /**
+   * Changes visibility of the default constructor to private because utility classes containing
+   * only static methods should not be instantiated.
+   */
   private ServiceProvider() {
+    // I don't need to be instantiated
   }
 
   /**
