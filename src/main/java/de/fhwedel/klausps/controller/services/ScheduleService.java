@@ -386,9 +386,15 @@ public class ScheduleService {
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException, IllegalStateException,
       IllegalArgumentException {
     noNullParameters(pruefung, termin);
+    Set<Planungseinheit> old = new HashSet<>();
+    if(pruefung.geplant()){
+      old.addAll(getAffectedPruefungenBy(dataAccessService.getPruefung(pruefung)));
+      old.remove(dataAccessService.getPruefung(pruefung));
+    }
     Pruefung pruefungModel = dataAccessService.schedulePruefung(pruefung, termin);
     checkHardCriteriaUndoScheduling(pruefung, pruefungModel);
-    return getAffectedPruefungenBy(pruefungModel);
+    old.addAll(getAffectedPruefungenBy(pruefungModel));
+    return old;
   }
 
   private void checkHardCriteriaUndoScheduling(ReadOnlyPruefung pruefung, Pruefung pruefungModel)
