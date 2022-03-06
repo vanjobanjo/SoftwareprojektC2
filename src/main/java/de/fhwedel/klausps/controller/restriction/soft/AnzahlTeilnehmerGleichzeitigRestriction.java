@@ -14,8 +14,8 @@ import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * A Restriction describing that the amount of participants to {@link Pruefung}en at the same time
- * must not exceed s threshold.
+ * A Restriction describing that the amount of participants to {@link Pruefung Pruefungen} at the
+ * same time must not exceed s threshold.
  */
 public class AnzahlTeilnehmerGleichzeitigRestriction extends AtSameTimeRestriction {
 
@@ -44,7 +44,8 @@ public class AnzahlTeilnehmerGleichzeitigRestriction extends AtSameTimeRestricti
    * Instantiate a AnzahlTeilnehmerGleichzeitigRestriction.
    *
    * @param dataAccessService       The service to use for data access.
-   * @param buffer                  The time buffer between {@link Planungseinheit}en.
+   * @param buffer                  The time buffer between {@link Planungseinheit
+   *                                Planungseinheit}.
    * @param maxTeilnehmerAtSameTime The maximal amount of students that should be in exams at the
    *                                same time.
    */
@@ -57,7 +58,7 @@ public class AnzahlTeilnehmerGleichzeitigRestriction extends AtSameTimeRestricti
    * Instantiate a AnzahlTeilnehmerGleichzeitigRestriction.
    *
    * @param dataAccessService       The service to use for data access.
-   * @param buffer                  The time buffer between {@link Planungseinheit}en.
+   * @param buffer                  The time buffer between {@link Planungseinheit Planungseinheit}.
    * @param maxTeilnehmerAtSameTime The maximal amount of students that should be in exams at the
    *                                same time.
    * @param scoreStepSize           The amount on which to increase the scoring.

@@ -57,7 +57,7 @@ public class ScheduleService {
 
   /**
    * The RestrictionService used for checking all hard and soft {@link
-   * de.fhwedel.klausps.controller.restriction.Restriction}s
+   * de.fhwedel.klausps.controller.restriction.Restriction Restrictions}
    */
   private final RestrictionService restrictionService;
 

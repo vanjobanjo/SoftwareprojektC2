@@ -84,7 +84,7 @@ public abstract class AtSameTimeRestriction extends SoftRestriction {
   }
 
   /**
-   * Get all {@link Planungseinheit}en in a defined timespan.
+   * Get all {@link Planungseinheit Planungseinheiten} in a defined timespan.
    *
    * @param from The start of the timespan - inclusive.
    * @param to   The end of the timespan - exclusive.
@@ -103,7 +103,8 @@ public abstract class AtSameTimeRestriction extends SoftRestriction {
   }
 
   /**
-   * Remove {@link Planungseinheit}en that should be ignored while checking the restriction.
+   * Remove {@link Planungseinheit Planungseinheit} that should be ignored while checking the
+   * restriction.
    *
    * @param planungseinheiten The planungseinheiten to filter from.
    * @param toFilterFor       The Planungseinheit for which the restriction is beeing checked.
@@ -138,15 +139,7 @@ public abstract class AtSameTimeRestriction extends SoftRestriction {
   }
 
   /**
-   * Check whether a set of {@link Planungseinheit}en violates the restriction.
-   *
-   * @param planungseinheiten The planungseinheiten to check.
-   * @return True in case the Planungseinheiten violate the restriction, otherwise False.
-   */
-  protected abstract boolean violatesRestriction(Collection<Planungseinheit> planungseinheiten);
-
-  /**
-   * Find which {@link Planungseinheit}en from a set are in conflict with each other in terms of
+   * Find which {@link Planungseinheit Planungseinheit} from a set are in conflict with each other in terms of
    * this restriction.
    *
    * @param planungseinheiten The planungseinheiten to check for conflicts in.
@@ -168,24 +161,7 @@ public abstract class AtSameTimeRestriction extends SoftRestriction {
   }
 
   /**
-   * Build a new Analysis of the restriction violation considering certain {@link
-   * Planungseinheit}en.
-   *
-   * @param violatingPlanungseinheiten The planungseinheiten causing a violation of this
-   *                                   restriction.
-   * @return A new Analysis of the restriction violation.
-   */
-  @NotNull
-  private SoftRestrictionAnalysis buildAnalysis(
-      @NotNull Set<Planungseinheit> violatingPlanungseinheiten) {
-    return new SoftRestrictionAnalysis(getAllPruefungen(violatingPlanungseinheiten), this.kriterium,
-        getAffectedTeilnehmerkreiseFrom(violatingPlanungseinheiten),
-        getAmountOfAttendingStudents(violatingPlanungseinheiten),
-        calcScoringFor(violatingPlanungseinheiten));
-  }
-
-  /**
-   * Get the {@link Planungseinheit}en in conflict.
+   * Get the {@link Planungseinheit Planungseinheit} in conflict.
    *
    * @param planungseinheit   The planungseinheit to check for.
    * @param planungseinheiten The planungseinheiten to check against.
@@ -208,35 +184,7 @@ public abstract class AtSameTimeRestriction extends SoftRestriction {
   }
 
   /**
-   * Get all {@link Teilnehmerkreis}e involved in a set of {@link Planungseinheit}en.
-   *
-   * @param violatingPlanungseinheiten The Planungseinheiten to search through.
-   * @return All Teilnehmerkreise involved.
-   */
-  @NotNull
-  protected abstract Set<Teilnehmerkreis> getAffectedTeilnehmerkreiseFrom(
-      Set<Planungseinheit> violatingPlanungseinheiten);
-
-  /**
-   * Get the amount of students attending certain {@link Planungseinheit}en.
-   *
-   * @param planungseinheiten The planungseinheiten tu count the attending students for.
-   * @return The amount of students attending the Planungseinheiten.
-   */
-  protected abstract int getAmountOfAttendingStudents(
-      Collection<Planungseinheit> planungseinheiten);
-
-  /**
-   * Calculate the scoring for a violation of this restriction based on involved {@link
-   * Planungseinheit}en.
-   *
-   * @param violatingPlanungseinheiten The planungseinheiten causing the violation.
-   * @return The scoring based on the causing Planungseinheiten.
-   */
-  protected abstract int calcScoringFor(Collection<Planungseinheit> violatingPlanungseinheiten);
-
-  /**
-   * Select all {@link Planungseinheit}en that cover a certain moment.
+   * Select all {@link Planungseinheit Planungseinheit} that cover a certain moment.
    *
    * @param time              The time covered be the desired Planungseinheiten.
    * @param planungseinheiten The planungseinheiten to search through.
@@ -255,5 +203,59 @@ public abstract class AtSameTimeRestriction extends SoftRestriction {
     }
     return result;
   }
+
+  /**
+   * Check whether a set of {@link Planungseinheit Planungseinheit} violates the restriction.
+   *
+   * @param planungseinheiten The planungseinheiten to check.
+   * @return True in case the Planungseinheiten violate the restriction, otherwise False.
+   */
+  protected abstract boolean violatesRestriction(Collection<Planungseinheit> planungseinheiten);
+
+  /**
+   * Build a new Analysis of the restriction violation considering certain {@link Planungseinheit
+   * Planungseinheit}.
+   *
+   * @param violatingPlanungseinheiten The planungseinheiten causing a violation of this
+   *                                   restriction.
+   * @return A new Analysis of the restriction violation.
+   */
+  @NotNull
+  private SoftRestrictionAnalysis buildAnalysis(
+      @NotNull Set<Planungseinheit> violatingPlanungseinheiten) {
+    return new SoftRestrictionAnalysis(getAllPruefungen(violatingPlanungseinheiten), this.kriterium,
+        getAffectedTeilnehmerkreiseFrom(violatingPlanungseinheiten),
+        getAmountOfAttendingStudents(violatingPlanungseinheiten),
+        calcScoringFor(violatingPlanungseinheiten));
+  }
+
+  /**
+   * Get all {@link Teilnehmerkreis Teilnehmerkreise} involved in a set of {@link Planungseinheit
+   * Planungseinheit}.
+   *
+   * @param violatingPlanungseinheiten The Planungseinheiten to search through.
+   * @return All Teilnehmerkreise involved.
+   */
+  @NotNull
+  protected abstract Set<Teilnehmerkreis> getAffectedTeilnehmerkreiseFrom(
+      Set<Planungseinheit> violatingPlanungseinheiten);
+
+  /**
+   * Get the amount of students attending certain {@link Planungseinheit Planungseinheit}.
+   *
+   * @param planungseinheiten The planungseinheiten tu count the attending students for.
+   * @return The amount of students attending the Planungseinheiten.
+   */
+  protected abstract int getAmountOfAttendingStudents(
+      Collection<Planungseinheit> planungseinheiten);
+
+  /**
+   * Calculate the scoring for a violation of this restriction based on involved {@link
+   * Planungseinheit Planungseinheit}.
+   *
+   * @param violatingPlanungseinheiten The planungseinheiten causing the violation.
+   * @return The scoring based on the causing Planungseinheiten.
+   */
+  protected abstract int calcScoringFor(Collection<Planungseinheit> violatingPlanungseinheiten);
 
 }

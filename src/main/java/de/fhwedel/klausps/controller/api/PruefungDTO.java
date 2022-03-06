@@ -16,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
 public class PruefungDTO extends ReadOnlyPruefung {
 
   /**
-   * Create a data transfer object for {@link Pruefung}en.
+   * Create a data transfer object for {@link Pruefung Pruefungen}.
    *
    * @param pruefungsnummer           The unique id to identify a pruefung by.
    * @param name                      The name of the pruefung.
@@ -35,7 +35,7 @@ public class PruefungDTO extends ReadOnlyPruefung {
   }
 
   /**
-   * Create a data transfer object for {@link Pruefung}en.
+   * Create a data transfer object for {@link Pruefung Pruefungen}.
    *
    * @param pruefungsnummer           The unique id to identify a pruefung by.
    * @param name                      The name of the pruefung.

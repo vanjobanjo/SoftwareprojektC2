@@ -22,8 +22,8 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * A Restriction describing that the amount of {@link Pruefung}en on the same day with the same
- * {@link Teilnehmerkreis}
+ * A Restriction describing that the amount of {@link Pruefung Pruefungen} on the same day with the
+ * same {@link Teilnehmerkreis}
  */
 public class MehrePruefungenAmTagRestriction extends SoftRestriction {
 

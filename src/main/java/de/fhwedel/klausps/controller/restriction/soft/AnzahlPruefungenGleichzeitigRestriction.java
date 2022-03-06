@@ -20,8 +20,8 @@ import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * A Restriction describing that the amount of {@link Pruefung}en at the same time must not exceed s
- * threshold.
+ * A Restriction describing that the amount of {@link Pruefung Pruefungen} at the same time must not
+ * exceed s threshold.
  */
 public class AnzahlPruefungenGleichzeitigRestriction extends AtSameTimeRestriction {
 

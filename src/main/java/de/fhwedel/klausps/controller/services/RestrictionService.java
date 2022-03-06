@@ -198,8 +198,8 @@ public class RestrictionService {
   }
 
   /**
-   * Get all planned {@link Pruefung}en that could potentially violate a hard restriction in
-   * conjunction with a handed {@link Planungseinheit} if planned at any time.
+   * Get all planned {@link Pruefung Pruefungen} that could potentially violate a hard restriction
+   * in conjunction with a handed {@link Planungseinheit} if planned at any time.
    *
    * @param planungseinheit The planungseinheit to get the potential violations for.
    * @return Sll planned pruefungen that could potentially violate a hard restriction in conjunction

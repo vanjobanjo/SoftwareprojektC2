@@ -30,7 +30,7 @@ public class HardRestrictionAnalysis {
   /**
    * Create a new analysis.
    *
-   * @param conflictingPruefungen The {@link Pruefung}en being in conflict.
+   * @param conflictingPruefungen The {@link Pruefung Pruefungen} being in conflict.
    * @param kriterium             The criterion by which the alanysis was created.
    * @param participants          The participants affected by the restriction violation.
    */
@@ -43,7 +43,7 @@ public class HardRestrictionAnalysis {
   }
 
   /**
-   * Get the {@link Pruefung}en being in conflict.
+   * Get the {@link Pruefung Pruefungen} being in conflict.
    *
    * @return The Pruefungen being in conflict.
    */

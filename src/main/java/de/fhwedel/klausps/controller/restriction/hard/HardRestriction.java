@@ -68,7 +68,8 @@ public abstract class HardRestriction extends Restriction {
       throws NoPruefungsPeriodeDefinedException;
 
   /**
-   * Get all {@link Planungseinheit}en that are in conflict with a handed {@link Pruefung}.
+   * Get all {@link Planungseinheit Planungseinheiten} that are in conflict with a handed {@link
+   * Pruefung}.
    *
    * @param planungseinheit The Planungseinheit to check for conflicts for.
    * @return The Pruefungen in conflict with the handed one.

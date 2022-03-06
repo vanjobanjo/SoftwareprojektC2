@@ -30,8 +30,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Restriction describing that it should not be allowed for two or more {@link Planungseinheit}en
- * with identical {@link Teilnehmerkreis}en to be planned on overlapping times.
+ * Restriction describing that it should not be allowed for two or more {@link Planungseinheit
+ * Planungseinheiten} with identical {@link Teilnehmerkreis Teilnehmerkreisen} to be planned on
+ * overlapping times.
  */
 public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
 
@@ -240,8 +241,8 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
   }
 
   /**
-   * Get all {@link Planungseinheit}en that happen to be scheduled during the time a specific
-   * planungseinheit would occupy if scheduled at a specific start time.
+   * Get all {@link Planungseinheit Planungseinheiten} that happen to be scheduled during the time a
+   * specific planungseinheit would occupy if scheduled at a specific start time.
    *
    * @param startTime       The hypothetical start time for the planungseinheit during which to
    *                        search.
@@ -268,7 +269,7 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
   }
 
   /**
-   * Check whether two {@link Planungseinheit}en are in conflict.
+   * Check whether two {@link Planungseinheit Planungseinheiten} are in conflict.
    *
    * @param planungseinheit One planungseinheit for the check for conflict.
    * @param other           The other planungseinheit for the check for conflict.
@@ -283,7 +284,8 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
   }
 
   /**
-   * Check whether two {@link Planungseinheit}en have one or more common {@link Teilnehmerkreis}e.
+   * Check whether two {@link Planungseinheit Planungseinheiten} have one or more common {@link
+   * Teilnehmerkreis Teilnehmerkreise}.
    *
    * @param pe1 One planungseinheit for the check for common teilnehmerkreis.
    * @param pe2 The other planungseinheit for the check for common teilnehmerkreis.
@@ -347,8 +349,8 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
   }
 
   /**
-   * Check all given {@link Planungseinheit}en for being in conflict with a certain {@link Pruefung}
-   * concerning this restriction.
+   * Check all given {@link Planungseinheit Planungseinheiten} for being in conflict with a certain
+   * {@link Pruefung} concerning this restriction.
    *
    * @param pruefung       The pruefung for which to check violations of this restriction.
    * @param start          The start time of the timespan to check violations in, based on the
@@ -388,8 +390,9 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
   }
 
   /**
-   * Compare two {@link Pruefung}en and save their common {@link Teilnehmerkreis}e into a map. Also,
-   * the pruefungen that happen to be in conflict are saved onto a set.
+   * Compare two {@link Pruefung Pruefungen} and save their common {@link Teilnehmerkreis
+   * Teilnehmerkreise} into a map. Also, the pruefungen that happen to be in conflict are saved onto
+   * a set.
    *
    * @param pruefung             The pruefung for which the restriction is being checked.
    * @param toCheck              The pruefung with wich to compare the pruefung under test.
