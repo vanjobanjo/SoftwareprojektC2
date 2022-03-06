@@ -96,14 +96,13 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
    * Methode die durch alle Planungseinheiten in der übergebenen Liste geht und die für die
    * Planungseinheit zuständige Methode aufruft
    *
-   * @param pruefung                            die Pruefung die neu Hinzugefügt wurde und für die
-   *                                            das Kriterium getestet wird
-   * @param start                               der Starttermin ab wo die Überprüfung durchgeführt
-   *                                            werden soll (Nur für Blöcke relevant)
-   * @param end                                 der Endtermin bis wohin die Überprüfung durchgeführt
-   *                                            werden sol (Nur für Blöcke relevant)
-   * @param listInTimeSpan die Liste mit Planungseinheiten, die zu dem
-   *                                            Startzeitpunkt stattfinden
+   * @param pruefung       die Pruefung die neu Hinzugefügt wurde und für die das Kriterium getestet
+   *                       wird
+   * @param start          der Starttermin ab wo die Überprüfung durchgeführt werden soll (Nur für
+   *                       Blöcke relevant)
+   * @param end            der Endtermin bis wohin die Überprüfung durchgeführt werden sol (Nur für
+   *                       Blöcke relevant)
+   * @param listInTimeSpan die Liste mit Planungseinheiten, die zu dem Startzeitpunkt stattfinden
    * @return Entweder eine HardRestrictionAnalysis, wo die Pruefungen, das Kriterium und die
    * Teilnehmer mit ihrer Anzahl drin steht oder ein leeres Optional
    */
@@ -292,6 +291,16 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
     return isInConflict;
   }
 
+  /**
+   * This methode will provide a Set of Teilnehmerkreis that are all in the time span between
+   * startTime minus the buffertime and the startTime plus the duration of the Planungseinheit plus
+   * the buffertime
+   *
+   * @param startTime the timeslot witch will be checked
+   * @param planungseinheit for the duration of the timespan
+   * @return all Planungseinheiten that are planed in the time span
+   * @throws NoPruefungsPeriodeDefinedException if no Pruefungsperiode is defined
+   */
   @NotNull
   private Set<Planungseinheit> getPlanungseinheitenDuring(@NotNull LocalDateTime startTime,
       @NotNull Planungseinheit planungseinheit)
@@ -309,7 +318,15 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
     return result;
   }
 
-  //TODO JAVADOC
+
+  /**
+   * This methode tests if two Planungseinheiten have the same Teilnehmerkreis
+   *
+   * @param planungseinheit with witch the other should be compared
+   * @param other           planungseinheit with witch the
+   * @return true  if the planungseinheit and other planungseinheit has the same Teilnehmerkreis
+   * false if they don't have the same Teilnehmerkreis
+   */
   private boolean areInConflict(Planungseinheit planungseinheit, Planungseinheit other) {
     if (!areSame(planungseinheit, other)) {
       return haveCommonTeilnehmerkreis(planungseinheit, other);
@@ -317,7 +334,15 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
     return false;
   }
 
-  //TODO JAVADOC
+  /**
+   * This methode tests if two Planungseinheiten are the same. If there are Blocks the BlockID will
+   * be compared If they are Pruefungen then it will be compared over the ReferenzVerwaltungssystem
+   * -ID If one is a Pruefung and the other is a Block, they are not the same
+   *
+   * @param pe1 the one Planungseinheit witch will be checked
+   * @param pe2 the other Planungseinheit witch will be compared with the other
+   * @return true if pe1 and pe2 are the same false if pe1 and pe2 are not the same
+   */
   private boolean areSame(@NotNull Planungseinheit pe1, @NotNull Planungseinheit pe2) {
     if (pe1.isBlock() && pe2.isBlock()) {
       return pe1.asBlock().getId() == pe2.asBlock().getId();
@@ -329,13 +354,28 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
     return false;
   }
 
-  //TODO JAVADOC
+  /**
+   * This methode checks of to Planugnseinheiten have not an intersection between there
+   * Teilnehmerkreise
+   *
+   * @param pe1 the one Planungseinheit with witch are compared the Teilnehmerkreise
+   * @param pe2 the other Planungseinheit with witch they are compared
+   * @return true, if they don't have an intersection between there Teilnehmerkreise false, if they
+   * have an intersection between there Teilnehmerkreise
+   */
   private boolean haveCommonTeilnehmerkreis(@NotNull Planungseinheit pe1,
       @NotNull Planungseinheit pe2) {
     return !intersect(pe1.getTeilnehmerkreise(), pe2.getTeilnehmerkreise()).isEmpty();
   }
 
-  //TODO JAVADOC
+  /**
+   * Checks if two sets of Teilnehmerkreis have an intersection between if they have an intersection
+   * between them the intersection will be the return.
+   *
+   * @param setA the one Set of Teilnehmern
+   * @param setB the other Set of Teilnehmern
+   * @return a Set of Teilnehmerkreis witch contains the intersection between the two parameter
+   */
   @NotNull
   private Set<Teilnehmerkreis> intersect(@NotNull Set<Teilnehmerkreis> setA,
       @NotNull Set<Teilnehmerkreis> setB) {
