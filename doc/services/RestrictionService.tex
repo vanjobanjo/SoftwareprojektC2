@@ -1,12 +1,11 @@
 \subsection{RestrictionService}\label{subsec:RestrictionService}
 Der RestrictionService ist für das Auswerten von den Kriterien da.
-Es gibt Methoden, die eine Pruefung oder ein Block bekommen und dann raussuche, welche Pruefungen
+Es gibt Methoden, die eine Prüfung oder ein Block bekommen und dann raussuche, welche Prüfungen
 von der übergebenen Planungseinheit beeinflusst wird.
 Außerdem gibt es Methoden, die die KriteriumAnalysen sammelt und als Liste zurückgibt.
-Und dieser Service kann das Scoring von einer übergebenen Pruefung ausrechnen und dieses zurückgeben.
-
+Und dieser Service kann das Scoring von einer übergebenen Prüfung ausrechnen und dieses zurückgeben.
 Um den RestriktionService leicht erweiterbar zu halten, ist er nicht selbst für die Erzeugung der Restriktionen
-verantwortlich (siehe \nameref{subsec:RestrictionFactory}).
+verantwortlich (siehe~\nameref{subsec:RestrictionFactory}).
 Des Weiteren werden sowohl weiche als auch harte Restriktionen in jeweils einem Set vorgehalten.
 Die Entscheidung, auch die harte Restriktion in einem Set zu verarbeiten, ist damit zu begründen, dass
 es in Zukunft möglich sein soll, beliebig viele Restriktionen hinzufügen zu können, ohne die Struktur

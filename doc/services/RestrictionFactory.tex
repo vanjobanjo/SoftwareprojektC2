@@ -2,11 +2,9 @@
 Die RestrictionFactory dient der zentralen Erzeugung der Restriktionen.
 Soll eine neue Restriktion in den Controller aufgenommen werden, muss sie ausschließlich an dieser Stelle
 registriert werden.
-
 Die einzige Aufgabe der Factory ist es, für den~\nameref{subsec:RestrictionService} Restriktionen
 zu erzeugen und an diesen zu übergeben, sodass Logik und Erzeugung voneinander abgekapselt sind.
 Realisiert wird dies durch eine sehr vereinfachte Art des Besucher-Musters, indem der~\nameref{subsec:RestrictionService}
 sich selbst an die Factory übergibt, damit diese dort wiederum eine \enquote{Registrierungs-Methode} aufrufen kann.
-
-Harte und weiche Restriktionen werden jeweils getrennt im \nameref{subsec:RestrictionService} in ein
+Harte und weiche Restriktionen werden jeweils getrennt im~\nameref{subsec:RestrictionService} in ein
 Set eingetragen, damit diese voneinander getrennt ausgewertet werden können.

@@ -1,10 +1,10 @@
 \subsection{Converter}\label{subsec:converter}
-Der Converter ist ein Service, der die interne Datenstruktur, die vom Model und von den Controller genutzt wird,
+Der Converter ist ein Service, der die interne Datenstruktur, die vom Model und von dem Controller genutzt wird,
 in eine Externe, die von der View genutzt wird, umwandelt.
 Die View arbeitet mit sogenannten ReadOnlyPlanungseinheiten, welche das Verändern von Daten,
 ohne das Mitbekommen von dem Controller, erschwert.
 Der Vorteil von ReadOnlyPlanungseinheiten ist, falls man die Datenstruktur im Model verändert,
 muss die View nicht angepasst werden.
 Zusätzlich werden hier auch ganze Collections von Planungseinheiten in Listen oder Sets von ReadOnlyPlanungseinheiten umgewandelt.
-Des weiten werden hier eine Liste von HartenKriterien zu einer HartesKriteriumException zusammengefasst.
-Außerdem wird hier aus der internen genutzten WeichenKriteriumAnalyse eine KriteriumsAnalyse erstellt, mit der die View arbeiten kann.
+Außerdem kann hier eine Liste von HartenKriterien zu einer HartesKriteriumException zusammengefasst werden und
+in diesem Service wird auch aus der internen genutzten WeichenKriteriumAnalyse eine KriteriumsAnalyse erstellt, mit der die View arbeiten kann.
