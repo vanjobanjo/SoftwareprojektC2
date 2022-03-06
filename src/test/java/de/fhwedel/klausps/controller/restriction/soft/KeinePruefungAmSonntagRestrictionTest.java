@@ -89,6 +89,6 @@ class KeinePruefungAmSonntagRestrictionTest {
     assertThat(result.getAmountAffectedStudents()).isEqualTo(90);
     assertThat(result.getAffectedTeilnehmerKreise()).containsOnly(TestFactory.wingBachelor, TestFactory.infBachelor,
         TestFactory.bwlBachelor);
-    assertThat(result.getDeltaScoring()).isEqualTo(WeichesKriterium.SONNTAG.getWert());
+    assertThat(result.getScoring()).isEqualTo(WeichesKriterium.SONNTAG.getWert());
   }
 }

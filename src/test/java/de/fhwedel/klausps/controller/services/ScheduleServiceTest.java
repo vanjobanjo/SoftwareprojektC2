@@ -245,7 +245,6 @@ class ScheduleServiceTest {
 
     List<ReadOnlyPlanungseinheit> result = deviceUnderTest.unscheduleBlock(block);
     blockWithAnalysisDM.setStartzeitpunkt(null);
-    // todo auf Block testen wenn equals für block implementiert ist
     assertThat(result).contains(ro_analysis, ro_dm);
   }
 

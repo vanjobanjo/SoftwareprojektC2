@@ -108,7 +108,7 @@ class AnzahlPruefungProWocheRestrictionTest {
     SoftRestrictionAnalysis ev = deviceUnderTest.evaluateRestriction(mathe_0).get();
     assertThat(ev.getAffectedPruefungen()).containsOnly(mathe_0, dm_0);
     assertThat(ev.getAffectedTeilnehmerKreise()).containsOnly(bwl, inf);
-    assertThat(ev.getDeltaScoring().intValue()).isEqualTo(
+    assertThat(ev.getScoring().intValue()).isEqualTo(
         WeichesKriterium.ANZAHL_PRUEFUNGEN_PRO_WOCHE.getWert() * 2);
   }
 

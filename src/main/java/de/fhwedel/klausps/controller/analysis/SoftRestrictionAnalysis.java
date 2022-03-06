@@ -7,51 +7,85 @@ import de.fhwedel.klausps.model.api.Teilnehmerkreis;
 import java.util.Set;
 
 /**
- * This class give the opportunity for collecting from all SoftRestrictions the Analysis
- * And then transform  a SoftRestrictionAnalysis into a KriteriumsAnalyse for the view.
- *
- * The SoftRestrictionAnalysis an internally used container for ana
- * //TODO hier nochmal bitte lesen
+ * Used as data transfer object representing an analysis of a {@link
+ * de.fhwedel.klausps.controller.restriction.soft.SoftRestriction soft Restriction}.
  */
 public class SoftRestrictionAnalysis {
 
-
-  Set<Pruefung> causingPruefungen;
-  WeichesKriterium kriterium;
+  /**
+   * The Pruefungen affected by the soft Restriction
+   */
+  Set<Pruefung> affectedPruefungen;
+  /**
+   * The criteria of the evaluated Restriction
+   */
+  WeichesKriterium criteria;
+  /**
+   * The teilnehmerkreise affected by the evaluated Restriction
+   */
   Set<Teilnehmerkreis> affectedTeilnehmerKreise;
+
+  /**
+   * The amount of affected students by the evaluated Restriction
+   */
   Integer amountAffectedStudents;
-  //Verursachte Scoring Änderung durch dieses verletzte Kriterium.
-  //Um das Scoring der Klausur zu bestimmen, muss die Summe der deltaScoring aus der Liste ergeben
-  //das Scoring der Pruefung
 
-  Integer deltaScoring;
+  /**
+   * the scoring caused by the evaluated Restriction
+   */
+  Integer scoring;
 
-  public SoftRestrictionAnalysis(Set<Pruefung> causingPruefungen, WeichesKriterium kriterium,
+  public SoftRestrictionAnalysis(Set<Pruefung> affectedPruefungen, WeichesKriterium criteria,
       Set<Teilnehmerkreis> affectedTeilnehmerKreise, int affectedStudents, int scoring) {
-    this.causingPruefungen = causingPruefungen;
-    this.kriterium = kriterium;
+    this.affectedPruefungen = affectedPruefungen;
+    this.criteria = criteria;
     this.affectedTeilnehmerKreise = affectedTeilnehmerKreise;
     this.amountAffectedStudents = affectedStudents;
-    this.deltaScoring = scoring;
+    this.scoring = scoring;
   }
 
+  /**
+   * gets the affected Pruefungen
+   *
+   * @return the affected Pruefungen
+   */
   public Set<Pruefung> getAffectedPruefungen() {
-    return causingPruefungen;
+    return affectedPruefungen;
   }
 
-  public WeichesKriterium getKriterium() {
-    return kriterium;
+  /**
+   * gets the criteria of the evaluated Restriction
+   *
+   * @return the criteria
+   */
+  public WeichesKriterium getCriteria() {
+    return criteria;
   }
 
+  /**
+   * gets the affected Teilnehmerkreise
+   *
+   * @return the affected Teilnehmerkreise
+   */
   public Set<Teilnehmerkreis> getAffectedTeilnehmerKreise() {
     return affectedTeilnehmerKreise;
   }
 
+  /**
+   * gets the amount of students affected by the Restriction
+   *
+   * @return the amount of students
+   */
   public Integer getAmountAffectedStudents() {
     return amountAffectedStudents;
   }
 
-  public Integer getDeltaScoring() {
-    return deltaScoring;
+  /**
+   * gets the scoring caused by the evaluated Restriction
+   *
+   * @return the scoring
+   */
+  public Integer getScoring() {
+    return scoring;
   }
 }

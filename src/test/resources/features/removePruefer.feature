@@ -65,11 +65,7 @@ Funktionalität: Als Planender maechte ich einen Pruefer von einer Pruefung entf
       | "IT-Sicherheit" | "PrueferZwei"    | ""     |
 
 
-  Szenario: Es existiert noch keine Pruefungsperiode und es soll ein Pruefer von einer Pruefung entfernt werden
-    Angenommen es existiert keine Pruefungsperiode
-    Und es soll probiert werden eine Pruefer von einer Pruefung entfernt
-    Wenn ich ein Pruefer "PrueferEins" von einer Pruefung "Analysis" entfernen möchte
-    Dann bekomme ich eine Fehlermeldung NoPruefungsPeriodeDefinedException
+
 
   Szenario:  eine unbekannte Pruefung soll ein Pruefer entfernt werden
     Angenommen es existiert eine Pruefungsperiode

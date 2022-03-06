@@ -339,9 +339,9 @@ class AnzahlPruefungenGleichzeitigRestrictionTest {
 
     int expectedScoring = WeichesKriterium.ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH.getWert();
 
-    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(0)).get().getDeltaScoring())).isEqualTo(
+    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(0)).get().getScoring())).isEqualTo(
         expectedScoring);
-    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(1)).get().getDeltaScoring())).isEqualTo(
+    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(1)).get().getScoring())).isEqualTo(
         expectedScoring);
   }
 
@@ -359,7 +359,7 @@ class AnzahlPruefungenGleichzeitigRestrictionTest {
 
     int expectedScoring = WeichesKriterium.ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH.getWert();
 
-    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(0)).get().getDeltaScoring())).isEqualTo(
+    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(0)).get().getScoring())).isEqualTo(
         expectedScoring);
   }
 
@@ -383,7 +383,7 @@ class AnzahlPruefungenGleichzeitigRestrictionTest {
 
     int expectedScoring = WeichesKriterium.ANZAHL_PRUEFUNGEN_GLEICHZEITIG_ZU_HOCH.getWert() * 2;
 
-    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(0)).get().getDeltaScoring())).isEqualTo(
+    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(0)).get().getScoring())).isEqualTo(
         expectedScoring);
   }
 

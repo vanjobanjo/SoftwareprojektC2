@@ -56,7 +56,7 @@ class PruefungDTOBuilderTest {
             .withAdditionalTeilnehmerkreis(additional)
             .withPruefungsNummer("analysis")
             .build();
-    assertThat(tester.getTeilnehmerkreise().contains(additional)).isTrue();
+    assertThat(tester.getTeilnehmerkreise()).contains(additional);
     assertThat(tester.getTeilnehmerKreisSchaetzung()).containsKey(additional);
     assertThat(tester.getTeilnehmerKreisSchaetzung().get(additional)).isZero();
   }

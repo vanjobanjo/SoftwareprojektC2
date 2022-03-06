@@ -232,7 +232,7 @@ public class Converter {
       throws NoPruefungsPeriodeDefinedException {
     return new KriteriumsAnalyse(
         new HashSet<>(convertToROPruefungSet(analyse.getAffectedPruefungen())),
-        analyse.getKriterium(), analyse.getAffectedTeilnehmerKreise(),
+        analyse.getCriteria(), analyse.getAffectedTeilnehmerKreise(),
         analyse.getAmountAffectedStudents());
   }
 

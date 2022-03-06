@@ -277,9 +277,9 @@ class AnzahlTeilnehmerGleichzeitigRestrictionTest {
 
     int expectedScoring = WeichesKriterium.ANZAHL_TEILNEHMER_GLEICHZEITIG_ZU_HOCH.getWert();
 
-    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(0)).get().getDeltaScoring())).isEqualTo(
+    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(0)).get().getScoring())).isEqualTo(
         expectedScoring);
-    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(1)).get().getDeltaScoring())).isEqualTo(
+    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(1)).get().getScoring())).isEqualTo(
         expectedScoring);
   }
 
@@ -296,9 +296,9 @@ class AnzahlTeilnehmerGleichzeitigRestrictionTest {
 
     int expectedScoring = WeichesKriterium.ANZAHL_TEILNEHMER_GLEICHZEITIG_ZU_HOCH.getWert();
 
-    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(0)).get().getDeltaScoring())).isEqualTo(
+    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(0)).get().getScoring())).isEqualTo(
         expectedScoring);
-    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(1)).get().getDeltaScoring())).isEqualTo(
+    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(1)).get().getScoring())).isEqualTo(
         expectedScoring);
   }
 
@@ -327,9 +327,9 @@ class AnzahlTeilnehmerGleichzeitigRestrictionTest {
 
     int expectedScoring = 14 * WeichesKriterium.ANZAHL_TEILNEHMER_GLEICHZEITIG_ZU_HOCH.getWert();
 
-    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(0)).get().getDeltaScoring())).isEqualTo(
+    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(0)).get().getScoring())).isEqualTo(
         expectedScoring);
-    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(1)).get().getDeltaScoring())).isEqualTo(
+    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(1)).get().getScoring())).isEqualTo(
         expectedScoring);
   }
 
@@ -346,9 +346,9 @@ class AnzahlTeilnehmerGleichzeitigRestrictionTest {
 
     int expectedScoring = 2 * WeichesKriterium.ANZAHL_TEILNEHMER_GLEICHZEITIG_ZU_HOCH.getWert();
 
-    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(0)).get().getDeltaScoring())).isEqualTo(
+    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(0)).get().getScoring())).isEqualTo(
         expectedScoring);
-    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(1)).get().getDeltaScoring())).isEqualTo(
+    assertThat((deviceUnderTest.evaluateRestriction(pruefungen.get(1)).get().getScoring())).isEqualTo(
         expectedScoring);
   }
 

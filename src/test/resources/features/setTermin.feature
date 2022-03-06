@@ -64,11 +64,6 @@ Funktionalität: Als Planender moechte ich den Termin von einer Pruefung aendern
       |                  | 06.08.2021   |             |
 
 
-  Szenario: Ich will eine Pruefung hinzufügen, aber es existiert noch keine Pruefungsperiode
-    Angenommen es existiert keine Pruefungsperiode
-    Und die Pruefung "Analysis" soll eingeplant werden
-    Wenn ich der Pruefung "Analysis" einen Termin gebe
-    Dann bekomme ich eine Fehlermeldung NoPruefungsPeriodeDefinedException
 
 
   Szenario: Ich will einer Pruefung einen neuen starttermin geben, wenn diese sich schon in einen Block befindet

@@ -798,7 +798,7 @@ class FreierTagZwischenPruefungenRestrictionTest {
     assertThat(result.get().getAffectedPruefungen()).containsExactlyInAnyOrderElementsOf(
         causingPruefungen);
     assertThat(result.get().getAmountAffectedStudents()).isEqualTo(affected);
-    assertThat(result.get().getDeltaScoring()).isEqualTo(causingPruefungen.size() * SCORING);
+    assertThat(result.get().getScoring()).isEqualTo(causingPruefungen.size() * SCORING);
   }
 
 

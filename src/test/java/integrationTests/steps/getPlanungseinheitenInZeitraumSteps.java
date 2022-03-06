@@ -35,7 +35,7 @@ public class getPlanungseinheitenInZeitraumSteps extends BaseSteps {
     assertThat(state.results.get("planungseinheiten")).isNotNull();
 
     if (state.results.get("planungseinheiten") instanceof Set<?> result) {
-      assertThat((result).size()).isEqualTo(splitPruefungen.size() + splitBloecke.size());
+      assertThat(result).hasSize(splitPruefungen.size() + splitBloecke.size());
       for (ReadOnlyPlanungseinheit plan : (Set<ReadOnlyPlanungseinheit>) result) {
         if (plan.isBlock()) {
           blockCount++;
@@ -75,7 +75,7 @@ public class getPlanungseinheitenInZeitraumSteps extends BaseSteps {
         assertThat(plan.isBlock()).isFalse();
         assertThat(splitPruefungen).contains(plan.asPruefung().getName());
       }
-      assertThat(result.size()).isEqualTo(splitPruefungen.size());
+      assertThat(result).hasSameSizeAs(splitPruefungen);
     }
   }
 
@@ -89,7 +89,7 @@ public class getPlanungseinheitenInZeitraumSteps extends BaseSteps {
         assertThat(plan.isBlock()).isFalse();
         assertThat(pruefungen).contains(plan.asPruefung().getName());
       }
-      assertThat(result.size()).isEqualTo(pruefungen.size());
+      assertThat(result).hasSameSizeAs(pruefungen);
     }
   }
 }

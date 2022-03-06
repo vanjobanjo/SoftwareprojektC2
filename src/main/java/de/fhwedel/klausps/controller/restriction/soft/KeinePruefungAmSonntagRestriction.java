@@ -8,9 +8,7 @@ import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Pruefung;
 import java.time.DayOfWeek;
-import java.util.Collections;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * This restriction checks if a Pruefung is on Sunday planed

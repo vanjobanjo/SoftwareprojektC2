@@ -18,7 +18,7 @@ public class ParameterUtil {
   }
 
   /**
-   * In case any parameter is null, immediately throw a {@link IllegalArgumentException}
+   * In case any parameter is null, immediately throw a {@link NullPointerException}
    *
    * @param objects The parameters to check.
    * @throws NullPointerException In case any of the parameters is null.

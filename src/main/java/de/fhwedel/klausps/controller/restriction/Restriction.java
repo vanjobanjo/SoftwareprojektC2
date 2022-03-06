@@ -8,7 +8,7 @@ import java.time.Duration;
  */
 public abstract class Restriction {
   /**
-   * the default buffer time in between Planungseinheiten.
+   * the default buffer time necessary in between Planungseinheiten.
    */
   protected static final Duration DEFAULT_BUFFER_BETWEEN_PLANUNGSEINHEITEN = Duration.ofMinutes(30);
 

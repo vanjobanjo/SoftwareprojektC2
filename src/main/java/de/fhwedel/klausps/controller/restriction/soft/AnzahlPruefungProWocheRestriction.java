@@ -19,7 +19,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * This restriction checks if a Teilnehmerkreis don't have so many Pruefungen in a week
+ * A Restriction describing that the amount of scheduled Pruefungen per week of a Teilnehmerkreis
+ * must not exceed a certain limit.
  */
 public class AnzahlPruefungProWocheRestriction extends SoftRestriction {
 
@@ -118,7 +119,7 @@ public class AnzahlPruefungProWocheRestriction extends SoftRestriction {
     combinedTk.addAll(newAnalyse.getAffectedTeilnehmerKreise());
     combinedTk.addAll(oldAnalyse.get().getAffectedTeilnehmerKreise());
     int sum = newAnalyse.getAmountAffectedStudents() + oldAnalyse.get().getAmountAffectedStudents();
-    int deltaScoring = oldAnalyse.get().getDeltaScoring() + newAnalyse.getDeltaScoring();
+    int deltaScoring = oldAnalyse.get().getScoring() + newAnalyse.getScoring();
     return Optional.of(
         new SoftRestrictionAnalysis(new HashSet<>(combinedPruefung), ANZAHL_PRUEFUNGEN_PRO_WOCHE,
             new HashSet<>(combinedTk), sum, deltaScoring));
@@ -126,12 +127,12 @@ public class AnzahlPruefungProWocheRestriction extends SoftRestriction {
   }
 
   /**
-   * Evaluation for the Anzahl Prufung Pro Woche Teilnehmerkreis. Will concat the analysen when
+   * Evaluation for the Anzahl Pruefung Pro Woche Teilnehmerkreis. Will concat the analysen when
    * there was another violation.
    *
    * @param pruefung           Pruefung to check the violation
    * @param tk                 a Teilnehmerkreis of the passed Pruefung to check
-   * @param analyse            an other violation of the same pruefung
+   * @param analyse            another violation of the same pruefung
    * @param pruefungenSameWeek Pruefungen which are scheduled in the same week
    * @return a optional WeichesKriteriumsAnalyse when there is a violation.
    */

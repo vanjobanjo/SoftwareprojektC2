@@ -179,7 +179,7 @@ public class RestrictionService {
       return 0;
     }
     return checkWeicheKriterien(pruefung).stream()
-        .reduce(0, (scoring, analyse) -> scoring + analyse.getDeltaScoring(), Integer::sum);
+        .reduce(0, (scoring, analyse) -> scoring + analyse.getScoring(), Integer::sum);
   }
 
   /**

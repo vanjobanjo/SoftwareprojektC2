@@ -30,10 +30,7 @@ public class removeTeilnehmerkreis extends BaseSteps {
 
   }
 
-  @Dann("hat die Pruefung {string} nicht den Teilnehmerkreis {string} ")
-  public void hatDiePruefungNichtDenTeilnehmerkreis(String pruefung, String teilnehmerkreis) {
 
-  }
 
   @Dann("hat die Pruefung {string} nicht den Teilnehmerkreis {string} im Fachsemster {int}")
   public void hatDiePruefungNichtDenTeilnehmerkreisImFachsemster(String pruefung,

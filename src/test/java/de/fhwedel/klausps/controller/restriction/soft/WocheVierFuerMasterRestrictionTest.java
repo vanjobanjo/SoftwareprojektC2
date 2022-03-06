@@ -112,7 +112,7 @@ class WocheVierFuerMasterRestrictionTest {
     Optional<SoftRestrictionAnalysis> result = deviceUnderTest.evaluateRestriction(modelanalysis);
     assertThat(result).isPresent();
     assertThat(result.get().getAffectedPruefungen()).isEmpty();
-    assertThat(result.get().getKriterium()).isEqualTo(WeichesKriterium.WOCHE_VIER_FUER_MASTER);
+    assertThat(result.get().getCriteria()).isEqualTo(WeichesKriterium.WOCHE_VIER_FUER_MASTER);
     assertThat(result.get().getAmountAffectedStudents()).isEqualTo(20);
     assertThat(result.get().getAffectedTeilnehmerKreise()).isEqualTo(
         modelanalysis.getTeilnehmerkreise());
@@ -188,7 +188,7 @@ class WocheVierFuerMasterRestrictionTest {
     assertThat(result.get().getAmountAffectedStudents()).isEqualTo(40);
     assertThat(result.get().getAffectedTeilnehmerKreise()).containsOnly(TestFactory.infBachelor,
         TestFactory.infPtl);
-    assertThat(result.get().getDeltaScoring()).isEqualTo(2 * WeichesKriterium.WOCHE_VIER_FUER_MASTER.getWert());
+    assertThat(result.get().getScoring()).isEqualTo(2 * WeichesKriterium.WOCHE_VIER_FUER_MASTER.getWert());
     assertThat(result.get().getAffectedTeilnehmerKreise()).doesNotContain(TestFactory.infMaster);
   }
 
@@ -216,6 +216,6 @@ class WocheVierFuerMasterRestrictionTest {
     assertThat(result).isPresent();
     assertThat(result.get().getAffectedTeilnehmerKreise()).containsOnly(TestFactory.infPtl);
     assertThat(result.get().getAmountAffectedStudents()).isEqualTo(20);
-    assertThat(result.get().getDeltaScoring()).isEqualTo(WeichesKriterium.WOCHE_VIER_FUER_MASTER.getWert());
+    assertThat(result.get().getScoring()).isEqualTo(WeichesKriterium.WOCHE_VIER_FUER_MASTER.getWert());
   }
 }
