@@ -8,8 +8,21 @@ import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.StringJoiner;
 
+/**
+ * Data tranfer Object representing {@link ReadOnlyBlock}.
+ */
 public class BlockDTO extends ReadOnlyBlock {
 
+  /**
+   * Create a new BlockDTO.
+   *
+   * @param name               The name of the Block.
+   * @param termin             The time the Block is scheduled at.
+   * @param dauer              The duration of the Block.
+   * @param readOnlyPruefungen The pruefungen included in the block.
+   * @param id                 The blocks id.
+   * @param type               The {@link Blocktyp} of this block.
+   */
   public BlockDTO(
       String name,
       LocalDateTime termin,
@@ -37,4 +50,5 @@ public class BlockDTO extends ReadOnlyBlock {
         .add(Integer.toString(this.getBlockId()))
         .toString();
   }
+  
 }
