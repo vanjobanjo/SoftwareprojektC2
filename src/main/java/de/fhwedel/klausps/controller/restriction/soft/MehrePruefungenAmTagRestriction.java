@@ -22,7 +22,8 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- *  A Restriction describing that the amount of {@link Pruefung}en on the same day with the same {@link Teilnehmerkreis}
+ * A Restriction describing that the amount of {@link Pruefung}en on the same day with the same
+ * {@link Teilnehmerkreis}
  */
 public class MehrePruefungenAmTagRestriction extends SoftRestriction {
 
@@ -38,18 +39,17 @@ public class MehrePruefungenAmTagRestriction extends SoftRestriction {
   public Optional<SoftRestrictionAnalysis> evaluateRestriction(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
 
-
     Set<Pruefung> setPruefungenInConflict = new HashSet<>();
     Map<Teilnehmerkreis, Integer> mapTeilnehmerkreis = new HashMap<>();
 
     if (pruefung != null && pruefung.isGeplant()) {
 
-
       List<Planungseinheit> listWithPruefungenInTimeSpace = getPruefungenInTimeSpace(pruefung);
       for (Planungseinheit planungseinheit : listWithPruefungenInTimeSpace) {
         //difference between Block and Pruefung
         if (planungseinheit.isBlock()) {
-          goThroughBlock(pruefung, setPruefungenInConflict, mapTeilnehmerkreis, planungseinheit.asBlock());
+          goThroughBlock(pruefung, setPruefungenInConflict, mapTeilnehmerkreis,
+              planungseinheit.asBlock());
         } else {
           setPruefungenInConflict.addAll(
               testTwoPruefungenKonflikt(pruefung, planungseinheit.asPruefung(),
@@ -66,10 +66,11 @@ public class MehrePruefungenAmTagRestriction extends SoftRestriction {
   }
 
   /**
-   * Methode die durch einen Block durch iteriert und mit jeder Pruefung einzeln vergleicht
+   * Methode die durch einen Block durch iteriert und mit jeder Pruefung einzeln vergleicht, ob es
+   * einen gemeinsamen Teilnehmerkreis gibt.
    *
    * @param pruefung           mit der verglichen werden soll
-   * @param setPruefung        die Pruefungen, die ein Konflikt bilden
+   * @param setPruefung        die Pruefungen, die ein Konflikt bilden könnten
    * @param mapTeilnehmerkreis die Teilnehmer mit der Anzahl von studenten
    * @param block              der Block, durch den gegangen werden soll
    */
@@ -112,7 +113,7 @@ public class MehrePruefungenAmTagRestriction extends SoftRestriction {
   }
 
   /**
-   * Methode die WeicheKriteriumAnalyse erstellt, wenn es zu einem Konflikt kommt
+   * Methode die eine WeicheKriteriumAnalyse aufbaut, wenn es zu einem Konflikt kommt
    *
    * @param pruefungen         ein Set von Pruefungen, welche zu einem Konflikt führen
    * @param mapTeilnehmerkreis die Teilnehmerkreise mit ihrer Anzahl
@@ -180,7 +181,6 @@ public class MehrePruefungenAmTagRestriction extends SoftRestriction {
   private LocalDateTime endDay(LocalDateTime time) {
     return time.toLocalDate().plusDays(1).atStartOfDay();
   }
-
 
 
 }
