@@ -5,7 +5,8 @@ import java.util.Objects;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Is needed to check a scoring before an operation and afterwards.
+ * By default, a {@link Pruefung} does not contain the scoring of the Pruefung.
+ * This wrapper class combines a Pruefung with its calculated scoring.
  */
 public record PruefungWithScoring(@NotNull Pruefung pruefung, int scoring) {
 
