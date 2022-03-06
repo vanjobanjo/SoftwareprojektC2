@@ -474,7 +474,7 @@ public class Controller implements InterfaceController {
   public void importPeriode(Path path) throws ImportException, IOException {
     LOGGER.debug("Call to importPeriode({}).", path);
     noNullParameters(path);
-    ioService.importPeriode(path);
+    scheduleService.importPeriode(ioService, path);
   }
 
   @Override

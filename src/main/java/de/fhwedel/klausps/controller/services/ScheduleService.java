@@ -41,23 +41,42 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+/**
+ * The ScheduleService is responsible for any scheduling task, where Restrictions have to be
+ * checked. It handles all scheduling logic using a RestrictionService for checking hard and soft
+ * restrictions as well as a DataAccessService for communicating with the Pruefungsperiode.
+ */
 public class ScheduleService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ScheduleService.class);
 
+  /**
+   * DataAccessService used for communication with the {@link Pruefungsperiode}
+   */
   private final DataAccessService dataAccessService;
 
+  /**
+   * The RestrictionService used for checking all hard and soft {@link
+   * de.fhwedel.klausps.controller.restriction.Restriction}s
+   */
   private final RestrictionService restrictionService;
 
+  /**
+   * Converts {@link Planungseinheit Planungseinheiten} from internally used Planungseinheiten to
+   * externally used {@link ReadOnlyPlanungseinheit Planungseinheiten}
+   */
   private final Converter converter;
 
   /**
-   * Constructor
+   * Construct a ScheduleService with a {@link DataAccessService}, {@link RestrictionService} and a
+   * {@link Converter}. The ScheduleService is also set in the Converter to provide Scoring
+   * information.
    *
-   * @param dataAccessService  service
-   * @param restrictionService service
-   * @param converter          service
+   * @param dataAccessService  service needed to communicate with the {@link Pruefungsperiode}
+   * @param restrictionService service needed to check {@link de.fhwedel.klausps.controller.restriction.Restriction
+   *                           Restrictions}
+   * @param converter          service needed to convert {@link Planungseinheit Planungseinheiten}
+   *                           to {@link ReadOnlyPlanungseinheit ReadOnlyPlanungseinheiten}
    */
   public ScheduleService(DataAccessService dataAccessService, RestrictionService restrictionService,
       Converter converter) {
@@ -68,7 +87,10 @@ public class ScheduleService {
   }
 
   /**
-   * Will unschedule the passed pruefung, scoring might be changed.
+   * Unschedules a {@link ReadOnlyPruefung Pruefung} from the {@link Pruefungsperiode} and
+   * calculates the scoring for all affected Pruefungen. Because affected Pruefungen can be part of
+   * a {@link ReadOnlyBlock Block}, Blocks might also be part of the resulting List of {@link
+   * Planungseinheit Planungseinheiten}
    *
    * @param pruefungToUnschedule pruefung to be unscheduled
    * @return DTOPlanungseinheiten, which are changed after the operation with duplicates (parents
@@ -84,7 +106,8 @@ public class ScheduleService {
   }
 
   /**
-   * Converts and calculates the scoring of the passed pruefungen
+   * Calculates the scoring of the passed Pruefungen and converts them to {@link ReadOnlyPruefung
+   * read only Pruefungen}
    *
    * @param affected pruefungen that are affected
    * @return List of DTOPlanungseinheiten, it can contain the parent (block) and also the children
@@ -98,7 +121,8 @@ public class ScheduleService {
   }
 
   /**
-   * Gets the block of the pruefung, when there is one and also the pruefung itself.
+   * Combines a Set of {@link Pruefung Pruefungen} with their enclosing {@link Block Blocks} to a
+   * Set containing both
    *
    * @param pruefungen passed pruefungen
    * @return Set of Planungseinheiten, it can contain the parent (block) and also the children
@@ -110,7 +134,7 @@ public class ScheduleService {
     Set<Planungseinheit> planungseinheiten = new HashSet<>();
     for (Pruefung p : pruefungen) {
       Optional<Block> blockOpt = dataAccessService.getBlockTo(p);
-      // add the block also
+      // if present, add the block as well
       blockOpt.ifPresent(planungseinheiten::add);
       planungseinheiten.add(p);
     }
@@ -118,28 +142,35 @@ public class ScheduleService {
   }
 
   /**
-   * Adds a pruefung to a block, with consistency check and scoring calculation.
+   * Adds a pruefung to a block and calculates the scoring for all affected Pruefungen.
    *
    * @param readOnlyBlock    to add the passed pruefung to
    * @param readOnlyPruefung to be added to the passed block
-   * @return List of changed DTOPlanungsheiten
+   * @return List of changed DTOPlanungseinheiten
    * @throws HartesKriteriumException           when a hard constraint is violated
    * @throws NoPruefungsPeriodeDefinedException when no period is set
-   * @throws IllegalStateException              a model expcetion
-   * @throws IllegalArgumentException           when the passed arguments aren't valid
+   * @throws IllegalStateException              when the Pruefung or the Block do not exist in the
+   *                                            {@link Pruefungsperiode}
+   * @throws IllegalArgumentException           When the {@link ReadOnlyPruefung Pruefung} is
+   *                                            already planned or already part of another {@link
+   *                                            ReadOnlyBlock Block}
    */
   public List<ReadOnlyPlanungseinheit> addPruefungToBlock(ReadOnlyBlock readOnlyBlock,
       ReadOnlyPruefung readOnlyPruefung)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException, IllegalStateException,
       IllegalArgumentException {
     noNullParameters(readOnlyBlock, readOnlyPruefung);
+    // check if corresponding Pruefung and Block exist in Pruefungsperiode, if yes get them
     Pruefung pruefung = dataAccessService.getPruefung(readOnlyPruefung);
     Block block = dataAccessService.getBlock(readOnlyBlock);
     checkExistenceOfPruefungenInBlock(readOnlyBlock);
+
+    // nothing needs to be done if the Pruefung is already in the right block
     if (block.getPruefungen().contains(pruefung)) {
       // todo return block and pruefung?
       return emptyList();
     }
+    // check if the Pruefung may be added to a Block
     if (pruefung.isGeplant()) {
       throw new IllegalArgumentException("Planned Pruefungen can not be added to a Block.");
     }
@@ -148,8 +179,12 @@ public class ScheduleService {
       throw new IllegalArgumentException(
           "Pruefungen contained in a block can not be added to another block.");
     }
+
+    // actually add the Pruefung to the Block
     Block modelBlock = dataAccessService.addPruefungToBlock(readOnlyBlock, readOnlyPruefung);
     checkHardCriteriaUndoAddPruefungToBlock(readOnlyPruefung, readOnlyBlock);
+
+    // evaluate Restrictions only if the block is planned
     if (!modelBlock.isGeplant()) {
       List<ReadOnlyPlanungseinheit> result = new ArrayList<>();
       result.add(converter.convertToROBlock(modelBlock));
@@ -160,17 +195,38 @@ public class ScheduleService {
     return result;
   }
 
+  /**
+   * Checks if Pruefung added to a Block violates any {@link  de.fhwedel.klausps.controller.restriction.hard.HardRestriction
+   * hard Restrictions}. If a hard Restriction is violated, the Pruefung gets removed from the Block
+   * and the Analysis of the Restriction violation is converted to a {@link HartesKriteriumException
+   * exception} and thrown.
+   *
+   * @param pruefung the Pruefung to check for
+   * @param block    the Block with the added Pruefung
+   * @throws HartesKriteriumException           when a hard Restriction is violated
+   * @throws NoPruefungsPeriodeDefinedException when no {@link Pruefungsperiode} is set
+   */
   private void checkHardCriteriaUndoAddPruefungToBlock(ReadOnlyPruefung pruefung,
       ReadOnlyBlock block) throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     Pruefung modelPruefung = dataAccessService.getPruefung(pruefung);
+    // collect all hard Restriction analyses
     List<HardRestrictionAnalysis> hardAnalyses = restrictionService.checkHardRestrictions(
         modelPruefung);
+    // undo everything if a hard restriction was violated
     if (!hardAnalyses.isEmpty()) {
       removePruefungFromBlock(block, pruefung);
       throw converter.convertHardException(hardAnalyses);
     }
   }
 
+  /**
+   * Collects all {@link ReadOnlyPlanungseinheit ReadOnlyPlanungseinheiten} affected by a {@link
+   * Block}.
+   *
+   * @param block the block to check for
+   * @return A List of all affected Planungseinheiten.
+   * @throws NoPruefungsPeriodeDefinedException when no Pruefungsperiode is present
+   */
   @NotNull
   private List<ReadOnlyPlanungseinheit> getAffectedPruefungenBy(Block block)
       throws NoPruefungsPeriodeDefinedException {
@@ -185,18 +241,36 @@ public class ScheduleService {
         getPlanungseinheitenWithBlock(changedScoring)));
   }
 
+  /**
+   * Removes a {@link ReadOnlyPruefung} from a {@link ReadOnlyBlock} and changes the scoring for all
+   * from the removal affected Pruefungen if the Block is scheduled.<br> Because a removed Pruefung
+   * is always marked as unscheduled afterwards and no hard conflicting Planungseinheit can be
+   * schedule, the only change in affected Pruefungen will be a scoring improvement. For this
+   * reason, the method does not evaluate any {@link de.fhwedel.klausps.controller.restriction.hard.HardRestriction
+   * hard Restrictions}.
+   *
+   * @param block    the Block to remove a Pruefung from
+   * @param pruefung the Pruefung to remove
+   * @return A List of all affected Pruefungen as well as the by the removal changed Block
+   * @throws NoPruefungsPeriodeDefinedException if no {@link Pruefungsperiode} exists
+   * @throws IllegalStateException              if the Block to remove from does not exist
+   */
   public List<ReadOnlyPlanungseinheit> removePruefungFromBlock(ReadOnlyBlock block,
       ReadOnlyPruefung pruefung) throws NoPruefungsPeriodeDefinedException, IllegalStateException {
     noNullParameters(block, pruefung);
     Pruefung toRemove = dataAccessService.getPruefung(pruefung);
-    // only check if block exists
+    // only to check if block exists
     dataAccessService.getBlock(block);
     checkExistenceOfPruefungenInBlock(block);
+
+    // try to get the enclosing Block
     Optional<Block> oldBlock = dataAccessService.getBlockTo(toRemove);
+    // if the Pruefung was not in a Block, do nothing
     if (oldBlock.isEmpty()) {
       // todo muss hier etwas zurückgegeben werden?
       return emptyList();
     }
+    // if the Block is not scheduled, no Restrictions need to be checked
     if (!block.geplant()) {
       Block resultingBlock = dataAccessService.removePruefungFromBlock(block, pruefung);
       Pruefung unscheduledPruefung = dataAccessService.getPruefung(pruefung);
@@ -204,6 +278,7 @@ public class ScheduleService {
           converter.convertToROPlanungseinheitSet(resultingBlock, unscheduledPruefung));
     }
 
+    // collect the affected Pruefungen and recalculate the scoring after removal
     Set<Pruefung> affectedPruefungen = restrictionService.getPruefungenAffectedBy(toRemove);
     Block blockWithoutPruefung = dataAccessService.removePruefungFromBlock(block, pruefung);
     List<ReadOnlyPlanungseinheit> result = calculateScoringForCachedAffected(affectedPruefungen);
@@ -212,25 +287,61 @@ public class ScheduleService {
 
   }
 
+  /**
+   * Schedules a Block. If any Pruefung contained in the Block causes a {@link
+   * de.fhwedel.klausps.controller.restriction.hard.HardRestriction hard Restriction} violation, the
+   * Block cannot be scheduled and a {@link HartesKriteriumException} is thrown. If no violation
+   * occurs the Block gets scheduled and the scoring of all affected Pruefungen will be
+   * recalculated.
+   *
+   * @param roBlock the block to schedule.
+   * @param termin  the date and time to schedule
+   * @return a List of all affected Planungseinheiten for any Pruefung in the result, the scoring is
+   * updated
+   * @throws HartesKriteriumException           if a hard Restriction is violated
+   * @throws NoPruefungsPeriodeDefinedException if no {@link Pruefungsperiode} exists
+   * @throws IllegalStateException              if the Block or any of its Pruefungen does not
+   *                                            exist.
+   */
   public List<ReadOnlyPlanungseinheit> scheduleBlock(ReadOnlyBlock roBlock, LocalDateTime termin)
-      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
+      throws HartesKriteriumException, NoPruefungsPeriodeDefinedException, IllegalStateException {
     noNullParameters(termin);
+    // existence check
+    dataAccessService.getBlock(roBlock);
     checkExistenceOfPruefungenInBlock(roBlock);
     Block blockModel = dataAccessService.scheduleBlock(roBlock, termin);
+    // rollback and Exception for hard violation
     checkHardCriteriaUndoScheduling(roBlock, blockModel);
     return getAffectedPruefungenBy(blockModel);
   }
 
+  /**
+   * Checks if any {@link de.fhwedel.klausps.controller.restriction.hard.HardRestriction hard
+   * Restriction} is violated for a scheduled Block. In case of a violation there are two cases to
+   * consider.<br> If the Block was already scheduled, it gets rescheduled to its old position
+   * otherwise it remains unscheduled. In both cases an {@link HartesKriteriumException Exception}
+   * is thrown.<br> If no restriction is violated, the Block remains scheduled at its current
+   * position.
+   *
+   * @param roBlock    the Block with the old scheduling information
+   * @param modelBlock the newly scheduled Block to validate
+   * @throws HartesKriteriumException           if the new position of the Block triggers a hard
+   *                                            Restriction
+   * @throws NoPruefungsPeriodeDefinedException if no {@link Pruefungsperiode} exists
+   */
   private void checkHardCriteriaUndoScheduling(ReadOnlyBlock roBlock, Block modelBlock)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     List<HardRestrictionAnalysis> list = new LinkedList<>();
+
+    Block blockOfPruefung = dataAccessService.getBlock(roBlock);
+    Optional<LocalDateTime> termin = roBlock.getTermin();
+    // check the restrictions
     for (Pruefung p : modelBlock.getPruefungen()) {
       list.addAll(restrictionService.checkHardRestrictions(p));
     }
-
-    Optional<LocalDateTime> termin = roBlock.getTermin();
-    Block blockOfPruefung = dataAccessService.getBlock(roBlock);
+    // if the positioning violated a hard restriction, block needs to be unscheduled
     if (!list.isEmpty() && blockOfPruefung.isGeplant()) {
+      // if it was previously scheduled, the Block needs to be rescheduled at its old position
       if (termin.isPresent()) {
         dataAccessService.scheduleBlock(roBlock, termin.get());
       } else {
@@ -240,6 +351,19 @@ public class ScheduleService {
     }
   }
 
+  /**
+   * Unschedules a Block from the {@link Pruefungsperiode}. Afterwards all contained {@link
+   * ReadOnlyPruefung} will also be unscheduled.<br> Because unscheduling can never violate a {@link
+   * de.fhwedel.klausps.controller.restriction.hard.HardRestriction hard Restriction} only {@link
+   * de.fhwedel.klausps.controller.restriction.soft.SoftRestriction soft Restrictions} are
+   * tested.<br> Unscheduling a {@link Planungseinheit} can only improve the scoring of other {@link
+   * Planungseinheit Planungseinheiten}
+   *
+   * @param block
+   * @return
+   * @throws NoPruefungsPeriodeDefinedException
+   * @throws IllegalStateException
+   */
   public List<ReadOnlyPlanungseinheit> unscheduleBlock(ReadOnlyBlock block)
       throws NoPruefungsPeriodeDefinedException, IllegalStateException {
     noNullParameters(block);
@@ -251,25 +375,12 @@ public class ScheduleService {
   }
 
 
-  /**
-   * Gibt das Scoring zu einer übergebenen Pruefung zurück. Wenn Klausur ungeplant, dann 0.
-   *
-   * @param pruefung Pruefung, dessen Scoring bestimmt werden soll
-   * @return Scoring ungeplant ? 0 : scoring
-   */
   public int scoringOfPruefung(Pruefung pruefung) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(pruefung);
     return restrictionService.getScoringOfPruefung(pruefung);
   }
 
-  /**
-   * Plant eine uebergebene Pruefung ein! Die uebergebene Pruefung muss Teil des Rueckgabewertes
-   * sein.
-   *
-   * @param pruefung Pruefung die zu planen ist.
-   * @param termin   Starttermin
-   * @return Liste von veränderten Ergebnissen
-   */
+
   public Set<Planungseinheit> schedulePruefung(ReadOnlyPruefung pruefung,
       LocalDateTime termin)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException, IllegalStateException,
@@ -507,6 +618,16 @@ public class ScheduleService {
     return result;
   }
 
+  /**
+   * Checks for a {@link ReadOnlyBlock} if the contained {@link ReadOnlyPruefung ReadOnlyPruefungen}
+   * exist as {@link Pruefung Pruefungen} in the current {@link Pruefungsperiode}, if not an
+   * Exception is thrown immediately.
+   *
+   * @param block the block to check
+   * @throws NoPruefungsPeriodeDefinedException if no {@link Pruefungsperiode} is set
+   * @throws IllegalStateException              when a {@link ReadOnlyPruefung} has no equivalent
+   *                                            {@link Pruefung} in the {@link Pruefungsperiode}
+   */
   private void checkExistenceOfPruefungenInBlock(ReadOnlyBlock block)
       throws NoPruefungsPeriodeDefinedException, IllegalStateException {
     for (ReadOnlyPruefung pruefung : block.getROPruefungen()) {
@@ -531,7 +652,7 @@ public class ScheduleService {
    * @param ankertag     the ankertag of the new Pruefungsperiode
    * @param kapazitaet   the kapazität of the new Pruefungsperiode
    * @param pathCSV      path to the CSV-File
-   * @param adoptKlausPS path to the KlausPS-File (may be null, if no adaptation wanted)
+   * @param adoptKlausPS path to the KlausPS-File (it may be null, if no adaptation wanted)
    * @throws ImportException          for syntactic or semantic errors
    * @throws IOException              for technical errors when reading the files
    * @throws IllegalTimeSpanException for invalid dates: begin is after end, ankertag is before
@@ -552,6 +673,20 @@ public class ScheduleService {
     } catch (NoPruefungsPeriodeDefinedException f) {
       dataAccessService.setPruefungsperiode(fallbackPeriode);
       throw new ImportException("Pruefungsperiode konnte nicht erstellt werden.");
+    }
+  }
+
+  public void importPeriode(IOService ioService, Path path) throws ImportException, IOException {
+    Pruefungsperiode fallbackPeriode = dataAccessService.getPruefungsperiode();
+    try {
+      ioService.importPeriode(path);
+      dataAccessService.unschedulePlanungseinheitenOutsideOfPeriode();
+      unscheduleHardConflictingFromAdoptedPeriode();
+    } catch (ImportException | IOException | IllegalArgumentException e) {
+      dataAccessService.setPruefungsperiode(fallbackPeriode);
+      throw e;
+    } catch (NoPruefungsPeriodeDefinedException e) {
+      throw new ImportException("Pruefungsperiode konnte nicht erstellt werden");
     }
   }
 
@@ -746,4 +881,3 @@ public class ScheduleService {
   }
 
 }
-
