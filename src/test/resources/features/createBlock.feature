@@ -21,7 +21,6 @@ Funktionalität: Als Planende*r moechte ich Bloecke erstellen koennen
     Wenn ich einen Block mit den ungeplanten Pruefungen "Analysis" und "Diskrete Mathematik" erstelle
     Dann erhalte ich einen Block mit den Pruefungen "Analysis" und "Diskrete Mathematik"
 
-
   Szenario: Ich erstelle erfolgreich einen Block mit ungeplanten Klausuren, die sich nicht ausschließen
     Angenommen es existiert eine Pruefungsperiode
     Und es existieren die ungeplanten Klausuren "AuD" und "foop"
