@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.StringJoiner;
 
 /**
- * Data tranfer Object representing {@link ReadOnlyBlock}.
+ * Data transfer Object representing {@link ReadOnlyBlock}.
  */
 public class BlockDTO extends ReadOnlyBlock {
 
