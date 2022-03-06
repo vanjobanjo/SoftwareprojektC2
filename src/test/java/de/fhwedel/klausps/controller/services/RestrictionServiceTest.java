@@ -45,14 +45,15 @@ class RestrictionServiceTest {
   @Test
   void getPruefungenInHardConflictWith_noNullParametersAllowed() {
     assertThrows(NullPointerException.class,
-        () -> deviceUnderTest.getPruefungenInHardConflictWith(null));
+        () -> deviceUnderTest.getPruefungenPotentiallyInHardConflictWith(null));
   }
 
   @Test
   void getPruefungenInHardConflictWith_noHardRestrictions_noConflicts()
       throws NoPruefungsPeriodeDefinedException {
     assertThat(
-        deviceUnderTest.getPruefungenInHardConflictWith(getRandomPlannedPruefung(1L))).isEmpty();
+        deviceUnderTest.getPruefungenPotentiallyInHardConflictWith(
+            getRandomPlannedPruefung(1L))).isEmpty();
   }
 
   @Test
@@ -60,7 +61,8 @@ class RestrictionServiceTest {
       throws NoPruefungsPeriodeDefinedException {
     deviceUnderTest.registerHardCriteria(Set.of(oneHardRestrictionThatDoesNotTrigger()));
     assertThat(
-        deviceUnderTest.getPruefungenInHardConflictWith(getRandomPlannedPruefung(1L))).isEmpty();
+        deviceUnderTest.getPruefungenPotentiallyInHardConflictWith(
+            getRandomPlannedPruefung(1L))).isEmpty();
   }
 
   private HardRestriction oneHardRestrictionThatDoesNotTrigger()
@@ -78,7 +80,7 @@ class RestrictionServiceTest {
     Planungseinheit planungseinheitToCheckFor = getRandomPlannedPruefung(1L);
 
     deviceUnderTest.registerHardCriteria(Set.of(hardRestriction));
-    deviceUnderTest.getPruefungenInHardConflictWith(planungseinheitToCheckFor);
+    deviceUnderTest.getPruefungenPotentiallyInHardConflictWith(planungseinheitToCheckFor);
 
     verify(hardRestriction, times(1)).getAllPotentialConflictingPruefungenWith(
         planungseinheitToCheckFor);
@@ -95,7 +97,7 @@ class RestrictionServiceTest {
         pruefungenToFailWith);
 
     deviceUnderTest.registerHardCriteria(Set.of(hardRestriction));
-    assertThat(deviceUnderTest.getPruefungenInHardConflictWith(
+    assertThat(deviceUnderTest.getPruefungenPotentiallyInHardConflictWith(
         planungseinheitToCheckFor)).containsExactlyInAnyOrderElementsOf(pruefungenToFailWith);
   }
 

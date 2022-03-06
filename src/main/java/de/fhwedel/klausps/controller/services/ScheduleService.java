@@ -163,7 +163,7 @@ public class ScheduleService {
   private void checkHardCriteriaUndoAddPruefungToBlock(ReadOnlyPruefung pruefung,
       ReadOnlyBlock block) throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     Pruefung modelPruefung = dataAccessService.getPruefung(pruefung);
-    List<HardRestrictionAnalysis> hardAnalyses = restrictionService.checkHarteKriterien(
+    List<HardRestrictionAnalysis> hardAnalyses = restrictionService.checkHardRestrictions(
         modelPruefung);
     if (!hardAnalyses.isEmpty()) {
       removePruefungFromBlock(block, pruefung);
@@ -225,7 +225,7 @@ public class ScheduleService {
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
     List<HardRestrictionAnalysis> list = new LinkedList<>();
     for (Pruefung p : modelBlock.getPruefungen()) {
-      list.addAll(restrictionService.checkHarteKriterien(p));
+      list.addAll(restrictionService.checkHardRestrictions(p));
     }
 
     Optional<LocalDateTime> termin = roBlock.getTermin();
@@ -282,7 +282,7 @@ public class ScheduleService {
 
   private void checkHardCriteriaUndoScheduling(ReadOnlyPruefung pruefung, Pruefung pruefungModel)
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException {
-    List<HardRestrictionAnalysis> hard = restrictionService.checkHarteKriterien(pruefungModel);
+    List<HardRestrictionAnalysis> hard = restrictionService.checkHardRestrictions(pruefungModel);
 
     Optional<LocalDateTime> termin = pruefung.getTermin();
     if (!hard.isEmpty()) {
@@ -318,7 +318,7 @@ public class ScheduleService {
     Pruefung pruefungModel = dataAccessService.getPruefung(pruefung);
     Duration oldDuration = pruefungModel.getDauer();
     pruefungModel.setDauer(dauer);
-    List<HardRestrictionAnalysis> hard = restrictionService.checkHarteKriterien(
+    List<HardRestrictionAnalysis> hard = restrictionService.checkHardRestrictions(
         pruefungModel);
     if (!hard.isEmpty()) {
       pruefungModel.setDauer(oldDuration);
@@ -351,7 +351,7 @@ public class ScheduleService {
 
     Pruefung pruefungModel = dataAccessService.getPruefung(roPruefung);
     if (dataAccessService.setTeilnehmerkreis(pruefungModel, teilnehmerkreis, schaetzung)) {
-      List<HardRestrictionAnalysis> hard = restrictionService.checkHarteKriterien(pruefungModel);
+      List<HardRestrictionAnalysis> hard = restrictionService.checkHardRestrictions(pruefungModel);
       if (!hard.isEmpty()) {
         dataAccessService.removeTeilnehmerkreis(pruefungModel, teilnehmerkreis);
         throw converter.convertHardException(hard);
@@ -403,7 +403,7 @@ public class ScheduleService {
       ReadOnlyPlanungseinheit planungseinheitToCheckFor) throws NoPruefungsPeriodeDefinedException {
     noNullParameters(planungseinheitToCheckFor);
     Planungseinheit planungseinheit = getAsModel(planungseinheitToCheckFor);
-    return restrictionService.getPruefungenInHardConflictWith(planungseinheit);
+    return restrictionService.getPruefungenPotentiallyInHardConflictWith(planungseinheit);
   }
 
   private Planungseinheit getAsModel(ReadOnlyPlanungseinheit planungseinheitToCheckFor)
@@ -493,7 +493,7 @@ public class ScheduleService {
     Set<Pruefung> affected = restrictionService.getPruefungenAffectedByAnyBlock(modelBlock);
     modelBlock.setTyp(changeTo);
     affected.addAll(restrictionService.getPruefungenAffectedByAnyBlock(modelBlock));
-    List<HardRestrictionAnalysis> hard = restrictionService.checkHarteKriterienAll(
+    List<HardRestrictionAnalysis> hard = restrictionService.checkHardRestrictions(
         affected);
     if (!hard.isEmpty()) {
       modelBlock.setTyp(block.getTyp());
@@ -587,7 +587,7 @@ public class ScheduleService {
     Set<Planungseinheit> plannedPruefungen = sortPlanungseinheitenByStartzeitpunkt(
         dataAccessService.getGeplanteBloecke());
     for (Planungseinheit block : plannedPruefungen) {
-      if (!restrictionService.checkHarteKriterienAll(block.asBlock().getPruefungen()).isEmpty()) {
+      if (!restrictionService.checkHardRestrictions(block.asBlock().getPruefungen()).isEmpty()) {
         foundConflicts = true;
         block.setStartzeitpunkt(null);
       }
@@ -607,7 +607,7 @@ public class ScheduleService {
     Set<Planungseinheit> plannedPruefungen = sortPlanungseinheitenByStartzeitpunkt(
         dataAccessService.getPlannedPruefungen());
     for (Planungseinheit pruefung : plannedPruefungen) {
-      if (!restrictionService.checkHarteKriterien(pruefung.asPruefung()).isEmpty()) {
+      if (!restrictionService.checkHardRestrictions(pruefung.asPruefung()).isEmpty()) {
         foundConflicts = true;
         pruefung.setStartzeitpunkt(null);
       }
