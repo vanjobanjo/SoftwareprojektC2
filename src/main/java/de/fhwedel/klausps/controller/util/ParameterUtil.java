@@ -4,13 +4,20 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.Objects;
 
+/**
+ * This class contains utility concerning the {@link de.fhwedel.klausps.controller.Controller
+ * Controller Interface} conformity of method parameters.
+ */
 public class ParameterUtil {
 
+  /**
+   * Utility classes should not be instantiated.
+   */
   private ParameterUtil() {
   }
 
   /**
-   * In case any parameter is null, immediately throw a NullPointer exception
+   * In case any parameter is null, immediately throw a {@link IllegalArgumentException}
    *
    * @param objects The parameters to check.
    * @throws NullPointerException In case any of the parameters is null.
@@ -22,7 +29,9 @@ public class ParameterUtil {
   }
 
   /**
-   * Checks for empty strings
+   * In case a String parameter is an empty String, immediately throw an {@link
+   * IllegalArgumentException}
+   *
    * @param strings to check
    */
   public static void noEmptyStrings(String... strings) {
