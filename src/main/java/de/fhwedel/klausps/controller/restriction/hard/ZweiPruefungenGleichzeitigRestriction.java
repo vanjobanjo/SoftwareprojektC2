@@ -30,8 +30,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Klasse, die für das Testen da ist, wenn zwei Klausuren gleichzeitig stattfinden, mit dem gleichen
- * Teilnehmerkreis
+ * Restriction describing that it should not be allowed for two or more {@link Planungseinheit}en
+ * with identical {@link Teilnehmerkreis}en to be planned on overlapping times.
  */
 public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
 
@@ -39,29 +39,36 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
       ZweiPruefungenGleichzeitigRestriction.class);
 
   /**
-   * Speichern von der Zeit, die zwischen den Pruefungen mit dem gleichen Teilnehmerkreis liegen
-   * darf
+   * A time buffer between planungseinheiten that should be minded.
    */
   private final Duration bufferBetweenPlanungseinheiten;
 
+  /**
+   * Create a ZweiPruefungenGleichzeitigRestriction using a service for data access from the {@link
+   * ServiceProvider}.
+   */
   public ZweiPruefungenGleichzeitigRestriction() {
     this(ServiceProvider.getDataAccessService());
   }
 
+  /**
+   * Create a ZweiPruefungenGleichzeitigRestriction.
+   *
+   * @param dataAccessService The service to use for accessing the underlying data.
+   */
   protected ZweiPruefungenGleichzeitigRestriction(DataAccessService dataAccessService) {
     super(dataAccessService, ZWEI_KLAUSUREN_GLEICHZEITIG);
     this.bufferBetweenPlanungseinheiten = DEFAULT_BUFFER_BETWEEN_PLANUNGSEINHEITEN;
   }
 
-
   @Override
   public Optional<HardRestrictionAnalysis> evaluateRestriction(Pruefung pruefung)
       throws NoPruefungsPeriodeDefinedException {
     if (pruefung.isGeplant()) {
-      //Setzen von den start und end Termin, wo das Kriterium verletzt werden könnte
+      // determine the start and end time between which the restriction could be violated
       LocalDateTime start = pruefung.getStartzeitpunkt().minus(bufferBetweenPlanungseinheiten);
       LocalDateTime end = getEndTime(pruefung);
-      // Anm.: Liste muss kopiert werden, da Model nur unmodifiable Lists zurückgibt
+      // List must be a copy as the result retrieved from the data model is unmodifiable
       List<Planungseinheit> listWithPlanungseinheitenInTimeSpan = new ArrayList<>(
           tryToGetAllPlanungseinheitenBetween(start, end));
       Optional<HardRestrictionAnalysis> hKA = checkForPlanungseinheitenHartesKriterium(
@@ -73,64 +80,39 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
     return Optional.empty();
   }
 
-  /**
-   * This methode will provide a Set of Planungseinheiten witch are planed between start and end
-   *
-   * @param start the beginning of the time, where it should be searched
-   * @param end   the end of the time, where it should be searched
-   * @return a Set of Planungseinheiten witch are planed in the time spane between start and end
-   * @throws NoPruefungsPeriodeDefinedException if no Pruefungsperiode is Defined
-   */
-  private Set<Planungseinheit> tryToGetAllPlanungseinheitenBetween(LocalDateTime start,
-      LocalDateTime end) throws NoPruefungsPeriodeDefinedException {
-    try {
-      return dataAccessService.getAllPlanungseinheitenBetween(start, end);
-    } catch (IllegalTimeSpanException e) {
-      //start kann nicht vor Ende liegen, da ich das berechne
-      e.printStackTrace();
-      return Collections.emptySet();
+  @Override
+  public Set<Pruefung> getAllPotentialConflictingPruefungenWith(
+      Planungseinheit planungseinheit) throws NoPruefungsPeriodeDefinedException {
+
+    Set<Pruefung> geplantePruefungen = new HashSet<>(dataAccessService.getPlannedPruefungen());
+    geplantePruefungen.removeIf(
+        (Pruefung pruefung) -> !haveCommonTeilnehmerkreis(pruefung, planungseinheit));
+    if (!planungseinheit.isBlock()) {
+      geplantePruefungen.remove(planungseinheit.asPruefung());
+      Optional<Block> potentialBlock = dataAccessService.getBlockTo(planungseinheit.asPruefung());
+      potentialBlock.ifPresent(block -> geplantePruefungen.removeIf(
+          pruefung -> block.getPruefungen().contains(pruefung)));
     }
+    LOGGER.trace("Found {} conflicting with {} because of common Teilnehmerkreise.",
+        geplantePruefungen, planungseinheit);
+    return geplantePruefungen;
   }
 
-  /**
-   * Methode die durch alle Planungseinheiten in der übergebenen Liste geht und die für die
-   * Planungseinheit zuständige Methode aufruft
-   *
-   * @param pruefung       die Pruefung die neu Hinzugefügt wurde und für die das Kriterium getestet
-   *                       wird
-   * @param start          der Starttermin ab wo die Überprüfung durchgeführt werden soll (Nur für
-   *                       Blöcke relevant)
-   * @param end            der Endtermin bis wohin die Überprüfung durchgeführt werden sol (Nur für
-   *                       Blöcke relevant)
-   * @param listInTimeSpan die Liste mit Planungseinheiten, die zu dem Startzeitpunkt stattfinden
-   * @return Entweder eine HardRestrictionAnalysis, wo die Pruefungen, das Kriterium und die
-   * Teilnehmer mit ihrer Anzahl drin steht oder ein leeres Optional
-   */
-  private Optional<HardRestrictionAnalysis> checkForPlanungseinheitenHartesKriterium(
-      Pruefung pruefung, LocalDateTime start, LocalDateTime end,
-      List<Planungseinheit> listInTimeSpan) {
-
-    //Zum Sammeln der Teilnehmerkreise und die Pruefungen, die einen harten Konflikt verursachen
-    Map<Teilnehmerkreis, Integer> teilnehmerCount = new HashMap<>();
-    HashSet<Pruefung> inConflictROPruefung = new HashSet<>();
-    Optional<HardRestrictionAnalysis> hKA = Optional.empty();
-    if (listInTimeSpan != null) {
-      //remove Pruefung that it there will be no conflict with itself
-      listInTimeSpan.remove(pruefung);
-
-      //Durchgehen der Liste von Planungseinheiten und unterscheiden von unterschiedlichem Typ
-      for (Planungseinheit planungseinheit : listInTimeSpan) {
-        if (planungseinheit.isBlock()) {
-          testForBlockHard(pruefung, planungseinheit.asBlock(), start, end, inConflictROPruefung,
-              teilnehmerCount);
-        } else {
-          getTeilnehmerkreisFromPruefung(pruefung, planungseinheit.asPruefung(),
-              inConflictROPruefung, teilnehmerCount);
-        }
-      }
-      hKA = testAndCreateNewHartesKriteriumAnalyse(teilnehmerCount, inConflictROPruefung);
+  @Override
+  public boolean wouldBeHardConflictAt(LocalDateTime startTime, Planungseinheit planungseinheit)
+      throws NoPruefungsPeriodeDefinedException {
+    noNullParameters(startTime, planungseinheit);
+    boolean isInConflict = false;
+    Set<Planungseinheit> planungseinheiten = getAllDuringPlanungseinheitAt(startTime,
+        planungseinheit);
+    Iterator<Planungseinheit> planungseinheitIterator = planungseinheiten.iterator();
+    while (planungseinheitIterator.hasNext() && !isInConflict) {
+      Planungseinheit other = planungseinheitIterator.next();
+      isInConflict = areInConflict(planungseinheit, other);
     }
-    return hKA;
+    LOGGER.debug("{} was {}found to cause a conflict starting at {}.", planungseinheit,
+        (isInConflict ? "" : "not "), startTime);
+    return isInConflict;
   }
 
   /**
@@ -257,52 +239,19 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
     return false;
   }
 
-  @Override
-  public Set<Pruefung> getAllPotentialConflictingPruefungenWith(
-      Planungseinheit planungseinheit) throws NoPruefungsPeriodeDefinedException {
-
-    Set<Pruefung> geplantePruefungen = new HashSet<>(dataAccessService.getPlannedPruefungen());
-    geplantePruefungen.removeIf(
-        (Pruefung pruefung) -> notSameTeilnehmerkreis(pruefung, planungseinheit));
-    if (!planungseinheit.isBlock()) {
-      geplantePruefungen.remove(planungseinheit.asPruefung());
-      Optional<Block> potentialBlock = dataAccessService.getBlockTo(planungseinheit.asPruefung());
-      potentialBlock.ifPresent(block -> geplantePruefungen.removeIf(
-          pruefung -> block.getPruefungen().contains(pruefung)));
-    }
-    LOGGER.trace("Found {} conflicting with {} because of common Teilnehmerkreise.",
-        geplantePruefungen, planungseinheit);
-    return geplantePruefungen;
-  }
-
-  @Override
-  public boolean wouldBeHardConflictAt(LocalDateTime startTime, Planungseinheit planungseinheit)
-      throws NoPruefungsPeriodeDefinedException {
-    noNullParameters(startTime, planungseinheit);
-    boolean isInConflict = false;
-    Set<Planungseinheit> planungseinheiten = getPlanungseinheitenDuring(startTime, planungseinheit);
-    Iterator<Planungseinheit> planungseinheitIterator = planungseinheiten.iterator();
-    while (planungseinheitIterator.hasNext() && !isInConflict) {
-      Planungseinheit other = planungseinheitIterator.next();
-      isInConflict = areInConflict(planungseinheit, other);
-    }
-    LOGGER.debug("{} was {}found to cause a conflict starting at {}.", planungseinheit,
-        (isInConflict ? "" : "not "), startTime);
-    return isInConflict;
-  }
-
   /**
-   * This methode will provide a Set of Teilnehmerkreis that are all in the time span between
-   * startTime minus the buffertime and the startTime plus the duration of the Planungseinheit plus
-   * the buffertime
+   * Get all {@link Planungseinheit}en that happen to be scheduled during the time a specific
+   * planungseinheit would occupy if scheduled at a specific start time.
    *
-   * @param startTime the timeslot witch will be checked
-   * @param planungseinheit for the duration of the timespan
-   * @return all Planungseinheiten that are planed in the time span
-   * @throws NoPruefungsPeriodeDefinedException if no Pruefungsperiode is defined
+   * @param startTime       The hypothetical start time for the planungseinheit during which to
+   *                        search.
+   * @param planungseinheit The planungseinheit during which to search.
+   * @return All planungseinheiten that happen to be scheduled during the time a specific
+   * planungseinheit would occupy if scheduled at a specific start time.
+   * @throws NoPruefungsPeriodeDefinedException In case no Pruefungsperiode is defined.
    */
   @NotNull
-  private Set<Planungseinheit> getPlanungseinheitenDuring(@NotNull LocalDateTime startTime,
+  private Set<Planungseinheit> getAllDuringPlanungseinheitAt(@NotNull LocalDateTime startTime,
       @NotNull Planungseinheit planungseinheit)
       throws NoPruefungsPeriodeDefinedException {
     Set<Planungseinheit> result = new HashSet<>();
@@ -318,50 +267,28 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
     return result;
   }
 
-
   /**
-   * This methode tests if two Planungseinheiten have the same Teilnehmerkreis
+   * Check whether two {@link Planungseinheit}en are in conflict.
    *
-   * @param planungseinheit with witch the other should be compared
-   * @param other           planungseinheit with witch the
-   * @return true  if the planungseinheit and other planungseinheit has the same Teilnehmerkreis
-   * false if they don't have the same Teilnehmerkreis
+   * @param planungseinheit One planungseinheit for the check for conflict.
+   * @param other           The other planungseinheit for the check for conflict.
+   * @return True in case two distinct planungseinheiten that are in conflict with each other are
+   * passed, otherwise False.
    */
   private boolean areInConflict(Planungseinheit planungseinheit, Planungseinheit other) {
-    if (!areSame(planungseinheit, other)) {
+    if (!planungseinheit.equals(other)) {
       return haveCommonTeilnehmerkreis(planungseinheit, other);
     }
     return false;
   }
 
   /**
-   * This methode tests if two Planungseinheiten are the same. If there are Blocks the BlockID will
-   * be compared If they are Pruefungen then it will be compared over the ReferenzVerwaltungssystem
-   * -ID If one is a Pruefung and the other is a Block, they are not the same
+   * Check whether two {@link Planungseinheit}en have one or more common {@link Teilnehmerkreis}e.
    *
-   * @param pe1 the one Planungseinheit witch will be checked
-   * @param pe2 the other Planungseinheit witch will be compared with the other
-   * @return true if pe1 and pe2 are the same false if pe1 and pe2 are not the same
-   */
-  private boolean areSame(@NotNull Planungseinheit pe1, @NotNull Planungseinheit pe2) {
-    if (pe1.isBlock() && pe2.isBlock()) {
-      return pe1.asBlock().getId() == pe2.asBlock().getId();
-    }
-    if (!pe1.isBlock() && !pe2.isBlock()) {
-      return pe1.asPruefung().getReferenzVerwaltungsystem()
-          .equals(pe2.asPruefung().getReferenzVerwaltungsystem());
-    }
-    return false;
-  }
-
-  /**
-   * This methode checks of to Planugnseinheiten have not an intersection between there
-   * Teilnehmerkreise
-   *
-   * @param pe1 the one Planungseinheit with witch are compared the Teilnehmerkreise
-   * @param pe2 the other Planungseinheit with witch they are compared
-   * @return true, if they don't have an intersection between there Teilnehmerkreise false, if they
-   * have an intersection between there Teilnehmerkreise
+   * @param pe1 One planungseinheit for the check for common teilnehmerkreis.
+   * @param pe2 The other planungseinheit for the check for common teilnehmerkreis.
+   * @return True in case at least one teilnehmerkreis is in both planungseinheiten, otherwise
+   * False.
    */
   private boolean haveCommonTeilnehmerkreis(@NotNull Planungseinheit pe1,
       @NotNull Planungseinheit pe2) {
@@ -369,47 +296,25 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
   }
 
   /**
-   * Checks if two sets of Teilnehmerkreis have an intersection between if they have an intersection
-   * between them the intersection will be the return.
+   * Get the intersection of two sets.
    *
-   * @param setA the one Set of Teilnehmern
-   * @param setB the other Set of Teilnehmern
-   * @return a Set of Teilnehmerkreis witch contains the intersection between the two parameter
+   * @param setA The first set for intersection.
+   * @param setB The second set for intersection.
+   * @return The intersection between setA and setB.
    */
   @NotNull
-  private Set<Teilnehmerkreis> intersect(@NotNull Set<Teilnehmerkreis> setA,
-      @NotNull Set<Teilnehmerkreis> setB) {
-    Set<Teilnehmerkreis> intersection = new HashSet<>(setA);
+  private <T> Set<T> intersect(@NotNull Set<T> setA,
+      @NotNull Set<T> setB) {
+    Set<T> intersection = new HashSet<>(setA);
     intersection.retainAll(setB);
     return intersection;
   }
 
   /**
-   * Diese Methode ist dafür da, um zu überprüfen ob eine Pruefung und eine Planungseinheit einen
-   * gemeinsamen Teilnehmerkreis besitzt
+   * Calculate the estimated end time for a {@link Pruefung} based on its belonging to a block.
    *
-   * @param pruefung                  die Pruefung mit der nach einen Übereinstimmenden
-   *                                  Teilnehmerkreis gesucht wird
-   * @param planungseinheitToCheckFor die Planungseinheit mit der ein Teilnehmer überprüft wird
-   * @return ob die Pruefung und die Planungseinheit einen gemeinsamen Teilnehmerkreis besitzt
-   */
-  private boolean notSameTeilnehmerkreis(Pruefung pruefung,
-      Planungseinheit planungseinheitToCheckFor) {
-    for (Teilnehmerkreis teilnehmerkreis : pruefung.getTeilnehmerkreise()) {
-      if (planungseinheitToCheckFor.getTeilnehmerkreise().contains(teilnehmerkreis)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  /**
-   * Berechnet den Endzeitpunkt, von der übergebenen Pruefung. Der Endzeitpunkt unterscheidet sich,
-   * falls die Pruefung in einem Block existiert
-   *
-   * @param pruefung die Pruefung, mit der der Endzeitpunkt festgelegt werden soll
-   * @return der EndZeitpunkt von einer Prüfung, welcher sich unterscheidet, ob es ein Block oder ob
-   * es sich um eine Pruefung handelt
+   * @param pruefung The preufung for which to calculate the end time.
+   * @return The estimated end time for the pruefung.
    */
   @NotNull
   private LocalDateTime getEndTime(Pruefung pruefung) throws NoPruefungsPeriodeDefinedException {
@@ -421,14 +326,76 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
   }
 
   /**
-   * In dieser Methode werden zwei Pruefungen miteinander verglichen und die übereinstimmenden
-   * Teilnehmerkreise mit ihrer Anzahl in eine Map gespeichert. zusätzlich werden die in Konflikt
-   * stehenden Pruefungen in ein Set gespeichert
+   * Get all Planungseinheiten witch are scheduled at any time overlapping the timespan between a
+   * given start and end time.
    *
-   * @param pruefung             die Pruefung für die das HarteKriterium gecheckt werden soll
-   * @param toCheck              die Pruefung mit der verglichen werden soll
-   * @param inConflictROPruefung das Set, von Pruefungen, welche in Konflikt stehen
-   * @param teilnehmerCount      die Map mit Teilnehmerkreisen und deren Anzahl
+   * @param start The start of the timespan to check in.
+   * @param end   The end of the timespan to check in.
+   * @return All Planungseinheiten witch are scheduled at any time overlapping the timespan between
+   * a given start and end time.
+   * @throws NoPruefungsPeriodeDefinedException In case no Pruefungsperiode is Defined.
+   */
+  private Set<Planungseinheit> tryToGetAllPlanungseinheitenBetween(LocalDateTime start,
+      LocalDateTime end) throws NoPruefungsPeriodeDefinedException {
+    try {
+      return dataAccessService.getAllPlanungseinheitenBetween(start, end);
+    } catch (IllegalTimeSpanException e) {
+      // start can never after end as previously checked
+      e.printStackTrace();
+      return Collections.emptySet();
+    }
+  }
+
+  /**
+   * Check all given {@link Planungseinheit}en for being in conflict with a certain {@link Pruefung}
+   * concerning this restriction.
+   *
+   * @param pruefung       The pruefung for which to check violations of this restriction.
+   * @param start          The start time of the timespan to check violations in, based on the
+   *                       pruefungs start time, buffer and other influences.
+   * @param end            The end time of the timespan to check violations in, based on the
+   *                       pruefungs end time, buffer and other influences.
+   * @param listInTimeSpan All planungseinheiten covering the start time.
+   * @return In case that the restriction is violated an optional containing an analysis describing
+   * this violation is returned, otherwise the result is an empty optional.
+   */
+  private Optional<HardRestrictionAnalysis> checkForPlanungseinheitenHartesKriterium(
+      Pruefung pruefung, LocalDateTime start, LocalDateTime end,
+      List<Planungseinheit> listInTimeSpan) {
+
+    // The participants causing a violation paired with the amount of students in each of these teilnehmerkreise
+    Map<Teilnehmerkreis, Integer> teilnehmerCount = new HashMap<>();
+    HashSet<Pruefung> inConflictROPruefung = new HashSet<>();
+    Optional<HardRestrictionAnalysis> hKA = Optional.empty();
+    if (listInTimeSpan != null) {
+      // The checked pruefung should not be in conflict with itself
+      listInTimeSpan.remove(pruefung);
+
+      // Loop through all planungseinheiten in the timespan,
+      // deferring the actual restriction check dependent on the type of planungseinheit
+      for (Planungseinheit planungseinheit : listInTimeSpan) {
+        if (planungseinheit.isBlock()) {
+          testForBlockHard(pruefung, planungseinheit.asBlock(), start, end, inConflictROPruefung,
+              teilnehmerCount);
+        } else {
+          getTeilnehmerkreisFromPruefung(pruefung, planungseinheit.asPruefung(),
+              inConflictROPruefung, teilnehmerCount);
+        }
+      }
+      hKA = testAndCreateNewHartesKriteriumAnalyse(teilnehmerCount, inConflictROPruefung);
+    }
+    return hKA;
+  }
+
+  /**
+   * Compare two {@link Pruefung}en and save their common {@link Teilnehmerkreis}e into a map. Also,
+   * the pruefungen that happen to be in conflict are saved onto a set.
+   *
+   * @param pruefung             The pruefung for which the restriction is being checked.
+   * @param toCheck              The pruefung with wich to compare the pruefung under test.
+   * @param inConflictROPruefung The set into which to save the conflicting pruefungen.
+   * @param teilnehmerCount      The map into which to save the teilnehmerkreise with their
+   *                             respective student amounts.
    */
   private void getTeilnehmerkreisFromPruefung(Pruefung pruefung, Pruefung toCheck,
       HashSet<Pruefung> inConflictROPruefung,
@@ -437,7 +404,7 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
     Set<Teilnehmerkreis> teilnehmer = pruefung.getTeilnehmerkreise();
     for (Teilnehmerkreis teilnehmerkreis : toCheck.getTeilnehmerkreise()) {
       if (teilnehmer.contains(teilnehmerkreis)) {
-        //Vergleich der Teilnehmerkreise auf ihrer Anzahl
+        // comparison of amount of participants of the teilnehmerkreise
         Integer teilnehmerKreisSchaetzung = teilnehmerCount.get(teilnehmerkreis);
         Integer teilnehmerkreisToCheck = toCheck.getSchaetzungen().get(teilnehmerkreis);
         if (teilnehmerKreisSchaetzung != null) {
@@ -448,7 +415,7 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
           teilnehmerCount.put(teilnehmerkreis, teilnehmerkreisToCheck);
         }
 
-        //Hier ist es egal, da es ein Set ist und es nur einmal vorkommen darf
+        // does not matter here ase a set is used and duplicate entries are ignored
         inConflictROPruefung.add(pruefung);
         inConflictROPruefung.add(toCheck);
       }

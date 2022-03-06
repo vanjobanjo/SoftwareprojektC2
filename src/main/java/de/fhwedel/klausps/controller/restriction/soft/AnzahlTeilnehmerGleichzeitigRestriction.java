@@ -86,7 +86,7 @@ public class AnzahlTeilnehmerGleichzeitigRestriction extends AtSameTimeRestricti
       @NotNull Pruefung toFilterFor) {
     /*
      * For counting the amount of participants at the same time it is crucial to count all
-     * participants in the same block as well
+     * participants in the same block as well, therefore it is important that no pruefungen are ignored.
      */
   }
 
