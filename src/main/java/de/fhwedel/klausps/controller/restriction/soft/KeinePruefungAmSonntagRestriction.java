@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * This restriciton checks if a Pruefung is on Sunday planed
+ * This restriction checks if a Pruefung is on Sunday planed
  */
 public class KeinePruefungAmSonntagRestriction extends SoftRestriction {
 

@@ -20,6 +20,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Class for evaluation of the restrction.
+ */
 public class WocheVierFuerMasterRestriction extends SoftRestriction {
 
   private static final int WEEK_FOUR = 4;
