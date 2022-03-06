@@ -2,6 +2,7 @@ package de.fhwedel.klausps.controller.restriction.soft;
 
 import static de.fhwedel.klausps.controller.util.PlanungseinheitUtil.getAllPruefungen;
 import static de.fhwedel.klausps.model.api.Blocktyp.SEQUENTIAL;
+import static java.util.Collections.emptySet;
 
 import de.fhwedel.klausps.controller.analysis.SoftRestrictionAnalysis;
 import de.fhwedel.klausps.controller.exceptions.IllegalTimeSpanException;
@@ -30,20 +31,20 @@ public abstract class AtSameTimeRestriction extends SoftRestriction {
    * The time buffer before and after a Pruefung which should be evaluated as part of the Pruefung
    * to allow for preparation and follow-up tasks.
    */
-  protected final Duration puffer;
+  protected final Duration buffer;
 
   /**
    * Create a AtSameTimeRestriction.
    *
    * @param dataAccessService The service to use for data access.
    * @param kriterium         The type of {@link WeichesKriterium} resembled by this class.
-   * @param puffer            The time buffer before and after a Pruefung which should be evaluated
+   * @param buffer            The time buffer before and after a Pruefung which should be evaluated
    *                          as part of the Pruefung to allow for preparation and follow-up tasks.
    */
   protected AtSameTimeRestriction(DataAccessService dataAccessService, WeichesKriterium kriterium,
-      Duration puffer) {
+      Duration buffer) {
     super(dataAccessService, kriterium);
-    this.puffer = puffer;
+    this.buffer = buffer;
   }
 
   @Override
@@ -53,7 +54,7 @@ public abstract class AtSameTimeRestriction extends SoftRestriction {
     if (!pruefung.isGeplant()) {
       return Optional.empty();
     }
-    Duration bufferPerSide = puffer.dividedBy(2);
+    Duration bufferPerSide = buffer.dividedBy(2);
     LocalDateTime startOfPruefung = getSequentialBlockOrSelf(pruefung).getStartzeitpunkt()
         .minus(bufferPerSide);
     LocalDateTime endOfPruefung = getSequentialBlockOrSelf(pruefung).endzeitpunkt()
@@ -161,16 +162,7 @@ public abstract class AtSameTimeRestriction extends SoftRestriction {
     Set<Planungseinheit> conflictingPlanungseinheiten = new HashSet<>();
     // O(n^2) with n = amount of Planungseinheiten overlapping the given time interval
     for (Planungseinheit planungseinheit : planungseinheiten) {
-      LocalDateTime startOfPlanungseinheit = planungseinheit.getStartzeitpunkt()
-          .minus(puffer.dividedBy(2));
-      Collection<Planungseinheit> planungseinheitenAtSameTime = selectAllPlanungseinheitenContaining(
-          startOfPlanungseinheit, planungseinheiten);
-      if (!planungseinheitenAtSameTime.isEmpty()) {
-        planungseinheitenAtSameTime.add(planungseinheit);
-      }
-      if (violatesRestriction(planungseinheitenAtSameTime)) {
-        conflictingPlanungseinheiten.addAll(planungseinheitenAtSameTime);
-      }
+      conflictingPlanungseinheiten.addAll(getConflicting(planungseinheit, planungseinheiten));
     }
     return conflictingPlanungseinheiten;
   }
@@ -193,24 +185,26 @@ public abstract class AtSameTimeRestriction extends SoftRestriction {
   }
 
   /**
-   * Select all {@link Planungseinheit}en that cover a certain moment.
+   * Get the {@link Planungseinheit}en in conflict.
    *
-   * @param time              The time covered be the desired Planungseinheiten.
-   * @param planungseinheiten The planungseinheiten to search through.
-   * @return All Planungseinheiten that cover a certain moment.
+   * @param planungseinheit   The planungseinheit to check for.
+   * @param planungseinheiten The planungseinheiten to check against.
+   * @return Planungseinheiten in conflict with the checked planungseinheit.
    */
   @NotNull
-  private Collection<Planungseinheit> selectAllPlanungseinheitenContaining(
-      @NotNull LocalDateTime time, @NotNull Iterable<Planungseinheit> planungseinheiten) {
-    // O(n) with n = amount of Planungseinheiten to check
-    Set<Planungseinheit> result = new HashSet<>();
-    for (Planungseinheit planungseinheit : planungseinheiten) {
-      if (!time.isBefore(planungseinheit.getStartzeitpunkt().minus(puffer.dividedBy(2)))
-          && time.isBefore(planungseinheit.endzeitpunkt().plus(puffer.dividedBy(2)))) {
-        result.add(planungseinheit);
-      }
+  private Set<Planungseinheit> getConflicting(@NotNull Planungseinheit planungseinheit,
+      @NotNull Set<Planungseinheit> planungseinheiten) {
+    LocalDateTime startOfPlanungseinheit = planungseinheit.getStartzeitpunkt()
+        .minus(buffer.dividedBy(2));
+    Collection<Planungseinheit> planungseinheitenAtSameTime = getAllPlanungseinheitenCovering(
+        startOfPlanungseinheit, planungseinheiten);
+    if (!planungseinheitenAtSameTime.isEmpty()) {
+      planungseinheitenAtSameTime.add(planungseinheit);
     }
-    return result;
+    if (violatesRestriction(planungseinheitenAtSameTime)) {
+      return Set.copyOf(planungseinheitenAtSameTime);
+    }
+    return emptySet();
   }
 
   /**
@@ -240,5 +234,26 @@ public abstract class AtSameTimeRestriction extends SoftRestriction {
    * @return The scoring based on the causing Planungseinheiten.
    */
   protected abstract int calcScoringFor(Collection<Planungseinheit> violatingPlanungseinheiten);
+
+  /**
+   * Select all {@link Planungseinheit}en that cover a certain moment.
+   *
+   * @param time              The time covered be the desired Planungseinheiten.
+   * @param planungseinheiten The planungseinheiten to search through.
+   * @return All Planungseinheiten that cover a certain moment.
+   */
+  @NotNull
+  private Collection<Planungseinheit> getAllPlanungseinheitenCovering(
+      @NotNull LocalDateTime time, @NotNull Iterable<Planungseinheit> planungseinheiten) {
+    // O(n) with n = amount of Planungseinheiten to check
+    Set<Planungseinheit> result = new HashSet<>();
+    for (Planungseinheit planungseinheit : planungseinheiten) {
+      if (!time.isBefore(planungseinheit.getStartzeitpunkt().minus(buffer.dividedBy(2)))
+          && time.isBefore(planungseinheit.endzeitpunkt().plus(buffer.dividedBy(2)))) {
+        result.add(planungseinheit);
+      }
+    }
+    return result;
+  }
 
 }

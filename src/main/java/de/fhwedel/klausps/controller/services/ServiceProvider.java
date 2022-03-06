@@ -5,11 +5,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The ServiceProvider provides a single point of entry for the creation of all necessary services.
- * Due to dependency structures, some services have to be registered with each other. The
- * ServiceProvider therefore ensures that all services are registered correctly and available when
- * needed. If the ServiceProvider is used for handling all services, it also ensures that only one
- * instance of each service will exist at runtime.
+ * The Service provides a single point of entry for the creation of all necessary services. Due to
+ * dependency structures, some services have to be registered with each other. The ServiceProvider
+ * therefore ensures that all services are registered correctly and available when needed. If the
+ * ServiceProvider is used for handling all services, it also ensures that only one instance of each
+ * service will exist at runtime.
  */
 public class ServiceProvider {
 
