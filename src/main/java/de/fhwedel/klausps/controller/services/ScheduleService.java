@@ -311,9 +311,9 @@ public class ScheduleService {
     checkExistenceOfPruefungenInBlock(roBlock);
 
     List<ReadOnlyPlanungseinheit> old = new ArrayList<>();
-    if(roBlock.geplant()){
+    if (roBlock.geplant()) {
       old.addAll(getAffectedPruefungenBy(dataAccessService.getBlock(roBlock)));
-      for(ReadOnlyPruefung ro : roBlock.getROPruefungen()){
+      for (ReadOnlyPruefung ro : roBlock.getROPruefungen()) {
         old.remove(ro);
       }
     }
@@ -321,10 +321,19 @@ public class ScheduleService {
     Block blockModel = dataAccessService.scheduleBlock(roBlock, termin);
     // rollback and Exception for hard violation
     checkHardCriteriaUndoScheduling(roBlock, blockModel);
-    old.addAll(getAffectedPruefungenBy(blockModel));
+    Set<Pruefung> newList = new HashSet<>();
+    Set<ReadOnlyPlanungseinheit> roNewList = new HashSet<>();
+    for (ReadOnlyPlanungseinheit s : old) {
+      if (!s.isBlock()) {
+          newList.add(dataAccessService.getPruefung(s.asPruefung()));
+      }
+    }
+    roNewList.addAll(converter.convertToROPlanungseinheitSet(getPlanungseinheitenWithBlock(newList)));
 
-    // remove duplicate Planungseinheiten
-    return new ArrayList<>(new HashSet<>(old));
+
+    roNewList.addAll(getAffectedPruefungenBy(blockModel));
+
+    return new ArrayList<>(roNewList);
   }
 
   /**
@@ -399,7 +408,7 @@ public class ScheduleService {
       IllegalArgumentException {
     noNullParameters(pruefung, termin);
     Set<Planungseinheit> old = new HashSet<>();
-    if(pruefung.geplant()){
+    if (pruefung.geplant()) {
       old.addAll(getAffectedPruefungenBy(dataAccessService.getPruefung(pruefung)));
       old.remove(dataAccessService.getPruefung(pruefung));
     }
