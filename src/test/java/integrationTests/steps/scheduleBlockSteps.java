@@ -189,4 +189,48 @@ public class scheduleBlockSteps extends BaseSteps {
     assertThat(state.results.get(EXCEPTION)).isInstanceOf(HartesKriteriumException.class);
     assertThat(getBlockFromModel(block).getTermin()).contains(localDateTime);
   }
+
+
+  @Wenn("ich den Block {string} am {localDateTime} einplane bugfix")
+  public void ichDenBlockAmUmUhrEinplaneBugfix(String block, LocalDateTime termin)
+      throws NoPruefungsPeriodeDefinedException {
+    Set<ReadOnlyBlock> planned = state.controller.getGeplanteBloecke();
+    ReadOnlyBlock roblock = planned.stream().filter(s -> s.getName().equals(block)).findFirst().get();
+    try {
+
+
+      List<ReadOnlyPlanungseinheit> result = state.controller.scheduleBlock(roblock, termin);
+      state.results.put("affected", result);
+      state.results.put("bugfix", result);
+    } catch (HartesKriteriumException e) {
+      state.results.put("exception", e);
+    }
+
+  }
+
+
+
+  @Und("die Pruefung {string} wird auch das Scoring verändert;")
+  public void diePruefungWirdAuchDasScoringVerändert(String pruefung)
+      throws NoPruefungsPeriodeDefinedException {
+
+
+
+
+    Object exception = state.results.get("bugfix");
+    assertThat(exception).isNotNull();
+    List<ReadOnlyPlanungseinheit> newList = (List<ReadOnlyPlanungseinheit>) exception;
+
+    assertThat(newList.contains(getPruefungFromModel(pruefung))).isTrue();
+    }
+
+  @Und("der Block {string} wird auch das Scoring verändert;")
+  public void derBlockWirdAuchDasScoringVerändert(String block)
+      throws NoPruefungsPeriodeDefinedException {
+    Set<ReadOnlyBlock> planned = state.controller.getGeplanteBloecke();
+    assertThat(planned).hasSize(2);
+    planned.stream().filter(s -> s.getName().equals(block));
+    ReadOnlyBlock resultBlock = planned.toArray(new ReadOnlyBlock[0])[0];
+
+  }
 }

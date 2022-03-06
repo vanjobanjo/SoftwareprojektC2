@@ -56,4 +56,26 @@ Funktionalität: Als Planende*r moechte ich Bloecke einplanen koennen
     Dann erhalte ich einen Fehler
 
 
+  Szenario: Ich versuche einen geplanten Block an so umzuplanen, dass eine harte Restriktion verletzt wird bugfix test
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert ein geplanter Block "block" mit der Pruefung "pruefung" und dem Teilnehmerkreis "B_INF 3 14.0" am 02.02.2022 um 10:00 Uhr
+    Und es existiert die geplante Pruefung "geplantePruefung" mit dem Teilnehmerkreis "B_INF 3 14.0" im 1 Semester am 03.02.2022 um 8 Uhr
+    Wenn ich den Block "block" am 15.02.2022 um 08:00 Uhr einplane bugfix
+    Dann ist der Block "block" am 15.02.2022 um 08:00 Uhr geplant
+    Und die Pruefung "geplantePruefung" wird auch das Scoring verändert;
+
+  Szenario: Ich versuche einen geplanten Block an so umzuplanen, dass eine harte Restriktion verletzt wird bugfix mit mehrere_Pruefung_am_Tag
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert ein geplanter Block "block" mit der Pruefung "pruefung" und dem Teilnehmerkreis "B_INF 3 14.0" am 02.02.2022 um 10:00 Uhr
+    Und es existiert ein geplanter Block "block1" mit der Pruefung "pruefung1" und dem Teilnehmerkreis "B_INF 3 14.0" am 01.02.2022 um 16:00 Uhr
+    Und es existiert die geplante Pruefung "geplantePruefung" mit dem Teilnehmerkreis "B_INF 3 14.0" im 1 Semester am 02.02.2022 um 8 Uhr
+    Und es existiert die geplante Pruefung "geplantePruefung1" mit dem Teilnehmerkreis "B_INF 3 14.0" im 1 Semester am 03.02.2022 um 8 Uhr
+    Und es existiert die geplante Pruefung "geplantePruefung2" mit dem Teilnehmerkreis "B_INF 3 14.0" im 1 Semester am 01.02.2022 um 8 Uhr
+    Wenn ich den Block "block" am 15.02.2022 um 08:00 Uhr einplane bugfix
+    Und die Pruefung "geplantePruefung" wird auch das Scoring verändert;
+    Und die Pruefung "geplantePruefung2" wird auch das Scoring verändert;
+    Und die Pruefung "geplantePruefung1" wird auch das Scoring verändert;
+    Und die Pruefung "pruefung1" wird auch das Scoring verändert;
+    Und der Block "block1" wird auch das Scoring verändert;
+
 
