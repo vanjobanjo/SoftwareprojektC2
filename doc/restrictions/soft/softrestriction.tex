@@ -1,17 +1,20 @@
 \subsection{Weiche Restriktion}\label{subsec:weiche_restriktion}
 
 \subsubsection{Was ist eine weiche Restriktion?}
-Eine weiche Restriktion ist, ein Kriterium beim Einplanen von Klausuren in den Klausurplan.
+Eine weiche Restriktion ist, ein Kriterium das beim Einplanen von Prüfungen, die Prüfung mit ein Scoring bewertet, das abhängig ist von dem Ort, wo sie eingeplant wurde.
+Dabei werden nur Prüfungen mit den Weichen Restriktionen geprüft, die eingeplant sind.
 Bei dieser Art von Restriktion wird im Gegenteil zu der harten Restriktion die Klausur eingeplant,
 wenn dieses Kriterium fehlschlägt.
-Aber dieses Kriterium verändert das Scoring von der Klausur und von allen anderen Klausuren, die von
-der neu eingeplanten Klausur beeinflusst sind.
+Wenn das überprüfte weiche Kriterium fehlschlägt, dann wird auch das Scoring von allen anderen Prüfungen verändert, welche von der neu eingeplanten Prüfungen beeinflusst werden.
+Prüfungen, die sich in einen Block befinden, werden nicht von den anderen Prüfungen, die sich im gleichen Block befinden, negativ beeinflusst.
 
 \subsubsection{Scoring}
 Das Scoring bei einer Prüfung gibt an, wie gut eine Prüfung an dem Zeitslot liegt.
-Dabei gibt es viele WeichesKriterien, die diesen Wert beeinflussen.
+Dabei wird der Wert des Scorings von den WeichenKriterien, die fehlschlagen beeinflusst.
 Hierbei kann ein WeichesKriterium auch das Scoring mehr als einmal verschlechtern, in dem das Kriterium
 besonders stark verletzt ist.
+Ein Scoring von 0 ist dabei das beste und je höher der Wert des Scorings ist, desto schlechter ist diese Prüfung an der Stelle geplant.
+
 \input{restrictions/soft/mehrereKlausurenAnEinemTag}
 \input{restrictions/soft/AnzahlPruefungProWoche.tex}
 \input{restrictions/soft/WocheVierMaster.tex}

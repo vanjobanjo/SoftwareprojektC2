@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
@@ -191,10 +192,51 @@ public class schedulePruefungSteps extends BaseSteps {
       String teilnehmerkreis1, String teilnehmerkreis2, int semester)
       throws NoPruefungsPeriodeDefinedException, HartesKriteriumException {
     getOrCreate(pruefung, teilnehmerkreis1, semester);
-   ReadOnlyPruefung roPruefung =  getPruefungFromModel(pruefung);
+    ReadOnlyPruefung roPruefung = getPruefungFromModel(pruefung);
     Teilnehmerkreis teilnehmerkreis = state.controller.createTeilnehmerkreis(
         Ausbildungsgrad.BACHELOR, teilnehmerkreis2, teilnehmerkreis2, semester);
 
-   state.controller.addTeilnehmerkreis(roPruefung,teilnehmerkreis,10);
+    state.controller.addTeilnehmerkreis(roPruefung, teilnehmerkreis, 10);
+  }
+
+
+  @Wenn("ich {string} am {localDateTime} einplanen moechte bugtest")
+  public void ichAmUmUhrEinplanenMoechteBugtest(String pruefung, LocalDateTime termin)
+      throws NoPruefungsPeriodeDefinedException {
+
+    ReadOnlyPruefung roPruefung = getPruefungFromModel(pruefung);
+    try {
+      state.results.put("bugFix",state.controller.schedulePruefung(roPruefung, termin));
+    } catch (HartesKriteriumException e) {
+      state.results.put("exception", e);
+    }
+  }
+
+  @Und("die Pruefung {string} hat nicht das WeicheKriterium {string} bugix")
+  public void diePruefungHatNichtDasWeicheKriteriumBugix(String pruefung, String kriterium)
+      throws NoPruefungsPeriodeDefinedException {
+    List<KriteriumsAnalyse> listWithWeicheKriterien = state.controller.analyseScoring(
+        getPruefungFromModel(pruefung));
+
+
+
+    Object exception = state.results.get("bugFix");
+    assertThat(exception).isNotNull();
+    List<ReadOnlyPlanungseinheit> newList = (List<ReadOnlyPlanungseinheit>) exception;
+
+    assertThat(newList.contains(getPruefungFromModel(pruefung))).isTrue();
+
+
+    boolean finde = false;
+    Iterator<KriteriumsAnalyse> it = listWithWeicheKriterien.iterator();
+    KriteriumsAnalyse kA;
+    while (!finde && it.hasNext()) {
+      kA = it.next();
+      if (kA.getKriterium().equals(WeichesKriterium.valueOf(kriterium))) {
+        finde = true;
+      }
+    }
+    assertFalse(finde);
+
   }
 }

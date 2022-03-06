@@ -432,3 +432,33 @@ Funktionalität: Als Planende*r moechte ich eine Pruefung einplanen koennen.
     Und die Pruefung "infKlausur2bwl" hat das WeicheKriterium "FREIER_TAG_ZWISCHEN_PRUEFUNGEN"
 
 
+
+
+  Szenario: Bugg fix beim umplanen von klausuren klappt nicht mit diesen Test, muss weiter getestet werden und weitere test geschrieben werden
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert die geplante Pruefung "Analysis" mit dem Teilnehmerkreis "inf" im 1 Semester am 15.02.2022 um 8 Uhr
+    Und es existiert die geplante Pruefung "BWL" mit dem Teilnehmerkreis "inf" im 1 Semester am 14.02.2022 um 8 Uhr
+    Und es existiert die geplante Pruefung "Haskel" mit dem Teilnehmerkreis "inf" im 1 Semester am 16.02.2022 um 8 Uhr
+    Wenn ich "Analysis" am 18.02.2022 um 8 Uhr einplanen moechte
+    Dann ist die Pruefung "Analysis" am 18.02.2022 um 8 Uhr eingeplant
+    Und ist die Pruefung "BWL" am 14.02.2022 um 8 Uhr eingeplant
+    Und ist die Pruefung "Haskel" am 16.02.2022 um 8 Uhr eingeplant
+    Und die Pruefung "BWL" hat nicht das WeicheKriterium "FREIER_TAG_ZWISCHEN_PRUEFUNGEN"
+    Und die Pruefung "Analysis" hat nicht das WeicheKriterium "FREIER_TAG_ZWISCHEN_PRUEFUNGEN"
+    Und die Pruefung "Haskel" hat nicht das WeicheKriterium "FREIER_TAG_ZWISCHEN_PRUEFUNGEN"
+
+
+
+
+  Szenario: Bugg fix beim umplanen von klausuren klappt nicht mit diesen Test,
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert die geplante Pruefung "Analysis" mit dem Teilnehmerkreis "inf" im 1 Semester am 15.02.2022 um 8 Uhr
+    Und es existiert die geplante Pruefung "BWL" mit dem Teilnehmerkreis "inf" im 1 Semester am 14.02.2022 um 8 Uhr
+    Und es existiert die geplante Pruefung "Haskel" mit dem Teilnehmerkreis "inf" im 1 Semester am 16.02.2022 um 8 Uhr
+    Wenn ich "Analysis" am 18.02.2022 um 08:00 Uhr einplanen moechte bugtest
+    Dann ist die Pruefung "Analysis" am 18.02.2022 um 8 Uhr eingeplant
+    Und ist die Pruefung "BWL" am 14.02.2022 um 8 Uhr eingeplant
+    Und ist die Pruefung "Haskel" am 16.02.2022 um 8 Uhr eingeplant
+    Und die Pruefung "BWL" hat nicht das WeicheKriterium "FREIER_TAG_ZWISCHEN_PRUEFUNGEN" bugix
+    Und die Pruefung "Analysis" hat nicht das WeicheKriterium "FREIER_TAG_ZWISCHEN_PRUEFUNGEN" bugix
+    Und die Pruefung "Haskel" hat nicht das WeicheKriterium "FREIER_TAG_ZWISCHEN_PRUEFUNGEN" bugix
