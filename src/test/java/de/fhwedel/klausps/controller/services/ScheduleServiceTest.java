@@ -1538,8 +1538,6 @@ class ScheduleServiceTest {
         errorCount++;
       }
     }
-    System.out.println(
-        assertThat(errorCount).isZero().withFailMessage("failed " + errorCount + " times."));
   }
 
   @Test
