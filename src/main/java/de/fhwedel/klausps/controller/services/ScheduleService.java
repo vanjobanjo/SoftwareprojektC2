@@ -696,17 +696,12 @@ public class ScheduleService {
    * Blocks} from the new {@link Pruefungsperiode} and unschedules them to remove inconsistencies.
    *
    * @throws NoPruefungsPeriodeDefinedException when no Pruefungsperiode is defined
-   * @throws ImportException                    when hard conflicts were found
    */
   private void unscheduleHardConflictingFromAdoptedPeriode()
-      throws NoPruefungsPeriodeDefinedException, ImportException {
-    boolean foundConflicts = unscheduleConflictingBlocksFromAdoptedPeriode();
-    foundConflicts |= unscheduleConflictingPruefungFromAdoptedPeriode();
+      throws NoPruefungsPeriodeDefinedException {
+    unscheduleConflictingBlocksFromAdoptedPeriode();
+    unscheduleConflictingPruefungFromAdoptedPeriode();
 
-    if (foundConflicts) {
-      throw new ImportException(
-          "Harte Konflikte in Prüfungsperiode gefunden, Planungseinheiten wurden ausgeplant");
-    }
   }
 
   /**
@@ -716,18 +711,16 @@ public class ScheduleService {
    *
    * @throws NoPruefungsPeriodeDefinedException when no Pruefungsperiode is defined
    */
-  private boolean unscheduleConflictingBlocksFromAdoptedPeriode()
+  private void unscheduleConflictingBlocksFromAdoptedPeriode()
       throws NoPruefungsPeriodeDefinedException {
-    boolean foundConflicts = false;
     Set<Planungseinheit> plannedPruefungen = sortPlanungseinheitenByStartzeitpunkt(
         dataAccessService.getGeplanteBloecke());
     for (Planungseinheit block : plannedPruefungen) {
       if (!restrictionService.checkHardRestrictions(block.asBlock().getPruefungen()).isEmpty()) {
-        foundConflicts = true;
         block.setStartzeitpunkt(null);
       }
     }
-    return foundConflicts;
+
   }
 
   /**
@@ -736,18 +729,15 @@ public class ScheduleService {
    *
    * @throws NoPruefungsPeriodeDefinedException when no Pruefungsperiode is defined
    */
-  private boolean unscheduleConflictingPruefungFromAdoptedPeriode()
+  private void unscheduleConflictingPruefungFromAdoptedPeriode()
       throws NoPruefungsPeriodeDefinedException {
-    boolean foundConflicts = false;
     Set<Planungseinheit> plannedPruefungen = sortPlanungseinheitenByStartzeitpunkt(
         dataAccessService.getPlannedPruefungen());
     for (Planungseinheit pruefung : plannedPruefungen) {
       if (!restrictionService.checkHardRestrictions(pruefung.asPruefung()).isEmpty()) {
-        foundConflicts = true;
         pruefung.setStartzeitpunkt(null);
       }
     }
-    return foundConflicts;
   }
 
   /**
