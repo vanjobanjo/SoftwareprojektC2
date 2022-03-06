@@ -81,7 +81,7 @@ public abstract class HardRestriction extends Restriction {
    * Test whether a {@link Planungseinheit} would cause a violation of the restriction if planned at
    * a specific time.
    *
-   * @param startTime       The time to check the Planungseinehit for.
+   * @param startTime       The time to check the Planungseinheit for.
    * @param planungseinheit The Planungseinheit to check for.
    * @return True in case the Planungseinheit would cause an exception at the specified time,
    * otherwise False.

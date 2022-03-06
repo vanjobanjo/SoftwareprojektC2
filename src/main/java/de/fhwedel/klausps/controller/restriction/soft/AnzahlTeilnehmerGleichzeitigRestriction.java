@@ -2,6 +2,7 @@ package de.fhwedel.klausps.controller.restriction.soft;
 
 import static de.fhwedel.klausps.controller.kriterium.WeichesKriterium.ANZAHL_TEILNEHMER_GLEICHZEITIG_ZU_HOCH;
 
+import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
 import de.fhwedel.klausps.controller.services.DataAccessService;
 import de.fhwedel.klausps.controller.services.ServiceProvider;
 import de.fhwedel.klausps.model.api.Planungseinheit;
@@ -19,10 +20,6 @@ import org.jetbrains.annotations.NotNull;
  */
 public class AnzahlTeilnehmerGleichzeitigRestriction extends AtSameTimeRestriction {
 
-  /**
-   * The default maximal amount of students that should be in exams at the same time.
-   */
-  private static final int DEFAULT_MAX_TEILNEHMER_AT_A_TIME = 200;
 
   /**
    * The default amount on which to increase the scoring.
@@ -30,43 +27,22 @@ public class AnzahlTeilnehmerGleichzeitigRestriction extends AtSameTimeRestricti
   private static final int DEFAULT_SCORING_STEP_SIZE = 2;
 
   /**
-   * The maximal amount of students that should be in exams at the same time.
-   */
-  private final int maxTeilnehmer;
-
-  /**
    * The amount on which to increase the scoring. This means, that the scoring increases for every
    * multiple of this value that the maximal amount of students at a time passes
    */
   private final int scoringStepSize;
 
-  /**
-   * Instantiate a AnzahlTeilnehmerGleichzeitigRestriction.
-   *
-   * @param dataAccessService       The service to use for data access.
-   * @param buffer                  The time buffer between {@link Planungseinheit
-   *                                Planungseinheit}.
-   * @param maxTeilnehmerAtSameTime The maximal amount of students that should be in exams at the
-   *                                same time.
-   */
-  public AnzahlTeilnehmerGleichzeitigRestriction(DataAccessService dataAccessService,
-      Duration buffer, int maxTeilnehmerAtSameTime) {
-    this(dataAccessService, buffer, maxTeilnehmerAtSameTime, DEFAULT_SCORING_STEP_SIZE);
-  }
 
   /**
    * Instantiate a AnzahlTeilnehmerGleichzeitigRestriction.
    *
-   * @param dataAccessService       The service to use for data access.
-   * @param buffer                  The time buffer between {@link Planungseinheit Planungseinheit}.
-   * @param maxTeilnehmerAtSameTime The maximal amount of students that should be in exams at the
-   *                                same time.
-   * @param scoreStepSize           The amount on which to increase the scoring.
+   * @param dataAccessService The service to use for data access.
+   * @param buffer            The time buffer between {@link Planungseinheit Planungseinheit}.
+   * @param scoreStepSize     The amount on which to increase the scoring.
    */
   public AnzahlTeilnehmerGleichzeitigRestriction(DataAccessService dataAccessService,
-      Duration buffer, int maxTeilnehmerAtSameTime, int scoreStepSize) {
+      Duration buffer, int scoreStepSize) {
     super(dataAccessService, ANZAHL_TEILNEHMER_GLEICHZEITIG_ZU_HOCH, buffer);
-    this.maxTeilnehmer = maxTeilnehmerAtSameTime;
     if (scoreStepSize <= 0) {
       throw new IllegalArgumentException("Scoring step size must be positive!");
     }
@@ -79,8 +55,9 @@ public class AnzahlTeilnehmerGleichzeitigRestriction extends AtSameTimeRestricti
    */
   public AnzahlTeilnehmerGleichzeitigRestriction() {
     this(ServiceProvider.getDataAccessService(), DEFAULT_BUFFER_BETWEEN_PLANUNGSEINHEITEN,
-        DEFAULT_MAX_TEILNEHMER_AT_A_TIME, DEFAULT_SCORING_STEP_SIZE);
+        DEFAULT_SCORING_STEP_SIZE);
   }
+
 
   @Override
   protected void ignorePruefungenOf(@NotNull Set<Planungseinheit> planungseinheiten,
@@ -92,12 +69,13 @@ public class AnzahlTeilnehmerGleichzeitigRestriction extends AtSameTimeRestricti
   }
 
   @Override
-  protected boolean violatesRestriction(Collection<Planungseinheit> planungseinheiten) {
+  protected boolean violatesRestriction(Collection<Planungseinheit> planungseinheiten)
+      throws NoPruefungsPeriodeDefinedException {
     int amountStudents = 0;
     for (Planungseinheit planungseinheit : planungseinheiten) {
       amountStudents += planungseinheit.schaetzung();
     }
-    return amountStudents > maxTeilnehmer;
+    return amountStudents > dataAccessService.getPeriodenKapazitaet();
   }
 
   @Override
@@ -122,7 +100,8 @@ public class AnzahlTeilnehmerGleichzeitigRestriction extends AtSameTimeRestricti
   }
 
   @Override
-  protected int calcScoringFor(Collection<Planungseinheit> violatingPlanungseinheiten) {
+  protected int calcScoringFor(Collection<Planungseinheit> violatingPlanungseinheiten)
+      throws NoPruefungsPeriodeDefinedException {
     int students = getAmountOfAttendingStudents(violatingPlanungseinheiten);
     return getScoringFactor(students) * this.kriterium.getWert();
   }
@@ -133,7 +112,7 @@ public class AnzahlTeilnehmerGleichzeitigRestriction extends AtSameTimeRestricti
    * @param students The amount of students at the critical point in time.
    * @return The weight factor for the violation of this restriction.
    */
-  private int getScoringFactor(int students) {
+  private int getScoringFactor(int students) throws NoPruefungsPeriodeDefinedException {
     return ((getAmountOfStudentsSurpassingLimit(students) / scoringStepSize) + 1);
   }
 
@@ -143,8 +122,9 @@ public class AnzahlTeilnehmerGleichzeitigRestriction extends AtSameTimeRestricti
    * @param totalStudents The total amount of students from which to calculate.
    * @return The amount of students surpassing the limit.
    */
-  private int getAmountOfStudentsSurpassingLimit(int totalStudents) {
-    return totalStudents - maxTeilnehmer;
+  private int getAmountOfStudentsSurpassingLimit(int totalStudents)
+      throws NoPruefungsPeriodeDefinedException {
+    return totalStudents - dataAccessService.getPeriodenKapazitaet();
   }
 
 }

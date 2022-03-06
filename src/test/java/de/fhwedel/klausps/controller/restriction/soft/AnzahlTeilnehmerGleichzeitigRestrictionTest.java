@@ -271,7 +271,7 @@ class AnzahlTeilnehmerGleichzeitigRestrictionTest {
   void evaluate_scoringForMinimalViolation()
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
     List<Pruefung> pruefungen = get3PruefungenWithTotal201Students();
-
+    when(dataAccessService.getPeriodenKapazitaet()).thenReturn(200);
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
         Set.copyOf(convertPruefungenToPlanungseinheiten(pruefungen)));
 
@@ -286,8 +286,9 @@ class AnzahlTeilnehmerGleichzeitigRestrictionTest {
   @Test
   void evaluate_scoringForMinimalViolation_nonDefaultScoringSteps()
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getPeriodenKapazitaet()).thenReturn(50);
     this.deviceUnderTest = new AnzahlTeilnehmerGleichzeitigRestriction(this.dataAccessService,
-        Duration.ZERO, 50, 3);
+        Duration.ZERO, 3);
     List<Pruefung> pruefungen = get3PruefungenWithTotal51Students();
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
@@ -316,8 +317,9 @@ class AnzahlTeilnehmerGleichzeitigRestrictionTest {
   @Test
   void evaluate_scoringForMinimalViolation_nonDefaultScoringSteps_highScoring()
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getPeriodenKapazitaet()).thenReturn(10);
     this.deviceUnderTest = new AnzahlTeilnehmerGleichzeitigRestriction(this.dataAccessService,
-        Duration.ZERO, 10, 3);
+        Duration.ZERO, 3);
     List<Pruefung> pruefungen = get3PruefungenWithTotal51Students();
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
@@ -334,8 +336,9 @@ class AnzahlTeilnehmerGleichzeitigRestrictionTest {
   @Test
   void evaluate_secondLowestScoring()
       throws IllegalTimeSpanException, NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getPeriodenKapazitaet()).thenReturn(200);
     this.deviceUnderTest = new AnzahlTeilnehmerGleichzeitigRestriction(this.dataAccessService,
-        Duration.ZERO, 200, 10);
+        Duration.ZERO, 10);
     List<Pruefung> pruefungen = get3PruefungenWithTotal211Students();
 
     when(dataAccessService.getAllPlanungseinheitenBetween(any(), any())).thenReturn(
@@ -362,17 +365,19 @@ class AnzahlTeilnehmerGleichzeitigRestrictionTest {
   }
 
   @Test
-  void nonPositiveStepSizeNotAllowed_zero() {
+  void nonPositiveStepSizeNotAllowed_zero() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getPeriodenKapazitaet()).thenReturn(200);
     assertThrows(IllegalArgumentException.class,
         () -> this.deviceUnderTest = new AnzahlTeilnehmerGleichzeitigRestriction(
-            this.dataAccessService, Duration.ZERO, 200, 0));
+            this.dataAccessService, Duration.ZERO, 0));
   }
 
   @Test
-  void nonPositiveStepSizeNotAllowed_negative() {
+  void nonPositiveStepSizeNotAllowed_negative() throws NoPruefungsPeriodeDefinedException {
+    when(dataAccessService.getPeriodenKapazitaet()).thenReturn(200);
     assertThrows(IllegalArgumentException.class,
         () -> this.deviceUnderTest = new AnzahlTeilnehmerGleichzeitigRestriction(
-            this.dataAccessService, Duration.ZERO, 200, -1));
+            this.dataAccessService, Duration.ZERO, -1));
   }
 
 }

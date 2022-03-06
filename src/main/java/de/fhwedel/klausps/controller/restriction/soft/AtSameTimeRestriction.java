@@ -125,7 +125,8 @@ public abstract class AtSameTimeRestriction extends SoftRestriction {
    */
   @NotNull
   private Optional<SoftRestrictionAnalysis> getAnalyseIfRestrictionViolated(
-      @NotNull Set<Planungseinheit> planungseinheitenOverlappingTheOneToCheck) {
+      @NotNull Set<Planungseinheit> planungseinheitenOverlappingTheOneToCheck)
+      throws NoPruefungsPeriodeDefinedException {
     if (!violatesRestriction(planungseinheitenOverlappingTheOneToCheck)) {
       return Optional.empty();
     }
@@ -147,7 +148,7 @@ public abstract class AtSameTimeRestriction extends SoftRestriction {
    */
   @NotNull
   private Set<Planungseinheit> findConflictingPlanungseinheiten(
-      @NotNull Set<Planungseinheit> planungseinheiten) {
+      @NotNull Set<Planungseinheit> planungseinheiten) throws NoPruefungsPeriodeDefinedException {
     // might be possible to implement more efficient for the suspected most common use case of many
     // pruefungen starting at the same time and only few variations in the length of pruefung
     // with usage of interval-tree. Although such a structure would perform way worse in the worst
@@ -169,7 +170,7 @@ public abstract class AtSameTimeRestriction extends SoftRestriction {
    */
   @NotNull
   private Set<Planungseinheit> getConflicting(@NotNull Planungseinheit planungseinheit,
-      @NotNull Set<Planungseinheit> planungseinheiten) {
+      @NotNull Set<Planungseinheit> planungseinheiten) throws NoPruefungsPeriodeDefinedException {
     LocalDateTime startOfPlanungseinheit = planungseinheit.getStartzeitpunkt()
         .minus(buffer.dividedBy(2));
     Collection<Planungseinheit> planungseinheitenAtSameTime = getAllPlanungseinheitenCovering(
@@ -210,7 +211,8 @@ public abstract class AtSameTimeRestriction extends SoftRestriction {
    * @param planungseinheiten The planungseinheiten to check.
    * @return True in case the Planungseinheiten violate the restriction, otherwise False.
    */
-  protected abstract boolean violatesRestriction(Collection<Planungseinheit> planungseinheiten);
+  protected abstract boolean violatesRestriction(Collection<Planungseinheit> planungseinheiten)
+      throws NoPruefungsPeriodeDefinedException;
 
   /**
    * Build a new Analysis of the restriction violation considering certain {@link Planungseinheit
@@ -222,7 +224,8 @@ public abstract class AtSameTimeRestriction extends SoftRestriction {
    */
   @NotNull
   private SoftRestrictionAnalysis buildAnalysis(
-      @NotNull Set<Planungseinheit> violatingPlanungseinheiten) {
+      @NotNull Set<Planungseinheit> violatingPlanungseinheiten)
+      throws NoPruefungsPeriodeDefinedException {
     return new SoftRestrictionAnalysis(getAllPruefungen(violatingPlanungseinheiten), this.kriterium,
         getAffectedTeilnehmerkreiseFrom(violatingPlanungseinheiten),
         getAmountOfAttendingStudents(violatingPlanungseinheiten),
@@ -256,6 +259,7 @@ public abstract class AtSameTimeRestriction extends SoftRestriction {
    * @param violatingPlanungseinheiten The planungseinheiten causing the violation.
    * @return The scoring based on the causing Planungseinheiten.
    */
-  protected abstract int calcScoringFor(Collection<Planungseinheit> violatingPlanungseinheiten);
+  protected abstract int calcScoringFor(Collection<Planungseinheit> violatingPlanungseinheiten)
+      throws NoPruefungsPeriodeDefinedException;
 
 }

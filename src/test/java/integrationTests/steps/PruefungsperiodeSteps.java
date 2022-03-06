@@ -29,20 +29,20 @@ public class PruefungsperiodeSteps {
     LocalDate start = LocalDate.of(2022, 1, 31);
     LocalDate end = LocalDate.of(2022, 2, 27);
     LocalDate ankertag = start.plusDays(7);
-    state.controller.createEmptyPeriode(semester, start, end, ankertag, 400);
+    state.controller.createEmptyPeriode(semester, start, end, ankertag, 200);
   }
 
   @Angenommen("es existiert eine Pruefungsperiode von {localDate} - {localDate}")
   public void esExistiertEinePruefungsperiodeVon(LocalDate start, LocalDate ende)
       throws IllegalTimeSpanException {
     Semester semester = new SemesterImpl(WINTERSEMESTER, Year.of(2022));
-    state.controller.createEmptyPeriode(semester, start, ende, start, 400);
+    state.controller.createEmptyPeriode(semester, start, ende, start, 200);
   }
 
   @Angenommen("es existiert eine Pruefungsperiode von {localDate} - {localDate} mit dem Ankertag {localDate}")
   public void esExistiertEinePruefungsperiodeVon(LocalDate start, LocalDate end, LocalDate ankertag)
       throws IllegalTimeSpanException {
     Semester semester = new SemesterImpl(WINTERSEMESTER, Year.of(2022));
-    state.controller.createEmptyPeriode(semester, start, end, ankertag, 400);
+    state.controller.createEmptyPeriode(semester, start, end, ankertag, 200);
   }
 }
