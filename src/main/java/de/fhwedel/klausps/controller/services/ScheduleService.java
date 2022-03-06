@@ -309,10 +309,22 @@ public class ScheduleService {
     // existence check
     dataAccessService.getBlock(roBlock);
     checkExistenceOfPruefungenInBlock(roBlock);
+
+    List<ReadOnlyPlanungseinheit> old = new ArrayList<>();
+    if(roBlock.geplant()){
+      old.addAll(getAffectedPruefungenBy(dataAccessService.getBlock(roBlock)));
+      for(ReadOnlyPruefung ro : roBlock.getROPruefungen()){
+        old.remove(ro);
+      }
+    }
+
     Block blockModel = dataAccessService.scheduleBlock(roBlock, termin);
     // rollback and Exception for hard violation
     checkHardCriteriaUndoScheduling(roBlock, blockModel);
-    return getAffectedPruefungenBy(blockModel);
+    old.addAll(getAffectedPruefungenBy(blockModel));
+
+    // remove duplicate Planungseinheiten
+    return new ArrayList<>(new HashSet<>(old));
   }
 
   /**
@@ -386,9 +398,15 @@ public class ScheduleService {
       throws HartesKriteriumException, NoPruefungsPeriodeDefinedException, IllegalStateException,
       IllegalArgumentException {
     noNullParameters(pruefung, termin);
+    Set<Planungseinheit> old = new HashSet<>();
+    if(pruefung.geplant()){
+      old.addAll(getAffectedPruefungenBy(dataAccessService.getPruefung(pruefung)));
+      old.remove(dataAccessService.getPruefung(pruefung));
+    }
     Pruefung pruefungModel = dataAccessService.schedulePruefung(pruefung, termin);
     checkHardCriteriaUndoScheduling(pruefung, pruefungModel);
-    return getAffectedPruefungenBy(pruefungModel);
+    old.addAll(getAffectedPruefungenBy(pruefungModel));
+    return old;
   }
 
   private void checkHardCriteriaUndoScheduling(ReadOnlyPruefung pruefung, Pruefung pruefungModel)
