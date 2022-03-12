@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import de.fhwedel.klausps.controller.api.builders.PruefungDTOBuilder;
+import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPlanungseinheit;
 import de.fhwedel.klausps.controller.api.view_dto.ReadOnlyPruefung;
 import de.fhwedel.klausps.controller.exceptions.HartesKriteriumException;
 import de.fhwedel.klausps.controller.exceptions.NoPruefungsPeriodeDefinedException;
@@ -15,6 +16,7 @@ import io.cucumber.java.de.Dann;
 import io.cucumber.java.de.Und;
 import io.cucumber.java.de.Wenn;
 import java.rmi.AlreadyBoundException;
+import java.util.List;
 import java.util.Set;
 
 public class removeTeilnehmerkreis extends BaseSteps {
@@ -69,7 +71,7 @@ public class removeTeilnehmerkreis extends BaseSteps {
   }
 
   @Wenn("ich einer Pruefung einen Teilnehmerkreis enfernen möchte")
-  public void ichEinerPruefungEinenTeilnehmerkreisEnfernenMöchte()
+  public void ichEinerPruefungEinenTeilnehmerkreisEnfernenMoechte()
       throws NoPruefungsPeriodeDefinedException {
 
     try {
@@ -79,5 +81,66 @@ public class removeTeilnehmerkreis extends BaseSteps {
     } catch (IllegalStateException e) {
       state.results.put("exception", e);
     }
+  }
+
+
+  @Dann("hat die Pruefung {string} nicht den Teilnehmerkreis {string} im Fachsemster {int} bufix")
+  public void hatDiePruefungNichtDenTeilnehmerkreisImFachsemsterBufix(String pruefung, String teilnehmerkreis,
+      int semester) throws NoPruefungsPeriodeDefinedException {
+    Teilnehmerkreis t = new TeilnehmerkreisImpl(teilnehmerkreis, teilnehmerkreis, semester,
+        Ausbildungsgrad.BACHELOR);
+    ReadOnlyPruefung roPruefung = getPruefungFromModel(pruefung);
+
+    assertThat(roPruefung.getTeilnehmerkreise().contains(t)).isFalse();
+
+
+    assertThat(state.results).isNotEmpty();
+    Object buffix = state.results.get("bugfix");
+    assertThat(buffix).isInstanceOf(List.class);
+    List bugfix1 = (List)buffix;
+    assertThat(bugfix1).isNotEmpty();
+    Object bugfix2 = bugfix1.get(0);
+    assertThat(bugfix2).isInstanceOf(ReadOnlyPlanungseinheit.class);
+    ReadOnlyPruefung roBug = ((ReadOnlyPlanungseinheit) bugfix2).asPruefung();
+    assertThat(roBug.getTeilnehmerkreise()).isNotEmpty();
+    assertThat(roBug.getTeilnehmerkreise()).doesNotContain(t);
+
+
+
+  }
+
+  @Und("die Pruefung {string} hat den Teilnehmerkreis {string} im Fachsemster {int} bugfix")
+  public void diePruefungHatDenTeilnehmerkreisImFachsemsterBugfix(String pruefung, String teilnehmerkreis,
+      int semester) throws NoPruefungsPeriodeDefinedException {
+
+    Teilnehmerkreis t = new TeilnehmerkreisImpl(teilnehmerkreis, teilnehmerkreis, semester,
+        Ausbildungsgrad.BACHELOR);
+    ReadOnlyPruefung roPruefung = getPruefungFromModel(pruefung);
+
+    assertThat(roPruefung.getTeilnehmerkreise().contains(t)).isTrue();
+
+
+    assertThat(state.results).isNotEmpty();
+    Object buffix = state.results.get("bugfix");
+    assertThat(buffix).isInstanceOf(List.class);
+    List bugfix1 = (List)buffix;
+    assertThat(bugfix1).isNotEmpty();
+    Object bugfix2 = bugfix1.get(0);
+    assertThat(bugfix2).isInstanceOf(ReadOnlyPlanungseinheit.class);
+    ReadOnlyPruefung roBug = ((ReadOnlyPlanungseinheit) bugfix2).asPruefung();
+
+    assertThat(roBug.getTeilnehmerkreise()).contains(t);
+  }
+
+  @Wenn("ich der Pruefung {string} den Teilnehmerkreis {string} Fachsemester {int} entfernen moechte bugfix")
+  public void ichDerPruefungDenTeilnehmerkreisFachsemesterEntfernenMoechteBugfix(String pruefung,
+      String teilnehmerkreis, int semster) throws NoPruefungsPeriodeDefinedException {
+
+
+
+    Teilnehmerkreis t = new TeilnehmerkreisImpl(teilnehmerkreis, teilnehmerkreis, semster,
+        Ausbildungsgrad.BACHELOR);
+    state.results.put("bugfix",state.controller.removeTeilnehmerkreis(getPruefungFromModel(pruefung), t));
+
   }
 }

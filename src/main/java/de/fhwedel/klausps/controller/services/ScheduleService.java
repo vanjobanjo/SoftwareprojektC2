@@ -554,7 +554,9 @@ public class ScheduleService {
     Set<Planungseinheit> listOfRead = new HashSet<>(getAffectedPruefungenBy(pruefungModel));
 
     //Hier muss ja nicht auf HarteKriterien gecheckt werden.
-    this.dataAccessService.removeTeilnehmerkreis(pruefungModel, teilnehmerkreis);
+    if(dataAccessService.removeTeilnehmerkreis(pruefungModel, teilnehmerkreis)){
+      listOfRead.add(dataAccessService.getPruefung(roPruefung));
+    }
 
     return new ArrayList<>(listOfRead);
   }
