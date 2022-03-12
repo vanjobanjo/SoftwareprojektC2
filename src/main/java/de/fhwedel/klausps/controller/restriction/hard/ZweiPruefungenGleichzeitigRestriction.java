@@ -117,130 +117,6 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
   }
 
   /**
-   * Hier werden die Parameter zu einer HartenKriteriumsAnalyse zusammen gebaut, falls es einen
-   * Konflikt gibt
-   *
-   * @param teilnehmerCount      eine Map, wo die in Konflikt stehende Teilnehmerkreise und ihre
-   *                             Anzahl gespeichert sind
-   * @param inConflictROPruefung ein Set, in welchem die in Konflikt stehende Pruefungen gespeichert
-   *                             sind
-   * @return Entweder die HarteKriteriumsAnalyse mit den in Konflikt stehenden Pruefungen und
-   * Teilnehmerkreisen oder ein leeres Optional
-   */
-  private Optional<HardRestrictionAnalysis> testAndCreateNewHartesKriteriumAnalyse(
-      Map<Teilnehmerkreis, Integer> teilnehmerCount, HashSet<Pruefung> inConflictROPruefung) {
-    if (!inConflictROPruefung.isEmpty()) {
-      HardRestrictionAnalysis hKA = new HardRestrictionAnalysis(inConflictROPruefung,
-          this.kriterium, teilnehmerCount);
-      return Optional.of(hKA);
-    }
-    return Optional.empty();
-  }
-
-  /**
-   * In dieser Methode wird der übergebene Block unterschieden in den unterschiedlichen Blocktypen
-   * und jeweils ihre Methode dann aufgerufen
-   *
-   * @param pruefung             die zu überprüfende Pruefung
-   * @param block                der zu überprüfende Block
-   * @param start                der Startzeitpunkt ab dem es zu einem Konflikt kommen kann
-   * @param end                  der Endzeitpunkt bis zu dem es zu einem Konflikt kommen kann
-   * @param inConflictROPruefung das Set mit in Konflikt stehenden Pruefungen
-   * @param teilnehmerCount      die Teilnehmer und ihre Anzahl, die aktuell im Konflikt stehen
-   */
-  private void testForBlockHard(Pruefung pruefung, Block block, LocalDateTime start,
-      LocalDateTime end, HashSet<Pruefung> inConflictROPruefung,
-      Map<Teilnehmerkreis, Integer> teilnehmerCount) {
-
-    Set<Pruefung> pruefungenFromBlock = block.getPruefungen();
-
-    if (!pruefungenFromBlock.contains(pruefung)
-        && (uebereinstimmendeTeilnehmerkreise(block, pruefung))) {
-      //the different Blocktypes will be handled different
-      if (block.getTyp() == Blocktyp.SEQUENTIAL) {
-        testForSequentialBlock(pruefung, pruefungenFromBlock, inConflictROPruefung,
-            teilnehmerCount);
-      } else {
-        testForParallelBlock(pruefung, pruefungenFromBlock, start, end,
-            teilnehmerCount, inConflictROPruefung);
-      }
-    }
-  }
-
-  /**
-   * In dieser Methode wird für einen Block von Typ parallel das Kriterium getestet
-   *
-   * @param pruefung             die zu überprüfende Pruefung
-   * @param start                der Starttermin, ab wo es zu einem Konflikt kommen könnte
-   * @param end                  der Endtermin, ab wo es zu einem Konflikt kommen könnte
-   * @param pruefungenFromBlock  die Pruefungen, die sich in dem Block befinden
-   * @param teilnehmerCount      die in Konflikt stehenden Teilnehmerkreise mit ihrer Anzahl
-   * @param inConflictROPruefung die in Konflikt stehenden Pruefungen
-   */
-  private void testForParallelBlock(Pruefung pruefung, Set<Pruefung> pruefungenFromBlock,
-      LocalDateTime start, LocalDateTime end,
-      Map<Teilnehmerkreis, Integer> teilnehmerCount, HashSet<Pruefung> inConflictROPruefung) {
-    for (Pruefung pruefungBlock : pruefungenFromBlock) {
-      //check if the Pruefung from the Block and the pruefungtoCheck have the same Teilnehmerkreis
-      if ((uebereinstimmendeTeilnehmerkreise(pruefungBlock, pruefung))
-          && !outOfRange(start, end, pruefungBlock)) {
-        getTeilnehmerkreisFromPruefung(pruefung, pruefungBlock,
-            inConflictROPruefung, teilnehmerCount);
-      }
-    }
-  }
-
-  /**
-   * Diese Methode händelt den Sequential Block typ ab
-   *
-   * @param pruefung             die zu überprüfende Pruefung
-   * @param pruefungenFromBlock  ein Set von Pruefungen, welches sich in einen sequentiellen Block
-   *                             gefunden
-   * @param inConflictROPruefung die aktuell in Konflikt stehende Pruefungen
-   * @param teilnehmerCount      die aktuellen in Konflikt stehenden Teilnehmerkreise und ihre
-   *                             Anzahl
-   */
-  private void testForSequentialBlock(Pruefung pruefung, Set<Pruefung> pruefungenFromBlock,
-      HashSet<Pruefung> inConflictROPruefung, Map<Teilnehmerkreis, Integer> teilnehmerCount) {
-    for (Pruefung pruefungBlock : pruefungenFromBlock) {
-      getTeilnehmerkreisFromPruefung(pruefung, pruefungBlock,
-          inConflictROPruefung, teilnehmerCount);
-    }
-  }
-
-  /**
-   * Methode um zu überprüfen, ob sich ein Block mit der übergebenen Zeitspanne nicht überschneidet
-   *
-   * @param start         der Zeitspanne
-   * @param end           der Zeitspanne
-   * @param pruefungBlock die zu testende Pruefung
-   * @return true wenn die sich nicht überschneiden und false, wenn sie sich überschneiden
-   */
-  private boolean outOfRange(LocalDateTime start, LocalDateTime end, Pruefung pruefungBlock) {
-    return pruefungBlock.endzeitpunkt().isBefore(start) || pruefungBlock.getStartzeitpunkt()
-        .isAfter(end);
-  }
-
-  /**
-   * Diese Methode testet, ob eine Planungseinheit und eine Pruefung einen gemeinsamen
-   * Teilnehmerkreis besitzt
-   *
-   * @param planungseinheit die Planungseinheit mit der zu testen ist
-   * @param pruefung        die Pruefung mit der zu testen ist
-   * @return true, wenn es einen gemeinsamen Teilnehmerkreis gibt und false, wenn es keinen
-   * gemeinsamen Teilnehmerkreis gibt
-   */
-  private boolean uebereinstimmendeTeilnehmerkreise(Planungseinheit planungseinheit,
-      Pruefung pruefung) {
-    for (Teilnehmerkreis teilnehmerkreis : pruefung.getTeilnehmerkreise()) {
-      if (planungseinheit.getTeilnehmerkreise().contains(teilnehmerkreis)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
    * Get all {@link Planungseinheit Planungseinheiten} that happen to be scheduled during the time a
    * specific planungseinheit would occupy if scheduled at a specific start time.
    *
@@ -277,8 +153,35 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
    * passed, otherwise False.
    */
   private boolean areInConflict(Planungseinheit planungseinheit, Planungseinheit other) {
-    if (!planungseinheit.equals(other)) {
+    if (!planungseinheit.equals(other) && !areInBlockRelation(planungseinheit, other)) {
       return haveCommonTeilnehmerkreis(planungseinheit, other);
+    }
+    return false;
+  }
+
+  /**
+   * Check whether two {@link Planungseinheit Planungseinheiten} are in a block relation i.e. one is
+   * a {@link Pruefung} in the other one.
+   *
+   * @param one   One Planungseinheit to check a block relation with.
+   * @param other Another Planungseinheit to check a block relation with.
+   * @return True in case one Planungseinheit is a block containing the other Planungseinheit.
+   */
+  private boolean areInBlockRelation(Planungseinheit one,
+      Planungseinheit other) {
+    return isAElementInB(one, other) || isAElementInB(other, one);
+  }
+
+  /**
+   * Check whether one {@link Planungseinheit} is element in another.
+   *
+   * @param a A Planungseinheit for check.
+   * @param b Another Planungseinheit for check.
+   * @return True in case b is a block containing a as a Pruefung.
+   */
+  private boolean isAElementInB(Planungseinheit a, Planungseinheit b) {
+    if (b.isBlock()) {
+      return b.asBlock().getPruefungen().contains(a);
     }
     return false;
   }
@@ -390,6 +293,36 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
   }
 
   /**
+   * In dieser Methode wird der übergebene Block unterschieden in den unterschiedlichen Blocktypen
+   * und jeweils ihre Methode dann aufgerufen
+   *
+   * @param pruefung             die zu überprüfende Pruefung
+   * @param block                der zu überprüfende Block
+   * @param start                der Startzeitpunkt ab dem es zu einem Konflikt kommen kann
+   * @param end                  der Endzeitpunkt bis zu dem es zu einem Konflikt kommen kann
+   * @param inConflictROPruefung das Set mit in Konflikt stehenden Pruefungen
+   * @param teilnehmerCount      die Teilnehmer und ihre Anzahl, die aktuell im Konflikt stehen
+   */
+  private void testForBlockHard(Pruefung pruefung, Block block, LocalDateTime start,
+      LocalDateTime end, HashSet<Pruefung> inConflictROPruefung,
+      Map<Teilnehmerkreis, Integer> teilnehmerCount) {
+
+    Set<Pruefung> pruefungenFromBlock = block.getPruefungen();
+
+    if (!pruefungenFromBlock.contains(pruefung)
+        && (uebereinstimmendeTeilnehmerkreise(block, pruefung))) {
+      //the different Blocktypes will be handled different
+      if (block.getTyp() == Blocktyp.SEQUENTIAL) {
+        testForSequentialBlock(pruefung, pruefungenFromBlock, inConflictROPruefung,
+            teilnehmerCount);
+      } else {
+        testForParallelBlock(pruefung, pruefungenFromBlock, start, end,
+            teilnehmerCount, inConflictROPruefung);
+      }
+    }
+  }
+
+  /**
    * Compare two {@link Pruefung Pruefungen} and save their common {@link Teilnehmerkreis
    * Teilnehmerkreise} into a map. Also, the pruefungen that happen to be in conflict are saved onto
    * a set.
@@ -427,6 +360,100 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
       TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung(teilnehmerCount,
           pruefung.getSchaetzungen());
     }
+  }
+
+  /**
+   * Diese Methode testet, ob eine Planungseinheit und eine Pruefung einen gemeinsamen
+   * Teilnehmerkreis besitzt
+   *
+   * @param planungseinheit die Planungseinheit mit der zu testen ist
+   * @param pruefung        die Pruefung mit der zu testen ist
+   * @return true, wenn es einen gemeinsamen Teilnehmerkreis gibt und false, wenn es keinen
+   * gemeinsamen Teilnehmerkreis gibt
+   */
+  private boolean uebereinstimmendeTeilnehmerkreise(Planungseinheit planungseinheit,
+      Pruefung pruefung) {
+    for (Teilnehmerkreis teilnehmerkreis : pruefung.getTeilnehmerkreise()) {
+      if (planungseinheit.getTeilnehmerkreise().contains(teilnehmerkreis)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Diese Methode händelt den Sequential Block typ ab
+   *
+   * @param pruefung             die zu überprüfende Pruefung
+   * @param pruefungenFromBlock  ein Set von Pruefungen, welches sich in einen sequentiellen Block
+   *                             gefunden
+   * @param inConflictROPruefung die aktuell in Konflikt stehende Pruefungen
+   * @param teilnehmerCount      die aktuellen in Konflikt stehenden Teilnehmerkreise und ihre
+   *                             Anzahl
+   */
+  private void testForSequentialBlock(Pruefung pruefung, Set<Pruefung> pruefungenFromBlock,
+      HashSet<Pruefung> inConflictROPruefung, Map<Teilnehmerkreis, Integer> teilnehmerCount) {
+    for (Pruefung pruefungBlock : pruefungenFromBlock) {
+      getTeilnehmerkreisFromPruefung(pruefung, pruefungBlock,
+          inConflictROPruefung, teilnehmerCount);
+    }
+  }
+
+  /**
+   * In dieser Methode wird für einen Block von Typ parallel das Kriterium getestet
+   *
+   * @param pruefung             die zu überprüfende Pruefung
+   * @param start                der Starttermin, ab wo es zu einem Konflikt kommen könnte
+   * @param end                  der Endtermin, ab wo es zu einem Konflikt kommen könnte
+   * @param pruefungenFromBlock  die Pruefungen, die sich in dem Block befinden
+   * @param teilnehmerCount      die in Konflikt stehenden Teilnehmerkreise mit ihrer Anzahl
+   * @param inConflictROPruefung die in Konflikt stehenden Pruefungen
+   */
+  private void testForParallelBlock(Pruefung pruefung, Set<Pruefung> pruefungenFromBlock,
+      LocalDateTime start, LocalDateTime end,
+      Map<Teilnehmerkreis, Integer> teilnehmerCount, HashSet<Pruefung> inConflictROPruefung) {
+    for (Pruefung pruefungBlock : pruefungenFromBlock) {
+      //check if the Pruefung from the Block and the pruefungtoCheck have the same Teilnehmerkreis
+      if ((uebereinstimmendeTeilnehmerkreise(pruefungBlock, pruefung))
+          && !outOfRange(start, end, pruefungBlock)) {
+        getTeilnehmerkreisFromPruefung(pruefung, pruefungBlock,
+            inConflictROPruefung, teilnehmerCount);
+      }
+    }
+  }
+
+  /**
+   * Methode um zu überprüfen, ob sich ein Block mit der übergebenen Zeitspanne nicht überschneidet
+   *
+   * @param start         der Zeitspanne
+   * @param end           der Zeitspanne
+   * @param pruefungBlock die zu testende Pruefung
+   * @return true wenn die sich nicht überschneiden und false, wenn sie sich überschneiden
+   */
+  private boolean outOfRange(LocalDateTime start, LocalDateTime end, Pruefung pruefungBlock) {
+    return pruefungBlock.endzeitpunkt().isBefore(start) || pruefungBlock.getStartzeitpunkt()
+        .isAfter(end);
+  }
+
+  /**
+   * Hier werden die Parameter zu einer HartenKriteriumsAnalyse zusammen gebaut, falls es einen
+   * Konflikt gibt
+   *
+   * @param teilnehmerCount      eine Map, wo die in Konflikt stehende Teilnehmerkreise und ihre
+   *                             Anzahl gespeichert sind
+   * @param inConflictROPruefung ein Set, in welchem die in Konflikt stehende Pruefungen gespeichert
+   *                             sind
+   * @return Entweder die HarteKriteriumsAnalyse mit den in Konflikt stehenden Pruefungen und
+   * Teilnehmerkreisen oder ein leeres Optional
+   */
+  private Optional<HardRestrictionAnalysis> testAndCreateNewHartesKriteriumAnalyse(
+      Map<Teilnehmerkreis, Integer> teilnehmerCount, HashSet<Pruefung> inConflictROPruefung) {
+    if (!inConflictROPruefung.isEmpty()) {
+      HardRestrictionAnalysis hKA = new HardRestrictionAnalysis(inConflictROPruefung,
+          this.kriterium, teilnehmerCount);
+      return Optional.of(hKA);
+    }
+    return Optional.empty();
   }
 
 }

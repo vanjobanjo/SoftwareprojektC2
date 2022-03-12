@@ -16,7 +16,6 @@ Funktionalität: Als Planende*r moechte ich Bloecke einplanen koennen
     Dann ist der Block "block" am 20.03.2022 um 08:00 Uhr geplant
     Und es werden Restriktionen verletzt
 
-
   Szenario: Ich plane erfolgreich einen Block ein und es werden harte Kriterien verletzt
     Angenommen es existiert eine Pruefungsperiode von 20.02.2022 - 30.04.2022 mit dem Ankertag 01.04.2022
     Und es existiert ein ungeplanter Block "block" mit der Pruefung "pruefung" und dem Teilnehmerkreis "B_INF 3 14.0"
@@ -55,7 +54,6 @@ Funktionalität: Als Planende*r moechte ich Bloecke einplanen koennen
     Wenn ich den Block am 22.10.2021 einplane
     Dann erhalte ich einen Fehler
 
-
   Szenario: Ich versuche einen geplanten Block an so umzuplanen, dass eine harte Restriktion verletzt wird bugfix test
     Angenommen es existiert eine Pruefungsperiode
     Und es existiert ein geplanter Block "block" mit der Pruefung "pruefung" und dem Teilnehmerkreis "B_INF 3 14.0" am 02.02.2022 um 10:00 Uhr
@@ -77,5 +75,4 @@ Funktionalität: Als Planende*r moechte ich Bloecke einplanen koennen
     Und die Pruefung "geplantePruefung1" wird auch das Scoring verändert;
     Und die Pruefung "pruefung1" wird auch das Scoring verändert;
     Und der Block "block1" wird auch das Scoring verändert;
-
 

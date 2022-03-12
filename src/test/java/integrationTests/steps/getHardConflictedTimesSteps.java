@@ -1,6 +1,5 @@
 package integrationTests.steps;
 
-import static de.fhwedel.klausps.model.api.Ausbildungsgrad.BACHELOR;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -118,4 +117,16 @@ public class getHardConflictedTimesSteps extends BaseSteps {
     return Optional.of(teilnehmerkreis);
   }
 
+  @Wenn("ich abfrage, welche der folgenden Zeitpunkte fuer den Block {string} verboten sind")
+  public void ichAbfrageWelcheDerFolgendenZeitpunkteFuerDenBlockVerbotenSind(String blockName,
+      List<List<String>> input) throws NoPruefungsPeriodeDefinedException {
+    Set<LocalDateTime> timestamps = getAsTimeStamps(input);
+    ReadOnlyBlock block = getBlockFromModel(blockName);
+    try {
+      Set<LocalDateTime> result = state.controller.getHardConflictedTimes(timestamps, block);
+      state.results.put("times", result);
+    } catch (IllegalArgumentException exception) {
+      putExceptionInResult(exception);
+    }
+  }
 }

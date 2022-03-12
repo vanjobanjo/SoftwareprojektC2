@@ -2,7 +2,7 @@
 Funktionalität: Als Planender moechte ich aus einer Menge von Zeitpunkten jene heraus gefiltert bekommen,
   an denen ich eine bestimmte Pruefung nicht einplanen kann.
 
-  Szenario: Es werden alle verbotenen Zeitpunkte geliefert
+  Szenario: Es werden alle verbotenen Zeitpunkte fuer eine Pruefung geliefert
     Angenommen es existiert eine Pruefungsperiode
     Und es existiert die geplante Pruefung "Analysis" mit dem Teilnehmerkreis "Inf" im 4 Semester am 03.02.2022 um 08:00 Uhr
     Und es existiert die ungeplante Pruefung "CG" mit dem Teilnehmerkreis "Inf" im 4 Semester
@@ -19,14 +19,48 @@ Funktionalität: Als Planender moechte ich aus einer Menge von Zeitpunkten jene 
       | 03.02.2022 um 06:31 Uhr |
       | 03.02.2022 um 09:29 Uhr |
 
-  Szenario: Mit der Abgefragten Planungseinheit selbst kann es keinen Konflikt geben
+  Szenario: Mit der Abgefragten Pruefung selbst kann es keinen Konflikt geben
     Angenommen es existiert eine Pruefungsperiode
     Und es existiert die geplante Pruefung "Analysis" mit dem Teilnehmerkreis "Inf" im 4 Semester am 03.02.2022 um 08:00 Uhr
     Wenn ich abfrage, welche der folgenden Zeitpunkte fuer die Pruefung "Analysis" verboten ist
       | Zeitpunkte              |
       | 02.02.2022 um 08:00 Uhr |
-      | 03.02.2022 um 06:30 Uhr |
-      | 03.02.2022 um 06:31 Uhr |
+      | 03.02.2022 um 07:30 Uhr |
+      | 03.02.2022 um 07:31 Uhr |
+      | 03.02.2022 um 09:29 Uhr |
+      | 03.02.2022 um 09:30 Uhr |
+      | 04.02.2022 um 08:00 Uhr |
+    Dann enthaelt das Ergebnis keine Zeitpunkte
+
+  Szenario: Mit dem Abgefragten Block selbst kann es keinen Konflikt geben
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert der geplante parallele Block "Blocky" am 03.02.2022 um 08:00 Uhr mit den Pruefungen
+      | Pruefung | Studiengang | Semester |
+      | Analysis | Inf         | 1        |
+      | DM       | Inf         | 1        |
+    Wenn ich abfrage, welche der folgenden Zeitpunkte fuer den Block "Blocky" verboten sind
+      | Zeitpunkte              |
+      | 02.02.2022 um 08:00 Uhr |
+      | 03.02.2022 um 07:30 Uhr |
+      | 03.02.2022 um 07:31 Uhr |
+      | 03.02.2022 um 08:00 Uhr |
+      | 03.02.2022 um 09:29 Uhr |
+      | 03.02.2022 um 09:30 Uhr |
+      | 04.02.2022 um 08:00 Uhr |
+    Dann enthaelt das Ergebnis keine Zeitpunkte
+
+  Szenario: Die Abfrage einer Pruefung in einem Block zeigt keinen Konflikt mit dem Block selbst
+    Angenommen es existiert eine Pruefungsperiode
+    Und es existiert der geplante parallele Block "Blocky" am 03.02.2022 um 08:00 Uhr mit den Pruefungen
+      | Pruefung | Studiengang | Semester |
+      | Analysis | Inf         | 1        |
+      | DM       | Inf         | 1        |
+    Wenn ich abfrage, welche der folgenden Zeitpunkte fuer die Pruefung "Analysis" verboten ist
+      | Zeitpunkte              |
+      | 02.02.2022 um 08:00 Uhr |
+      | 03.02.2022 um 07:30 Uhr |
+      | 03.02.2022 um 07:31 Uhr |
+      | 03.02.2022 um 08:00 Uhr |
       | 03.02.2022 um 09:29 Uhr |
       | 03.02.2022 um 09:30 Uhr |
       | 04.02.2022 um 08:00 Uhr |
@@ -60,7 +94,7 @@ Funktionalität: Als Planender moechte ich aus einer Menge von Zeitpunkten jene 
       | 28.02.2022 um 08:00 Uhr |
     Dann erhalte ich einen Fehler
 
-  Szenario: Bei sequentiellen Bloecken wir die gesammtdauer beachtet
+  Szenario: Bei sequentiellen Bloecken wird die gesammtdauer beachtet
     Angenommen es existiert eine Pruefungsperiode
     Und es existiert der geplante sequentielle Block "Blocky" am 02.02.2022 um 10:00 Uhr mit den Pruefungen
       | Pruefung | Studiengang | Semester |
