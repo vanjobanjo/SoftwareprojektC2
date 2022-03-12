@@ -73,8 +73,8 @@ class PruefungDTOTest {
     PruefungImpl model = new PruefungImpl("Hallo", "Hallo", "", Duration.ofMinutes(60));
     TeilnehmerkreisImpl bwl = new TeilnehmerkreisImpl("BWL", "10", 10, Ausbildungsgrad.BACHELOR);
     TeilnehmerkreisImpl inf = new TeilnehmerkreisImpl("inf", "10", 10, Ausbildungsgrad.BACHELOR);
-    model.setSchaetzung(bwl, 10);
-    model.setSchaetzung(inf, 10);
+    model.addTeilnehmerkreis(bwl, 10);
+    model.addTeilnehmerkreis(inf, 10);
     PruefungDTO dtoController = new PruefungDTOBuilder(model).build();
     assertThat(dtoController.getTeilnehmerKreisSchaetzung()).isEqualTo(model.getSchaetzungen());
     assertThat(dtoController.getGesamtschaetzung()).isEqualTo(model.schaetzung());

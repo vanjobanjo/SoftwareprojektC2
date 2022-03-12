@@ -153,7 +153,7 @@ class ScheduleServiceTest {
     for (String pruefer : roPruefung.getPruefer()) {
       modelPruefung.addPruefer(pruefer);
     }
-    roPruefung.getTeilnehmerKreisSchaetzung().forEach(modelPruefung::setSchaetzung);
+    roPruefung.getTeilnehmerKreisSchaetzung().forEach(modelPruefung::addTeilnehmerkreis);
     return modelPruefung;
   }
 
@@ -256,7 +256,7 @@ class ScheduleServiceTest {
         .withDauer(Duration.ofMinutes(120)).withPruefungsNummer("haskell")
         .withAdditionalTeilnehmerkreis(informatik).build();
 
-    when(this.dataAccessService.removeTeilnehmerkreis(any(), any())).thenReturn(true);
+   // when(this.dataAccessService.removeTeilnehmerkreis(any(), any())).thenReturn(true);
     when(dataAccessService.getPruefung(any())).thenReturn(
         (getPruefungOfReadOnlyPruefung(roHaskel)));
 

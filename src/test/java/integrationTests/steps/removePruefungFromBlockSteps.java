@@ -105,7 +105,15 @@ public class removePruefungFromBlockSteps extends BaseSteps {
     }
 
 
-    ReadOnlyBlock roBlock = state.controller.getUngeplanteBloecke().iterator().next();
+    Iterator<ReadOnlyBlock> it = state.controller.getUngeplanteBloecke().iterator();
+    ReadOnlyBlock roBlock = null;
+    if(it.hasNext()){
+      roBlock = it.next();
+    }
+
+    while(it.hasNext() && roBlock != null && !roBlock.getName().equals(block)){
+      roBlock = it.next();
+    }
     for (String pruefungname : pruefungen) {
       assertThat(roBlock.getROPruefungen().contains(getPruefungFromModel(pruefungname))).isTrue();
     }

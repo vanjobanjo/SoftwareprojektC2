@@ -1632,9 +1632,9 @@ class DataAccessServiceTest {
       throws NoPruefungsPeriodeDefinedException {
     LocalDateTime termin = LocalDateTime.of(2022, 1, 1, 0, 0);
     Pruefung analysis = getPruefungOfReadOnlyPruefung(RO_ANALYSIS_UNPLANNED);
-    analysis.setSchaetzung(infBachelor, 20);
-    analysis.setSchaetzung(infMaster, 10);
-    analysis.setSchaetzung(bwlBachelor, 40);
+    analysis.addTeilnehmerkreis(infBachelor, 20);
+    analysis.addTeilnehmerkreis(infMaster, 10);
+    analysis.addTeilnehmerkreis(bwlBachelor, 40);
     analysis.setStartzeitpunkt(LocalDateTime.of(2022, 2, 2, 2, 2));
     when(pruefungsperiode.geplantePruefungen()).thenReturn(Set.of(analysis));
     assertThat(deviceUnderTest.getAnzahlStudentenZeitpunkt(termin)).isZero();
