@@ -991,7 +991,15 @@ public class ScheduleService {
     Set<Planungseinheit> sortedByStartzeit = new TreeSet<>(
         (planungseinheit1, planungseinheit2) -> {
           if (planungseinheit1.getStartzeitpunkt().equals(planungseinheit2.getStartzeitpunkt())) {
-            return Integer.compare(planungseinheit1.schaetzung(), planungseinheit2.schaetzung());
+            if(planungseinheit1.schaetzung() == planungseinheit2.schaetzung()){
+              String nameOne = getName(planungseinheit1);
+              String nameTwo = getName(planungseinheit2);
+              return nameOne.compareTo(nameTwo);
+
+            }
+            else{
+              return Integer.compare(planungseinheit1.schaetzung(), planungseinheit2.schaetzung());
+            }
           }
           return planungseinheit1.getStartzeitpunkt().isBefore(planungseinheit2.getStartzeitpunkt())
               ? -1 : 1;
@@ -999,6 +1007,25 @@ public class ScheduleService {
 
     sortedByStartzeit.addAll(planungseinheiten);
     return sortedByStartzeit;
+  }
+
+  /**
+   * This methode give you the name of a  {@link Planungseinheit}.
+   * If it is {@link Block} it returnes the BlockName.
+   * If the {@link Planungseinheit} is a {@link Pruefung} then it returns the PruefungsName.
+   * If the Model would handel it right, this is not necessary
+   * @param planungseinheit  the Planungseinheit, witch we want the name of
+   * @return the name of the {@link Planungseinheit}
+   */
+  private String getName(Planungseinheit planungseinheit) {
+    String nameOne;
+    if(planungseinheit.isBlock()){
+      nameOne = planungseinheit.asBlock().getName();
+    }
+    else {
+      nameOne = planungseinheit.asPruefung().getName();
+    }
+    return nameOne;
   }
 
   /**
