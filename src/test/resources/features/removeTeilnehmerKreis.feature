@@ -44,7 +44,7 @@ Funktionalität: Als Planender moechte ich zu einer Klausur einen Teilnehmerkrei
       Wenn ich einer Pruefung einen Teilnehmerkreis enfernen möchte
       Dann bekomme ich eine Fehlermeldung IllegalStateException
 
-  Szenario: Bugfix Klausur bei remove teilnehmerkreis nicht dabei
+  Szenario: Bugfix ungeplante Klausur bei remove teilnehmerkreis nicht dabei
     Angenommen es existiert eine Pruefungsperiode
     Und es existiert die ungeplante Pruefung "Analysis" mit dem Teilnehmerkreis "inf" im 1 Semester und "inf" im 2 Semster
     Wenn ich der Pruefung "Analysis" den Teilnehmerkreis "inf" Fachsemester 1 entfernen moechte bugfix
