@@ -992,8 +992,8 @@ public class ScheduleService {
         (planungseinheit1, planungseinheit2) -> {
           if (planungseinheit1.getStartzeitpunkt().equals(planungseinheit2.getStartzeitpunkt())) {
             if(planungseinheit1.schaetzung() == planungseinheit2.schaetzung()){
-              String nameOne = getName(planungseinheit1);
-              String nameTwo = getName(planungseinheit2);
+              String nameOne = getUniqueName(planungseinheit1);
+              String nameTwo = getUniqueName(planungseinheit2);
               return nameOne.compareTo(nameTwo);
 
             }
@@ -1011,21 +1011,21 @@ public class ScheduleService {
 
   /**
    * This methode give you the name of a  {@link Planungseinheit}.
-   * If it is {@link Block} it returnes the BlockName.
-   * If the {@link Planungseinheit} is a {@link Pruefung} then it returns the PruefungsName.
+   * If it is {@link Block} it returnes the BlockID.
+   * If the {@link Planungseinheit} is a {@link Pruefung} then it returns the ReferenzVerwaltungsystemName.
    * If the Model would handel it right, this is not necessary
    * @param planungseinheit  the Planungseinheit, witch we want the name of
    * @return the name of the {@link Planungseinheit}
    */
-  private String getName(Planungseinheit planungseinheit) {
-    String nameOne;
+  private String getUniqueName(Planungseinheit planungseinheit) {
+    String name;
     if(planungseinheit.isBlock()){
-      nameOne = planungseinheit.asBlock().getName();
+      name = String.valueOf(planungseinheit.asBlock().getId());
     }
     else {
-      nameOne = planungseinheit.asPruefung().getName();
+      name = planungseinheit.asPruefung().getReferenzVerwaltungsystem();
     }
-    return nameOne;
+    return name;
   }
 
   /**
