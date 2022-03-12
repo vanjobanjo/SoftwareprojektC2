@@ -555,6 +555,7 @@ public class ScheduleService {
 
     //Hier muss ja nicht auf HarteKriterien gecheckt werden.
     if(dataAccessService.removeTeilnehmerkreis(pruefungModel, teilnehmerkreis)){
+      listOfRead.remove(pruefungModel);
       listOfRead.add(dataAccessService.getPruefung(roPruefung));
     }
 
