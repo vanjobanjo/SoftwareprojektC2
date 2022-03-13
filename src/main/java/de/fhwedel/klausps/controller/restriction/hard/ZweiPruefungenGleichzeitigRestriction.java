@@ -432,8 +432,8 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
    * @return true wenn die sich nicht überschneiden und false, wenn sie sich überschneiden
    */
   private boolean outOfRange(LocalDateTime start, LocalDateTime end, Pruefung pruefungBlock) {
-    return pruefungBlock.endzeitpunkt().isBefore(start) || pruefungBlock.getStartzeitpunkt()
-        .isAfter(end);
+    return pruefungBlock.endzeitpunkt().isBefore(start)
+        || pruefungBlock.getStartzeitpunkt().isAfter(end);
   }
 
   /**

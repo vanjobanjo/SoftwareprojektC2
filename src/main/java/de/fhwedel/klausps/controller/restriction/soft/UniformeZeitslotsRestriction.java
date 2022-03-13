@@ -92,8 +92,10 @@ public class UniformeZeitslotsRestriction extends SoftRestriction {
    * @return true if they do not overlap, otherwise false
    */
   private boolean isOutOfTimeRange(Pruefung pruefung, Pruefung other) {
-    return other.endzeitpunkt().isBefore(pruefung.getStartzeitpunkt()) || other.getStartzeitpunkt()
-        .isAfter(pruefung.endzeitpunkt());
+    return other.endzeitpunkt().isBefore(pruefung.getStartzeitpunkt())
+        || other.getStartzeitpunkt().isAfter(pruefung.endzeitpunkt())
+        || other.getStartzeitpunkt().equals(pruefung.endzeitpunkt())
+        || pruefung.getStartzeitpunkt().equals(other.endzeitpunkt());
   }
 
   /**

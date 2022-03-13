@@ -462,3 +462,26 @@ Funktionalität: Als Planende*r moechte ich eine Pruefung einplanen koennen.
     Und die Pruefung "BWL" hat nicht das WeicheKriterium "FREIER_TAG_ZWISCHEN_PRUEFUNGEN" bugix
     Und die Pruefung "Analysis" hat nicht das WeicheKriterium "FREIER_TAG_ZWISCHEN_PRUEFUNGEN" bugix
     Und die Pruefung "Haskel" hat nicht das WeicheKriterium "FREIER_TAG_ZWISCHEN_PRUEFUNGEN" bugix
+
+    Szenario: BugFix Analysis ChangeManagement nicht gleichzeitig.
+      Angenommen es existiert eine Pruefungsperiode von 01.12.2021 - 31.12.2021
+      Und es existiert die geplante Pruefung "Analysis" mit dem Teilnehmerkreis "inf" im 1 Semester und Dauer von 120 Minuten am 01.12.2021 um 08:00 Uhr
+      Und es existiert die ungeplante Pruefung "Change Management" mit dem Teilnehmerkreis "bwl" im 1 Semester und Dauer von 60 Minuten
+      Wenn ich die Pruefung "Change Management" am 01.12.2021 um 10:00 Uhr einplanen moechte
+      Dann ist die Pruefung "Analysis" am 01.12.2021 um 8 Uhr eingeplant
+      Und ist die Pruefung "Change Management" am 01.12.2021 um 10 Uhr eingeplant
+      Und die Pruefung "Change Management" hat nicht das WeicheKriterium "UNIFORME_ZEITSLOTS"
+      Und die Pruefung "Analysis" hat nicht das WeicheKriterium "UNIFORME_ZEITSLOTS"
+
+  Szenario: BugFix Analysis ChangeManagement nicht gleichzeitig.
+    Angenommen es existiert eine Pruefungsperiode von 01.12.2021 - 31.12.2021
+    Und es existiert die geplante Pruefung "Analysis" mit dem Teilnehmerkreis "inf" im 1 Semester und Dauer von 120 Minuten am 01.12.2021 um 08:00 Uhr
+    Und es existiert die geplante Pruefung "BWL" mit dem Teilnehmerkreis "CMT" im 1 Semester und Dauer von 60 Minuten am 01.12.2021 um 11:00 Uhr
+    Und es existiert die ungeplante Pruefung "Change Management" mit dem Teilnehmerkreis "bwl" im 1 Semester und Dauer von 61 Minuten
+    Wenn ich die Pruefung "Change Management" am 01.12.2021 um 10:00 Uhr einplanen moechte
+    Dann ist die Pruefung "Analysis" am 01.12.2021 um 8 Uhr eingeplant
+    Und ist die Pruefung "Change Management" am 01.12.2021 um 10 Uhr eingeplant
+    Und ist die Pruefung "BWL" am 01.12.2021 um 11 Uhr eingeplant
+    Und die Pruefung "Change Management" hat das WeicheKriterium "UNIFORME_ZEITSLOTS"
+    Und die Pruefung "BWL" hat das WeicheKriterium "UNIFORME_ZEITSLOTS"
+    Und die Pruefung "Analysis" hat nicht das WeicheKriterium "UNIFORME_ZEITSLOTS"
