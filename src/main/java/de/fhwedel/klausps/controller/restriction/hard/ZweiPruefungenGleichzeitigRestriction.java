@@ -351,14 +351,15 @@ public class ZweiPruefungenGleichzeitigRestriction extends HardRestriction {
           teilnehmerCount.put(teilnehmerkreis, teilnehmerkreisToCheck);
         }
 
+        Map<Teilnehmerkreis, Integer> pruefungToCheckTeilnehmerkreis = new HashMap<>();
+        pruefungToCheckTeilnehmerkreis.put(teilnehmerkreis,pruefung.getSchaetzungen().get(teilnehmerkreis));
+        TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung(teilnehmerCount,
+            pruefungToCheckTeilnehmerkreis);
+
         // does not matter here ase a set is used and duplicate entries are ignored
         inConflictROPruefung.add(pruefung);
         inConflictROPruefung.add(toCheck);
       }
-    }
-    if (!inConflictROPruefung.isEmpty()) {
-      TeilnehmerkreisUtil.compareAndPutBiggerSchaetzung(teilnehmerCount,
-          pruefung.getSchaetzungen());
     }
   }
 
